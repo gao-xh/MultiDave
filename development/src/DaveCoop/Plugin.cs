@@ -17,7 +17,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.10-dev";
+        public const string Version = "0.1.11-dev";
 
         public override void Load()
         {
@@ -51,6 +51,10 @@ namespace DaveCoop
                 "Send bounded read-only initialized fish state from the host; diagnostic only, does not control fish.");
             NetworkDriver.ShowFishPreview = Config.Bind("Network", "ShowFishPreview", false,
                 "Preview one received fish with sprite/Spine display only; no AI, collision, interaction or original-fish changes.");
+            NetworkDriver.ShowFishWorld = Config.Bind("Network", "ShowFishWorld", false,
+                "Display the received active fish observation roster; display only, no original AI or capture changes.");
+            NetworkDriver.ObserveFishInteractions = Config.Bind("Network", "ObserveFishInteractions", false,
+                "Observe native host harpoon, damage and pickup calls while transmitting fish observations; bounded read-only diagnostics.");
             AddComponent<Diagnostics>();
             AddComponent<PlayerProbe>();
             AddComponent<RemotePreview>();

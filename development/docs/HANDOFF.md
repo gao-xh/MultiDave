@@ -6,7 +6,10 @@
 自定义插件加载、Unity Update 回调，以及 `DR_Start`、`DR_Logo`、`DR_Title` 场景读取。
 插件日志证据见 `../logs/bootstrap-verification.log`。
 
-开发在 `codex/player-discovery` 分支，当前源码为 `0.1.10-dev`，最新实机为 `0.1.9-dev`，M1 历史证据来自 `0.1.1-dev`。
+开发在 `codex/player-discovery` 分支，当前源码与实机为 `0.1.11-dev`，编译及 85/85 项核心测试通过，新进程加载/Update/网络入口已确认。
+新版单游戏 TCP 偏移鱼群可见和原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
+发射/挂钩/伤害只读观察已运行；动画、完整捕获链、路线完整读取与正常返航仍待验收。
+最近单鱼稳定性实测来自 `0.1.9-dev`，M1 历史证据来自 `0.1.1-dev`。
 加入只读玩家、输入、动画和摄像机探针，离线元数据检查工具及 JSONL 汇总工具。
 真实潜水 `A01_01_01` 已读到 `PlayerGroup(Clone)/DaveCharacter`，
 `InGameManager.playerCharacter` 与该实例一致，`CameraManager` 跟随其根 Transform。
@@ -19,12 +22,14 @@
 旧 M1 会话完整日志最终为 1886 条快照，记录 Boss 返回潜水、返航大厅及主菜单，无探针错误。
 M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态中原生玩家数为 1，
 摄像机均绑定本地玩家，F10 停用/重建及返航清理有日志，无警告，基础验收通过。
-新增纯 CLR 姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询，68 项测试通过。
+新增纯 CLR 姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询、鱼群缓冲、路线/IGP 清单与交互绑定观察，当前 85 项测试通过。
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
 0.1.4-dev 引入默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，0.1.5-dev 加入一条鱼的 Sprite/Spine 显示验证入口。
 当前协议版本为 3，拒绝旧协议；WorldSlice 每块最多 16 个实体，通过场景确认后的 TCP 通道传输有界数值及显示描述。
 F11 的 Transmit read-only fish observations / Preview one received fish 均默认关闭。
+0.1.11-dev 另增默认关闭的 Display received fish roster / Observe host harpoon and fish interactions；
+本机显示及房主交互观察仍依赖 Transmit read-only fish observations。
 0.1.5-dev 已部署并真实潜水：F7 探针 72 条快照无错误；本机 TCP 收到 59 条鱼清单概要，数量 12..21，最大修订 582。
 显示资源均可解析，59 条网络状态的单鱼组件可见，无插件警告；实际画面、动画和正常断开/返航仍待用户反馈。
 这次会话进程已退出，用户确认是主动退出；未记录 Disconnect 或返航，不能据此推断正常清理通过。
@@ -32,7 +37,7 @@ F11 的 Transmit read-only fish observations / Preview one received fish 均默�
 连续更新时发送完已开始的整批快照，仅保留下一批最新状态，避免慢连接无法提交清单。
 地图/鱼/互动方案及可复现接口研究见 `WORLD_SYNC.md`、`scripts/Inspect-WorldApi.ps1`。
 细节见 `MULTIPLAYER.md`，最新测试证据见 `../logs/core-verification.json`。
-当前鱼显示构建的验证边界见 `../logs/fish-preview-build-verification.json`。
+历史 0.1.5-dev 单鱼构建的验证边界见 `../logs/fish-preview-build-verification.json`。
 新生命周期和定位的原生证据分别见 `../logs/native-fish-lifecycle-verification.json` 与 `../logs/native-fish-preview-verification.json`。
 真实单游戏运行证据见 `../logs/native-fish-loopback-verification.json`。
 0.1.6-dev 加入观察生命周期的 9 个 HarmonyX 前缀和对象池代次处理，编译及核心测试通过，已部署并确认新进程加载。
@@ -47,9 +52,39 @@ F11 的 Transmit read-only fish observations / Preview one received fish 均默�
 0.1.9-dev 锁定活鱼身份，镜头/距离/临时显示缺失不再重选，只有合法移除/死亡/捕获或显式按钮触发替换。
 新增即时选择与显示状态日志，62/62 核心测试及编译通过；已部署，用户确认不再突然消失；原生初选/手动重选/出镜后重入已有即时日志，动画/正常返航验收仍待完成。
 实机证据见 ../logs/native-fish-preview-identity-verification.json；这仍是单游戏显示验证，预览不可捕获。
-标签鱼仅显示，用户确认无法捕获；M5 命中/房主裁定及反向实体绑定尚未接入。
+0.1.9-dev 标签鱼仅显示，用户确认无法捕获；后续已准备反向实体绑定，M5 命中/房主裁定仍未接入。
 该地图存在一个无法生成显示描述的鱼，数值状态仍可传输；不把一个预览推广为全部鱼型支持。
 前缀不跳过原方法、只记录已观察鱼的 CLR 状态；仅开启房主鱼诊断时安装，关闭/断线只卸载本插件的挂钩。
+
+0.1.11-dev 构建范围见 [鱼群与交互构建摘要](../logs/fish-world-interaction-build-verification.json)：
+
+- `FishWorldBuffer` 原子接受完整数字清单，每鱼独立最多 16 帧，旧 epoch/修订拒绝，一秒失联只隐藏。
+  `RemoteFishWorld` / `FishDisplayNode` 显示所有可解析的收到活鱼；缺 Visual、源不可见或离镜头保留数字身份。
+  清单仅房主玩家当前场景的活动、已初始化鱼；收到完整清单不代表完整海洋、全鱼型支持或客机 AI 接管。
+  日志分开收到实体/鱼总数、活鱼、可显示、组件可见、镜头内、未知资源、缺 Visual 与实际自建节点数。
+- `FishInteractionHooks` 在 8 个声明方法观察原生发射、伤害、挂钩、QTE 胜利与入袋的 prefix/postfix。
+  `CallId` 成对关联，prefix 固定冻结 CLR 快照中的 epoch/EntityId/代次，postfix 复用这份绑定。
+  回调不访问 Unity/HP、不跳过原方法、不改返回；伤害 bool 只是原返回，`HpAtDrain` 是主线程消费时读数，
+  两条成对日志不构成扣血差、捕获或奖励证据。未绑定、丢弃、线程/回调错误及卸载均须核对。
+- `ObservedHostTargets` 冻结发布本地指针到房主身份的 CLR 快照，生命周期复核阻止池复用误绑；不传本机 token/指针。
+  原生目标仅在 Unity 主线程重新核对，查询值不是伤害或捕获授权。
+- `MapSelectionCapture` 读取加载后的路线与 IGP 清单；所有选中场景已加载、每场景至少一组，
+  查找的控制器与原注册列表一致，并在两个不同 Unity 帧取得相同指纹后才接受。
+  地址跨机稳定性尚未验证；没有调用随机选择、加载、存档写入或在加载前采用房主地图。
+
+新版鱼群可见与移除同步已获用户确认；动画、完整捕获链与正常返航仍待验收，真正合作捕获、原生 AI 隔离、双游戏闭环与冷配置验收未完成。
+0.1.11-dev 已部署并重新启动，实际进程启动于 2026-10-04T06:51:29Z；新鲜日志确认
+BOOTSTRAP_OK（0.1.11-dev）、UPDATE_OK、NETWORK_READY 及 DR_Start/DR_Logo。
+本次自写 DLL SHA256：`05C5379FF301C55D6841FA23DE00BDCC4EB80B6D404CA6122AC5A17523140E01`。
+框架 Class::Init 替代实现警告仍在，启动通过不等于新原生挂钩或显示验收通过。
+随后实际 A03_01_02 已记录 49 条 Loopback Ready 概要、53 条 FishWorld 状态；观察/绑定/可显示/可见最大为 16，
+网格顶点 662，未知/缺 Visual/显示错误为零。用户确认出现成对的偏移鱼、捕获原鱼时两只同时消失；
+关闭 Display received fish roster 后恢复正常，操作和镜头正常。Local test 保留原鱼加显示副本，不是统一世界或捕获副本。
+8 个交互入口 installed/healthy，42 条事件为 21 对 CallId，HarpoonFire 28、FishHookedByProjectile 10、FishDamage 2、SpecialDamage 2；
+两个原 bool 为 true，14 条事件消费时有可用原生目标，prefix 绑定固定，回调/解析/未配对/原生查询错误为零。
+两个伤害声明的 __state 配对已在这条实机路径观察；未见 QTE Win 或 Pickup，不能认定完整捕获链。
+地图清单失败 Selected route incomplete。已有 FISH_INTERACTION_STOPPED 与 NETWORK_DISCONNECTED；
+用户确认主动退出且未返航；正常返航保存及动画仍未确认。
 
 首次安装记录在忽略的 `artifacts/framework-install.json`；
 原始 EXE、GameAssembly.dll、UnityPlayer.dll 的 SHA256 经复核未改变。
@@ -62,13 +97,14 @@ F11 的 Transmit read-only fish observations / Preview one received fish 均默�
 0.1.10-dev 已编译本地反向目标查询 HostEntityRegistry.TryResolve(epoch,id) 和 Unity 线程 TryResolveNativeFish。
 查询复核当前实例/指针、种类、场景和启用代次；失活/回收后的旧绑定不提供可操作原生引用。
 同 epoch 清理保留递增计数，断房间才 ResetRoom；这些只建立目标身份，不构成攻击/捕获授权。
-新增 6 项核心用例，68/68 通过；未部署/执行新原生适配。构建摘要见 ../logs/host-target-build-verification.json。
-当前编译 SHA256：`5BF9494E3E6C7782C9A3F4B077C7C1075EEC6CF92892B39B76734A993232204D`。M5 可复现签名研究见 scripts/Inspect-FishInteractionApi.ps1 与 WORLD_SYNC。
+0.1.10-dev 历史构建新增 6 项核心用例，68/68 通过；当时未部署/执行新原生适配。构建摘要见 ../logs/host-target-build-verification.json。
+该历史构建 SHA256：`5BF9494E3E6C7782C9A3F4B077C7C1075EEC6CF92892B39B76734A993232204D`。M5 可复现签名研究见 scripts/Inspect-FishInteractionApi.ps1 与 WORLD_SYNC。
 
 ## 尚未完成
 
 M3 游戏适配实机验证和真实双游戏验收尚未完成。
-真实双游戏连接验收、完整鱼群/拾取同步、存档同步均未完成。
+真实双游戏连接验收、客机原生鱼群/拾取接管与临时进度恢复均未完成。
+0.1.11-dev 的活动鱼群可见与移除同步已获用户确认，Fire/Hook/Damage 观察已有单游戏日志；动画、完整捕获链和路线完整读取仍待验证，不能据此标记 M4/M5 完成。
 服务器方案暂时搁置。当前包是验证开发入口的原型。
 
 ## 下一步
@@ -97,9 +133,13 @@ Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可�
 已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
 Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
 探针记录本机 ID 仅用于观察；网络数值实体已使用房主分配的 RoomId/epoch/EntityId。
-下一版部署后，F11 / Local test 勾选两个鱼诊断选项，检查 WORLD_RECEIVED 与 NETWORK_STATE 的数量/版本、
-FishPreviewEntity/Visible/InView/MeshVertices/UnknownResource 和 FirstVisualError；观察带 MultiDave Fish Preview 标签的鱼及其转向、动画和移除。
-该显示仅创建自己的 SpriteRenderer 或 SkeletonAnimation；原鱼及其 AI 保持原样，不能当成共享鱼群。
+0.1.11-dev 已确认启动；继续在本次进程的 F11 / Local test 开启 Transmit read-only fish observations，
+再按测试范围开启 Display received fish roster 与 Observe host harpoon and fish interactions；单鱼标签诊断仍可另开。
+核对 WORLD_RECEIVED / NETWORK_STATE 及 FISH_WORLD_STATE / TRANSITION 的数字总数、可显示/未知资源/镜头内/节点数，
+并确认画面、转向、镜头外重入、鱼终态和 Disconnect/正常返航清理。本机偏移后的显示鱼不可捕获；应操作原生鱼观察调用链。
+核对 FISH_INTERACTION_READY / INTERACTION / STOPPED 的前后成对 CallId、prefix 绑定、原 bool、消费时 HP 及错误/丢弃统计；
+地图清单核对 MAP_SELECTION / WARNING 的完整条件与 PostLoadObservationOnly，不把它当加载前接管。
+显示仅创建自己的 SpriteRenderer 或 SkeletonAnimation；原鱼及其 AI 保持原样，不能当成共享鱼群。
 对照 F7 探针核实实际鱼值和生命周期，再接入原生生成/AI 接管和 M5 裁定。
 当前数值通道只覆盖玩家所在场景的已初始化鱼；新生命周期挂钩需验证实际启停/销毁与池复用，再扩大至完整世界事件。
 Spine 引用来自现有生成的 spine-unity.dll；资源键为名字/缩放/图集描述哈希，跨机稳定性待验证。

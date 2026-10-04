@@ -2,39 +2,23 @@ using System;
 using System.Text.Json;
 using DaveCoop.Core.World;
 using DaveCoop.Rendering;
-using Spine;
-using Spine.Unity;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityObject = UnityEngine.Object;
-using Pose = DaveCoop.Core.Pose;
 
 namespace DaveCoop.Networking
 {
     internal sealed class RemoteFishPreview
     {
         private readonly FishPreviewBuffer _motion = new FishPreviewBuffer();
-        private GameObject _root;
-        private GameObject _model;
-        private SpriteRenderer _sprite;
-        private SkeletonAnimation _skeleton;
-        private Renderer _renderer;
-        private string _assetKey;
-        private FishVisualKind _kind;
-        private long _entityId;
-        private int _sceneHandle;
-        private string _skin;
-        private string _animation;
-        private bool _loop;
-        public long SelectedEntity => _motion.EntityId;
-        public bool Visible { get; private set; }
-        public bool UnknownResource { get; private set; }
-        public bool InView { get; private set; }
-        public int MeshVertices { get; private set; }
-        private Vector3 _displayPosition;
+        private readonly FishDisplayNode _node = new FishDisplayNode("MultiDave.RemoteFishPreview");
         private string _lastTrace;
+        private string _nodeWarning;
         private int _traceCount;
-        public string DisplayStatus { get; private set; } = "Cleared";
+        public long SelectedEntity => _motion.EntityId;
+        public bool Visible => _node.Visible;
+        public bool UnknownResource => _node.UnknownResource;
+        public bool InView => _node.InView;
+        public int MeshVertices => _node.MeshVertices;
+        public string DisplayStatus => _node.DisplayStatus;
         public string SelectionReason => _motion.LastSelectionReason;
         public double SnapshotAge { get; private set; }
 
@@ -68,94 +52,32 @@ namespace DaveCoop.Networking
 
         public void Render(double now, double delay, LocalAvatarCapture local, SpriteCatalog sprites, SpineCatalog spines, bool loopback)
         {
-            Visible = false; UnknownResource = false; InView = false; MeshVertices = 0;
             SnapshotAge = _motion.SampleAge(now);
-            if (_motion.EntityId == 0) { DisplayStatus = "NoSelection"; DestroyNodes(); return; }
-            if (!local.IsAvailable) { Hide("LocalUnavailable"); return; }
-            if (!_motion.Sample(now, delay, out EntityState from, out EntityState to, out float alpha)) { Hide(_motion.LastSampleStatus); return; }
-            bool teleport = System.Numerics.Vector3.DistanceSquared(from.Root.Position, to.Root.Position) > 144;
-            EntityState discrete = alpha >= 1 || teleport ? to : from; FishVisual visual = discrete.Visual;
-            if (visual == null) { Hide("MissingVisual"); return; }
-            if (!visual.Visible) { Hide("SourceInvisible"); return; }
-            Sprite sprite = null; SkeletonDataAsset skeleton = null;
-            if (visual.Kind == FishVisualKind.Sprite)
+            if (_motion.EntityId == 0) { _node.Clear("NoSelection"); return; }
+            if (!local.IsAvailable) { _node.Hide("LocalUnavailable"); return; }
+            if (!_motion.Sample(now, delay, out EntityState from, out EntityState to, out float alpha))
+            { _node.Hide(_motion.LastSampleStatus); return; }
+            // Default culling matches the verified single-fish preview: retain
+            // its selected identity and report OutsideCamera without reselection.
+            try
             {
-                if (!sprites.TryResolve(visual.AssetKey, out sprite)) sprites.ScanLoadedSprites(Time.unscaledTime);
-                if (!sprites.TryResolve(visual.AssetKey, out sprite)) { UnknownResource = true; Hide("UnknownSprite"); return; }
+                _node.Render(from, to, alpha, local.Player.gameObject.scene, sprites, spines, loopback);
+                _nodeWarning = null;
             }
-            else
+            catch (Exception error)
             {
-                if (!spines.TryResolve(visual.AssetKey, out skeleton)) spines.Scan(Time.unscaledTime);
-                if (!spines.TryResolve(visual.AssetKey, out skeleton)) { UnknownResource = true; Hide("UnknownSkeleton"); return; }
-            }
-            if (_root == null || _entityId != discrete.Id || _assetKey != visual.AssetKey || _kind != visual.Kind || _sceneHandle != local.SceneHandle)
-            {
-                DestroyNodes(); _entityId = discrete.Id; _assetKey = visual.AssetKey; _kind = visual.Kind; _sceneHandle = local.SceneHandle;
-                _root = new GameObject("MultiDave.RemoteFishPreview-" + discrete.Id) { hideFlags = HideFlags.DontSave };
-                _root.SetActive(false); SceneManager.MoveGameObjectToScene(_root, local.Player.gameObject.scene);
-                _model = new GameObject("Display") { hideFlags = HideFlags.DontSave }; _model.transform.SetParent(_root.transform, false);
-                if (_kind == FishVisualKind.Sprite) { _sprite = _model.AddComponent<SpriteRenderer>(); _renderer = _sprite; }
-                else
+                // A display component failure must not clear the verified
+                // selected identity, its history or the TCP session.
+                _node.Clear("RenderError");
+                string message = error.GetType().Name + ": " + error.Message;
+                if (_node.CleanupError != null) message += "; cleanup=" + _node.CleanupError;
+                if (message != _nodeWarning && _traceCount < 2048)
                 {
-                    _skeleton = SkeletonAnimation.AddToGameObject(_model, skeleton, false);
-                    if (_skeleton.Skeleton == null) _skeleton.Initialize(false, false);
-                    _skeleton.enabled = false; _renderer = _model.GetComponent<MeshRenderer>();
+                    _traceCount++;
+                    NetworkDriver.Logger.LogWarning("DAVECOOP_FISH_PREVIEW_WARNING: " + message);
                 }
+                _nodeWarning = message;
             }
-            Pose root = teleport ? to.Root : Pose.Interpolate(from.Root, to.Root, alpha);
-            if (loopback) root.Position += new System.Numerics.Vector3(3, 0, 0);
-            LocalAvatarCapture.ApplyPose(_root.transform, root, false); LocalAvatarCapture.ApplyPose(_model.transform, visual.LocalPose, true);
-            _model.layer = visual.Layer; _renderer.sortingLayerID = visual.SortingLayer; _renderer.sortingOrder = visual.SortingOrder;
-            Color color = new Color(visual.Color.X, visual.Color.Y, visual.Color.Z, visual.Color.W);
-            if (loopback) color *= new Color(0.55f, 0.9f, 1, 0.75f);
-            if (_sprite != null) { _sprite.sprite = sprite; _sprite.color = color; _sprite.flipX = visual.FlipX; _sprite.flipY = visual.FlipY; }
-            if (_skeleton != null)
-            {
-                Skeleton data = _skeleton.Skeleton;
-                if (_skin != visual.Skin)
-                {
-                    if (visual.Skin != null)
-                    {
-                        if (data.Data.FindSkin(visual.Skin) == null) { UnknownResource = true; Hide("MissingSkin"); return; }
-                        data.SetSkin(visual.Skin);
-                    }
-                    else data.SetSkin((Skin)null);
-                    data.SetSlotsToSetupPose(); _skin = visual.Skin;
-                }
-                data.ScaleX = visual.SkeletonScaleX; data.ScaleY = visual.SkeletonScaleY;
-                data.R = color.r; data.G = color.g; data.B = color.b; data.A = color.a;
-                if (visual.Animation != null)
-                {
-                    if (data.Data.FindAnimation(visual.Animation) == null) { UnknownResource = true; Hide("MissingAnimation"); return; }
-                    if (_animation != visual.Animation || _loop != visual.Loop)
-                    {
-                        TrackEntry started = _skeleton.AnimationState.SetAnimation(0, visual.Animation, visual.Loop);
-                        started.MixDuration = 0;
-                        _animation = visual.Animation; _loop = visual.Loop;
-                    }
-                    TrackEntry track = _skeleton.AnimationState.GetCurrent(0);
-                    float animationTime = visual.AnimationTime;
-                    if (!teleport && from.Visual?.Animation == to.Visual?.Animation && from.Visual != null && to.Visual != null &&
-                        to.Visual.AnimationTime >= from.Visual.AnimationTime)
-                        animationTime = from.Visual.AnimationTime + (to.Visual.AnimationTime - from.Visual.AnimationTime) * alpha;
-                    if (track != null) { track.TrackTime = animationTime; track.TimeScale = 0; }
-                }
-                _skeleton.Update(0); _skeleton.LateUpdateMesh();
-            }
-            _root.SetActive(true); _renderer.enabled = true; Visible = true;
-            _displayPosition = _model.transform.position;
-            Camera activeCamera = Camera.main;
-            if (activeCamera != null)
-            {
-                Vector3 viewport = activeCamera.WorldToViewportPoint(_displayPosition);
-                InView = viewport.z > 0 && viewport.x >= 0 && viewport.x <= 1 && viewport.y >= 0 && viewport.y <= 1;
-            }
-            if (_skeleton != null)
-            {
-                MeshFilter filter = _model.GetComponent<MeshFilter>();
-                if (filter != null && filter.sharedMesh != null) MeshVertices = filter.sharedMesh.vertexCount;
-            }
-            DisplayStatus = InView ? "Visible" : "OutsideCamera";
         }
 
         // State transitions are recorded immediately, instead of relying on the
@@ -167,18 +89,20 @@ namespace DaveCoop.Networking
             _lastTrace = signature;
             if (_traceCount >= 2048) return;
             _traceCount++;
+            Vector3 position = _node.DisplayPosition;
             NetworkDriver.Logger.LogInfo("DAVECOOP_FISH_PREVIEW_TRANSITION: " + JsonSerializer.Serialize(new
             {
                 SelectedEntity, DisplayStatus, Visible, InView, UnknownResource, MeshVertices, SnapshotAge,
-                Position = new[] { _displayPosition.x, _displayPosition.y, _displayPosition.z }
+                CleanupError = _node.CleanupError,
+                Position = new[] { position.x, position.y, position.z }
             }));
         }
 
         public void DrawMarker()
         {
-            if (!Visible || !InView || _root == null) return;
+            if (!Visible || !InView || !_node.HasNodes) return;
             Camera camera = Camera.main; if (camera == null) return;
-            Vector3 screen = camera.WorldToScreenPoint(_displayPosition); if (screen.z <= 0) return;
+            Vector3 screen = camera.WorldToScreenPoint(_node.DisplayPosition); if (screen.z <= 0) return;
             float x = screen.x, y = Screen.height - screen.y;
             Color previous = GUI.color;
             try
@@ -191,16 +115,9 @@ namespace DaveCoop.Networking
             finally { GUI.color = previous; }
         }
 
-        private void Hide(string reason) { DisplayStatus = reason; if (_root != null) _root.SetActive(false); }
-        private void DestroyNodes()
-        {
-            if (_root != null) UnityObject.Destroy(_root);
-            _root = null; _model = null; _sprite = null; _skeleton = null; _renderer = null; _assetKey = null; _skin = null; _animation = null;
-        }
         public void Clear(string reason = "Cleared")
         {
-            DestroyNodes(); _motion.Clear(); Visible = false; UnknownResource = false; InView = false; MeshVertices = 0;
-            DisplayStatus = reason; SnapshotAge = 0; Trace();
+            _node.Clear(reason); _motion.Clear(); _nodeWarning = null; SnapshotAge = 0; Trace();
         }
     }
 }

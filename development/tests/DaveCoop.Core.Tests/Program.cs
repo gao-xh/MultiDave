@@ -75,7 +75,24 @@ internal static class Program
             ("fish preview temporary visual loss preserves identity", FishVisualTests.PreviewTemporaryVisualsRetainIdentity),
             ("fish preview manual reselection preserves replay fence", FishVisualTests.PreviewManualReselectionPreservesReplayFence),
             ("fish preview death, capture and roster removal reasons", FishVisualTests.PreviewTerminalSelectionReasons),
-            ("fish preview sample diagnosis and stale recovery", FishVisualTests.PreviewSamplingReasonsAndRecovery)
+            ("fish preview sample diagnosis and stale recovery", FishVisualTests.PreviewSamplingReasonsAndRecovery),
+            ("observed host targets ownership and generation", ObservedTargetTests.SnapshotOwnershipAndGeneration),
+            ("observed host targets invalid publish is atomic", ObservedTargetTests.InvalidPublishIsAtomic),
+            ("observed host targets concurrent readers and capacity", ObservedTargetTests.ConcurrentReadersAndCapacity),
+            ("map selection canonical ordering and culture", MapSelectionTests.CanonicalOrderingAndCulture),
+            ("map selection identity and field boundaries", MapSelectionTests.SelectionIdentityAndFieldBoundaries),
+            ("map selection copy ownership", MapSelectionTests.CopyOwnership),
+            ("map selection incomplete and bounded input", MapSelectionTests.IncompleteAndBoundedInput),
+            ("map selection duplicate identity rejection", MapSelectionTests.DuplicateIdentityRejection),
+            ("map selection invalid strings and numbers", MapSelectionTests.InvalidStringsAndNumbers),
+            ("map selection route connectivity and prefab modes", MapSelectionTests.RouteConnectivityAndModes),
+            ("map selection maximum bounded manifest", MapSelectionTests.MaximumBoundedManifest),
+            ("fish world atomic roster and DTO ownership", FishWorldTests.AtomicRosterAndOwnership),
+            ("fish world invalid batch preserves committed state", FishWorldTests.InvalidBatchPreservesCommittedWorld),
+            ("fish world independent interpolation and visual recovery", FishWorldTests.IndependentInterpolationAndVisualRecovery),
+            ("fish world epoch replay and freshness recovery", FishWorldTests.EpochReplayAndFreshnessRecovery),
+            ("fish world terminal and undisplayable numeric roster", FishWorldTests.TerminalAndUndisplayableNumericRoster),
+            ("fish world capacity and independent history bounds", FishWorldTests.CapacityAndIndependentHistoryBounds)
         };
         int failures = 0;
         foreach (var test in tests)

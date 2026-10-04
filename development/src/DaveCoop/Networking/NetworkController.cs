@@ -32,6 +32,18 @@ namespace DaveCoop.Networking
         private readonly FishLifecycleHooks _fishLifecycle = new FishLifecycleHooks();
         private readonly SpineCatalog _spines = new SpineCatalog();
         private readonly RemoteFishPreview _fishPreview = new RemoteFishPreview();
+        private readonly RemoteFishWorld _fishWorld = new RemoteFishWorld();
+        private readonly FishInteractionHooks _fishInteractions = new FishInteractionHooks();
+        private MapSelectionCapture _mapSelection;
+        private string _lastMapSelection;
+        private string _mapSelectionStatus;
+        private float _nextMapSelection;
+        private string _fishWorldWarning;
+        private string _interactionWarning;
+        private long _interactionEvents;
+        private long _mappedInteractionEvents;
+        private long _nativeInteractionTargetsAtDrain;
+        private long _nativeInteractionLookupErrors;
         private string _fishPreviewWarning;
         private long _worldEpoch;
         private long _lastRemoteWorldRevision;
@@ -64,6 +76,7 @@ namespace DaveCoop.Networking
                 if (!_started)
                 {
                     _started = true; _portText = NetworkDriver.Port.Value.ToString(CultureInfo.InvariantCulture);
+                    _mapSelection = new MapSelectionCapture(Environment.CurrentManagedThreadId);
                     NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_READY: F11 opens LAN movement test panel; no automatic connection.");
                 }
                 if (Input.GetKeyDown(KeyCode.F11)) NetworkDriver.ShowPanel.Value = !NetworkDriver.ShowPanel.Value;
@@ -84,9 +97,13 @@ namespace DaveCoop.Networking
                 UpdateLocalScene();
                 state = _peers.Main.Snapshot;
                 if (state.Role != SessionRole.Host || !NetworkDriver.TransmitFishObservations.Value) _fishLifecycle.Dispose();
+                if (state.Role != SessionRole.Host || state.Phase != SessionPhase.Ready ||
+                    !NetworkDriver.TransmitFishObservations.Value || !NetworkDriver.ObserveFishInteractions.Value) _fishInteractions.Dispose();
                 if (state.Phase != SessionPhase.Ready || state.SceneEpoch != _worldEpoch)
                 {
                     _fish.Clear(); _fishLifecycle.ClearObserved(); _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0;
+                    _fishInteractions.ClearPending(); _fishWorld.Clear("ScenePausedOrChanged");
+                    _mapSelection.Clear(); _lastMapSelection = null; _mapSelectionStatus = null;
                     _fishPreview.Clear("ScenePausedOrChanged"); _spines.Clear();
                     _worldEpoch = state.Phase == SessionPhase.Ready ? state.SceneEpoch : 0;
                 }
@@ -104,6 +121,7 @@ namespace DaveCoop.Networking
                 {
                     _lastRemoteWorldRevision = world.Revision; _lastRemoteFishCount = world.Entities.Length;
                     if (NetworkDriver.ShowFishPreview.Value) _fishPreview.Receive(world, worldReceiver.Now, _local, _peers.Loopback != null);
+                    if (NetworkDriver.ShowFishWorld.Value) _fishWorld.Receive(world, worldReceiver.Now);
                     if (Time.unscaledTime >= _nextWorldLog)
                     {
                         _nextWorldLog = Time.unscaledTime + 2f;
@@ -114,6 +132,7 @@ namespace DaveCoop.Networking
                         }));
                     }
                 }
+                DrainFishInteractions();
                 string mode = _peers.Loopback == null ? state.Role.ToString() : "Loopback";
                 _message = _scene == null && _layoutMessage != null ? _layoutMessage : state.Reason;
                 NetworkDriver.Status = $"Network: {mode} / {state.Phase} | RTT {state.RoundTripSeconds * 1000:F0} ms";
@@ -132,7 +151,24 @@ namespace DaveCoop.Networking
                         FishPreviewInView = _fishPreview.InView, FishPreviewMeshVertices = _fishPreview.MeshVertices,
                         FishPreviewStatus = _fishPreview.DisplayStatus, FishPreviewSnapshotAge = _fishPreview.SnapshotAge,
                         FishLifecycleHooks = _fishLifecycle.Installed, FishLifecycleTracked = _fishLifecycle.Tracker.Count,
-                        FishLifecycleTransitions = _fishLifecycle.Tracker.Transitions, FishLifecycleCallbackErrors = _fishLifecycle.CallbackErrors
+                        FishLifecycleTransitions = _fishLifecycle.Tracker.Transitions, FishLifecycleCallbackErrors = _fishLifecycle.CallbackErrors,
+                        FishWorldReceived = _fishWorld.ReceivedFishCount, FishWorldAlive = _fishWorld.AliveFishCount,
+                        FishWorldRenderable = _fishWorld.RenderableCount, FishWorldVisible = _fishWorld.VisibleCount,
+                        FishWorldInView = _fishWorld.InViewCount, FishWorldUnknownResource = _fishWorld.UnknownResourceCount,
+                        FishWorldMissingVisual = _fishWorld.MissingVisualCount, FishWorldSourceInvisible = _fishWorld.SourceInvisibleCount,
+                        FishWorldNodes = _fishWorld.NodeCount, FishWorldMeshVertices = _fishWorld.MeshVertices,
+                        FishWorldStatus = _fishWorld.DisplayStatus, FishWorldSnapshotAge = double.IsFinite(_fishWorld.SnapshotAge) ? (double?)_fishWorld.SnapshotAge : null,
+                        FishWorldRenderErrors = _fishWorld.RenderErrorCount,
+                        FishInteractionHooks = _fishInteractions.Installed, FishInteractionHealthy = _fishInteractions.Healthy,
+                        FishInteractionEvents = _interactionEvents, FishInteractionMappedEvents = _mappedInteractionEvents,
+                        FishInteractionDropped = _fishInteractions.Dropped, FishInteractionCallbackErrors = _fishInteractions.CallbackErrors,
+                        FishInteractionResolverErrors = _fishInteractions.ResolverErrors,
+                        FishInteractionUnmatchedAfter = _fishInteractions.UnmatchedAfterCallbacks,
+                        FishInteractionPendingCalls = _fishInteractions.PendingCalls,
+                        FishInteractionProcessLimitReached = _fishInteractions.ProcessLimitReached,
+                        FishInteractionNativeTargetsAtDrain = _nativeInteractionTargetsAtDrain,
+                        FishInteractionNativeLookupErrors = _nativeInteractionLookupErrors,
+                        MapSelectionFingerprint = _lastMapSelection, MapSelectionStatus = _mapSelectionStatus
                     }));
                 }
             }
@@ -148,6 +184,8 @@ namespace DaveCoop.Networking
                 SessionSnapshot state = _peers.Main.Snapshot;
                 if (state.Phase != SessionPhase.Ready) return;
                 ObserveWorld(state);
+                ObserveMapSelection();
+                ObserveFishInteractions();
                 if (Time.unscaledTime >= _nextCapture)
                 {
                     _nextCapture = Time.unscaledTime + 1f / 30;
@@ -184,6 +222,21 @@ namespace DaveCoop.Networking
                 }
                 else _fishPreview.Clear("PreviewDisabled");
                 _fishPreview.Trace();
+                if (NetworkDriver.ShowFishWorld.Value)
+                {
+                    try
+                    {
+                        _fishWorld.Render((_peers.Loopback ?? _peers.Main).Now, Math.Clamp(delay, 0.05f, 0.5f), _local, _catalog, _spines, _peers.Loopback != null);
+                        _fishWorldWarning = null;
+                    }
+                    catch (Exception error)
+                    {
+                        string message = error.GetType().Name + ": " + error.Message;
+                        if (message != _fishWorldWarning) NetworkDriver.Logger.LogWarning("DAVECOOP_FISH_WORLD_WARNING: " + message);
+                        _fishWorldWarning = message; _fishWorld.Clear("Exception");
+                    }
+                }
+                else _fishWorld.Clear("WorldDisplayDisabled");
             }
             catch (Exception error) { Fail(error); }
         }
@@ -249,6 +302,90 @@ namespace DaveCoop.Networking
             _scene = null; _layoutMessage = null; SetScene(null); _local.Clear(); _catalog.Clear(); _display.Clear(); _displayEpoch = 0;
             _fish.Clear(); _fishLifecycle.ClearObserved(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0;
             _fishPreview.Clear(); _spines.Clear();
+            _fishWorld.Clear(); _fishInteractions.ClearPending(); _mapSelection?.Clear(); _lastMapSelection = null; _mapSelectionStatus = null;
+        }
+
+        private void ObserveMapSelection()
+        {
+            if (!NetworkDriver.TransmitFishObservations.Value || Time.unscaledTime < _nextMapSelection) return;
+            _nextMapSelection = Time.unscaledTime + 1f;
+            try
+            {
+                MapSelectionManifest manifest = _mapSelection.Capture(_local.Manager);
+                if (manifest == null)
+                {
+                    _mapSelectionStatus = _mapSelection.UnavailableReason;
+                    if (_lastMapSelection != null) _lastMapSelection = null;
+                    return;
+                }
+                string fingerprint = MapSelections.Fingerprint(manifest);
+                _mapSelectionStatus = "Ready";
+                if (_lastMapSelection == fingerprint) return;
+                _lastMapSelection = fingerprint;
+                NetworkDriver.Logger.LogInfo("DAVECOOP_MAP_SELECTION: " + JsonSerializer.Serialize(new
+                {
+                    _worldEpoch, fingerprint, manifest.EntrySceneId,
+                    SceneCount = manifest.Scenes.Length, GroupCount = manifest.Groups.Length,
+                    Scenes = manifest.Scenes, Groups = manifest.Groups,
+                    PostLoadObservationOnly = true, HostSelectionApplied = false
+                }));
+            }
+            catch (Exception error)
+            {
+                string message = error.GetType().Name + ": " + error.Message;
+                if (_mapSelectionStatus != message) NetworkDriver.Logger.LogWarning("DAVECOOP_MAP_SELECTION_WARNING: " + message);
+                _mapSelectionStatus = message; _lastMapSelection = null;
+            }
+        }
+
+        private void ObserveFishInteractions()
+        {
+            if (!NetworkDriver.ObserveFishInteractions.Value || !NetworkDriver.TransmitFishObservations.Value ||
+                _peers.Main.Snapshot.Role != SessionRole.Host) return;
+            try
+            {
+                if (!_fishLifecycle.Healthy) throw new InvalidOperationException("Fish lifecycle observation unavailable.");
+                _fishInteractions.Enable(_fish.ResolveObservedPointer);
+                _fishInteractions.CheckHealthy(); _interactionWarning = null;
+            }
+            catch (Exception error)
+            {
+                string message = error.GetType().Name + ": " + error.Message;
+                if (_interactionWarning != message) NetworkDriver.Logger.LogWarning("DAVECOOP_FISH_INTERACTION_WARNING: " + message);
+                _interactionWarning = message; _fishInteractions.Dispose();
+            }
+        }
+
+        private void DrainFishInteractions()
+        {
+            int drained = 0;
+            while (drained++ < 512 && _fishInteractions.TryTake(out FishInteractionEvent observed))
+            {
+                _interactionEvents++;
+                if (observed.EntityId.HasValue) _mappedInteractionEvents++;
+                bool nativeTargetAvailableAtDrain = false; float? hpAtDrain = null; string lookupError = null;
+                if (observed.ResolvedEpoch.HasValue && observed.EntityId.HasValue)
+                {
+                    try
+                    {
+                        nativeTargetAvailableAtDrain = _fish.TryResolveNativeFish(observed.ResolvedEpoch.Value, observed.EntityId.Value, out DR.AI.FishAISystem native);
+                        if (nativeTargetAvailableAtDrain)
+                        {
+                            _nativeInteractionTargetsAtDrain++;
+                            float hp = native.HP; if (float.IsFinite(hp)) hpAtDrain = hp;
+                        }
+                    }
+                    catch (Exception error) { _nativeInteractionLookupErrors++; lookupError = error.GetType().Name + ": " + error.Message; }
+                }
+                NetworkDriver.Logger.LogInfo("DAVECOOP_FISH_INTERACTION: " + JsonSerializer.Serialize(new
+                {
+                    observed.ProcessSequence, observed.CallId, ObservedKind = observed.ObservedKind.ToString(), OriginalMethodCode = observed.OriginalMethodCode.ToString(),
+                    Stage = observed.Stage.ToString(), observed.CallbackThreadId, observed.ResolvedEpoch, observed.EntityId,
+                    observed.Generation, observed.DataTid, observed.DamageReturnObserved, observed.CorrelationMatched,
+                    NativeTargetAvailableAtDrain = nativeTargetAvailableAtDrain, HpAtDrain = hpAtDrain, NativeLookupError = lookupError,
+                    ObservationOnly = true, NativeOutcomeConfirmed = false
+                }));
+            }
         }
 
         private void ObserveWorld(SessionSnapshot state)
@@ -264,6 +401,7 @@ namespace DaveCoop.Networking
             }
             catch (Exception error)
             {
+                _fish.Clear();
                 string message = error.GetType().Name + ": " + error.Message;
                 if (message != _worldWarning) NetworkDriver.Logger.LogWarning("DAVECOOP_WORLD_CAPTURE_WARNING: " + message);
                 _worldWarning = message;
@@ -283,8 +421,8 @@ namespace DaveCoop.Networking
                 }
             }
             if (NetworkDriver.ShowPanel == null || !NetworkDriver.ShowPanel.Value) return;
-            GUI.Box(new Rect(12, 170, 640, 350), "MultiDave LAN movement test — F11");
-            GUI.Label(new Rect(24, 194, 616, 28), "Movement display only. Fish, items and results are not synchronized.");
+            GUI.Box(new Rect(12, 170, 640, 415), "MultiDave LAN prototype — F11");
+            GUI.Label(new Rect(24, 194, 616, 28), "Player/fish display tests. Cooperative capture is still in development.");
             bool idle = _pending == null && _peers == null;
             bool originalEnabled = GUI.enabled;
             GUI.enabled = originalEnabled && idle;
@@ -309,7 +447,11 @@ namespace DaveCoop.Networking
             if (preview != NetworkDriver.ShowFishPreview.Value) NetworkDriver.ShowFishPreview.Value = preview;
             if (GUI.Button(new Rect(24, 399, 220, 26), "Select nearest preview fish")) _fishPreview.RequestReselect();
             GUI.Label(new Rect(256, 399, 380, 26), "Preview fish cannot be caught yet.");
-            GUI.Label(new Rect(24, 433, 612, 65), _message);
+            bool worldDisplay = GUI.Toggle(new Rect(24, 433, 612, 25), NetworkDriver.ShowFishWorld.Value, "Display received fish roster (display only)");
+            if (worldDisplay != NetworkDriver.ShowFishWorld.Value) NetworkDriver.ShowFishWorld.Value = worldDisplay;
+            bool interaction = GUI.Toggle(new Rect(24, 464, 612, 25), NetworkDriver.ObserveFishInteractions.Value, "Observe host harpoon and fish interactions (read-only)");
+            if (interaction != NetworkDriver.ObserveFishInteractions.Value) NetworkDriver.ObserveFishInteractions.Value = interaction;
+            GUI.Label(new Rect(24, 498, 612, 65), _message);
         }
 
         private void Start(string mode)
@@ -395,6 +537,8 @@ namespace DaveCoop.Networking
             _scene = null; _layoutMessage = null; _local.Clear(); _catalog.Clear(); _display.Clear(); _displayEpoch = 0;
             _fish.ResetRoom(); _fishLifecycle.Dispose(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0; _worldWarning = null;
             _fishPreview.Clear("Disconnected"); _spines.Clear(); _fishPreviewWarning = null;
+            _fishWorld.Clear("Disconnected"); _fishWorldWarning = null; _fishInteractions.Dispose();
+            _mapSelection?.Clear(); _lastMapSelection = null; _mapSelectionStatus = null;
             RemotePreview.NetworkActive = false;
             NetworkDriver.Status = "Network: offline (F11)"; _message = "Disconnected.";
             if (hadSession) NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_DISCONNECTED: peers disposed; own avatar/fish display cleared; local replay restored.");

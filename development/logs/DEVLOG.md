@@ -330,6 +330,40 @@
   新增 Inspect-FishInteractionApi.ps1，报告只保留忽略目录；后续先只读观察真实射击至入袋，再接入房主请求裁定。
 - 更新 README、核心/构建证据、接手/计划/世界文档和 Skill；继续完整鱼群/地图接管、命中请求与房主捕获/返航闭环。
 
+## 2026-10-03 — 完整观察鱼群显示、原生交互记录与地图选择清单
+
+- 用户确认 0.1.9-dev 的标签鱼不再突然消失，已将身份稳定性列为实测通过；不扩展为动画/返航或合作捕获验收。
+- 三个子任务分别实现并评审鱼群显示、原生调用观察及加载后路线/IGP清单；root整合开关、生命周期、测试与日志。
+  完整接收的观察鱼群使用每鱼16帧、原子增删/校验/复制；镜头、失联或临时Visual缺失不改数值身份。
+  RemoteFishWorld共用自建Sprite/Spine节点，显示错误按鱼隔离；单鱼预览保留已确认的锁定、手动重选和即时标签日志。
+  该观察集合仍只覆盖玩家当前场景活动鱼，未接管客机原生AI/碰撞/收益。
+- ObservedHostTargets发布冻结的纯CLR pointer→HostEntityTarget快照，不传输本机指针。
+  resolver检查代次并二次复核tracker对象/当前代次；world采样失败撤销旧观察映射。
+  原生操作仍必须主线程重新查身份；观察快照不是攻击许可。
+- FishInteractionHooks观察8处精确声明的prefix/postfix，以CallId配对并在prefix保留当时房主epoch/编号/代次/TID。
+  仅只读原伤害bool，不读取原生值类型参数、不跳过原方法、不替换结果；callback不调用Unity。
+  队列4096/上下文1024/全进程累计8192条；关闭/换epoch/Disconnect清理，回调失败锁存至重启。
+  Drain主线程反查有效原生鱼并记录HpAtDrain；该数值不是原调用前后HP，原bool亦不是收益或捕获确认。
+  发射与鱼命中目前尚无同投射物关联，不能称整条鱼叉至入袋链已验证。
+- MapSelectionCapture只读已有SceneContext、路线缓存和IGP选中项，不触随机选择/条件/存档。
+  每选中scene至少一组、原注册列表一致、两个不同Unity frame指纹一致才报告；不完整时返回null说明原因。
+  DTO带边界、路线链/重复校验、Copy及canonical哈希；跨机层级地址未验证，也未接加载前房主选图或协议清单传输。
+- F11新增默认关闭的 Display received fish roster 和 Observe host harpoon and fish interactions。
+  Test-Core 85/85通过；最终Build-Plugin警告视为错误通过。0.1.11-dev SHA256：
+  `05C5379FF301C55D6841FA23DE00BDCC4EB80B6D404CA6122AC5A17523140E01`。
+- 确认游戏退出后备份并部署，实际新进程启动于2026-10-04T06:51:29.1422308Z。
+  新鲜日志确认BOOTSTRAP 0.1.11-dev、Unity Update、NETWORK_READY及DR_Start/DR_Logo；保留框架Class::Init substitute警告。
+  已请求用户真实潜水，分别验证新鱼群、正常原游戏鱼的鱼叉/捕获调用、Disconnect与正常返航保存。
+  随后真实A03_01_02记录49条Ready概要与53条鱼群状态；最多16条可反查/可渲染/镜头内鱼，网格662，资源/显示错误为0。
+  原生交互42条事件配为21个CallId：HarpoonFire 28、FishHookedByProjectile 10、FishOnTakeDamage 2、SpecialFishOnTakeDamage 2；两个原bool为true。
+  14条事件能在Drain反查原生目标，回调/解析/配对/原生查询错误为0；Win/Pickup仍无回调证据。
+  用户确认出现与两戴夫偏移一致的成对鱼，抓一只两只一起消失；关闭鱼群显示恢复正常，并确认本地操作和镜头正常。
+  MAP_SELECTION持续Selected route incomplete，路线清单未通过；自己的挂钩卸载与Disconnect已有日志，后来又有本机活动。
+  用户随后明确确认主动退出且未返航，正常返航保存验收保持未完成。
+  原始会话已归档development/.local/verification/fish-world-interaction-0.1.11；公开摘要保留上述部分通过和未通过边界。
+- 更新接手/计划/世界/网络说明、核心与构建/原生摘要和配置Skill；Skill校验通过。
+  默认发行包仍0.1.0。下一步核对真实调用，再接M4加载前地图/客机隔离、M5请求裁定与M6结算；双游戏及冷安装仍待完成。
+
 ## 后续日志格式
 
 每次追加：日期、目标、关键改动、验证命令及实际结果、遗留问题、下一步。

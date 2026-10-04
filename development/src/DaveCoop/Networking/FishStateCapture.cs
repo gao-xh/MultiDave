@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using DaveCoop.Core.World;
 using DaveCoop.Rendering;
 using DR.AI;
@@ -25,6 +26,7 @@ namespace DaveCoop.Networking
         private FishLifecycleTracker _lifecycle;
         private int _sceneHandle;
         public int BindableTargets { get; private set; }
+        private readonly ObservedHostTargets _observedTargets = new ObservedHostTargets();
 
         public WorldSnapshot Capture(Scene scene, long epoch, string sceneKey, double sampleTime, SpriteCatalog sprites, SpineCatalog spines, FishLifecycleTracker lifecycle)
         {
@@ -65,7 +67,7 @@ namespace DaveCoop.Networking
             var livePointers = new HashSet<long>();
             foreach (Candidate candidate in candidates) livePointers.Add(candidate.Pointer);
             lifecycle.Retain(livePointers);
-            _lifecycle = lifecycle; _sceneHandle = scene.handle;
+            Volatile.Write(ref _lifecycle, lifecycle); _sceneHandle = scene.handle;
             // Validate the complete observation and prune gone bindings before
             // allocating IDs; a failed read cannot accumulate partial new bindings.
             var states = new List<EntityState>(candidates.Count);
@@ -81,7 +83,24 @@ namespace DaveCoop.Networking
             states.Sort((a, b) => a.Id.CompareTo(b.Id)); ObservedFish = states.Count;
             BindableTargets = 0;
             foreach (EntityState state in states) if (TryResolveNativeFish(epoch, state.Id, out _)) BindableTargets++;
+            var observedTargets = new List<HostPointerTarget>(states.Count);
+            foreach (Candidate candidate in candidates)
+                if (_registry.TryResolve(epoch, candidate.State.Id, out HostEntityTarget target))
+                    observedTargets.Add(new HostPointerTarget(candidate.Pointer, target));
+            _observedTargets.Publish(epoch, observedTargets);
             return new WorldSnapshot { SceneEpoch = epoch, SceneKey = sceneKey, SampleTime = sampleTime, Entities = states.ToArray() };
+        }
+
+        // Safe from native observation callbacks: frozen CLR map + CLR lifecycle
+        // tracker only. Never touches a Unity object or creates another identity.
+        public HostEntityTarget? ResolveObservedPointer(long pointer)
+        {
+            FishLifecycleTracker lifecycle = Volatile.Read(ref _lifecycle);
+            if (lifecycle == null || !lifecycle.TryGetActiveGeneration(pointer, out long generation) ||
+                !_observedTargets.TryResolve(pointer, generation, out HostEntityTarget target)) return null;
+            if (!ReferenceEquals(lifecycle, Volatile.Read(ref _lifecycle)) ||
+                !lifecycle.TryGetActiveGeneration(pointer, out long currentGeneration) || currentGeneration != generation) return null;
+            return target;
         }
 
         // Unity-thread lookup only. Identity is checked again against current
@@ -101,7 +120,7 @@ namespace DaveCoop.Networking
 
         public void Clear()
         {
-            _registry.Clear(); _bindings.Clear(); _lifecycle = null; _sceneHandle = 0;
+            _registry.Clear(); _bindings.Clear(); Volatile.Write(ref _lifecycle, null); _observedTargets.Clear(); _sceneHandle = 0;
             ObservedFish = 0; BindableTargets = 0; UninitializedFish = 0; UnresolvedVisuals = 0; FirstVisualError = null;
         }
 

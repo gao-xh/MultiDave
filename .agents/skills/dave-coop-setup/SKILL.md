@@ -43,7 +43,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - 源码开发版的 F11 打开房间面板。先按 MULTIPLAYER 验证 Local test 的真实 TCP
   收发与主线程显示，再验证 Host/Join 的两个游戏实例；默认发行包不包含这个新入口。
   对照 NETWORK/LAYOUT 标记记录成功或失败，布局指纹通过不等于统一地图/实体已完成。
-- 源码 0.1.10-dev 含 F7 世界只读探针，默认关闭；0.1.5-dev 已在单游戏潜水读取并传输实际鱼清单。
+- 源码 0.1.11-dev 含 F7 世界只读探针，默认关闭；0.1.5-dev 已在单游戏潜水读取并传输实际鱼清单。
   新构建与历史会话的实机验证范围以 HANDOFF 为准，画面和正常断开/返航仍须确认。
   正常退出后部署、验证新版本启动，再观察地图选择、鱼 HP/捕获和返航生命周期。
   `development/scripts/Inspect-WorldApi.ps1` 可复现接口签名研究；元数据不能证明挂钩副作用。
@@ -73,6 +73,23 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - 0.1.10-dev 已编译房主反向目标查询，原生执行待验证。目标快照不代表攻击许可；操作前重查 epoch/编号和原生代次。
   部署后核对 NETWORK_STATE 的 HostFishBindableTargets；此数值不能证明命中/捕获或收益裁定完成。
   `development/scripts/Inspect-FishInteractionApi.ps1` 可复现鱼叉、伤害和收益入口签名，方法仍未调用。
+- 0.1.11-dev 增加默认关闭的 Display received fish roster 和 Observe host harpoon and fish interactions。
+  先正常退出、部署并核对新进程版本，再 F11 → Local test，勾选 Transmit read-only fish observations。
+  分别开启完整观察鱼群显示和交互观察；完整名单仍只来自玩家当前场景活动鱼，不代表同一海洋已接管。
+  核对 FISH_WORLD_STATE 的 ReceivedFishCount/AliveFishCount/RenderableCount/VisibleCount/InViewCount、
+  UnknownResource/MissingVisual/SourceInvisible/RenderError/NodeCount；镜头隐藏不撤销身份，完整清单缺席才移除数值条目。
+  FISH_INTERACTION_READY 安装 8 条自己的只读前后观察；真实射鱼时核对 CallId/Stage/OriginalMethodCode，
+  发射→伤害→挂钩/QTE→入袋分别记录。原 bool 返回不代表成功捕获；prefix保存的epoch/编号/代次不在Drain重新猜。
+  HpAtDrain 是主线程消费记录时的读数，不能当成原调用前后HP。
+  NETWORK_STATE 的 FishInteractionNativeTargetsAtDrain/NativeLookupErrors验证房主原生反查是否实际执行。
+  队列4096、配对上下文1024、全进程累计8192条，切换不重置限额；回调失败锁存，重启后才可重新安装。
+  关闭观察、Disconnect/返航时核对 FISH_INTERACTION_STOPPED 和显示清理，随后验证本地输入/镜头/正常保存退出。
+  MAP_SELECTION 只读已加载路线与IGP，两不同frame相同才报告；每个选中scene至少一组，原注册列表需一致。
+  层级地址跨机稳定性、加载前房主选图、客机AI隔离、命中请求裁定及收益仍未完成；标签鱼仍不可捕获。
+  新版本编译与85项CLR测试已通过；实机已见Fire/Hook及两处Damage的42条事件、21对CallId和原bool。
+  用户确认成对鱼可见、捕获原鱼同步移除显示，关闭显示恢复正常，操作/镜头正常。
+  Win/Pickup未见回调，MAP_SELECTION返回Selected route incomplete；完整捕获收益链和正常返航保存仍待验证。
+  真实范围详见fish-world-interaction-native-verification.json，不把部分注册/ABI通过推广为全部鱼型或合作捕鱼。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

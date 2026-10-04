@@ -3,9 +3,13 @@
 对应 PLAN 的 M4、M5 和 M6。这里区分设计、已确认的接口签名和待实机验证的行为。
 已验证第二角色本地回放；0.1.5-dev 在真实潜水中运行只读鱼探针、经本机 TCP 传输实际鱼清单并执行单鱼显示组件。
 0.1.7-dev 用户确认鱼可见但镜头内突然消失，日志记录角色部件销毁导致自动断开。
-0.1.8-dev 没有旧异常，但用户确认标签换鱼及继续消失。0.1.9-dev 锁定身份并部署；用户确认稳定性通过，断开/返航及两游戏验收待完成，核心共 68 项通过。
+0.1.8-dev 没有旧异常，但用户确认标签换鱼及继续消失。0.1.9-dev 锁定身份并部署，用户确认不再突然消失。
 这些证据不证明两个游戏拥有同一地图、同一条鱼或共同捕获结果。
-源码 0.1.10-dev 另已编译房主目标反向查询，尚未部署该适配；实际稳定性证据仍来自 0.1.9-dev。
+当前源码与实机为 0.1.11-dev，编译及 85/85 核心测试通过，新进程加载/Update/网络入口已确认。
+新版单游戏 TCP 偏移鱼群可见与原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
+Fire/Hook/Damage 成对观察已运行；动画、完整捕获链、路线完整读取和正常返航仍待验收。
+最近单鱼视觉稳定性证据来自 0.1.9-dev。
+构建范围见 [鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，真实双游戏及真正合作捕获尚未完成。
 
 ## 世界由房主裁定
 
@@ -46,6 +50,14 @@ sequenceDiagram
 
 地图选择可能读取临时潜水数据或长期存档。接管之前必须实测哪些路径会写入进度，
 建立客机临时状态和退出恢复流程，不复制房主整个存档来实现地图一致。
+
+0.1.11-dev 的 `MapSelectionManifest` 描述入口、选中路线、层/上下连接、偏移及 IGP 预制体选择，
+纯 CLR 校验/复制/排序后生成指纹；`MapSelectionCapture` 在确认的 Unity 线程读取加载后的现有字段。
+所有选中路线场景必须已加载，每个场景至少观察一组选中 IGP；查找结果须与原 `CurrentIGPControllers` 注册列表一致，
+并在同一管理器的两个不同 Unity 帧得到相同指纹。未满足条件时返回不可用原因，不把稳定的局部清单当完整选择。
+控制器层级地址包含名称、兄弟序号和组件序号，是跨机身份候选，跨机/跨存档稳定性尚未验证。
+`MAP_SELECTION` 日志明确 `PostLoadObservationOnly=true`、`HostSelectionApplied=false`。
+本次实机调用停在 Selected route incomplete，尚无完整选择清单；没有调用随机选择、异步加载、存档写入或加载前房主接管。
 
 ## 第二层：实体身份与鱼状态
 
@@ -150,7 +162,7 @@ Core/World 的 HostEntityRegistry 将本机对象 token 映射为房主分配的
 尚未开始的批次可替换。出站世界清单与玩家移动轮流发送，控制消息优先；入站只保留最新完整快照。
 禁止客机发布世界、禁止旧本地快照被改标为新 epoch，场景暂停/重载/关闭时清理缓存。
 
-核心总计 68/68 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
+当前核心总计 85/85 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
 修订更替/空清单、权限/epoch、容量/公平性、真实 TCP 数值清单/HP 更新/移除及旧协议拒绝。
 测试为 CLR 夹具；没有在两份游戏中调用捕鱼或物品 API。
 
@@ -168,7 +180,31 @@ WORLD_RECEIVED 最多每 2 秒记录数量/修订，NETWORK_STATE 同时记录�
 同种池对象在两次轮询之间关闭再启用，通过下述生命周期代次分配新身份；已观察原生回调，但实际池复用身份和全部鱼类覆盖仍待实测。
 完整数值快照也不能捕获两次采样之间生成又消失的短命对象，后续需有序生命周期/互动事件。
 
-## 一条鱼的显示诊断（已确认可见，稳定性待修复验证）
+## 收到的完整活动鱼观察清单显示（0.1.11-dev 可见与移除同步已确认）
+
+F11 新增默认关闭的 `Display received fish roster (display only)`；本机 TCP 测试还须开启
+`Transmit read-only fish observations`，客机接收房主已发布的完整清单。
+`FishWorldBuffer` 对一批完整数字清单原子新增、更新和移除，每个鱼 ID 独立保留最多 16 帧；
+旧 epoch/修订和无新身份的鱼种变化拒绝，空清单清空，缺 Visual、死亡/捕获仍保留清单中的数字条目。
+镜头不参与清单身份；一秒未收到新清单隐藏显示，更新恢复后沿用身份，epoch/场景/断线清理。
+
+`RemoteFishWorld` 通过共享 `FishDisplayNode` 为收到的活鱼创建自有 SpriteRenderer 或 SkeletonAnimation。
+本机测试向右偏移 3 个单位并着淡蓝色；镜头外隐藏节点但保留身份和历史。
+暂缺显示/源不可见/未知资源只隐藏相关显示，单鱼显示异常隔离；清理仅销毁自建节点，原鱼 AI/碰撞/奖励保持原样。
+Spine 源主动画变为 null 时清理自有轨道并恢复 setup pose；多轨、混合、特殊材质/约束和非 Spine Mesh 仍未覆盖。
+0.1.11-dev 实际 A03_01_02 本机 TCP 已记录 49 条 Ready 概要、53 条 FishWorld 状态，
+观察/绑定/可显示/可见最大 16、网格顶点 662，未知/缺 Visual/显示错误为零。
+用户确认成对偏移鱼可见，捕获原鱼时对应副本也消失，关闭 Display received fish roster 后恢复正常，操作和镜头正常。
+Local test 保留原鱼加偏移诊断副本；同步消失是清单移除显示同步，不是捕获副本、客机 AI 接管或统一世界完成。
+动画、进入/离开镜头和正常返航清理仍待确认；用户确认主动退出且未返航。
+
+`FISH_WORLD_STATE` / `FISH_WORLD_TRANSITION` 的状态日志分开记录：收到实体总数、收到鱼总数、活鱼数、
+可解析显示、组件开启、镜头内、未知资源、缺 Visual、源不可见、实际自建节点、网格顶点与显示错误。
+`NETWORK_STATE` 提供 FishWorldReceived/Alive/Renderable/Visible/InView/UnknownResource/MissingVisual/Nodes/Status 等概要。
+完整接收仅指房主玩家当前 scene 的活动已初始化观察集合，不含其他已加载层的鱼、完整物品或所有短命生成事件。
+数字清单缺席可能表示停用而非永久销毁；这些副本不可捕获，不代表客机鱼群 AI 接管或 M4 完成。
+
+## 一条鱼的显示诊断（0.1.9-dev 已确认可见与身份稳定）
 
 FishVisualCapture 优先读取鱼的 SpriteRenderer，否则读取 FishSpineAnimator 或 SkeletonMecanim。
 已确认的本机接口来自生成的 spine-unity.dll，未安装或升级 Spine。
@@ -246,8 +282,28 @@ HostEntityRegistry 发现代次变化便分配新 EntityId，同种、同指针�
 0.1.10-dev 增加本地 HostEntityTarget / HostEntityRegistry.TryResolve(epoch,id)，返回只读 token、种类、TID 和代次。
 绑定替换、解绑、清理和新 epoch 撤销旧反向记录；同 epoch 清理不复用编号，断房间才重置身份表。
 FishStateCapture.TryResolveNativeFish 仅在 Unity 线程使用，重新核对当前包装器指针、实例编号、TID、场景及活跃生命周期代次。
-NETWORK_STATE 的 HostFishBindableTargets 准备验证原生查询覆盖，但该构建尚未部署。
+0.1.11-dev 已部署启动，并在发射/挂钩/伤害观察的消费时复核相关原生目标；QTE 胜利及入袋的完整覆盖仍待实测。
 这只证明目标身份：操作还要核对会话权限、鱼状态、装备/距离/冷却和唯一请求，不缓存查询值作为后续授权。
+
+0.1.11-dev 的 `ObservedHostTargets` 在主线程发布最多 4096 条冻结的本地指针→房主身份 CLR 快照。
+回调仅用该快照及线程安全生命周期代次查询，不访问 Unity 对象，也不将本机指针/token 放进网络。
+`FishInteractionHooks` 默认关闭，只在房主开启 Transmit 与 Observe host harpoon and fish interactions 时安装。
+8 个声明方法为鱼/特殊鱼的 OnTakeDamage 两项、鱼 HookedByProjectile、鱼及两种 Mahoni 的 QTE Win 三项、
+鱼 SuccessPickupFish 和 HarpoonProjectile.Fire；prefix/postfix 保留原方法执行及返回值。
+prefix 生成 CallId 并固定当时 epoch/EntityId/代次绑定，postfix 复用同一绑定，避免消费时按已复用的指针误绑新鱼。
+只有伤害的原 bool 返回被按值记录；它不等于捕获结果。`HpAtDrain` 是主线程消费事件时的 HP，
+两条前后日志的 HP 可能都已更新，不能计算本次伤害差；`NativeOutcomeConfirmed=false` 明确限制。
+投射物 Fire 不含鱼目标，未观察到的鱼也可能没有绑定；这是本机调用观察，不是跨机发射/命中事件。
+
+事件队列最多 4096、待配对调用最多 1024、每进程最多接受 8192 条观察，消费每帧最多 512 条。
+核对 FISH_INTERACTION_READY / INTERACTION / WARNING / STOPPED、配对/绑定/丢弃/线程与回调错误，
+关闭/断线仅卸载自己的注册并丢弃本地队列。
+本次已健康安装 8 个入口，42 条事件对应 21 对 CallId：HarpoonFire 28 条、FishHookedByProjectile 10 条、
+FishDamage 与 SpecialDamage 各 2 条，两个原 bool 为 true。两种伤害声明及 __state 配对在该实机路径已观察。
+相关 prefix 绑定固定，14 条事件消费时有可用原生目标，回调/解析/未配对/原生查询错误为零。
+未见 Win 或 Pickup；原 bool 和用户看到原鱼/副本同时消失不能证明完整捕获链或合作裁定。
+已记录 FISH_INTERACTION_STOPPED / NETWORK_DISCONNECTED，正常返航恢复仍待验收；用户确认主动退出、未返航，正常返航保存仍未验证。
+没有由 Mod 调用伤害、捕获或记账入口；请求去重、房主裁定及收益账本仍待实现。
 
 可复现元数据研究：`scripts/Inspect-FishInteractionApi.ps1`。确认鱼自身覆写 HookedByProjectile(ProjectileInfo) 和 WinFromProjectileinFight，
 不能只观察 CatchableObject 基类便认定覆盖鱼。HarpoonProjectile.Fire(Vector3) / CollisionDetection(GameObject,Vector2) 与 HookedObject

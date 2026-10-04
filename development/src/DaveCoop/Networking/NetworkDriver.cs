@@ -15,6 +15,8 @@ namespace DaveCoop.Networking
         internal static ConfigEntry<float> RenderDelay;
         internal static ConfigEntry<bool> TransmitFishObservations;
         internal static ConfigEntry<bool> ShowFishPreview;
+        internal static ConfigEntry<bool> ShowFishWorld;
+        internal static ConfigEntry<bool> ObserveFishInteractions;
         internal static string Status = "Network: offline (F11)";
         private readonly NetworkController _controller;
 
