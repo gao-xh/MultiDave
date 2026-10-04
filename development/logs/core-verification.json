@@ -1,13 +1,13 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T06:51:44.5718748+00:00",
-  "PluginVersion": "0.1.11-dev",
+  "RecordedUtc": "2026-10-04T07:22:10.3245708Z",
+  "PluginVersion": "0.1.12-dev",
   "VerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1"
   ],
-  "CoreTestsPassed": 85,
-  "CoreTestsTotal": 85,
+  "CoreTestsPassed": 109,
+  "CoreTestsTotal": 109,
   "TestNames": [
     "timeline boundaries and interpolation",
     "timeline capacity, ordering and reset",
@@ -93,10 +93,34 @@
     "fish world independent interpolation and visual recovery",
     "fish world epoch replay and freshness recovery",
     "fish world terminal and undisplayable numeric roster",
-    "fish world capacity and independent history bounds"
+    "fish world capacity and independent history bounds",
+    "fish action schema and canonical fingerprint",
+    "fish action bound source and copy ownership",
+    "fish action duplicate conflict and replay",
+    "fish action business rejection and scene fence",
+    "fish action cache eviction and closed room replay",
+    "fish action queue rate and arrival freshness",
+    "fish action probe and missing authority",
+    "fish action loadout stage and spatial guards",
+    "fish action target retirement before drain",
+    "fish action dispatch generation and lease",
+    "fish action unknown native outcome never retries",
+    "fish action not-started release and target ownership",
+    "fish action codec and single payload",
+    "fish action session source ownership",
+    "fish action authority and forged results",
+    "fish action scene invalidation and retired requests",
+    "fish action scene change between take and publication",
+    "fish action FIFO bounds and no overwrite",
+    "fish action result bounds and pending retries",
+    "fish action control priority and gameplay fairness",
+    "fish action native entry is not capture success",
+    "TCP fish action request result round trip",
+    "TCP fish action scene change between take and publication",
+    "TCP fish action protocol three rejection"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "05C5379FF301C55D6841FA23DE00BDCC4EB80B6D404CA6122AC5A17523140E01",
+  "CompiledPluginSHA256": "8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
@@ -105,6 +129,6 @@
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Pure CLR fixtures for math, TCP/protocol/session, assets, layout/motion, host identity and atomic world/visual transfer. New tests cover frozen pointer observations and generation rejection, atomic complete fish rosters with independent histories, and bounded canonical route/IGP manifests. Existing single-fish identity retention is preserved. Native call observer ABI, game visuals, map capture, cooperative capture and two-game world control are separate unverified acceptance items.",
-  "ProtocolVersion": 3
+  "Scope": "Pure CLR math/protocol/session/world/render-buffer fixtures plus fish-action schema, source binding, request fingerprint and replay fences, bounded FIFO, fresh facts, dispatch lease and unknown-outcome non-retry. Actual loopback TCP tests cover request/result delivery, protocol-3 rejection, and scene invalidation after host take/admission followed by same-room recovery. Native target probes, map capture, effect dispatch, captures/rewards, normal return and two-game shared-world control are separate acceptance items.",
+  "ProtocolVersion": 4
 }

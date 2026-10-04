@@ -5,11 +5,13 @@
 0.1.7-dev 用户确认鱼可见但镜头内突然消失，日志记录角色部件销毁导致自动断开。
 0.1.8-dev 没有旧异常，但用户确认标签换鱼及继续消失。0.1.9-dev 锁定身份并部署，用户确认不再突然消失。
 这些证据不证明两个游戏拥有同一地图、同一条鱼或共同捕获结果。
-当前源码与实机为 0.1.11-dev，编译及 85/85 核心测试通过，新进程加载/Update/网络入口已确认。
+当前源码及部署版本为 0.1.12-dev、协议 4，编译及 109/109 核心测试通过；新进程加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
+Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 0.1.11-dev。
+用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，保留主菜单启动通过和未验证边界。
 新版单游戏 TCP 偏移鱼群可见与原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
 Fire/Hook/Damage 成对观察已运行；动画、完整捕获链、路线完整读取和正常返航仍待验收。
 最近单鱼视觉稳定性证据来自 0.1.9-dev。
-构建范围见 [鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，真实双游戏及真正合作捕获尚未完成。
+当前构建范围见 [操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史实机见 [0.1.11-dev 鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，真实双游戏及真正合作捕获尚未完成。
 
 ## 世界由房主裁定
 
@@ -57,7 +59,15 @@ sequenceDiagram
 并在同一管理器的两个不同 Unity 帧得到相同指纹。未满足条件时返回不可用原因，不把稳定的局部清单当完整选择。
 控制器层级地址包含名称、兄弟序号和组件序号，是跨机身份候选，跨机/跨存档稳定性尚未验证。
 `MAP_SELECTION` 日志明确 `PostLoadObservationOnly=true`、`HostSelectionApplied=false`。
-本次实机调用停在 Selected route incomplete，尚无完整选择清单；没有调用随机选择、异步加载、存档写入或加载前房主接管。
+0.1.11-dev 实机调用停在 Selected route incomplete，尚无完整选择清单；没有调用随机选择、异步加载、存档写入或加载前房主接管。
+
+0.1.12-dev 的 `MapRouteObservation` 单独读取路线输入；只要 Transmit 开启便在入海前后最多 1Hz 运行，
+不依赖 TCP Ready、完整布局或 IGP 清单已读成功。`MAP_ROUTE_INPUTS` 仅复制值变化时记录，frame 不参与变化键。
+日志区分 ContextPresent、cache/roadmap 数量、first ID、cache 条目的 Selected/Loaded、候选 bSelected 层和加载场景，
+并明确截断/扫描不完整/上限状态。变化键是诊断去重键，不是地图指纹或世界一致许可。
+完整清单读取分别报告 cache missing、roadmap missing、first scene missing、cache incomplete（太短），返回不可用并撤销旧稳定候选。
+候选选中层和加载名称不能回填为完整路线；仍要求原路线链、每场景 IGP、原注册集合一致和两帧稳定。
+本版主菜单启动已记录 4 条初始输入变化；尚待真实入海前后验证及完整路线采样，未接入加载前房主选图或客机进度隔离。
 
 ## 第二层：实体身份与鱼状态
 
@@ -153,16 +163,16 @@ Core/World 的 HostEntityRegistry 将本机对象 token 映射为房主分配的
 同种鱼不同 ID；明确释放后复用 token 分配新 ID，同 epoch 清空也不会复用旧 ID。
 新 epoch 清空绑定；房间和 epoch 来自已确认的会话，不发送 Native 指针或本机实例 ID。
 
-协议 3 的 WorldSlice 消息最多每块 16 个实体、每快照 4096 个实体。
+当前协议 4 保留历史协议 3 引入的 WorldSlice：最多每块 16 个实体、每快照 4096 个实体。
 快照携带 epoch、场景、递增修订和采样时间，含类型/TID、姿态、HP/MaxHP、死亡与捕获状态及可选显示描述。
 每块降至 16 个实体以容纳显示字段的合法最大值，保持 128 KiB 消息限制；双方版本必须匹配。
 检查数值、种类、数量、唯一 ID、分块顺序和一致的头部；完整收齐后才移交客机主线程。
 接收端允许新修订的首块替换未完成旧修订，保留已提交状态；空快照可表达清单清空。
 发送端完成已开始的整批清单，仅保留下一批最新状态；两批有界缓存避免持续采样让慢连接一直无法提交。
-尚未开始的批次可替换。出站世界清单与玩家移动轮流发送，控制消息优先；入站只保留最新完整快照。
+尚未开始的批次可替换。出站动作 FIFO、玩家移动和世界切片公平轮转，控制/心跳优先；入站世界只保留最新完整快照。
 禁止客机发布世界、禁止旧本地快照被改标为新 epoch，场景暂停/重载/关闭时清理缓存。
 
-当前核心总计 85/85 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
+当前核心总计 109/109 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
 修订更替/空清单、权限/epoch、容量/公平性、真实 TCP 数值清单/HP 更新/移除及旧协议拒绝。
 测试为 CLR 夹具；没有在两份游戏中调用捕鱼或物品 API。
 
@@ -303,7 +313,34 @@ FishDamage 与 SpecialDamage 各 2 条，两个原 bool 为 true。两种伤害�
 相关 prefix 绑定固定，14 条事件消费时有可用原生目标，回调/解析/未配对/原生查询错误为零。
 未见 Win 或 Pickup；原 bool 和用户看到原鱼/副本同时消失不能证明完整捕获链或合作裁定。
 已记录 FISH_INTERACTION_STOPPED / NETWORK_DISCONNECTED，正常返航恢复仍待验收；用户确认主动退出、未返航，正常返航保存仍未验证。
-没有由 Mod 调用伤害、捕获或记账入口；请求去重、房主裁定及收益账本仍待实现。
+没有由 Mod 调用伤害、捕获或记账入口；0.1.12-dev 已准备请求去重与权限门禁，实际原生裁定及收益账本仍待实现。
+
+## 操作请求与只读目标检查（0.1.12-dev 启动通过，目标检查待验）
+
+`FishActions` 定义 ProbeTarget、FireHarpoon、FireGun、SubmitQteInput、RecallHarpoon、RequestPickup。
+请求只包含意图编号、玩家、epoch/scene、房主目标 ID、装备槽/版本、数值输入及 interaction；
+不携带 damage、收益、原生包装器/指针或 generation。房间来自外层 envelope，真正来源来自握手绑定玩家。
+规范指纹覆盖所有请求字段，场景长度前缀、浮点规范格式及正负零统一；它不是认证凭证。
+
+协议 4 新增独立请求/结果 FIFO。host 接收请求固定绑定 guest，guest 只接受自己 outstanding 请求的完整元数据/指纹匹配结果，
+拒绝未请求、冒充、冲突或原生 operation 回退。动作不放进覆盖为最新值的角色/世界邮箱；控制/心跳优先，再公平轮转动作和数据。
+合法 pause/场景切换期间，旧请求或结果发布在会话锁内返回 false，不把正常的失效竞态当协议错误断房；GUI 发布异常被捕获。
+`HostFishActionGate` 最多 16 pending、1024 终态缓存，独立突发/速率预算；有效新 ID 即使业务拒绝也推进房间内高水位。
+同键同内容返回已有阶段/结果，同 ID 改内容为冲突；旧 ID 无缓存为 ReplayExpired。换 epoch、清理场景和缓存淘汰不重置该屏障。
+
+主线程读取最多 0.25 秒的新鲜权限 facts；请求到达最多一秒。ProbeTarget 只核对当前原生鱼身份/代次、scene 和终态。
+真实动作额外要求 MapAuthorityReady、GuestStateIsolated、LocalActorArbitrated、可信 actor/loadout、资源/冷却、空间/阶段及 native capability 全部可用。
+本版这些 effect 事实仍 false；客机坐标、选中鱼、原伤害 bool 或房主本地装备不能填补缺失能力。
+纯 CLR 候选计划持有短租约，派发前用更新的 facts 重查目标代次、玩家/装备版本，先标记 Dispatching；没有本版原生 effect 调用。
+明确未进入才释放预约；已进入但不确定为 OutcomeUnknown，不再派发，不凭超时当作无副作用，当前保留预约到关房。
+房主本地竞争只有显式 capability 前置项，尚未接入实际全游戏裁定；CLR lease 不能证明双方捕同鱼没有重复收益。
+
+F11 的 Check selected fish target 在 Guest 或 Local test 的 Ready/已选单鱼条件下发 ProbeTarget；
+host 主线程重新 TryResolveNativeFish，并复核冻结身份和捕获/死亡状态，通过只返回 DryRunValidated、OperationId=0。
+状态读取前后复核 lifecycle 健康与代次，变化则撤销该次身份；同 epoch 开关观察保持世界 revision 单调。
+`FISH_ACTION_SENT` / ADMISSION / DECISION / RECEIVED 显示请求/结果及 NativeEffectsEnabled=false；未解析的目标明确拒绝。
+这个按钮只验证请求往返与有效目标，不发射鱼叉、不扣血或捕获。109 项核心测试及三种 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，不证明两个游戏或 M5 成功。
+0.1.12-dev 的新版 Probe 与真实游戏场景切换仍未执行验收；主菜单启动和初始 RouteInputs 不能代替这些行为。
 
 可复现元数据研究：`scripts/Inspect-FishInteractionApi.ps1`。确认鱼自身覆写 HookedByProjectile(ProjectileInfo) 和 WinFromProjectileinFight，
 不能只观察 CatchableObject 基类便认定覆盖鱼。HarpoonProjectile.Fire(Vector3) / CollisionDetection(GameObject,Vector2) 与 HookedObject
@@ -313,7 +350,7 @@ Damager.GetAttackData 是 ref-return 属性，首轮宜观察原参数/字段，
 捕获收益至少分为 FishAISystem.SuccessPickupFish、LootBox.Add、SaveDataCaughtFishRouter.AddCaughtFish 和 IngredientsStorage.AddFromLootBox。
 QTE 胜利、捕获、入袋、图鉴与返航入仓须分别验证，不能由单个标记推断整个结算；这些写入入口尚未调用。
 
-用户本次观察第二个戴夫没有发射鱼叉。当前角色帧只包含显示姿态与部件，协议没有发射事件或独立投射物状态。
+用户此前观察第二个戴夫没有发射鱼叉。当前角色帧只包含显示姿态与部件；协议 4 已有发射意图的请求模型，但没有可执行发射桥、独立投射物事件/状态或真实伤害许可。
 后续需给每次发射分配会话/epoch/投射物 ID，同步鱼叉飞行、命中、QTE 绑定及回收，
 并由房主验证装备/攻击条件和裁定鱼的血量、捕获与收益。不能给显示副本直接启用原生武器，避免单例、命中和奖励重复执行。
 

@@ -177,7 +177,7 @@ internal static class EntityWorldTests
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         using var listener = new LanHost(IPAddress.Loopback, 0);
         PeerIdentity current = Identity("Host"), legacy = Identity("Guest"); legacy.ProtocolVersion = 2;
-        Assert(current.ProtocolVersion == 3, "fish visual channel did not advance the negotiated protocol");
+        Assert(current.ProtocolVersion == 4, "fish action channel did not advance the negotiated protocol");
         Task<SessionPeer> accepting = listener.AcceptOneAsync(current, cancellation.Token);
         bool rejectedGuest = false, rejectedHost = false;
         try { using SessionPeer unexpected = await LanGuest.ConnectAsync("127.0.0.1", listener.Port, legacy, cancellation.Token); }
@@ -198,7 +198,7 @@ internal static class EntityWorldTests
     };
 
     private static PeerIdentity Identity(string name) => new PeerIdentity
-    { ModVersion = "0.1.11-dev", SteamBuildId = "25315876", UnityVersion = "6000.0.52f1", Name = name };
+    { ModVersion = "0.1.12-dev", SteamBuildId = "25315876", UnityVersion = "6000.0.52f1", Name = name };
     private static async Task Until(Func<bool> condition, CancellationToken cancellation)
     {
         while (!condition()) await Task.Delay(5, cancellation);

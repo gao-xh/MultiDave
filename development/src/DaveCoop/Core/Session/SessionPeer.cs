@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DaveCoop.Core.Protocol;
 using DaveCoop.Core.Transport;
 using DaveCoop.Core.World;
+using DaveCoop.Core.Actions;
 
 namespace DaveCoop.Core.Session
 {
@@ -95,6 +96,44 @@ namespace DaveCoop.Core.Session
         public bool TryTakeRemoteWorld(out WorldSnapshot snapshot)
         {
             lock (_gate) return _machine.TryTakeRemoteWorld(out snapshot);
+        }
+
+        public bool PublishFishAction(FishActionRequest request)
+        {
+            lock (_gate)
+            {
+                try
+                {
+                    bool accepted = _machine.PublishFishAction(request, Now);
+                    if (accepted) SignalWriter();
+                    return accepted;
+                }
+                catch (ProtocolException error) { Terminate(error.Message); throw; }
+            }
+        }
+
+        public bool PublishFishActionResult(FishActionResult result)
+        {
+            lock (_gate)
+            {
+                try
+                {
+                    bool accepted = _machine.PublishFishActionResult(result, Now);
+                    if (accepted) SignalWriter();
+                    return accepted;
+                }
+                catch (ProtocolException error) { Terminate(error.Message); throw; }
+            }
+        }
+
+        public bool TryTakeRemoteFishAction(out ReceivedFishAction action)
+        {
+            lock (_gate) return _machine.TryTakeRemoteFishAction(out action);
+        }
+
+        public bool TryTakeRemoteFishActionResult(out FishActionResult result)
+        {
+            lock (_gate) return _machine.TryTakeRemoteFishActionResult(out result);
         }
 
         public bool TryTakeEvent(out SessionEvent item)

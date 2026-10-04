@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using DaveCoop.Core.World;
+using DaveCoop.Core.Actions;
 
 namespace DaveCoop.Core.Protocol
 {
@@ -8,12 +9,13 @@ namespace DaveCoop.Core.Protocol
     {
         Hello = 1, Welcome = 2, Reject = 3, PlayerFrame = 10,
         SceneChange = 20, SceneAck = 21, SceneCommit = 22, SceneSuspend = 23, ScenePause = 24,
-        Ping = 30, Pong = 31, Leave = 40, WorldSlice = 50
+        Ping = 30, Pong = 31, Leave = 40, WorldSlice = 50,
+        FishActionRequest = 60, FishActionResult = 61
     }
 
     public sealed class PeerIdentity
     {
-        public int ProtocolVersion { get; set; } = 3;
+        public int ProtocolVersion { get; set; } = 4;
         public string ModVersion { get; set; }
         public string SteamBuildId { get; set; }
         public string UnityVersion { get; set; }
@@ -77,6 +79,8 @@ namespace DaveCoop.Core.Protocol
         public SceneNotice Scene { get; set; }
         public ClockMessage Clock { get; set; }
         public WorldSlice World { get; set; }
+        public FishActionRequest ActionRequest { get; set; }
+        public FishActionResult ActionResult { get; set; }
     }
 
     public sealed class ProtocolException : Exception

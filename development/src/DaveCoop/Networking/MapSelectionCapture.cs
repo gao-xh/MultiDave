@@ -9,18 +9,21 @@ using UnityObject = UnityEngine.Object;
 
 namespace DaveCoop.Networking
 {
-    // Unity-thread, post-load observation only. It does not select resources,
+    // Unity-thread input diagnostics and post-load selection observation.
+    // It does not select resources,
     // invoke conditions/save APIs, install hooks, or adopt the host's map. A
     // pre-load authority barrier is a separate, still-unimplemented operation.
     internal sealed class MapSelectionCapture
     {
         private const int MaxHierarchyDepth = 32;
         private const int MaxObjectName = 128;
+        private const int MaxCandidateLayers = 512;
         private readonly int _unityThreadId;
         private string _previousFingerprint;
         private long _previousManagerPointer;
         private int _previousFrame = -1;
         public string UnavailableReason { get; private set; }
+        public MapRouteObservation LatestRouteObservation { get; private set; }
 
         // Construct from an already-confirmed Unity Update thread identity.
         public MapSelectionCapture(int unityThreadId)
@@ -43,10 +46,107 @@ namespace DaveCoop.Networking
 
         // Caller resets observation on session/scene ownership boundaries.
         // This only clears CLR correlation data; no game object is changed.
-        public void Clear() { Unavailable("Map selection observation reset."); }
+        public void Clear()
+        {
+            LatestRouteObservation = null;
+            Unavailable("Map selection observation reset.");
+        }
+
+        // Available before a player/manager or network peer exists. Only the
+        // generated native field proxies are read for route data; original
+        // selection getters such as GetSelectedMapLayerCached are not called.
+        public MapRouteObservation ReadRouteInputs()
+        {
+            if (Thread.CurrentThread.ManagedThreadId != _unityThreadId)
+                throw new InvalidOperationException("Map route reads require the confirmed Unity thread.");
+            LatestRouteObservation = null;
+            var observation = new MapRouteObservation { Frame = Time.frameCount };
+            var loadedNames = new List<string>();
+            int sceneCount = SceneManager.sceneCount;
+            if (sceneCount > MapSelections.MaxScenes)
+            {
+                observation.LoadedScenesTruncated = true;
+                observation.LimitsExceeded = true;
+            }
+            for (int i = 0; i < Math.Min(sceneCount, MapSelections.MaxScenes); i++)
+            {
+                Scene scene = SceneManager.GetSceneAt(i);
+                if (scene.isLoaded) loadedNames.Add(ObservationName(scene.name, observation));
+            }
+            observation.LoadedSceneNames = loadedNames.ToArray();
+
+            SceneContext context = SceneContext._s_Instance_k__BackingField;
+            observation.ContextPresent = context != null;
+            if (context != null)
+            {
+                observation.ContextSceneName = ObservationName(context._CurrentSceneName_k__BackingField, observation);
+                var cache = context.selectedMapLayerCacheList;
+                var roadmap = context.m_SceneRoadmap;
+                var first = context._firstData_k__BackingField;
+                var layers = context.sceneLayerDataList;
+                observation.CacheCount = cache == null ? (int?)null : cache.Count;
+                observation.RoadmapCount = roadmap == null ? (int?)null : roadmap.Count;
+                observation.FirstSceneId = first == null ? (int?)null : first.sceneID;
+                observation.LayerCount = layers == null ? (int?)null : layers.Count;
+
+                if (cache != null)
+                {
+                    int count = observation.CacheCount.Value;
+                    observation.CacheTruncated = count > MapSelections.MaxScenes;
+                    if (observation.CacheTruncated) observation.LimitsExceeded = true;
+                    var cachedScenes = new List<MapCachedSceneObservation>();
+                    for (int i = 0; i < Math.Min(count, MapSelections.MaxScenes); i++)
+                    {
+                        SceneMapLayerDataCache selected = cache[i];
+                        cachedScenes.Add(selected == null ? null : new MapCachedSceneObservation
+                        {
+                            SceneId = selected.SceneID,
+                            SceneName = ObservationName(selected.SceneName, observation),
+                            Selected = selected.bSelected, Loaded = selected.IsSceneLoaded
+                        });
+                    }
+                    observation.CachedScenes = cachedScenes.ToArray();
+                }
+                if (observation.RoadmapCount > MapSelections.MaxScenes) observation.LimitsExceeded = true;
+                if (layers != null)
+                {
+                    int count = observation.LayerCount.Value;
+                    observation.SelectedLayerScanIncomplete = count > MaxCandidateLayers;
+                    if (observation.SelectedLayerScanIncomplete) observation.LimitsExceeded = true;
+                    int selectedCount = 0;
+                    var selectedNames = new List<string>();
+                    for (int i = 0; i < Math.Min(count, MaxCandidateLayers); i++)
+                    {
+                        SceneMapLayerData layer = layers[i];
+                        if (layer == null || !layer.bSelected) continue;
+                        selectedCount++;
+                        if (selectedNames.Count < MapSelections.MaxScenes)
+                            selectedNames.Add(ObservationName(layer.SceneName, observation));
+                    }
+                    // A bounded prefix scan is not an exact selected total.
+                    observation.SelectedLayerCount = observation.SelectedLayerScanIncomplete ? (int?)null : selectedCount;
+                    observation.SelectedLayersTruncated = observation.SelectedLayerScanIncomplete || selectedCount > selectedNames.Count;
+                    observation.SelectedLayerNames = selectedNames.ToArray();
+                }
+            }
+            observation.Truncated = observation.CacheTruncated || observation.SelectedLayersTruncated ||
+                observation.LoadedScenesTruncated || observation.NamesTruncated;
+            LatestRouteObservation = observation;
+            return observation;
+        }
+
+        private static string ObservationName(string value, MapRouteObservation observation)
+        {
+            if (value == null || value.Length <= MapSelections.MaxSceneName) return value;
+            observation.NamesTruncated = true;
+            int length = MapSelections.MaxSceneName;
+            if (char.IsHighSurrogate(value[length - 1]) && char.IsLowSurrogate(value[length])) length--;
+            return value.Substring(0, length);
+        }
 
         private MapSelectionManifest CaptureLoaded(InGameManager manager)
         {
+            ReadRouteInputs();
             if (manager == null || !manager.IsLoadedAll || manager.playerCharacter == null)
                 return Unavailable("Manager/player loading.");
             // Read the generated native field wrapper instead of Instance,
@@ -56,8 +156,12 @@ namespace DaveCoop.Networking
             var cache = context.selectedMapLayerCacheList;
             var roadmap = context.m_SceneRoadmap;
             var first = context._firstData_k__BackingField;
-            if (cache == null || roadmap == null || first == null || cache.Count < MapSelections.MinScenes)
-                return Unavailable("Selected route incomplete.");
+            if (cache == null) return Unavailable("Selected route cache missing.");
+            if (roadmap == null) return Unavailable("Selected route roadmap missing.");
+            if (first == null) return Unavailable("Selected route first scene missing.");
+            if (cache.Count < MapSelections.MinScenes)
+                return Unavailable("Selected route cache incomplete: " + cache.Count.ToString(CultureInfo.InvariantCulture) +
+                    "/" + MapSelections.MinScenes.ToString(CultureInfo.InvariantCulture) + " scenes.");
             int count = cache.Count;
             if (count > MapSelections.MaxScenes || roadmap.Count > MapSelections.MaxScenes)
                 throw new InvalidOperationException("Map route exceeds bounded observation.");

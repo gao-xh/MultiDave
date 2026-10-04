@@ -52,8 +52,9 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 `distribution/` 是供自动安装使用的本项目插件包。
 本仓库不分发游戏、游戏接口程序集、存档或 BepInEx 运行库。
 
-`codex/player-discovery` 分支源码与当前实机为 0.1.11-dev，编译及 85/85 项核心测试通过；
-新进程已确认插件加载、Unity Update 和网络入口；单游戏 TCP 鱼群显示与发射/挂钩/伤害只读观察已运行。
+`codex/player-discovery` 分支源码及当前部署版本为 0.1.12-dev，协议 4，编译及 109/109 项核心测试通过；
+新进程已确认插件加载、Unity Update、网络入口及 4 条初始路线输入日志，仅主菜单启动通过。
+目标检查、潜水路线、场景切换与正常返航仍待实机，用户当前不方便试玩，手动验证已延后。最近完成潜水验证的是 0.1.11-dev，单游戏 TCP 鱼群显示与发射/挂钩/伤害只读观察已运行。
 用户确认偏移鱼群可见、捕获原鱼时对应副本也消失，关闭鱼群显示后恢复正常，操作和镜头正常。
 动画、完整捕获链、统一地图和正常返航仍待验收。
 最近的单鱼稳定性实测来自 0.1.9-dev；玩家探针与第二角色回放基础验收通过。
@@ -66,11 +67,17 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 F11 新增默认关闭的 Display received fish roster 和 Observe host harpoon and fish interactions；
 本机测试仍须开启 Transmit read-only fish observations。标签和鱼群显示均不可捕获，原生 AI、碰撞与收益未接管。
 交互 bool 只记录原方法返回；HpAtDrain 是消费事件时的读数，不能据此认定命中或捕获结果。
-本次地图清单读取停在 Selected route incomplete；加载后清单不能代替加载前采用房主地图，跨机地址稳定性尚未验证。
-8 个观察入口已健康安装，42 条事件组成 21 对调用，覆盖发射、挂钩和两种伤害声明，两个原 bool 返回为 true；未见 QTE 胜利或入袋观察。
+0.1.11-dev 地图清单读取停在 Selected route incomplete；加载后清单不能代替加载前采用房主地图，跨机地址稳定性尚未验证。
+该历史实机的 8 个观察入口健康，42 条事件组成 21 对调用，覆盖发射、挂钩和两种伤害声明，两个原 bool 返回为 true；未见 QTE 胜利或入袋观察。
 本机 Local test 保留原鱼并偏移显示副本，所以会出现成对鱼；同时消失是观察清单移除同步，不是捕获副本或统一世界完成。
 动画、完整捕获链、正常返航、真正合作捕获及双游戏验收仍待完成；用户确认主动退出且未返航，正常返航保存仍未验证。
-构建边界见 [鱼群与交互验证摘要](development/logs/fish-world-interaction-build-verification.json)。
+0.1.12-dev 的 F11 新增 Check selected fish target：Guest 或 Local test 发送目标检查请求，
+房主主线程重新查找原生鱼与代次；通过只返回 DryRunValidated，OperationId 为 0，不发射鱼叉、不扣血或捕获。
+请求/结果使用独立 FIFO、来源与指纹核对、请求高水位和缓存去重；合法场景切换期间的旧发布在会话锁内返回 false，保留连接，GUI 发送异常有捕获。
+真实游戏意图缺少可信玩家/装备、地图接管、客机隔离与原生执行桥，保持拒绝执行。
+Transmit 开启后独立在入海前后读取路线输入，每秒最多一次、值变化才记录；候选选中层不是完整地图选择。
+三种本机 TCP 操作夹具（往返、旧协议拒绝、取出后场景切换恢复）通过不等于两游戏联机或合作捕鱼通过。
+当前构建边界见 [操作门禁验证摘要](development/logs/fish-action-gate-build-verification.json)；历史鱼群与交互证据见 [0.1.11-dev 摘要](development/logs/fish-world-interaction-build-verification.json)。
 同一海洋、鱼与互动的实现范围见 [WORLD_SYNC](development/docs/WORLD_SYNC.md)。
 开发时使用编译和部署脚本；默认玩家安装包保持 0.1.0。
 

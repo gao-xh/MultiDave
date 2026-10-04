@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DaveCoop.Core.World;
+using DaveCoop.Core.Actions;
 
 namespace DaveCoop.Core.Protocol
 {
@@ -59,7 +60,8 @@ namespace DaveCoop.Core.Protocol
             if (packet.Sequence < 1) throw new ProtocolException("Invalid packet sequence.");
             int payloads = (packet.Hello == null ? 0 : 1) + (packet.Welcome == null ? 0 : 1) +
                 (packet.Reason == null ? 0 : 1) + (packet.Frame == null ? 0 : 1) +
-                (packet.Scene == null ? 0 : 1) + (packet.Clock == null ? 0 : 1) + (packet.World == null ? 0 : 1);
+                (packet.Scene == null ? 0 : 1) + (packet.Clock == null ? 0 : 1) + (packet.World == null ? 0 : 1) +
+                (packet.ActionRequest == null ? 0 : 1) + (packet.ActionResult == null ? 0 : 1);
             if (payloads != 1) throw new ProtocolException("Expected exactly one packet payload.");
             switch (packet.Kind)
             {
@@ -84,6 +86,14 @@ namespace DaveCoop.Core.Protocol
                     break;
                 case PacketKind.WorldSlice:
                     RequireGuid(packet.RoomId); WorldFrames.ValidateSlice(packet.World);
+                    break;
+                case PacketKind.FishActionRequest:
+                    RequireGuid(packet.RoomId); FishActions.ValidateRequest(packet.ActionRequest);
+                    if (packet.ActionRequest.PlayerId != 2) throw new ProtocolException("Only a guest may send a fish action request.");
+                    break;
+                case PacketKind.FishActionResult:
+                    RequireGuid(packet.RoomId); FishActions.ValidateResult(packet.ActionResult);
+                    if (packet.ActionResult.PlayerId != 2) throw new ProtocolException("Fish action results must address the guest.");
                     break;
                 case PacketKind.SceneChange:
                 case PacketKind.SceneAck:

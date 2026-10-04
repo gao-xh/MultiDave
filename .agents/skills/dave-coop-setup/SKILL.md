@@ -55,7 +55,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   请用户确认标签下方的鱼可见及动画/转向正常，并核对捕获后移除、断线与返航清理、本地输入/镜头。
   组件启用、镜头内、网格顶点和标签分别是不同证据，仅有标签不能证明鱼网格可见。
   0.1.7-dev 用户确认鱼可见但会突然消失；0.1.8-dev 无旧异常但标签换鱼；0.1.9-dev 已获用户确认不再突然消失；单游戏显示不能证明客机地图/鱼群/AI 接管或合作捕获。
-  协议为 3，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
+  当前协议为 4，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
   `development/scripts/Inspect-FishRenderApi.ps1` 可复现游戏/Spine 显示与生命周期接口签名研究。
 - 0.1.6-dev 在房主开启鱼诊断且发布状态时安装自己的生命周期观察挂钩。
   核对 FISH_LIFECYCLE_READY 及 NETWORK_STATE 中 FishLifecycleHooks/Tracked/Transitions/CallbackErrors；
@@ -90,6 +90,18 @@ description: Configure or continue development of the MultiDave prototype for Wi
   用户确认成对鱼可见、捕获原鱼同步移除显示，关闭显示恢复正常，操作/镜头正常。
   Win/Pickup未见回调，MAP_SELECTION返回Selected route incomplete；完整捕获收益链和正常返航保存仍待验证。
   真实范围详见fish-world-interaction-native-verification.json，不把部分注册/ABI通过推广为全部鱼型或合作捕鱼。
+- 0.1.12-dev 增加独立的鱼操作请求/结果 FIFO，协议升至4；当前109项CLR/TCP测试通过。
+  正常退出后部署、确认本次进程版本，再 F11 → Local test，开启 Transmit read-only fish observations
+  和 Preview one received fish；点击 Check selected fish target，核对 FISH_ACTION_SENT/ADMISSION/DECISION/RECEIVED。
+  ProbeTarget 的 DryRunValidated 只证明房主主线程重查了当前epoch/编号/池代次且鱼未死亡或捕获；
+  OperationId=0、NativeEffectsEnabled=false，按钮不执行鱼叉、伤害、捕获或收益。
+  其他动作仅有schema/Gate；地图权限、客机隔离、可信玩家/装备和原生执行桥均未接通。
+  重复请求、指纹、来源及outstanding有校验；房间内ID高水位跨场景保留，未知原生结果不可重派发。
+  合法旧场景发送在会话锁内取消，不因主线程旧Snapshot断房；结果显示也须检查当前场景。
+  生命周期失效立即撤销查询身份，读取原生字段后再次核对代次；开关诊断不重置同epoch世界revision。
+  MAP_ROUTE_INPUTS 在Transmit开启时独立1Hz观察入海前后路线字段，区分cache/roadmap/first缺失和cache过短。
+  不调用选图/加载/存档写入，完整路线和双游戏世界接管仍待验证；新版原生目标检查须另有实际结果日志。
+  新构建及启动证据见fish-action-gate-build-verification.json；最近完整潜水证据保持0.1.11。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DaveCoop.Core.Protocol;
 using DaveCoop.Core.World;
+using DaveCoop.Core.Actions;
 
 namespace DaveCoop.Core.Session
 {
@@ -10,6 +11,17 @@ namespace DaveCoop.Core.Session
     {
         private const int MaxControls = 32;
         private const int MaxEvents = 64;
+        public const int MaxRemoteFishActions = 16;
+        public const int MaxOutgoingFishActions = 32;
+        public const int MaxRemoteFishActionResults = 32;
+        public const int MaxOutstandingFishActions = 32;
+        private const int MaxCompletedFishActions = 32;
+        private sealed class LocalAction
+        {
+            public FishActionRequest Request;
+            public string Fingerprint;
+            public FishActionResult LastResult;
+        }
         private readonly SessionRole _role;
         private readonly HandshakeResult _identity;
         private readonly SessionOptions _options;
@@ -43,7 +55,14 @@ namespace DaveCoop.Core.Session
         private long _worldRevision;
         private double _lastLocalWorldTime = -1;
         private WorldSnapshot _incomingWorld;
-        private bool _preferWorld;
+        private int _nextGameplayLane;
+        private readonly Queue<WirePacket> _outgoingActions = new Queue<WirePacket>();
+        private readonly Queue<ReceivedFishAction> _incomingActions = new Queue<ReceivedFishAction>();
+        private readonly Queue<FishActionResult> _incomingActionResults = new Queue<FishActionResult>();
+        private readonly Dictionary<long, LocalAction> _localActions = new Dictionary<long, LocalAction>();
+        private readonly Dictionary<long, FishActionResult> _completedActions = new Dictionary<long, FishActionResult>();
+        private readonly Queue<long> _completedActionOrder = new Queue<long>();
+        private long _highestLocalActionId;
 
         public SessionMachine(SessionRole role, HandshakeResult identity, double now, SessionOptions options = null)
         {
@@ -178,6 +197,25 @@ namespace DaveCoop.Core.Session
                     if (_phase != SessionPhase.Ready) break;
                     if (_worldAssembler.Accept(packet.World, out WorldSnapshot completed)) _incomingWorld = completed;
                     break;
+                case PacketKind.FishActionRequest:
+                    RequireRole(SessionRole.Host);
+                    FishActionRequest request = packet.ActionRequest;
+                    if (request.PlayerId != _identity.RemotePlayerId) throw new ProtocolException("Fish action player identity spoofing.");
+                    if (request.SceneEpoch > _epoch || (request.SceneEpoch == _epoch && request.SceneKey != _proposal?.SceneKey))
+                        throw new ProtocolException("Fish action does not match the current or a retired scene.");
+                    if (_incomingActions.Count >= MaxRemoteFishActions) throw new ProtocolException("Fish action receive queue overflow; no intent was overwritten.");
+                    // Retired/non-Ready requests still reach the CLR gate for a
+                    // terminal rejection and request-ID accounting, never Unity.
+                    _incomingActions.Enqueue(new ReceivedFishAction
+                    {
+                        RoomId = _identity.RoomId, BoundPlayerId = _identity.RemotePlayerId,
+                        PacketSequence = packet.Sequence, ReceivedAt = now, Request = FishActions.Copy(request)
+                    });
+                    break;
+                case PacketKind.FishActionResult:
+                    RequireRole(SessionRole.Guest);
+                    ReceiveFishActionResult(packet.ActionResult);
+                    break;
                 case PacketKind.Leave:
                     Close("Peer left: " + packet.Reason);
                     break;
@@ -204,16 +242,119 @@ namespace DaveCoop.Core.Session
         public bool TryTakePacket(out WirePacket packet)
         {
             if (_controls.Count > 0) { packet = _controls.Dequeue(); return true; }
-            if (_outgoingWorld != null && (_preferWorld || _outgoingFrame == null))
+            // Controls/heartbeats precede gameplay. Each populated gameplay
+            // lane receives a turn; action FIFO cannot overwrite older intent.
+            for (int offset = 0; offset < 3; offset++)
             {
-                packet = new WirePacket { Kind = PacketKind.WorldSlice, RoomId = _identity.RoomId, World = _outgoingWorld[_nextWorldSlice++] };
-                if (_nextWorldSlice == _outgoingWorld.Length) { _outgoingWorld = _pendingWorld; _pendingWorld = null; _nextWorldSlice = 0; }
-                _preferWorld = false; return true;
+                int lane = (_nextGameplayLane + offset) % 3;
+                if (lane == 0 && _outgoingActions.Count > 0)
+                    packet = _outgoingActions.Dequeue();
+                else if (lane == 1 && _outgoingFrame != null)
+                { packet = _outgoingFrame; _outgoingFrame = null; }
+                else if (lane == 2 && _outgoingWorld != null)
+                {
+                    packet = new WirePacket { Kind = PacketKind.WorldSlice, RoomId = _identity.RoomId, World = _outgoingWorld[_nextWorldSlice++] };
+                    if (_nextWorldSlice == _outgoingWorld.Length) { _outgoingWorld = _pendingWorld; _pendingWorld = null; _nextWorldSlice = 0; }
+                }
+                else continue;
+                _nextGameplayLane = (lane + 1) % 3; return true;
             }
-            packet = _outgoingFrame; _outgoingFrame = null;
-            _preferWorld = true;
-            return packet != null;
+            packet = null; return false;
         }
+
+        public bool PublishFishAction(FishActionRequest request, double now)
+        {
+            CheckTime(now); RequireRole(SessionRole.Guest);
+            if (_phase == SessionPhase.Closed) return false;
+            FishActions.ValidateRequest(request);
+            if (request.PlayerId != _identity.LocalPlayerId || request.SceneEpoch > _epoch ||
+                (request.SceneEpoch == _epoch && request.SceneKey != _proposal?.SceneKey))
+                throw new ProtocolException("Local fish action does not match its player or committed scene.");
+            // A main-thread snapshot can become retired while this call waits
+            // for SessionPeer's lock. It is a canceled send, not peer spoofing.
+            if (_phase != SessionPhase.Ready || request.SceneEpoch < _epoch) return false;
+            if (_outgoingActions.Count >= MaxOutgoingFishActions) throw new ProtocolException("Fish action send queue overflow; no intent was overwritten.");
+            FishActionRequest copy = FishActions.Copy(request);
+            string fingerprint = FishActions.Fingerprint(copy);
+            if (_localActions.TryGetValue(copy.RequestId, out LocalAction existing))
+            {
+                if (existing.Fingerprint != fingerprint) throw new ProtocolException("Local fish action request ID changed its payload.");
+            }
+            else
+            {
+                if (copy.RequestId <= _highestLocalActionId) throw new ProtocolException("Local fish action request IDs must advance after completion or cancellation.");
+                if (_localActions.Count >= MaxOutstandingFishActions) throw new ProtocolException("Fish action outstanding request capacity exceeded.");
+                _localActions.Add(copy.RequestId, new LocalAction { Request = FishActions.Copy(copy), Fingerprint = fingerprint });
+                _highestLocalActionId = copy.RequestId;
+            }
+            _outgoingActions.Enqueue(new WirePacket { Kind = PacketKind.FishActionRequest, RoomId = _identity.RoomId, ActionRequest = copy });
+            return true;
+        }
+
+        public bool PublishFishActionResult(FishActionResult result, double now)
+        {
+            CheckTime(now); RequireRole(SessionRole.Host);
+            if (_phase == SessionPhase.Closed) return false;
+            FishActions.ValidateResult(result);
+            if (result.PlayerId != _identity.RemotePlayerId || result.SceneEpoch > _epoch ||
+                (result.SceneEpoch == _epoch && result.SceneKey != _proposal?.SceneKey))
+                throw new ProtocolException("Local fish action result does not match its guest or scene.");
+            if ((_phase != SessionPhase.Ready || result.SceneEpoch < _epoch) &&
+                result.Status != FishActionStatus.Rejected && result.Status != FishActionStatus.OutcomeUnknown)
+                // Scene state and enqueue are protected by SessionPeer's lock.
+                // An old admission/probe decision cannot disconnect the room
+                // merely because the network task advanced the scene first.
+                return false;
+            if (_outgoingActions.Count >= MaxOutgoingFishActions) throw new ProtocolException("Fish action result send queue overflow; no result was overwritten.");
+            _outgoingActions.Enqueue(new WirePacket { Kind = PacketKind.FishActionResult, RoomId = _identity.RoomId, ActionResult = FishActions.Copy(result) });
+            return true;
+        }
+
+        public bool TryTakeRemoteFishAction(out ReceivedFishAction action)
+        {
+            action = _incomingActions.Count == 0 ? null : _incomingActions.Dequeue();
+            return action != null;
+        }
+
+        public bool TryTakeRemoteFishActionResult(out FishActionResult result)
+        {
+            result = _incomingActionResults.Count == 0 ? null : _incomingActionResults.Dequeue();
+            return result != null;
+        }
+
+        private void ReceiveFishActionResult(FishActionResult result)
+        {
+            if (result.PlayerId != _identity.LocalPlayerId) throw new ProtocolException("Fish action result player identity spoofing.");
+            if (result.SceneEpoch > _epoch || (result.SceneEpoch == _epoch && result.SceneKey != _proposal?.SceneKey))
+                throw new ProtocolException("Fish action result does not match the current scene.");
+            if (result.SceneEpoch < _epoch || _phase != SessionPhase.Ready) return;
+            if (!_localActions.TryGetValue(result.RequestId, out LocalAction local))
+            {
+                if (_completedActions.TryGetValue(result.RequestId, out FishActionResult completed) && SameResult(completed, result)) return;
+                throw new ProtocolException("Unsolicited or conflicting completed fish action result.");
+            }
+            FishActionRequest request = local.Request;
+            if (result.PlayerId != request.PlayerId || result.SceneEpoch != request.SceneEpoch || result.SceneKey != request.SceneKey ||
+                result.Action != request.Action || result.TargetEntityId != request.TargetEntityId || result.RequestFingerprint != local.Fingerprint)
+                throw new ProtocolException("Fish action result does not match the outstanding request metadata and fingerprint.");
+            if (local.LastResult?.Status == FishActionStatus.NativeStarted &&
+                (result.Status == FishActionStatus.Queued || result.OperationId != local.LastResult.OperationId))
+                throw new ProtocolException("Fish action result changed or regressed its native operation.");
+            if (_incomingActionResults.Count >= MaxRemoteFishActionResults) throw new ProtocolException("Fish action result receive queue overflow; no result was overwritten.");
+            FishActionResult copy = FishActions.Copy(result);
+            _incomingActionResults.Enqueue(copy); local.LastResult = FishActions.Copy(copy);
+            if (copy.Status == FishActionStatus.Rejected || copy.Status == FishActionStatus.DryRunValidated || copy.Status == FishActionStatus.OutcomeUnknown)
+            {
+                _localActions.Remove(copy.RequestId);
+                if (_completedActionOrder.Count == MaxCompletedFishActions) _completedActions.Remove(_completedActionOrder.Dequeue());
+                _completedActionOrder.Enqueue(copy.RequestId); _completedActions.Add(copy.RequestId, FishActions.Copy(copy));
+            }
+        }
+
+        private static bool SameResult(FishActionResult a, FishActionResult b) =>
+            a.RequestId == b.RequestId && a.PlayerId == b.PlayerId && a.SceneEpoch == b.SceneEpoch && a.SceneKey == b.SceneKey &&
+            a.Action == b.Action && a.TargetEntityId == b.TargetEntityId && a.Status == b.Status && a.Reason == b.Reason &&
+            a.WorldRevision == b.WorldRevision && a.OperationId == b.OperationId && a.RequestFingerprint == b.RequestFingerprint;
 
         public bool PublishWorld(WorldSnapshot source, double now)
         {
@@ -288,7 +429,9 @@ namespace DaveCoop.Core.Session
         {
             _outgoingFrame = null; _incomingFrame = null; _lastFrameTime = -1; _lastLocalFrameTime = -1;
             _outgoingWorld = null; _pendingWorld = null; _nextWorldSlice = 0; _incomingWorld = null;
-            _worldRevision = 0; _lastLocalWorldTime = -1; _worldAssembler.Clear(); _preferWorld = false;
+            _worldRevision = 0; _lastLocalWorldTime = -1; _worldAssembler.Clear(); _nextGameplayLane = 0;
+            _outgoingActions.Clear(); _incomingActions.Clear(); _incomingActionResults.Clear();
+            _localActions.Clear(); _completedActions.Clear(); _completedActionOrder.Clear();
         }
 
         private void RequireCurrentScene(SceneNotice notice)

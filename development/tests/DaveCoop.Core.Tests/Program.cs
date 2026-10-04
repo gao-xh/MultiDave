@@ -92,7 +92,31 @@ internal static class Program
             ("fish world independent interpolation and visual recovery", FishWorldTests.IndependentInterpolationAndVisualRecovery),
             ("fish world epoch replay and freshness recovery", FishWorldTests.EpochReplayAndFreshnessRecovery),
             ("fish world terminal and undisplayable numeric roster", FishWorldTests.TerminalAndUndisplayableNumericRoster),
-            ("fish world capacity and independent history bounds", FishWorldTests.CapacityAndIndependentHistoryBounds)
+            ("fish world capacity and independent history bounds", FishWorldTests.CapacityAndIndependentHistoryBounds),
+            ("fish action schema and canonical fingerprint", FishActionTests.SchemaAndCanonicalFingerprint),
+            ("fish action bound source and copy ownership", FishActionTests.BoundSourceAndCopyOwnership),
+            ("fish action duplicate conflict and replay", FishActionTests.DuplicateConflictAndMonotonicReplay),
+            ("fish action business rejection and scene fence", FishActionTests.BusinessRejectionAndSceneFence),
+            ("fish action cache eviction and closed room replay", FishActionTests.BoundedCacheAndClosedRoomReplay),
+            ("fish action queue rate and arrival freshness", FishActionTests.QueueRateAndArrivalFreshness),
+            ("fish action probe and missing authority", FishActionTests.ProbeFactsAndExplicitMissingAuthority),
+            ("fish action loadout stage and spatial guards", FishActionTests.FreshLoadoutStageAndSpatialGuards),
+            ("fish action target retirement before drain", FishActionTests.TargetRetirementBetweenQueueAndDrain),
+            ("fish action dispatch generation and lease", FishActionTests.DispatchRechecksGenerationAndLease),
+            ("fish action unknown native outcome never retries", FishActionTests.NativeUnknownNeverDispatchesTwice),
+            ("fish action not-started release and target ownership", FishActionTests.NotStartedReleaseAndTargetOwnership),
+            ("fish action codec and single payload", FishActionTransportTests.CodecAndSinglePayload),
+            ("fish action session source ownership", FishActionTransportTests.SessionOwnershipAndProvenance),
+            ("fish action authority and forged results", FishActionTransportTests.AuthorityAndForgedResults),
+            ("fish action scene invalidation and retired requests", FishActionTransportTests.SceneInvalidationAndRetiredRequests),
+            ("fish action scene change between take and publication", FishActionTransportTests.SceneChangeBetweenTakeAndPublication),
+            ("fish action FIFO bounds and no overwrite", FishActionTransportTests.FifoBoundsAndNoOverwrite),
+            ("fish action result bounds and pending retries", FishActionTransportTests.ResultBoundsAndPendingRetries),
+            ("fish action control priority and gameplay fairness", FishActionTransportTests.ControlPriorityAndGameplayFairness),
+            ("fish action native entry is not capture success", FishActionTransportTests.NativeEntryCannotBecomeCaptureSuccess),
+            ("TCP fish action request result round trip", () => FishActionTransportTests.TcpRequestResultRoundTrip().GetAwaiter().GetResult()),
+            ("TCP fish action scene change between take and publication", () => FishActionTransportTests.TcpSceneChangeBetweenTakeAndPublication().GetAwaiter().GetResult()),
+            ("TCP fish action protocol three rejection", () => FishActionTransportTests.RejectProtocolThree().GetAwaiter().GetResult())
         };
         int failures = 0;
         foreach (var test in tests)
