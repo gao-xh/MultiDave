@@ -21,11 +21,15 @@ namespace DaveCoop.Networking
         internal static ConfigEntry<bool> ObserveLootCalls;
         internal static ConfigEntry<bool> ObserveMapOrigins;
         internal static ConfigEntry<bool> ExperimentalHostFishAreas;
+        internal static ConfigEntry<bool> ExperimentalCrewActor;
+        internal static ConfigEntry<float> CrewSpeed, CrewBoostMultiplier, CrewMaxHP, CrewMaxOxygen;
+        internal static ConfigEntry<float> CrewOxygenPerSecond, CrewBoostOxygenPerSecond, CrewCapacityKg;
         internal static string Status = "Network: offline (F11)";
         private readonly NetworkController _controller;
 
         public NetworkDriver(IntPtr pointer) : base(pointer) { _controller = new NetworkController(); }
         public void Update() { _controller.Update(); }
+        public void FixedUpdate() { _controller.FixedUpdate(); }
         public void LateUpdate() { _controller.LateUpdate(); }
         public void OnGUI() { _controller.Draw(); }
         public void OnDestroy() { _controller.Dispose(); }

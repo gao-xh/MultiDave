@@ -10,6 +10,7 @@ namespace DaveCoop.Core.Protocol
         public int LocalPlayerId { get; set; }
         public int RemotePlayerId { get; set; }
         public PeerIdentity Peer { get; set; }
+        public bool LocalUsesCrewActor { get; set; }
     }
 
     public static class Handshake
@@ -34,7 +35,8 @@ namespace DaveCoop.Core.Protocol
                 Kind = PacketKind.Welcome, RoomId = roomId,
                 Welcome = new Welcome { Identity = localCopy, RoomId = roomId }
             }, cancellation).ConfigureAwait(false);
-            return new HandshakeResult { RoomId = roomId, LocalPlayerId = 1, RemotePlayerId = 2, Peer = PacketCodec.CopyIdentity(hello.Hello) };
+            return new HandshakeResult { RoomId = roomId, LocalPlayerId = 1, RemotePlayerId = 2,
+                Peer = PacketCodec.CopyIdentity(hello.Hello), LocalUsesCrewActor = localCopy.UsesCrewActor };
         }
 
         public static async Task<HandshakeResult> JoinAsync(FramedConnection connection,
@@ -49,7 +51,8 @@ namespace DaveCoop.Core.Protocol
             return new HandshakeResult
             {
                 RoomId = response.Welcome.RoomId, LocalPlayerId = response.Welcome.AssignedPlayerId,
-                RemotePlayerId = response.Welcome.HostPlayerId, Peer = PacketCodec.CopyIdentity(response.Welcome.Identity)
+                RemotePlayerId = response.Welcome.HostPlayerId, Peer = PacketCodec.CopyIdentity(response.Welcome.Identity),
+                LocalUsesCrewActor = localCopy.UsesCrewActor
             };
         }
     }

@@ -18,7 +18,7 @@ internal static class FishActionTransportTests
         FishActionRequest request = Request(1);
         var packet = RequestPacket(room, request);
         WirePacket decoded = PacketCodec.Decode(PacketCodec.Encode(packet));
-        Assert(new PeerIdentity().ProtocolVersion == 8 && decoded.Kind == PacketKind.FishActionRequest &&
+        Assert(new PeerIdentity().ProtocolVersion == 9 && decoded.Kind == PacketKind.FishActionRequest &&
             FishActions.Fingerprint(decoded.ActionRequest) == FishActions.Fingerprint(request), "action request lost fields or protocol version");
         FishActionResult result = Result(request, FishActionStatus.DryRunValidated);
         packet = ResultPacket(room, result);

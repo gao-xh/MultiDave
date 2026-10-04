@@ -3,6 +3,7 @@ using System.Numerics;
 using DaveCoop.Core.World;
 using DaveCoop.Core.Actions;
 using DaveCoop.Core.Cargo;
+using DaveCoop.Core.Crew;
 
 namespace DaveCoop.Core.Protocol
 {
@@ -13,12 +14,12 @@ namespace DaveCoop.Core.Protocol
         Ping = 30, Pong = 31, Leave = 40, WorldSlice = 50,
         FishActionRequest = 60, FishActionResult = 61,
         MapRouteSlice = 70, MapIgpChoice = 71, MapChoiceRetire = 72,
-        CargoInventorySlice = 80
+        CargoInventorySlice = 80, CrewInput = 90, CrewActorState = 91
     }
 
     public sealed class PeerIdentity
     {
-        public int ProtocolVersion { get; set; } = 8;
+        public int ProtocolVersion { get; set; } = 9;
         public string ModVersion { get; set; }
         public string SteamBuildId { get; set; }
         public string UnityVersion { get; set; }
@@ -26,6 +27,9 @@ namespace DaveCoop.Core.Protocol
         // Requests the existing read-only fish observation channel. This is
         // neither permission to run native effects nor evidence of isolation.
         public bool RequestsHostFishDisplay { get; set; }
+        // Fixed handshake opt-in only. It does not authorize native actor,
+        // damage, cargo, world adoption or save operations.
+        public bool UsesCrewActor { get; set; }
     }
 
     public sealed class Welcome
@@ -91,6 +95,8 @@ namespace DaveCoop.Core.Protocol
         public MapIgpChoice MapChoice { get; set; }
         public MapChoiceRetire MapRetire { get; set; }
         public CargoInventorySlice CargoInventory { get; set; }
+        public CrewInputFrame CrewInput { get; set; }
+        public CrewActorState CrewActorState { get; set; }
     }
 
     public sealed class ProtocolException : Exception

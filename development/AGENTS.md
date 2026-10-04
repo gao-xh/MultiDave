@@ -1,6 +1,6 @@
 # 开发约定
 
-当前源码0.1.43-dev（协议8），本轮实际Core/TCP327/327及插件Build警告视为错误通过，执行输入前后相同。新增[远处鱼避让接线](docs/HOST_FISH_VISIBILITY.md)：默认关闭的双成员区域沿自然鱼更新，按实际同鱼renderer与员工附近几何补充一次原可见性返回。见[本轮记录](logs/host-fish-visibility-build-verification.json)。原生ABI、全部鱼行为、远距离双游戏与性能仍未验证。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、独立员工角色/武器/生存、每人袋/容量/负重、逐项返航保存与GitHub冷配置仍待完成。
+当前源码0.1.44-dev（协议9），本轮实际Core/TCP347/347及插件Build警告视为错误通过，执行输入前后相同。新增[员工输入与房主移动接线](docs/CREW_ACTOR.md)：默认关闭、双方握手显式选择；房主独立物理身体接受输入并回读位置/速度，客机临时角色按房主状态校正。HP/O2是独立Mod规则，氧气为零仅禁止boost；真实伤害、装备、武器、命中和账本负重尚未接入。见[本轮记录](logs/crew-actor-build-verification.json)。原生身体创建、碰撞、校正、生存、ABI与双游戏尚未执行或验证，Guest完整隔离/World/Cargo权限仍false。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、每人独立袋/容量/重量/负重、完整产物前置分流、逐项返航保存与GitHub冷配置仍待完成。
 
 - M1 玩家发现与 M2 回放基础验收通过；0.1.22 历史源码为 0.1.22-dev、协议 5，插件 Build 警告视为错误通过，范围见 [comparer 摘要](logs/guest-comparer-build-verification.json)；0.1.22 该轮 Core 输入未改，复用 [0.1.21 实际 176/176 结果](logs/guest-ingame-cache-build-verification.json)，没有重跑测试。未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
 - 继续工作前阅读 `docs/HANDOFF.md`、`docs/PLAN.md` 和当前阶段的 `docs/GAME_API.md` / `docs/MULTIPLAYER.md` / `docs/WORLD_SYNC.md`；配置别人电脑时使用仓库根目录的配置 Skill。

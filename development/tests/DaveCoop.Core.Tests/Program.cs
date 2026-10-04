@@ -334,7 +334,27 @@ internal static class Program
             ("host fish visibility shifted bounds preserve actual source inputs", FishVisibilityInterestMathTests.RemoteBoundsTranslateIntoActualHostCameraWithoutChangingInputs),
             ("host fish visibility partial viewport and clip boundaries keep original", FishVisibilityInterestMathTests.PartialViewportAndDepthBoundariesNeverGrantVisibility),
             ("host fish visibility large coordinates round bounds outward", FishVisibilityInterestMathTests.LargeCoordinatesRoundBoundsOutwardInsteadOfShrinking),
-            ("host fish visibility different planes and invalid samples keep original", FishVisibilityInterestMathTests.DifferentPlanesMalformedSamplesAndNonfiniteGeometryKeepOriginal)
+            ("host fish visibility different planes and invalid samples keep original", FishVisibilityInterestMathTests.DifferentPlanesMalformedSamplesAndNonfiniteGeometryKeepOriginal),
+            ("crew controls use host body readback and normalized movement", CrewControlTests.BoundInputNormalizesMovementAndUsesOnlyHostBodyReadback),
+            ("crew button edges survive release and are consumed once", CrewControlTests.QueuedButtonEdgesSurviveReleaseAndAreConsumedExactlyOnce),
+            ("crew stale pause and opt-out preserve replay fences", CrewControlTests.StalePauseAndOptOutNeutralizeWithoutReopeningReplayFences),
+            ("crew actor room scene and thread cannot borrow controls", CrewControlTests.ActorRoomSceneAndCreatorThreadCannotBorrowEmployeeControls),
+            ("crew profiles own oxygen damage and permanent stop", CrewControlTests.IndependentProfilesOwnOxygenDamageAndPermanentStop),
+            ("crew state copies cannot invent confirmed cargo", CrewControlTests.StateCopiesCannotMutateBodyProfileOrInventConfirmedCargo),
+            ("crew invalid axes profile and fixed steps reject movement", CrewControlTests.InvalidAxesProfilesAndFixedStepsCannotProduceMovement),
+            ("crew receipt deadlines and both sequence fences limit input", CrewControlTests.ReceiptDeadlineAndBothSequenceFencesBoundControlLifetime),
+            ("crew scene replacement inherits survival without refill", CrewControlTests.SceneReplacementInheritsSurvivalWithoutRefillingOrReviving),
+            ("crew codec requires unique opt-in and complete schema", CrewTransportTests.CodecRequiresUniqueOptInAndCompleteInputStateSchema),
+            ("crew session freezes opt-in and connection-owned receipts", CrewTransportTests.SessionFreezesOptInAndConnectionOwnedReceipts),
+            ("crew roles opt-in and actor binding reject forged input", CrewTransportTests.RolesBothOptInsAndActorBindingsRejectForgedInputs),
+            ("crew input FIFOs preserve edges and reject overflow", CrewTransportTests.InputFifosPreserveEdgesAndFailAtTheirBound),
+            ("crew pause retires actor and preserves room input sequences", CrewTransportTests.PauseRetiresActorAndPreservesInputHighWaterAcrossResume),
+            ("crew latest state and acknowledgements cannot revive retired actor", CrewTransportTests.LatestStateRevisionAndAcknowledgementCannotReviveOldActor),
+            ("crew controls lead and input state lanes remain fair", CrewTransportTests.ControlsLeadAndInputStateLanesRemainFair),
+            ("TCP crew identity input edges and state round trip", () => CrewTransportTests.TcpCrewIdentityInputEdgesAndStateRoundTrip().GetAwaiter().GetResult()),
+            ("TCP crew take then pause cancels old work and resumes", () => CrewTransportTests.TcpTakeThenPauseCancelsOldWorkAndResumesSameRoom().GetAwaiter().GetResult()),
+            ("TCP crew protocol eight rejected and one-sided opt-in disabled", () => CrewTransportTests.TcpProtocolEightRejectedAndOneSidedOptInCannotSendCrew().GetAwaiter().GetResult()),
+            ("TCP crew receive overflow closes without dropping input edges", () => CrewTransportTests.TcpReceiveQueueOverflowClosesWithoutDroppingInputEdges().GetAwaiter().GetResult())
         };
         int failures = 0;
         foreach (var test in tests)

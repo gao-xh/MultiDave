@@ -11,6 +11,7 @@ using BepInEx;
 using DaveCoop.Core.Protocol;
 using DaveCoop.Core.Session;
 using DaveCoop.Core.World;
+using DaveCoop.Core.Crew;
 using DaveCoop.Rendering;
 using UnityEngine;
 
@@ -47,6 +48,7 @@ namespace DaveCoop.Networking
         private NativeHostFishAllocatorArea _hostFishAllocatorArea;
         private NativeHostFishLodArea _hostFishLodArea;
         private NativeHostFishVisibilityArea _hostFishVisibilityArea;
+        private CrewActorController _crewActor;
         private bool _hostFishAreasFailed;
         private float _nextCargoObservation;
         private LootObservationController _lootObserver;
@@ -104,6 +106,13 @@ namespace DaveCoop.Networking
                     _mapSelection = new MapSelectionCapture(Environment.CurrentManagedThreadId);
                     _lootObserver = new LootObservationController(Environment.CurrentManagedThreadId, ResolveHealthyFish);
                     _mapOrigins = new MapOriginController(Environment.CurrentManagedThreadId);
+                    bool crewEnabled = NetworkDriver.ExperimentalCrewActor.Value;
+                    HostCrewProfile crewProfile = crewEnabled ? new HostCrewProfile(NetworkDriver.CrewSpeed.Value,
+                        NetworkDriver.CrewBoostMultiplier.Value, NetworkDriver.CrewMaxHP.Value, NetworkDriver.CrewMaxOxygen.Value,
+                        NetworkDriver.CrewOxygenPerSecond.Value, NetworkDriver.CrewBoostOxygenPerSecond.Value,
+                        NetworkDriver.CrewCapacityKg.Value) : new HostCrewProfile();
+                    _crewActor = new CrewActorController(_local, () => _peers?.Main, () => _peers?.Loopback != null,
+                        Environment.CurrentManagedThreadId, NetworkDriver.Logger, crewEnabled, crewProfile);
                     if (NetworkDriver.ExperimentalHostFishAreas.Value && NativeGuestInitializationController.Current == null)
                     {
                         _hostFishInterest = new HostFishInterestSource(() => _peers?.Main,
@@ -156,6 +165,7 @@ namespace DaveCoop.Networking
                 }
                 UpdateLocalScene();
                 state = _peers.Main.Snapshot;
+                _crewActor.Update(NetworkDriver.ShowPanel.Value);
                 if (!FishPreviewDisplayEnabled(state)) _fishPreview.Clear("PreviewDisplayUnavailable");
                 if (!HostFishObservationsEnabled(state)) _fishLifecycle.Dispose();
                 if (state.Role != SessionRole.Host || state.Phase != SessionPhase.Ready ||
@@ -222,6 +232,15 @@ namespace DaveCoop.Networking
                     {
                         Mode = mode, state.Phase, state.SceneEpoch, state.SceneKey, state.HasClockEstimate,
                         state.RemoteRequestsHostFishDisplay,
+                        state.LocalUsesCrewActor, state.RemoteUsesCrewActor, state.CrewActorRevision,
+                        CrewActorEnabled = _crewActor.Enabled, CrewActorFailed = _crewActor.Failed, CrewActorStatus = _crewActor.Status,
+                        CrewBodyStatus = _crewActor.BodyStatus, CrewGuestCorrectionStatus = _crewActor.CorrectionStatus,
+                        CrewInputsAccepted = _crewActor.InputsAccepted, CrewInputsSent = _crewActor.InputsSent,
+                        CrewStatesSent = _crewActor.StatesSent, CrewStatesReceived = _crewActor.StatesReceived,
+                        CrewMoves = _crewActor.Moves, CrewBlockedMoves = _crewActor.BlockedMoves, CrewCorrections = _crewActor.Corrections,
+                        CrewHP = _crewActor.HP, CrewOxygen = _crewActor.Oxygen, CrewFireEdgesObserved = _crewActor.FireEdgesObserved,
+                        CrewNativeRuntimeVerified = false, CrewNativeDamageConnected = false, CrewWeaponsConnected = false,
+                        CrewBagWeightConfirmed = false,
                         HostFishAreasEnabled = _hostFishInterest != null,
                         HostFishAreasFailed = _hostFishAreasFailed,
                         HostFishInterestStatus = _hostFishInterest?.Status,
@@ -319,6 +338,8 @@ namespace DaveCoop.Networking
             catch (Exception error) { Fail(error); }
         }
 
+        public void FixedUpdate() { _crewActor?.FixedUpdate(); }
+
         public void LateUpdate()
         {
             if (_panelActive) { Cursor.visible = true; Cursor.lockState = CursorLockMode.None; }
@@ -349,7 +370,13 @@ namespace DaveCoop.Networking
                 }
                 float delay = NetworkDriver.RenderDelay.Value;
                 if (!float.IsFinite(delay)) delay = 0.12f;
-                _display.Render(_peers.Main.Now, Math.Clamp(delay, 0.05f, 0.5f), _local, _catalog);
+                System.Numerics.Vector3? employeePosition = null;
+                if (_peers.Loopback == null && state.Role == SessionRole.Host && state.LocalUsesCrewActor && state.RemoteUsesCrewActor)
+                {
+                    if (_crewActor.TryHostDisplayPosition(out System.Numerics.Vector3 actual)) employeePosition = actual;
+                    else _display.Clear();
+                }
+                _display.Render(_peers.Main.Now, Math.Clamp(delay, 0.05f, 0.5f), _local, _catalog, employeePosition);
                 if (FishPreviewDisplayEnabled(state))
                 {
                     try
@@ -446,6 +473,7 @@ namespace DaveCoop.Networking
         private void ClearLocal()
         {
             _hostFishInterest?.Clear("LocalPlayerChanged");
+            _crewActor?.InvalidateLocalSource();
             _scene = null; _layoutMessage = null; SetScene(null); _local.Clear(); _catalog.Clear(); _display.Clear(); _displayEpoch = 0;
             _fish.Clear(); _fishLifecycle.ClearObserved(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0;
             _fishPreview.Clear(); _spines.Clear();
@@ -764,7 +792,8 @@ namespace DaveCoop.Networking
                     throw new ArgumentException("Port must be 1..65535.");
                 if (mode == "guest" && (!IPAddress.TryParse(NetworkDriver.HostAddress.Value, out IPAddress host) || host.AddressFamily != AddressFamily.InterNetwork))
                     throw new ArgumentException("Enter the host's LAN IPv4 address.");
-                PeerIdentity identity = Identity(mode == "guest" && startupGuest != null);
+                PeerIdentity identity = Identity(mode == "guest" && startupGuest != null,
+                    _crewActor.Enabled && (mode == "host" || (mode == "guest" && startupGuest != null)));
                 NetworkDriver.Port.Value = port;
                 string address = NetworkDriver.HostAddress.Value;
                 _attempt = new CancellationTokenSource(); CancellationToken token = _attempt.Token;
@@ -817,7 +846,7 @@ namespace DaveCoop.Networking
             NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_CONNECTED: " + (_peers.Loopback == null ? _peers.Main.Snapshot.Role.ToString() : "local TCP diagnostic; one game process"));
         }
 
-        private static PeerIdentity Identity(bool requestsHostFishDisplay)
+        private static PeerIdentity Identity(bool requestsHostFishDisplay, bool usesCrewActor)
         {
             string root = Path.GetFullPath(Path.Combine(Paths.GameRootPath, "..", ".."));
             string manifest = Path.Combine(root, "appmanifest_1868140.acf");
@@ -830,7 +859,7 @@ namespace DaveCoop.Networking
             return new PeerIdentity
             {
                 ModVersion = Plugin.Version, SteamBuildId = match.Groups[1].Value, UnityVersion = Application.unityVersion,
-                Name = name.Length == 0 ? "Dave" : name, RequestsHostFishDisplay = requestsHostFishDisplay
+                Name = name.Length == 0 ? "Dave" : name, RequestsHostFishDisplay = requestsHostFishDisplay, UsesCrewActor = usesCrewActor
             };
         }
 
@@ -844,6 +873,7 @@ namespace DaveCoop.Networking
         private void Disconnect()
         {
             _hostFishInterest?.Clear("Disconnected");
+            _crewActor?.Disconnect();
             NativeGuestInitializationController.Current?.NetworkDisconnected();
             if (NetworkDriver.ObserveMapOrigins != null) NetworkDriver.ObserveMapOrigins.Value = false;
             _mapOrigins?.Stop();

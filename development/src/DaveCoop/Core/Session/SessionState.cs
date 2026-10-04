@@ -60,6 +60,13 @@ namespace DaveCoop.Core.Session
         public int LocalPlayerId { get; internal set; }
         public int RemotePlayerId { get; internal set; }
         public bool RemoteRequestsHostFishDisplay { get; internal set; }
+        public bool LocalUsesCrewActor { get; internal set; }
+        public bool RemoteUsesCrewActor { get; internal set; }
+        // Current actor/state binding is cleared on scene loss. InputSequence
+        // reports the monotonic room high-water mark, including canceled ingress.
+        public long CrewActorRevision { get; internal set; }
+        public long CrewStateRevision { get; internal set; }
+        public long CrewInputSequence { get; internal set; }
         public long SceneEpoch { get; internal set; }
         public string SceneKey { get; internal set; }
         public bool HasClockEstimate { get; internal set; }

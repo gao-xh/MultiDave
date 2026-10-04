@@ -931,3 +931,18 @@
 - 非作者末审修正大坐标/tinyextent与边界微小平移的double区间外包、自定义camera双矩阵affine检查，以及originaltrue零额外原生读取；完整来源在读组与最终返回前复核，primitive读只作scope/thread/reentry守卫，实际性能仍未测。
 - 新可见性Cecil实际2assemblies/16types/13methods/缺0；复用.42的338条Update已知范围，12未解析精确入口边不是本轮新PE或全body。员工研究新24types/846method/853property/缺精确名3，physics10types/136method另15property/20field/缺0；PE8roots/12methods/5123decoded=text、28indirectcalls/1branch，零省略/配额不是全方法/ABI证据。原metadata/IL/PE/地址及机器路径只.local，公开相对path/count/UTC/hash与自写方案。
 - Skill官方草稿校验通过、复制后protected校验通过，同SHA256 `837F4863E0695AE14AF0A8DD0182CB48F1B3B515D64729446A728C5C0DF453C6`；2条visibility target为预期声明，非运行安装证明。全部169个编译/执行输入仍相同，只有文档/摘要/Skill收尾，没有重复Core/Build或执行游戏。
+
+## 2026-10-04 — 0.1.44-dev：员工输入与房主移动接线
+
+- 继续完整M3—M7，不部署/启动或读写存档，安装.12/潜水.11/default.0保持；用户延后实机，不催测。
+- 协议9要求双方显式UsesCrewActor，拒绝8及更早；原PlayerFrame显示/地图schema2保留。实际Room/player2输入FIFO保持边沿与跨场景高水位，房主独立物理身体接受FixedUpdate移动并回读状态，客机临时角色核最新actor/state校正；不接客户端权威pose。
+- 默认ExperimentalCrewActor=false，同peer/Room换层HP/O2继承，HP0不复活；氧气0只禁止boost，无真实HP损伤/窒息输入。首次新actor输入中立，F11面板保持中立，未知已进入源写不重派。身体命令提交不证明本帧已完成碰撞/位移。
+- 实际Core/TCP 347/347通过，UTC `2026-10-04T22:09:11.8233844Z` → `2026-10-04T22:09:18.5093976Z`，包含编译及测试；完整stdout/PASS顺序与Program一致。新增CrewControlTests 9项、CrewTransportTests 11项，总数/注册从实际封存源推导；纯CLR与真实本机TCP，不运行Unity/backend。Core实际源码103份、插件源码121份、联合输入176份预先封存留自写bytes，Core/Build后hash相同。
+- Build警告视为错误通过，UTC `2026-10-04T22:09:20.9813437Z` → `2026-10-04T22:09:24.3637842Z`，插件SHA256 `949006B0E34396AE14CAD53C7EC5894D981E22D2585784B5944706D1959EAE91`；见[本轮摘要](crew-actor-build-verification.json)。所选工具/显式引用封存不等于完整OS/SDK闭包；.43及更早摘要不回填。
+- 本轮fresh离线Cecil证据：私有 `development/.local/analysis/employee-body-api.json`：Assemblies=2、Types=15、Methods=99、Properties=180、Missing=0，UTC `2026-10-04T21:58:43.0620124Z` → `2026-10-04T21:58:43.3717466Z`，报告SHA256 `505D8DE5457CE84F26F5C83EEE3F80F9DAB4284BBD2BED8B2D03C2BD86407F0D`；输入hash匹配实际编译引用。 原声明只留.local，不把metadata编译接口当nativeABI/Unity运行证明；.43 physics研究仅Inherited，未本轮重跑PE。
+- 本轮没有执行原生身体创建/碰撞查询/客机校正/生存或两游戏。actor成员尚未绑定CargoLedger，BagWeightKg=null/HasConfirmedCargoWeight=false，profile容量不是货袋提交。装备/武器/投射物/真实命中、main+plus完整产物与前置容量分流、各自袋/重量/负重、逐项正常返航入仓保存、Guest全部输出隔离及真实双端/GitHub冷配置仍待完成；所有通用Native/World/Cargo/GuestStateIsolated权限false，goal保持active。
+- 12当前header、当前协议说明、接手/计划/世界/员工范围及.43研究页历史intro同步；配置Skill只生成crew-actor私有草稿，正式官方校验/受保护复制另由root执行，不据草稿生成声称已通过。
+
+- 非作者末审后拆分guest Rigidbody.transform与Transform.position读取，在首项setter前再次核最新state；写后固定receipt/actor来源，不声称全段latest原子性。第一次封存347/347和Build通过后因这一源码修改重封存并完整复测；两次独立private run保留，没有失败执行。
+- 最终实际347/347、Build及176个联合输入封存前后相同；官方Skill草稿/受保护复制后双校验通过，同SHA `38CDA2387E0F9DCF8480C46E859176B36BA3A503091279C2E92CB6C12D7405B5`。后续仅文档/Skill/摘要收尾，不复跑测试或游戏。
+- 身体8192预算计Read前后Check，静态已知分支估计Box4702/Capsule4530/Circle4400，排除wrapper内部native调用；不是实际CPU/ABI/碰撞证据。Stop回读与Destroy请求分开，引用/强handle保留，完整销毁未验证。

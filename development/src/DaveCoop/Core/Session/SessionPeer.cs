@@ -7,6 +7,7 @@ using DaveCoop.Core.Transport;
 using DaveCoop.Core.World;
 using DaveCoop.Core.Actions;
 using DaveCoop.Core.Cargo;
+using DaveCoop.Core.Crew;
 
 namespace DaveCoop.Core.Session
 {
@@ -83,6 +84,27 @@ namespace DaveCoop.Core.Session
         {
             lock (_gate) return _machine.TryTakeRemoteFrame(out frame);
         }
+
+        public bool PublishCrewInput(CrewInputFrame frame)
+        {
+            lock (_gate)
+            {
+                try { bool accepted = _machine.PublishCrewInput(frame, Now); if (accepted) SignalWriter(); return accepted; }
+                catch (ProtocolException error) { Terminate(error.Message); throw; }
+            }
+        }
+        public bool PublishCrewActorState(CrewActorState state)
+        {
+            lock (_gate)
+            {
+                try { bool accepted = _machine.PublishCrewActorState(state, Now); if (accepted) SignalWriter(); return accepted; }
+                catch (ProtocolException error) { Terminate(error.Message); throw; }
+            }
+        }
+        public bool TryTakeRemoteCrewInput(out ReceivedCrewInput receipt)
+        { lock (_gate) return _machine.TryTakeRemoteCrewInput(out receipt); }
+        public bool TryTakeRemoteCrewActorState(out ReceivedCrewActorState receipt)
+        { lock (_gate) return _machine.TryTakeRemoteCrewActorState(out receipt); }
 
         public bool PublishWorld(WorldSnapshot snapshot)
         {

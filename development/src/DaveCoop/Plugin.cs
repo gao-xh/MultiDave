@@ -17,7 +17,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.43-dev";
+        public const string Version = "0.1.44-dev";
 
         public override void Load()
         {
@@ -76,6 +76,15 @@ namespace DaveCoop
                 "Track natural loading coroutine ownership and exact resource-operation scene results on the Unity thread; bounded read-only diagnostics, no map adoption or game/save writes.");
             NetworkDriver.ExperimentalHostFishAreas = Config.Bind("Network", "ExperimentalHostFishAreas", false,
                 "Experimental same-scene host fish spawning and activity around both members. Read at first network Update; restart to change. Requires real Host/Join frames; native behavior and distant gameplay remain unverified.");
+            NetworkDriver.ExperimentalCrewActor = Config.Bind("Network", "ExperimentalCrewActor", false,
+                "Experimental host-owned employee physics/input/state. Fixed at first network Update; both peers must opt in. Guest requires ExperimentalGuestInitialization. Native collision, camera correction and independent survival remain unverified; weapons and cargo are not connected.");
+            NetworkDriver.CrewSpeed = Config.Bind("Crew", "Speed", 3f, "Host-approved Mod swim speed, greater than 0 and at most 20; fixed on startup.");
+            NetworkDriver.CrewBoostMultiplier = Config.Bind("Crew", "BoostMultiplier", 1.5f, "Host-approved Mod boost multiplier, 1..3.");
+            NetworkDriver.CrewMaxHP = Config.Bind("Crew", "MaxHP", 100f, "Host-approved employee Mod maximum HP; native damage is not connected.");
+            NetworkDriver.CrewMaxOxygen = Config.Bind("Crew", "MaxOxygen", 100f, "Host-approved employee Mod maximum oxygen.");
+            NetworkDriver.CrewOxygenPerSecond = Config.Bind("Crew", "OxygenPerSecond", 1f, "Employee Mod oxygen drain per simulated second, 0..1000.");
+            NetworkDriver.CrewBoostOxygenPerSecond = Config.Bind("Crew", "BoostOxygenPerSecond", 2f, "Additional employee Mod oxygen drain while boosting, 0..1000.");
+            NetworkDriver.CrewCapacityKg = Config.Bind("Crew", "CapacityKg", 20f, "Employee approved Mod capacity; this actor prototype has no confirmed bag weight or capacity enforcement yet.");
             AddComponent<Diagnostics>();
             AddComponent<PlayerProbe>();
             AddComponent<RemotePreview>();

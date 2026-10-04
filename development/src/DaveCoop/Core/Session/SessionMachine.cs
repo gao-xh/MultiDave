@@ -4,6 +4,7 @@ using DaveCoop.Core.Protocol;
 using DaveCoop.Core.World;
 using DaveCoop.Core.Actions;
 using DaveCoop.Core.Cargo;
+using DaveCoop.Core.Crew;
 
 namespace DaveCoop.Core.Session
 {
@@ -18,6 +19,7 @@ namespace DaveCoop.Core.Session
         public const int MaxOutstandingFishActions = 32;
         private const int MaxCompletedFishActions = 32;
         public const int MaxOutgoingMapPackets = 32;
+        public const int MaxCrewInputs = 32;
         private sealed class LocalAction
         {
             public FishActionRequest Request;
@@ -95,6 +97,14 @@ namespace DaveCoop.Core.Session
         private long _receivedCargoGeneration, _receivedCargoRevision;
         private string _receivedCargoExpedition;
         private bool _receivedCargoCurrent;
+        private readonly Queue<WirePacket> _outgoingCrewInputs = new Queue<WirePacket>();
+        private readonly Queue<ReceivedCrewInput> _incomingCrewInputs = new Queue<ReceivedCrewInput>();
+        private WirePacket _outgoingCrewState;
+        private ReceivedCrewActorState _incomingCrewState;
+        private long _highestLocalCrewInput, _highestRemoteCrewInput;
+        private long _highestLocalCrewActor, _highestRemoteCrewActor;
+        private long _currentLocalCrewActor, _currentRemoteCrewActor;
+        private CrewActorState _lastLocalCrewState, _lastRemoteCrewState;
 
         public SessionMachine(SessionRole role, HandshakeResult identity, double now, SessionOptions options = null)
         {
@@ -106,7 +116,8 @@ namespace DaveCoop.Core.Session
             _identity = new HandshakeResult
             {
                 RoomId = identity.RoomId, LocalPlayerId = identity.LocalPlayerId, RemotePlayerId = identity.RemotePlayerId,
-                Peer = identity.Peer == null ? null : PacketCodec.CopyIdentity(identity.Peer)
+                Peer = identity.Peer == null ? null : PacketCodec.CopyIdentity(identity.Peer),
+                LocalUsesCrewActor = identity.LocalUsesCrewActor
             };
             _role = role; _options = (options ?? new SessionOptions()).CopyValidated();
             _cargoAssembler = new CargoInventoryAssembler(_identity.RoomId);
@@ -119,6 +130,11 @@ namespace DaveCoop.Core.Session
             Role = _role, Phase = _phase, RoomId = _identity.RoomId, Reason = _reason,
             LocalPlayerId = _identity.LocalPlayerId, RemotePlayerId = _identity.RemotePlayerId,
             RemoteRequestsHostFishDisplay = _identity.Peer?.RequestsHostFishDisplay ?? false,
+            LocalUsesCrewActor = _identity.LocalUsesCrewActor,
+            RemoteUsesCrewActor = _identity.Peer?.UsesCrewActor ?? false,
+            CrewActorRevision = _role == SessionRole.Host ? _currentLocalCrewActor : _currentRemoteCrewActor,
+            CrewStateRevision = (_role == SessionRole.Host ? _lastLocalCrewState : _lastRemoteCrewState)?.StateRevision ?? 0,
+            CrewInputSequence = _role == SessionRole.Host ? _highestRemoteCrewInput : _highestLocalCrewInput,
             SceneEpoch = _epoch, SceneKey = _proposal?.SceneKey, HasClockEstimate = _hasClock,
             RemoteClockOffsetSeconds = _offset, RoundTripSeconds = _rtt,
             MapChoiceGeneration = _role == SessionRole.Host ? _mapGeneration : _receivedMapGeneration,
@@ -283,6 +299,12 @@ namespace DaveCoop.Core.Session
                     RequireRole(SessionRole.Guest);
                     ReceiveCargoInventory(packet.CargoInventory);
                     break;
+                case PacketKind.CrewInput:
+                    ReceiveCrewInput(packet, now);
+                    break;
+                case PacketKind.CrewActorState:
+                    ReceiveCrewActorState(packet, now);
+                    break;
                 case PacketKind.Leave:
                     Close("Peer left: " + packet.Reason);
                     break;
@@ -311,9 +333,9 @@ namespace DaveCoop.Core.Session
             if (_controls.Count > 0) { packet = _controls.Dequeue(); return true; }
             // Controls/heartbeats precede gameplay. Each populated gameplay
             // lane receives a turn; action FIFO cannot overwrite older intent.
-            for (int offset = 0; offset < 5; offset++)
+            for (int offset = 0; offset < 7; offset++)
             {
-                int lane = (_nextGameplayLane + offset) % 5;
+                int lane = (_nextGameplayLane + offset) % 7;
                 if (lane == 0 && _outgoingActions.Count > 0)
                     packet = _outgoingActions.Dequeue();
                 else if (lane == 1 && _outgoingFrame != null)
@@ -331,11 +353,138 @@ namespace DaveCoop.Core.Session
                     if (_nextCargoSlice == _outgoingCargo.Length)
                     { _outgoingCargo = _pendingCargo; _pendingCargo = null; _nextCargoSlice = 0; }
                 }
+                else if (lane == 5 && _outgoingCrewInputs.Count > 0)
+                    packet = _outgoingCrewInputs.Dequeue();
+                else if (lane == 6 && _outgoingCrewState != null)
+                { packet = _outgoingCrewState; _outgoingCrewState = null; }
                 else continue;
-                _nextGameplayLane = (lane + 1) % 5; return true;
+                _nextGameplayLane = (lane + 1) % 7; return true;
             }
             packet = null; return false;
         }
+
+        public bool PublishCrewInput(CrewInputFrame frame, double now)
+        {
+            CheckTime(now); RequireRole(SessionRole.Guest);
+            if (_phase == SessionPhase.Closed) return false;
+            RequireCrewOptIn(); PacketCodec.ValidateCrewPayload(() => CrewFrames.Validate(frame));
+            RequireCrewScene(frame.PlayerId, _identity.LocalPlayerId, frame.SceneEpoch, frame.SceneKey);
+            if (_phase != SessionPhase.Ready || frame.SceneEpoch < _epoch || _currentRemoteCrewActor == 0) return false;
+            if (frame.ActorRevision < _currentRemoteCrewActor) return false;
+            if (frame.ActorRevision != _currentRemoteCrewActor) throw new ProtocolException("Crew input targets an unknown actor revision.");
+            if (frame.InputSequence <= _highestLocalCrewInput) throw new ProtocolException("Crew input sequence must advance across scenes and actors.");
+            if (_outgoingCrewInputs.Count >= MaxCrewInputs) throw new ProtocolException("Crew input send queue overflow; no input edge was overwritten.");
+            CrewInputFrame copy = CrewFrames.Copy(frame);
+            _outgoingCrewInputs.Enqueue(new WirePacket { Kind = PacketKind.CrewInput, RoomId = _identity.RoomId, CrewInput = copy });
+            _highestLocalCrewInput = copy.InputSequence; return true;
+        }
+
+        public bool PublishCrewActorState(CrewActorState state, double now)
+        {
+            CheckTime(now); RequireRole(SessionRole.Host);
+            if (_phase == SessionPhase.Closed) return false;
+            RequireCrewOptIn(); PacketCodec.ValidateCrewPayload(() => CrewFrames.Validate(state));
+            RequireCrewScene(state.PlayerId, _identity.RemotePlayerId, state.SceneEpoch, state.SceneKey);
+            if (_phase != SessionPhase.Ready || state.SceneEpoch < _epoch) return false;
+            if (state.ActorRevision < _highestLocalCrewActor || (_currentLocalCrewActor == 0 && state.ActorRevision == _highestLocalCrewActor)) return false;
+            if (state.LastInputSequence > _highestRemoteCrewInput) throw new ProtocolException("Crew actor state acknowledges an unreceived input.");
+            CrewActorState copy = CrewFrames.Copy(state);
+            if (_lastLocalCrewState != null && copy.ActorRevision == _currentLocalCrewActor)
+            {
+                if (copy.StateRevision < _lastLocalCrewState.StateRevision) return false;
+                if (copy.StateRevision == _lastLocalCrewState.StateRevision)
+                {
+                    if (!SameCrewState(copy, _lastLocalCrewState)) throw new ProtocolException("Crew state revision changed its payload.");
+                    return false;
+                }
+                if (copy.LastInputSequence < _lastLocalCrewState.LastInputSequence) throw new ProtocolException("Crew state input acknowledgement regressed.");
+            }
+            if (copy.ActorRevision > _highestLocalCrewActor)
+            {
+                _incomingCrewInputs.Clear(); _highestLocalCrewActor = copy.ActorRevision;
+            }
+            _currentLocalCrewActor = copy.ActorRevision; _lastLocalCrewState = copy;
+            _outgoingCrewState = new WirePacket { Kind = PacketKind.CrewActorState, RoomId = _identity.RoomId, CrewActorState = CrewFrames.Copy(copy) };
+            return true;
+        }
+
+        public bool TryTakeRemoteCrewInput(out ReceivedCrewInput receipt)
+        {
+            RequireRole(SessionRole.Host); receipt = null;
+            if (_phase != SessionPhase.Ready || !CrewOptIn()) return false;
+            while (_incomingCrewInputs.Count > 0)
+            {
+                ReceivedCrewInput candidate = _incomingCrewInputs.Dequeue();
+                if (candidate.Frame.SceneEpoch != _epoch || candidate.Frame.SceneKey != _proposal?.SceneKey ||
+                    candidate.Frame.ActorRevision != _currentLocalCrewActor) continue;
+                receipt = CrewFrames.Copy(candidate); return true;
+            }
+            return false;
+        }
+        public bool TryTakeRemoteCrewActorState(out ReceivedCrewActorState receipt)
+        {
+            RequireRole(SessionRole.Guest); receipt = null;
+            ReceivedCrewActorState candidate = _incomingCrewState; _incomingCrewState = null;
+            if (_phase != SessionPhase.Ready || !CrewOptIn() || candidate == null || candidate.Frame.SceneEpoch != _epoch ||
+                candidate.Frame.SceneKey != _proposal?.SceneKey || candidate.Frame.ActorRevision != _currentRemoteCrewActor) return false;
+            receipt = CrewFrames.Copy(candidate); return true;
+        }
+
+        private bool CrewOptIn() => _identity.LocalUsesCrewActor && (_identity.Peer?.UsesCrewActor ?? false);
+        private void RequireCrewOptIn()
+        { if (!CrewOptIn()) throw new ProtocolException("Both peers must opt in to the crew actor channel during handshake."); }
+        private void RequireCrewScene(int player, int expected, long epoch, string key)
+        {
+            if (player != expected) throw new ProtocolException("Crew player identity spoofing.");
+            if (epoch > _epoch || (epoch == _epoch && key != _proposal?.SceneKey)) throw new ProtocolException("Crew message does not match the current or a retired scene.");
+        }
+        private void ReceiveCrewInput(WirePacket packet, double now)
+        {
+            RequireRole(SessionRole.Host); RequireCrewOptIn();
+            CrewInputFrame frame = packet.CrewInput;
+            RequireCrewScene(frame.PlayerId, _identity.RemotePlayerId, frame.SceneEpoch, frame.SceneKey);
+            if (frame.ActorRevision > _highestLocalCrewActor) throw new ProtocolException("Crew input targets an unpublished actor.");
+            if (frame.InputSequence <= _highestRemoteCrewInput) return;
+            // Valid canceled ingress still consumes its room sequence; later
+            // scene/actor replay cannot turn a discarded button edge into work.
+            _highestRemoteCrewInput = frame.InputSequence;
+            if (_phase != SessionPhase.Ready || frame.SceneEpoch < _epoch || frame.ActorRevision != _currentLocalCrewActor) return;
+            if (_incomingCrewInputs.Count >= MaxCrewInputs) throw new ProtocolException("Crew input receive queue overflow; no input edge was overwritten.");
+            _incomingCrewInputs.Enqueue(new ReceivedCrewInput { RoomId = _identity.RoomId, BoundPlayerId = _identity.RemotePlayerId,
+                PacketSequence = packet.Sequence, ReceivedAt = now, Frame = CrewFrames.Copy(frame) });
+        }
+        private void ReceiveCrewActorState(WirePacket packet, double now)
+        {
+            RequireRole(SessionRole.Guest); RequireCrewOptIn();
+            CrewActorState state = packet.CrewActorState;
+            RequireCrewScene(state.PlayerId, _identity.LocalPlayerId, state.SceneEpoch, state.SceneKey);
+            if (_phase != SessionPhase.Ready || state.SceneEpoch < _epoch) return;
+            if (state.ActorRevision < _highestRemoteCrewActor || (_currentRemoteCrewActor == 0 && state.ActorRevision == _highestRemoteCrewActor)) return;
+            if (state.LastInputSequence > _highestLocalCrewInput) throw new ProtocolException("Crew state acknowledges an unsent input.");
+            CrewActorState copy = CrewFrames.Copy(state);
+            if (_lastRemoteCrewState != null && copy.ActorRevision == _currentRemoteCrewActor)
+            {
+                if (copy.StateRevision < _lastRemoteCrewState.StateRevision) return;
+                if (copy.StateRevision == _lastRemoteCrewState.StateRevision)
+                {
+                    if (!SameCrewState(copy, _lastRemoteCrewState)) throw new ProtocolException("Crew state replay changed its payload.");
+                    return;
+                }
+                if (copy.LastInputSequence < _lastRemoteCrewState.LastInputSequence) throw new ProtocolException("Crew state input acknowledgement regressed.");
+            }
+            if (copy.ActorRevision > _highestRemoteCrewActor)
+            { _outgoingCrewInputs.Clear(); _highestRemoteCrewActor = copy.ActorRevision; }
+            _currentRemoteCrewActor = copy.ActorRevision; _lastRemoteCrewState = copy;
+            _incomingCrewState = new ReceivedCrewActorState { RoomId = _identity.RoomId, BoundPlayerId = _identity.RemotePlayerId,
+                PacketSequence = packet.Sequence, ReceivedAt = now, Frame = CrewFrames.Copy(copy) };
+        }
+        private static bool SameCrewState(CrewActorState a, CrewActorState b) =>
+            a.PlayerId == b.PlayerId && a.SceneEpoch == b.SceneEpoch && a.SceneKey == b.SceneKey &&
+            a.ActorRevision == b.ActorRevision && a.StateRevision == b.StateRevision && a.LastInputSequence == b.LastInputSequence &&
+            a.Position == b.Position && a.Velocity == b.Velocity && a.HP == b.HP && a.MaxHP == b.MaxHP &&
+            a.Oxygen == b.Oxygen && a.MaxOxygen == b.MaxOxygen && a.Alive == b.Alive && a.Active == b.Active &&
+            a.LoadoutRevision == b.LoadoutRevision && a.CapacityKg == b.CapacityKg && a.BagWeightKg == b.BagWeightKg &&
+            a.HasConfirmedCargoWeight == b.HasConfirmedCargoWeight;
 
         public bool PublishFishAction(FishActionRequest request, double now)
         {
@@ -737,6 +886,13 @@ namespace DaveCoop.Core.Session
             _worldRevision = 0; _lastLocalWorldTime = -1; _worldAssembler.Clear(); _nextGameplayLane = 0;
             _outgoingActions.Clear(); _incomingActions.Clear(); _incomingActionResults.Clear();
             _localActions.Clear(); _completedActions.Clear(); _completedActionOrder.Clear();
+            ClearCrewFrames();
+        }
+        private void ClearCrewFrames()
+        {
+            _outgoingCrewInputs.Clear(); _incomingCrewInputs.Clear(); _outgoingCrewState = null; _incomingCrewState = null;
+            _currentLocalCrewActor = 0; _currentRemoteCrewActor = 0; _lastLocalCrewState = null; _lastRemoteCrewState = null;
+            // Room input and actor high-water marks never reset on scene loss.
         }
 
         private void RequireCurrentScene(SceneNotice notice)

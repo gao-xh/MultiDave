@@ -27,7 +27,8 @@ namespace DaveCoop.Networking
 
         public void Receive(ReceivedFrame frame) { _motion.TryPush(frame); }
 
-        public void Render(double now, double delay, LocalAvatarCapture local, SpriteCatalog catalog)
+        public void Render(double now, double delay, LocalAvatarCapture local, SpriteCatalog catalog,
+            System.Numerics.Vector3? authoritativePosition = null)
         {
             VisibleParts = 0; UnknownAssets = 0;
             if (!local.IsAvailable || !_motion.TrySample(now, delay, out PlayerFrame from, out PlayerFrame to, out float alpha))
@@ -44,7 +45,9 @@ namespace DaveCoop.Networking
             }
             _root.SetActive(true);
             bool teleport = System.Numerics.Vector3.DistanceSquared(from.Root.Position, to.Root.Position) > 144;
-            LocalAvatarCapture.ApplyPose(_root.transform, teleport ? to.Root : Pose.Interpolate(from.Root, to.Root, alpha), false);
+            Pose rootPose = teleport ? to.Root : Pose.Interpolate(from.Root, to.Root, alpha);
+            if (authoritativePosition.HasValue) rootPose.Position = authoritativePosition.Value;
+            LocalAvatarCapture.ApplyPose(_root.transform, rootPose, false);
             PlayerFrame discrete = alpha >= 1 || teleport ? to : from;
             _next.Clear(); foreach (SpritePartFrame part in to.Parts) _next.Add(part.Slot, part);
             var required = new HashSet<string>(StringComparer.Ordinal);

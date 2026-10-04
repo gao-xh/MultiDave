@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using DaveCoop.Core.World;
 using DaveCoop.Core.Actions;
 using DaveCoop.Core.Cargo;
+using DaveCoop.Core.Crew;
 
 namespace DaveCoop.Core.Protocol
 {
@@ -42,6 +43,12 @@ namespace DaveCoop.Core.Protocol
                 RequireObservationRequestWireField(bytes, false);
             if (packet.Kind == PacketKind.Welcome && packet.Welcome.Identity.ProtocolVersion >= 8)
                 RequireObservationRequestWireField(bytes, true);
+            if (packet.Kind == PacketKind.Hello && packet.Hello.ProtocolVersion >= 9)
+                RequireCrewIdentityWireField(bytes, false);
+            if (packet.Kind == PacketKind.Welcome && packet.Welcome.Identity.ProtocolVersion >= 9)
+                RequireCrewIdentityWireField(bytes, true);
+            if (packet.Kind == PacketKind.CrewInput || packet.Kind == PacketKind.CrewActorState)
+                RequireCrewWireFields(bytes, packet.Kind);
             return packet;
         }
 
@@ -62,7 +69,8 @@ namespace DaveCoop.Core.Protocol
             {
                 ProtocolVersion = identity.ProtocolVersion, ModVersion = identity.ModVersion,
                 SteamBuildId = identity.SteamBuildId, UnityVersion = identity.UnityVersion,
-                Name = identity.Name, RequestsHostFishDisplay = identity.RequestsHostFishDisplay
+                Name = identity.Name, RequestsHostFishDisplay = identity.RequestsHostFishDisplay,
+                UsesCrewActor = identity.UsesCrewActor
             };
         }
 
@@ -126,7 +134,8 @@ namespace DaveCoop.Core.Protocol
                 (packet.Scene == null ? 0 : 1) + (packet.Clock == null ? 0 : 1) + (packet.World == null ? 0 : 1) +
                 (packet.ActionRequest == null ? 0 : 1) + (packet.ActionResult == null ? 0 : 1) +
                 (packet.MapRoute == null ? 0 : 1) + (packet.MapChoice == null ? 0 : 1) + (packet.MapRetire == null ? 0 : 1) +
-                (packet.CargoInventory == null ? 0 : 1);
+                (packet.CargoInventory == null ? 0 : 1) + (packet.CrewInput == null ? 0 : 1) +
+                (packet.CrewActorState == null ? 0 : 1);
             if (payloads != 1) throw new ProtocolException("Expected exactly one packet payload.");
             switch (packet.Kind)
             {
@@ -174,6 +183,12 @@ namespace DaveCoop.Core.Protocol
                     if (!Guid.TryParse(packet.RoomId, out Guid cargoRoom) ||
                         packet.CargoInventory.SourceRoomId != cargoRoom.ToString("N"))
                         throw new ProtocolException("Cargo inventory source room does not match its packet.");
+                    break;
+                case PacketKind.CrewInput:
+                    RequireGuid(packet.RoomId); ValidateCrewPayload(() => CrewFrames.Validate(packet.CrewInput));
+                    break;
+                case PacketKind.CrewActorState:
+                    RequireGuid(packet.RoomId); ValidateCrewPayload(() => CrewFrames.Validate(packet.CrewActorState));
                     break;
                 case PacketKind.SceneChange:
                 case PacketKind.SceneAck:
@@ -239,6 +254,53 @@ namespace DaveCoop.Core.Protocol
         {
             try { validate(); }
             catch (ArgumentException) { throw new ProtocolException("Invalid cargo inventory payload."); }
+        }
+
+        internal static void ValidateCrewPayload(Action validate)
+        {
+            try { validate(); }
+            catch (ArgumentException) { throw new ProtocolException("Invalid crew frame payload."); }
+        }
+
+        private static void RequireCrewIdentityWireField(ReadOnlySpan<byte> bytes, bool welcome)
+        {
+            using JsonDocument document = JsonDocument.Parse(bytes.ToArray());
+            JsonElement identity = RequiredWireProperty(document.RootElement, welcome ? "welcome" : "hello");
+            if (welcome) identity = RequiredWireProperty(identity, "identity");
+            JsonElement optIn = RequiredWireProperty(identity, "usesCrewActor");
+            if (optIn.ValueKind != JsonValueKind.True && optIn.ValueKind != JsonValueKind.False)
+                throw new ProtocolException("Invalid crew actor handshake opt-in.");
+        }
+
+        private static readonly string[] CrewInputFields = { "playerId", "sceneEpoch", "sceneKey", "inputSequence", "actorRevision",
+            "moveX", "moveY", "aimX", "aimY", "buttons" };
+        private static readonly string[] CrewStateFields = { "playerId", "sceneEpoch", "sceneKey", "actorRevision", "stateRevision",
+            "lastInputSequence", "position", "velocity", "hp", "maxHP", "oxygen", "maxOxygen", "alive", "active", "loadoutRevision",
+            "capacityKg", "hasConfirmedCargoWeight" };
+        private static void RequireCrewWireFields(ReadOnlySpan<byte> bytes, PacketKind kind)
+        {
+            using JsonDocument document = JsonDocument.Parse(bytes.ToArray());
+            string payloadName = kind == PacketKind.CrewInput ? "crewInput" : "crewActorState";
+            RequireExactWireFields(document.RootElement, new[] { "kind", "sequence", "roomId", payloadName });
+            JsonElement payload = RequiredWireProperty(document.RootElement, payloadName);
+            RequireExactWireFields(payload, kind == PacketKind.CrewInput ? CrewInputFields : CrewStateFields);
+            if (kind == PacketKind.CrewActorState)
+            {
+                RequireExactWireFields(RequiredWireProperty(payload, "position"), new[] { "x", "y", "z" });
+                RequireExactWireFields(RequiredWireProperty(payload, "velocity"), new[] { "x", "y" });
+            }
+        }
+        private static void RequireExactWireFields(JsonElement value, string[] names)
+        {
+            if (value.ValueKind != JsonValueKind.Object) throw new ProtocolException("Invalid crew wire object.");
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (JsonProperty property in value.EnumerateObject())
+            {
+                bool known = false;
+                foreach (string name in names) if (property.Name == name) { known = true; break; }
+                if (!known || !seen.Add(property.Name)) throw new ProtocolException("Unknown or duplicate crew wire field.");
+            }
+            if (seen.Count != names.Length) throw new ProtocolException("Missing required crew wire field.");
         }
 
         private static void ValidateIdentity(PeerIdentity identity)

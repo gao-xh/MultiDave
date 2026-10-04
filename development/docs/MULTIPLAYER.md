@@ -1,6 +1,6 @@
 # 第二角色与传输层
 
-当前源码0.1.43-dev（协议8），本轮实际Core/TCP327/327及插件Build警告视为错误通过，执行输入前后相同。新增[远处鱼避让接线](HOST_FISH_VISIBILITY.md)：默认关闭的双成员区域沿自然鱼更新，按实际同鱼renderer与员工附近几何补充一次原可见性返回。见[本轮记录](../logs/host-fish-visibility-build-verification.json)。原生ABI、全部鱼行为、远距离双游戏与性能仍未验证。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、独立员工角色/武器/生存、每人袋/容量/负重、逐项返航保存与GitHub冷配置仍待完成。
+当前源码0.1.44-dev（协议9），本轮实际Core/TCP347/347及插件Build警告视为错误通过，执行输入前后相同。新增[员工输入与房主移动接线](CREW_ACTOR.md)：默认关闭、双方握手显式选择；房主独立物理身体接受输入并回读位置/速度，客机临时角色按房主状态校正。HP/O2是独立Mod规则，氧气为零仅禁止boost；真实伤害、装备、武器、命中和账本负重尚未接入。见[本轮记录](../logs/crew-actor-build-verification.json)。原生身体创建、碰撞、校正、生存、ABI与双游戏尚未执行或验证，Guest完整隔离/World/Cargo权限仍false。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、每人独立袋/容量/重量/负重、完整产物前置分流、逐项返航保存与GitHub冷配置仍待完成。
 
 0.1.22 历史源码 `0.1.22-dev`、协议 5，插件 Build 警告视为错误通过；未部署/启动。0.1.22 该轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重跑测试。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
@@ -56,7 +56,7 @@ F10 停用/重建与返航清理有日志，用户确认可见并正常模仿动
 游戏适配器在主线程处理已验证的数据，0.1.5-dev 已实际执行本机 TCP 路径；跨机器运行验证待完成。
 
 - Hello/Welcome 验证协议、Mod、Steam Build 和 Unity 版本，分配房主 1 / 客机 2。
-  历史0.1.14源码的协议版本 5 新增 MapRouteSlice/MapIgpChoice/MapChoiceRetire，保留协议 4 的 FishActionRequest/FishActionResult 和协议 3 的 WorldSlice/鱼显示描述，当时握手拒绝旧协议 4。当前源码协议8，握手拒绝旧协议7，并保留后续Cargo通道与完整路线字段；Hello/Welcome的显式RequestsHostFishDisplay只请求观察，不授予捕鱼或世界权限。
+  历史0.1.14源码的协议版本 5 新增 MapRouteSlice/MapIgpChoice/MapChoiceRetire，保留协议 4 的 FishActionRequest/FishActionResult 和协议 3 的 WorldSlice/鱼显示描述，当时握手拒绝旧协议 4。当前源码协议9，握手拒绝旧协议8及更早版本，并保留后续Cargo通道与完整路线字段；Hello/Welcome的显式RequestsHostFishDisplay只请求观察，不授予捕鱼或世界权限。
 - 房间使用会话 GUID；每个方向使用连续序号，重复或跳号关闭连接。
 - 使用 4 字节小端长度前缀，消息最大 128 KiB，循环读取支持 TCP 拆包。
 - 发送互斥，避免并发消息字节交错；无效出站消息不占用序号。
