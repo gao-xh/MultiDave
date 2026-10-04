@@ -8,6 +8,15 @@ internal static class Program
     {
         var tests = new (string Name, Action Run)[]
         {
+            ("loot lineage same fish drop plus bag and original roll enclosure", LootCallLineageTests.SameFishDropPlusBagAndRollKeepFixedEnclosure),
+            ("loot lineage different fish and unknown scopes mask parent", LootCallLineageTests.DifferentFishAndUnknownScopesMaskTheOuterCandidate),
+            ("loot lineage fixed prefix survives pool generation change", LootCallLineageTests.FrozenSourceAndPoolGenerationNeverRebindAfterPrefix),
+            ("loot lineage postfix and original exceptions are not capture terminal", LootCallLineageTests.PostfixAndOriginalExceptionNeverMeanCaptureTerminal),
+            ("loot lineage missing postfix and changed scalar result lose integrity", LootCallLineageTests.MissingPostfixAndChangedScalarResultsLoseIntegrity),
+            ("loot lineage wrong thread cannot supply or close a scope", LootCallLineageTests.WrongThreadCannotSupplyOrCloseAParentScope),
+            ("loot lineage high water foreign run and LIFO reject rebinding", LootCallLineageTests.HighWaterForeignRunAndLifoChecksRejectRebinding),
+            ("loot lineage queue depth and run quota loss cannot heal", LootCallLineageTests.QueueDepthAndRunQuotaLossNeverHealAfterDrain),
+            ("loot lineage stop counts pending and queued without restart", LootCallLineageTests.StopCountsPendingAndQueuedEvidenceWithoutRestart),
             ("cargo transport ledger pending and historical weight projection", CargoTransportTests.LedgerProjectionKeepsPendingAndHistoricalWeights),
             ("cargo transport returned ledger floating reservation residue", CargoTransportTests.ReturnedLedgerRetainsFloatingReservationResidue),
             ("cargo transport canonical fingerprints and deep copies", CargoTransportTests.CanonicalFingerprintAndDeepCopiesOwnTheirData),

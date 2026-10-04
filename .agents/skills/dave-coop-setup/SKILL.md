@@ -220,9 +220,16 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - Startup/ObserveSaveStartup默认false，须未来正常保存退出/部署后、启动前配置，不能F11/Join后补装当早覆盖。Plugin.Load marker只有CLR来源；第一次实际Diagnostics.Update登记Unity线程后才读native字段，早期callbacks仅标量和有界pathhash。不重定向路径、不调用原业务或保存、不改云；安装可能native初始化且安装前读取无法排除。己方owner卸除、异常/丢失/线程/配额明示；不以factory/postfix或初始化false推断never-loaded。
 - 本机loader IL在Internal_ActiveSceneChanged detour中Execute/Load plugins，然后原Invoke；这不证早于SaveUtil/GameBase/UserOption Awake/.cctor。完整首次load/路径/云/prefs/成就输出与隔离仍未证，native/world/bag/entry/quiet权限false。用户测试延后，不自动部署/启动；完整M3—M7、个人容量/捕获/逐产物返航、真实双端与GitHub冷配置继续要求。
 
-- 当前源码0.1.24-dev/协议6，Build与实际Core/TCP 200/200通过；继续个人背包先读development/docs/CARGO_TRANSPORT.md与cargo-transport-build-verification.json。
+- 历史源码0.1.24-dev/协议6，Build与实际Core/TCP 200/200通过；继续个人背包先读development/docs/CARGO_TRANSPORT.md与cargo-transport-build-verification.json。
   两袋各自容量/重量/预约和确认产物仅只读账本投影；host inventory tracked-only，重量无新鲜原生证明，Returned也不能按空inventory归零。
   新整体revision覆盖Connected/phase/未知，即使BagRevision不变；32products/64pages整批提交、control优先五路公平，begun batch完成后才nextlatest。
   Disconnect保留host ledger和unknown屏障；newpeer/Room不自动迁移，重连及后续expedition接替仍待真实生命周期协议。
   游戏没有verified producer attach，不创建fakeledger或GUI权限入口；tests仅synthetic CLR与回环TCP，不是原生捕获/容量/分流/返航或双游戏。
   本轮未部署/启动，安装0.1.12/潜水0.1.11/default0.1.0保持；完整guest隔离、房主世界采用、独立actor/装备/氧气、个人袋与正常逐项入仓、M3—M7双端/冷配置继续推进。
+
+- 当前源码0.1.25-dev/协议6，Build与实际Core/TCP 209/209通过；继续捕获分流先读development/docs/CAPTURE_LINEAGE.md及capture-lineage-build-verification.json。
+  既有ObserveLootCalls默认关闭，16声明只观察自然拾取/主与追加产物/随机原返回/容量/入袋/进度；prefix固定候选、postfix不pop、void finalizer退出。
+  Parent只是同步包含、ordinal仅本地run；未知鱼边界遮父、不从drain/最近鱼补来源。回调冻结重入、错线程/配对/queue/预算/原异常立即撤证；日志另看CurrentLineageHealthy。
+  Core/copy队列512、context128、depth32、fishordinal256、Update16、run和process8192events；key512UTF16、process65536，state/lifecycle各128。只有已确认卸钩才newinstance，未知cleanup不retry，全局预算不reset。
+  SourceOperationBound/MemberOwnership/FullYield/CaptureSuccess/BagDelta/ABI等全false，没有CargoFacts producer；9fixture只运行synthetic CLR，不等于native调用/员工归属。
+  下一桥需潜水级operation/source lease与原游戏已经选产物后的受控阶段，不能提前Roll/retry、把事后Add当完整预计划或只跳Add_Impl/新槽写入。保留每人独立袋/容量/负重及逐产物返航；本轮未部署/启动，完整M3—M7/双端/冷配置继续。

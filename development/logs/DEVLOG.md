@@ -683,3 +683,14 @@
 - PLAN/HANDOFF/相关文档与Skill同步；后续接真实潜水成员、独立容量/产物来源及员工分流，逐项返航入仓、guest完整隔离/actor/AI、房主世界采用、实际双端与GitHub冷配置，不缩减目标。
 - 首次Core 200通过但插件Build在CargoFrames嵌套SelectMany处报CS0656（interop引用环境缺NullableAttribute构造）；改显式foreach扁平化，不引入新依赖。Core源改变后重新执行两套检查，最终200/200和上述Build/hash均为修订后的真实结果。
 - Skill草稿正式validator通过并同步，SHA256为`1A39FDE2C1A96B5E3E262B18CC61EEC7ABD2288A325395903DB4C3723FD5A960`；Test-Core PowerShell解析零错误，两名独立代理只读源码复查无阻断。新鲜游戏进程检查0，安装DLL仍为`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，本轮没有部署/启动。
+
+## 2026-10-04 — 0.1.25 捕获来源观察与个人容量时机
+
+- 用户确定每人独立背包/容量/负重；前轮0.1.24已提交2270bca并远端核验，完整M3—M7 goal保持active。当前协议6，未部署/启动/native业务或读改存档；旧实机与默认包范围保留。
+- 新生产Core LootCallLineage固定Run/CallId/SourceRoot与prefix source候选，严格同步LIFO、未知鱼遮父、同源嵌套保持根、新鱼/代次分开；postfix保留scope，finalizer退出并记录原异常。高水位/线程/opaque token/额度/队列失效锁存，不绑定Member/Operation或构造CargoFacts。
+- Loot三适配器扩16 exacttargets，主/追加产物、原随机int、容量与负重、普通/Ignore Add、Add_Impl、新槽与水下进度均只读；prefix原生读取前后确认窗口及冻结重入拒绝，finalizer仅CLR。key exactUTF16 hash+length、512/65536预算，slot加密字段/终态不读取。
+- copy/Core512queue、128context、32depth、256fishordinals、每Update16、process/run8192events；state/lifecycle各128。Hook损失即时撤Core、controller先fresh健康再drain，旧HealthyAtCapture另带当前健康。正常toggle新实例；unknown卸钩CAS一次保留引用，不重试或重置全局故障。
+- 新Cecil脚本实际7types/16hooks/5fields/owner继承5层、missing为空；首读误用不存在的overweight backing，按实际字段清单改为_overloadedThreshold_k__BackingField后通过。PE实际16selectors/18roots/145records/54无containing unwind，无quota/遗漏/截断；原始报告/IL/地址只留.local，不执行GameCode。
+- 静态路径显示原生进入后才选追加物且会更新保底计数，当前Cargo.Reserve入口前完整产物合同不足以直接接捕获。下一桥须单独来源/操作租约及已选产物受控阶段，避免预Roll、重复执行、房主袋污染与两Gate OperationId冲突；Add_Impl/现有槽/进度副作用都需明确归属。
+- 本轮实际Core/TCP209/209通过，新增9组生产来源栈夹具；Build警告视为错误通过，SHA256 `970282A99808D88AFC8327F94DD9EE866384B270982AC3D40AF7CABADB158918`。测试不运行native callbacks/ABI，所有员工/产物完整/捕获/袋增量/native权限false。两个独立只读末审无阻断；新脚本AST错误0，正式Skill校验通过并同步。
+- 新CAPTURE_LINEAGE和构建摘要、当前core记录及交接/计划/Skill同步；历史0.1.24的200和cargo-transport摘要不改。新鲜进程0、安装DLL仍8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B。后续真实个人分流/入仓、guest隔离、房主世界采用、双端正常闭环/冷配置继续必需。

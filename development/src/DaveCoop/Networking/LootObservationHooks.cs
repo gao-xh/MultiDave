@@ -9,16 +9,15 @@ namespace DaveCoop.Networking
 {
     internal enum LootObservationMethod
     {
-        FishAddDropItem = 1,
-        LootBoxAdd = 2,
-        CaughtFishAdd = 3,
-        IngredientsAddFromLootBox = 4
+        FishAddDropItem = 1, LootBoxAdd = 2, CaughtFishAdd = 3, IngredientsAddFromLootBox = 4,
+        FishPickup = 5, FishDropWithPlus = 6, FishDropPlus = 7, LootBoxAddIgnoreOverloaded = 8,
+        LootBoxAddImpl = 9, LootBoxCheckOverloaded = 10, LootBoxRefreshOverweight = 11,
+        SaveDataAddLooting = 12, FishBodySuccessInteract = 13, FishBodyCheckAvailable = 14,
+        FishPlusItemRoll = 15, SaveDataAddLootBox = 16
     }
+    internal enum LootObservationStage { Before = 1, After = 2, Finalizer = 3 }
 
-    internal enum LootObservationStage { Before = 1, After = 2 }
-
-    // Pure CLR arguments copied at the prefix. Reference arguments are only
-    // represented by presence; no list, delegate or native wrapper is retained.
+    // Scalars and presence only; reference arguments never enter a queue/context.
     internal sealed class LootObservationArguments
     {
         public int? ItemId { get; internal set; }
@@ -28,15 +27,22 @@ namespace DaveCoop.Networking
         public int? CollectionId { get; internal set; }
         public int? CollectionGrade { get; internal set; }
         public int? LiftType { get; internal set; }
+        public int? RollFishTid { get; internal set; }
+        public int? BagType { get; internal set; }
+        public float? TargetWeight { get; internal set; }
         public bool? IgnoreOverloaded { get; internal set; }
         public bool? UpdateMissionCount { get; internal set; }
         public bool? IsForce { get; internal set; }
+        public bool? IsNew { get; internal set; }
         public bool GetTimesArgumentPresent { get; internal set; }
         public bool ExchangeCallbackArgumentPresent { get; internal set; }
+        public bool ItemDataArgumentPresent { get; internal set; }
+        public bool ActorArgumentPresent { get; internal set; }
+        public bool OtherInstanceWrapperPresent { get; internal set; }
     }
 
-    // Synchronous view only. A consumer must confirm Unity thread ownership and
-    // freeze bounded CLR values immediately. Never enqueue this view/wrappers.
+    // This view exists only during a synchronous callback. Capture checks the
+    // confirmed thread before Pointer/direct proxies, then freezes CLR values.
     internal sealed class LootObservationCallback
     {
         public long ProcessSequence { get; }
@@ -46,56 +52,59 @@ namespace DaveCoop.Networking
         public LootObservationStage Stage { get; }
         public LootObservationArguments Arguments { get; }
         public FishAISystem Fish { get; }
+        public FishInteractionBody Body { get; }
         public LootBox Bag { get; }
         public IngredientsStorage Storage { get; }
+        public SaveData Save { get; }
         public LootBoxSlot Slot { get; }
+        public string Key { get; }
         public bool? OriginalReturn { get; }
-        public bool PrefixContextMatched { get; }
-
+        public int? OriginalIntReturn { get; }
+        public bool OriginalException { get; }
+        public bool PrefixContextMatched => true;
         internal LootObservationCallback(long sequence, long callId, int threadId,
             LootObservationMethod method, LootObservationStage stage, LootObservationArguments arguments,
-            FishAISystem fish, LootBox bag, IngredientsStorage storage, LootBoxSlot slot,
-            bool? originalReturn, bool contextMatched)
+            FishAISystem fish, FishInteractionBody body, LootBox bag, IngredientsStorage storage,
+            SaveData save, LootBoxSlot slot, string key, bool? originalReturn, int? originalIntReturn, bool originalException)
         {
             ProcessSequence = sequence; CallId = callId; ManagedThreadId = threadId;
             Method = method; Stage = stage; Arguments = arguments;
-            Fish = fish; Bag = bag; Storage = storage; Slot = slot;
-            OriginalReturn = originalReturn; PrefixContextMatched = contextMatched;
+            Fish = fish; Body = body; Bag = bag; Storage = storage; Save = save; Slot = slot; Key = key;
+            OriginalReturn = originalReturn; OriginalIntReturn = originalIntReturn; OriginalException = originalException;
         }
     }
 
-    // Metadata/signature validation is not native ABI acceptance. These hooks
-    // observe original calls only: no argument/result replacement, skipping,
-    // random selection, inventory write, constructor or original getter calls.
+    // Metadata/registration checks do not prove native ABI or startup coverage.
+    // Prefix/postfix/finalizer never replace original inputs, results or errors.
     internal sealed class LootObservationHooks : IDisposable
     {
         private const string Owner = Plugin.Id + ".loot-observation";
-        public const int MaxProcessEvents = 1024;
+        public const int TargetCount = 16;
+        public const int MaxProcessEvents = 8192;
         public const int MaxPendingCalls = 128;
         private static LootObservationHooks _active;
-        private static long _processAccepted;
-        private static long _processNextCallId;
-        private static long _processDropped;
-        private static long _processUnmatchedAfter;
-        private static long _processDiscardedCalls;
-        private static int _processCallbackErrors;
-        private static int _processFailed;
+        private static long _processAccepted, _processNextCallId, _processDropped;
+        private static long _processUnmatchedAfter, _processDiscardedCalls;
+        private static int _processCallbackErrors, _processFailed;
         private readonly object _gate = new object();
         private readonly Dictionary<long, CallContext> _calls = new Dictionary<long, CallContext>();
         private List<(MethodInfo Original, MethodInfo Prefix, MethodInfo Postfix)> _targets;
         private Action<LootObservationCallback> _copy;
+        private Action<string> _invalidate;
         private Harmony _harmony;
-        private bool _accepting;
+        private bool _accepting, _started;
+        private int _cleanupAttempted;
         private bool _cleanupVerified = true;
-
         private sealed class CallContext
         {
             public LootObservationMethod Method;
             public int ThreadId;
             public LootObservationArguments Arguments;
+            public bool PostfixObserved;
+            public bool? OriginalReturn;
+            public int? OriginalIntReturn;
         }
-
-        public bool Installed => _harmony != null && !Failed;
+        public bool Installed => _harmony != null && !Failed && Volatile.Read(ref _accepting);
         public bool Healthy => Installed && CallbackErrors == 0;
         public bool Failed => Volatile.Read(ref _processFailed) != 0;
         public int CallbackErrors => Volatile.Read(ref _processCallbackErrors);
@@ -107,215 +116,209 @@ namespace DaveCoop.Networking
         public bool CleanupVerified => _cleanupVerified;
         public int PendingCalls { get { lock (_gate) return _calls.Count; } }
 
-        // Lifecycle belongs on the confirmed Unity thread. Failures and quotas
-        // are process-wide, never reset by toggling or a new capture instance.
-        public void Enable(Action<LootObservationCallback> copy)
+        public void Enable(Action<LootObservationCallback> copy, Action<string> invalidate)
         {
             if (copy == null) throw new ArgumentNullException(nameof(copy));
-            if (Failed || CallbackErrors != 0)
-                throw new InvalidOperationException("Loot observation previously failed; restart before retrying.");
+            if (invalidate == null) throw new ArgumentNullException(nameof(invalidate));
             if (Installed) return;
-            if (ProcessLimitReached)
-                throw new InvalidOperationException("Loot observation process quota is exhausted; restart before installing again.");
+            if (Failed || CallbackErrors != 0 || !_cleanupVerified)
+                throw new InvalidOperationException("Loot observer unavailable; restart required.");
+            if (_started) throw new InvalidOperationException("Loot hook instances are single-use.");
+            if (ProcessLimitReached) throw new InvalidOperationException("Loot process quota exhausted.");
             LootObservationHooks previous = Interlocked.CompareExchange(ref _active, this, null);
             if (previous != null && !ReferenceEquals(previous, this))
-                throw new InvalidOperationException("Another loot observer is already active.");
+                throw new InvalidOperationException("Another loot observer is active.");
             try
             {
+                _started = true; _invalidate = invalidate;
                 _targets = CreateTargets();
                 _harmony = new Harmony(Owner); _cleanupVerified = false;
                 foreach (var target in _targets)
                 {
-                    _harmony.Patch(target.Original,
-                        prefix: new HarmonyMethod(target.Prefix), postfix: new HarmonyMethod(target.Postfix));
-                    var info = Harmony.GetPatchInfo(target.Original);
-                    if (info == null || !info.Owners.Contains(Owner))
-                        throw new InvalidOperationException("Loot observation patch was not registered: " + target.Original.DeclaringType.FullName + "." + target.Original.Name);
+                    _harmony.Patch(target.Original, prefix: new HarmonyMethod(target.Prefix),
+                        postfix: new HarmonyMethod(target.Postfix), finalizer: new HarmonyMethod(CallbackMethod(nameof(CallFinally))));
+                    VerifyTarget(target);
                 }
                 lock (_gate) { _copy = copy; _accepting = true; }
             }
-            catch (Exception installError)
+            catch
             {
                 LatchFailure(); StopAccepting();
-                try { RemoveOwnPatches(); }
-                catch (Exception cleanupError)
-                {
-                    throw new InvalidOperationException("Loot observation installation failed and own patch removal was not verified.",
-                        new AggregateException(installError, cleanupError));
-                }
+                try { Dispose(); } catch { }
                 throw;
             }
         }
-
         private static List<(MethodInfo Original, MethodInfo Prefix, MethodInfo Postfix)> CreateTargets()
         {
             var targets = new List<(MethodInfo Original, MethodInfo Prefix, MethodInfo Postfix)>();
+            Type lifted = typeof(LootBox.AutoLiftedType), times = typeof(Il2CppSystem.Collections.Generic.List<string>);
+            Type[] bagArgs = { typeof(int), typeof(int), typeof(int), lifted, times, typeof(bool) };
             Add(targets, typeof(FishAISystem), "AddDropItem_Impl", false, typeof(void),
-                new[] { typeof(int), typeof(LootBox.AutoLiftedType), typeof(int), typeof(bool) }, nameof(FishDropBefore), nameof(FishDropAfter));
-            Add(targets, typeof(LootBox), "Add", false, typeof(bool),
-                new[] { typeof(int), typeof(int), typeof(int), typeof(LootBox.AutoLiftedType), typeof(Il2CppSystem.Collections.Generic.List<string>), typeof(bool) },
-                nameof(BagAddBefore), nameof(BagAddAfter));
+                new[] { typeof(int), lifted, typeof(int), typeof(bool) }, nameof(FishDropBefore), nameof(FishDropAfter));
+            Add(targets, typeof(LootBox), "Add", false, typeof(bool), bagArgs, nameof(BagAddBefore), nameof(BagAddAfter));
             Add(targets, typeof(SaveDataCaughtFishRouter), "AddCaughtFish", true, typeof(void),
                 new[] { typeof(int), typeof(int), typeof(bool) }, nameof(CollectionBefore), nameof(CollectionAfter));
             Add(targets, typeof(IngredientsStorage), "AddFromLootBox", false, typeof(void),
                 new[] { typeof(LootBoxSlot), typeof(Il2CppSystem.Func<int>) }, nameof(StorageBefore), nameof(StorageAfter));
+            Add(targets, typeof(FishAISystem), "SuccessPickupFish", false, typeof(void),
+                new[] { typeof(int), typeof(bool) }, nameof(PickupBefore), nameof(PickupAfter));
+            Add(targets, typeof(FishAISystem), "AddDropItemLootBoxWithPlus", false, typeof(void),
+                new[] { typeof(int), lifted, typeof(int) }, nameof(DropWithPlusBefore), nameof(DropWithPlusAfter));
+            Add(targets, typeof(FishAISystem), "AddDropPlusItem_Impl", false, typeof(void),
+                new[] { typeof(int), lifted }, nameof(DropPlusBefore), nameof(DropPlusAfter));
+            Add(targets, typeof(LootBox), "AddIgnoreOverloaded", false, typeof(bool), bagArgs, nameof(BagIgnoreBefore), nameof(BagIgnoreAfter));
+            Add(targets, typeof(LootBox), "Add_Impl", false, typeof(void),
+                new[] { typeof(DR.IItemBase), typeof(int), typeof(int), lifted, times, typeof(bool) }, nameof(BagImplBefore), nameof(BagImplAfter));
+            Add(targets, typeof(LootBox), "CheckOverloadedState", false, typeof(bool), new[] { typeof(int) }, nameof(CapacityBefore), nameof(CapacityAfter));
+            Add(targets, typeof(LootBox), "RefreshOverweight", false, typeof(void), new[] { typeof(float) }, nameof(OverweightBefore), nameof(OverweightAfter));
+            Add(targets, typeof(SaveData), "AddLootingSaveData", false, typeof(void), new[] { typeof(int), typeof(bool) }, nameof(LootingBefore), nameof(LootingAfter));
+            Add(targets, typeof(FishInteractionBody), "SuccessInteract", false, typeof(void), new[] { typeof(BaseCharacter) }, nameof(BodySuccessBefore), nameof(BodySuccessAfter));
+            Add(targets, typeof(FishInteractionBody), "CheckAvailableInteraction", false, typeof(bool), new[] { typeof(BaseCharacter) }, nameof(BodyAvailableBefore), nameof(BodyAvailableAfter));
+            Add(targets, typeof(FishPlusItemPity), "RollPlusItem", false, typeof(int), new[] { typeof(int), typeof(int) }, nameof(RollBefore), nameof(RollAfter));
+            Add(targets, typeof(SaveData), "AddLootBox", false, typeof(void), new[] { typeof(SaveData.LootBoxType), typeof(string), typeof(LootBoxSlot) }, nameof(SavedSlotBefore), nameof(SavedSlotAfter));
+            if (targets.Count != TargetCount) throw new InvalidOperationException("Loot target count mismatch.");
             return targets;
         }
-
         private static void Add(List<(MethodInfo Original, MethodInfo Prefix, MethodInfo Postfix)> targets,
             Type type, string name, bool isStatic, Type returnType, Type[] parameters, string prefixName, string postfixName)
         {
             BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly |
                 (isStatic ? BindingFlags.Static : BindingFlags.Instance);
             MethodInfo original = type.GetMethod(name, flags, null, parameters, null);
-            if (original == null || original.DeclaringType != type || original.IsStatic != isStatic ||
-                original.IsGenericMethod || original.ReturnType != returnType)
-                throw new InvalidOperationException("Expected loot observation signature is unavailable: " + type.FullName + "." + name);
+            if (original == null || original.DeclaringType != type || original.IsStatic != isStatic || original.IsGenericMethod || original.ReturnType != returnType)
+                throw new InvalidOperationException("Expected loot hook signature unavailable.");
             targets.Add((original, CallbackMethod(prefixName), CallbackMethod(postfixName)));
         }
-
         private static MethodInfo CallbackMethod(string name)
         {
             MethodInfo method = typeof(LootObservationHooks).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
-            if (method == null || method.ReturnType != typeof(void))
-                throw new InvalidOperationException("Missing own read-only loot observation callback: " + name);
+            if (method == null || method.ReturnType != typeof(void)) throw new InvalidOperationException("Expected void loot callback unavailable.");
             return method;
         }
+        private static void VerifyTarget((MethodInfo Original, MethodInfo Prefix, MethodInfo Postfix) target)
+        {
+            var info = Harmony.GetPatchInfo(target.Original);
+            if (info == null || !HasOwn(info.Prefixes, target.Prefix) || !HasOwn(info.Postfixes, target.Postfix) ||
+                !HasOwn(info.Finalizers, CallbackMethod(nameof(CallFinally)))) throw new InvalidOperationException("Own loot registration unavailable.");
+        }
+        private static bool HasOwn(IEnumerable<Patch> patches, MethodInfo method)
+        {
+            foreach (Patch patch in patches) if (patch.owner == Owner && patch.PatchMethod == method) return true;
+            return false;
+        }
 
-        // __state is our own CLR CallId. All native inputs and original bool are
-        // passed by value; no native ref/out argument or __result is changed.
+        // No ref original argument/result and no bool prefix/exception-returning
+        // finalizer. The finalizer is the sole successful call-context removal.
         private static void FishDropBefore(FishAISystem __instance, int __0, LootBox.AutoLiftedType __1, int __2, bool __3, out long __state)
-        {
-            __state = 0;
-            try
-            {
-                if (!CanBegin()) return;
-                __state = Begin(LootObservationMethod.FishAddDropItem,
-                    new LootObservationArguments { BonusGrade = __0, LiftType = (int)__1, Tier = __2, IgnoreOverloaded = __3 }, fish: __instance);
-            }
-            catch { FailActiveCallback(); }
-        }
-        private static void FishDropAfter(FishAISystem __instance, long __state)
-            => End(__state, LootObservationMethod.FishAddDropItem, fish: __instance);
-
-        private static void BagAddBefore(LootBox __instance, int __0, int __1, int __2,
-            LootBox.AutoLiftedType __3, Il2CppSystem.Collections.Generic.List<string> __4, bool __5, out long __state)
-        {
-            __state = 0;
-            try
-            {
-                if (!CanBegin()) return;
-                __state = Begin(LootObservationMethod.LootBoxAdd,
-                    new LootObservationArguments { ItemId = __0, Count = __1, BonusGrade = __2, LiftType = (int)__3,
-                        GetTimesArgumentPresent = !ReferenceEquals(__4, null), UpdateMissionCount = __5 }, bag: __instance);
-            }
-            catch { FailActiveCallback(); }
-        }
-        private static void BagAddAfter(LootBox __instance, long __state, bool __result)
-            => End(__state, LootObservationMethod.LootBoxAdd, bag: __instance, originalReturn: __result);
-
-        private static void CollectionBefore(int __0, int __1, bool __2, out long __state)
-        {
-            __state = 0;
-            try
-            {
-                if (!CanBegin()) return;
-                __state = Begin(LootObservationMethod.CaughtFishAdd,
-                    new LootObservationArguments { CollectionId = __0, CollectionGrade = __1, IsForce = __2 });
-            }
-            catch { FailActiveCallback(); }
-        }
-        private static void CollectionAfter(long __state) => End(__state, LootObservationMethod.CaughtFishAdd);
-
-        private static void StorageBefore(IngredientsStorage __instance, LootBoxSlot __0,
-            Il2CppSystem.Func<int> __1, out long __state)
-        {
-            __state = 0;
-            try
-            {
-                if (!CanBegin()) return;
-                __state = Begin(LootObservationMethod.IngredientsAddFromLootBox,
-                    new LootObservationArguments { ExchangeCallbackArgumentPresent = !ReferenceEquals(__1, null) }, storage: __instance, slot: __0);
-            }
-            catch { FailActiveCallback(); }
-        }
-        private static void StorageAfter(IngredientsStorage __instance, LootBoxSlot __0, long __state)
-            => End(__state, LootObservationMethod.IngredientsAddFromLootBox, storage: __instance, slot: __0);
-
-        private static bool CanBegin()
-        {
-            LootObservationHooks active = Volatile.Read(ref _active);
-            if (active == null || active.Failed || !Volatile.Read(ref active._accepting)) return false;
-            if (!active.ProcessLimitReached) return true;
-            Increment(ref _processDropped); return false;
-        }
-
-        private static void FailActiveCallback()
-        {
-            LootObservationHooks active = Volatile.Read(ref _active);
-            if (active != null) active.CallbackFailed();
-        }
+            => __state = Begin(LootObservationMethod.FishAddDropItem, new LootObservationArguments { BonusGrade = __0, LiftType = (int)__1, Tier = __2, IgnoreOverloaded = __3 }, fish: __instance);
+        private static void FishDropAfter(FishAISystem __instance, long __state) => Postfix(__state, LootObservationMethod.FishAddDropItem, fish: __instance);
+        private static void PickupBefore(FishAISystem __instance, int __0, bool __1, out long __state)
+            => __state = Begin(LootObservationMethod.FishPickup, new LootObservationArguments { BonusGrade = __0, IgnoreOverloaded = __1 }, fish: __instance);
+        private static void PickupAfter(FishAISystem __instance, long __state) => Postfix(__state, LootObservationMethod.FishPickup, fish: __instance);
+        private static void DropWithPlusBefore(FishAISystem __instance, int __0, LootBox.AutoLiftedType __1, int __2, out long __state)
+            => __state = Begin(LootObservationMethod.FishDropWithPlus, new LootObservationArguments { BonusGrade = __0, LiftType = (int)__1, Tier = __2 }, fish: __instance);
+        private static void DropWithPlusAfter(FishAISystem __instance, long __state) => Postfix(__state, LootObservationMethod.FishDropWithPlus, fish: __instance);
+        private static void DropPlusBefore(FishAISystem __instance, int __0, LootBox.AutoLiftedType __1, out long __state)
+            => __state = Begin(LootObservationMethod.FishDropPlus, new LootObservationArguments { BonusGrade = __0, LiftType = (int)__1 }, fish: __instance);
+        private static void DropPlusAfter(FishAISystem __instance, long __state) => Postfix(__state, LootObservationMethod.FishDropPlus, fish: __instance);
+        private static void BodySuccessBefore(FishInteractionBody __instance, BaseCharacter __0, out long __state)
+            => __state = Begin(LootObservationMethod.FishBodySuccessInteract, new LootObservationArguments { ActorArgumentPresent = !ReferenceEquals(__0, null) }, body: __instance);
+        private static void BodySuccessAfter(FishInteractionBody __instance, long __state) => Postfix(__state, LootObservationMethod.FishBodySuccessInteract, body: __instance);
+        private static void BodyAvailableBefore(FishInteractionBody __instance, BaseCharacter __0, out long __state)
+            => __state = Begin(LootObservationMethod.FishBodyCheckAvailable, new LootObservationArguments { ActorArgumentPresent = !ReferenceEquals(__0, null) }, body: __instance);
+        private static void BodyAvailableAfter(FishInteractionBody __instance, long __state, bool __result) => Postfix(__state, LootObservationMethod.FishBodyCheckAvailable, body: __instance, originalReturn: __result);
+        private static LootObservationArguments BagArguments(int id, int count, int grade, LootBox.AutoLiftedType type, Il2CppSystem.Collections.Generic.List<string> times, bool mission)
+            => new LootObservationArguments { ItemId = id, Count = count, BonusGrade = grade, LiftType = (int)type, GetTimesArgumentPresent = !ReferenceEquals(times, null), UpdateMissionCount = mission };
+        private static void BagAddBefore(LootBox __instance, int __0, int __1, int __2, LootBox.AutoLiftedType __3, Il2CppSystem.Collections.Generic.List<string> __4, bool __5, out long __state)
+            => __state = Begin(LootObservationMethod.LootBoxAdd, BagArguments(__0, __1, __2, __3, __4, __5), bag: __instance);
+        private static void BagAddAfter(LootBox __instance, long __state, bool __result) => Postfix(__state, LootObservationMethod.LootBoxAdd, bag: __instance, originalReturn: __result);
+        private static void BagIgnoreBefore(LootBox __instance, int __0, int __1, int __2, LootBox.AutoLiftedType __3, Il2CppSystem.Collections.Generic.List<string> __4, bool __5, out long __state)
+            => __state = Begin(LootObservationMethod.LootBoxAddIgnoreOverloaded, BagArguments(__0, __1, __2, __3, __4, __5), bag: __instance);
+        private static void BagIgnoreAfter(LootBox __instance, long __state, bool __result) => Postfix(__state, LootObservationMethod.LootBoxAddIgnoreOverloaded, bag: __instance, originalReturn: __result);
+        private static void BagImplBefore(LootBox __instance, DR.IItemBase __0, int __1, int __2, LootBox.AutoLiftedType __3, Il2CppSystem.Collections.Generic.List<string> __4, bool __5, out long __state)
+            => __state = Begin(LootObservationMethod.LootBoxAddImpl, new LootObservationArguments { ItemDataArgumentPresent = !ReferenceEquals(__0, null), Count = __1, BonusGrade = __2, LiftType = (int)__3, GetTimesArgumentPresent = !ReferenceEquals(__4, null), UpdateMissionCount = __5 }, bag: __instance);
+        private static void BagImplAfter(LootBox __instance, long __state) => Postfix(__state, LootObservationMethod.LootBoxAddImpl, bag: __instance);
+        private static void CapacityBefore(LootBox __instance, int __0, out long __state) => __state = Begin(LootObservationMethod.LootBoxCheckOverloaded, new LootObservationArguments { ItemId = __0 }, bag: __instance);
+        private static void CapacityAfter(LootBox __instance, long __state, bool __result) => Postfix(__state, LootObservationMethod.LootBoxCheckOverloaded, bag: __instance, originalReturn: __result);
+        private static void OverweightBefore(LootBox __instance, float __0, out long __state) => __state = Begin(LootObservationMethod.LootBoxRefreshOverweight, new LootObservationArguments { TargetWeight = __0 }, bag: __instance);
+        private static void OverweightAfter(LootBox __instance, long __state) => Postfix(__state, LootObservationMethod.LootBoxRefreshOverweight, bag: __instance);
+        private static void LootingBefore(SaveData __instance, int __0, bool __1, out long __state) => __state = Begin(LootObservationMethod.SaveDataAddLooting, new LootObservationArguments { ItemId = __0, IsNew = __1 }, save: __instance);
+        private static void LootingAfter(SaveData __instance, long __state) => Postfix(__state, LootObservationMethod.SaveDataAddLooting, save: __instance);
+        private static void CollectionBefore(int __0, int __1, bool __2, out long __state) => __state = Begin(LootObservationMethod.CaughtFishAdd, new LootObservationArguments { CollectionId = __0, CollectionGrade = __1, IsForce = __2 });
+        private static void CollectionAfter(long __state) => Postfix(__state, LootObservationMethod.CaughtFishAdd);
+        private static void StorageBefore(IngredientsStorage __instance, LootBoxSlot __0, Il2CppSystem.Func<int> __1, out long __state)
+            => __state = Begin(LootObservationMethod.IngredientsAddFromLootBox, new LootObservationArguments { ExchangeCallbackArgumentPresent = !ReferenceEquals(__1, null) }, storage: __instance, slot: __0);
+        private static void StorageAfter(IngredientsStorage __instance, LootBoxSlot __0, long __state) => Postfix(__state, LootObservationMethod.IngredientsAddFromLootBox, storage: __instance, slot: __0);
+        private static void RollBefore(FishPlusItemPity __instance, int __0, int __1, out long __state)
+            => __state = Begin(LootObservationMethod.FishPlusItemRoll, new LootObservationArguments { RollFishTid = __0, BonusGrade = __1, OtherInstanceWrapperPresent = !ReferenceEquals(__instance, null) });
+        private static void RollAfter(long __state, int __result) => Postfix(__state, LootObservationMethod.FishPlusItemRoll, originalIntReturn: __result);
+        private static void SavedSlotBefore(SaveData __instance, SaveData.LootBoxType __0, string __1, LootBoxSlot __2, out long __state)
+            => __state = Begin(LootObservationMethod.SaveDataAddLootBox, new LootObservationArguments { BagType = (int)__0 }, save: __instance, slot: __2, key: __1);
+        private static void SavedSlotAfter(SaveData __instance, long __state) => Postfix(__state, LootObservationMethod.SaveDataAddLootBox, save: __instance);
+        private static void CallFinally(long __state, Exception __exception)
+            => Complete(__state, LootObservationStage.Finalizer, null, null, null, null, null, null, null, !ReferenceEquals(__exception, null));
 
         private static long Begin(LootObservationMethod method, LootObservationArguments arguments,
-            FishAISystem fish = null, LootBox bag = null, IngredientsStorage storage = null, LootBoxSlot slot = null)
+            FishAISystem fish = null, FishInteractionBody body = null, LootBox bag = null, IngredientsStorage storage = null, SaveData save = null, LootBoxSlot slot = null, string key = null)
         {
             LootObservationHooks active = Volatile.Read(ref _active);
-            if (active == null) return 0;
+            if (active == null || active.Failed || !Volatile.Read(ref active._accepting)) return 0;
             try
             {
                 lock (active._gate)
                 {
                     if (!active._accepting || active._copy == null || active.Failed) return 0;
-                    if (active._calls.Count >= MaxPendingCalls || !TrySequence(out long sequence))
-                    { Increment(ref _processDropped); return 0; }
-                    long callId = Interlocked.Increment(ref _processNextCallId);
+                    if (active._calls.Count >= MaxPendingCalls || !TrySequence(out long sequence) || !TryCallId(out long callId))
+                    { Increment(ref _processDropped); throw new InvalidOperationException("Loot callback quota exhausted."); }
                     int threadId = Environment.CurrentManagedThreadId;
                     active._calls.Add(callId, new CallContext { Method = method, ThreadId = threadId, Arguments = arguments });
-                    active._copy(new LootObservationCallback(sequence, callId, threadId, method, LootObservationStage.Before,
-                        arguments, fish, bag, storage, slot, null, true));
+                    active._copy(new LootObservationCallback(sequence, callId, threadId, method, LootObservationStage.Before, arguments, fish, body, bag, storage, save, slot, key, null, null, false));
                     return callId;
                 }
             }
             catch { active.CallbackFailed(); return 0; }
         }
-
-        private static void End(long callId, LootObservationMethod method, FishAISystem fish = null,
-            LootBox bag = null, IngredientsStorage storage = null, LootBoxSlot slot = null, bool? originalReturn = null)
+        private static void Postfix(long callId, LootObservationMethod method, FishAISystem fish = null, FishInteractionBody body = null,
+            LootBox bag = null, IngredientsStorage storage = null, SaveData save = null, LootBoxSlot slot = null, bool? originalReturn = null, int? originalIntReturn = null)
+            => Complete(callId, LootObservationStage.After, method, fish, body, bag, storage, save, slot, false, originalReturn, originalIntReturn);
+        private static void Complete(long callId, LootObservationStage stage, LootObservationMethod? method,
+            FishAISystem fish, FishInteractionBody body, LootBox bag, IngredientsStorage storage, SaveData save, LootBoxSlot slot,
+            bool originalException, bool? originalReturn = null, int? originalIntReturn = null)
         {
             LootObservationHooks active = Volatile.Read(ref _active);
-            if (active == null || callId == 0) return;
+            if (active == null || callId == 0 || active.Failed || !Volatile.Read(ref active._accepting)) return;
             try
             {
                 lock (active._gate)
                 {
                     if (!active._calls.TryGetValue(callId, out CallContext context))
-                    { Increment(ref _processUnmatchedAfter); return; }
-                    // Remove even when quota is reached, so a dropped postfix
-                    // cannot leave its call context behind indefinitely.
-                    active._calls.Remove(callId);
-                    if (!active._accepting || active._copy == null || active.Failed) return;
+                    { Increment(ref _processUnmatchedAfter); throw new InvalidOperationException("Loot call context unavailable."); }
                     int threadId = Environment.CurrentManagedThreadId;
-                    if (context.Method != method || context.ThreadId != threadId)
-                        throw new InvalidOperationException("Loot observation prefix/postfix context mismatch.");
-                    if (!TrySequence(out long sequence)) { Increment(ref _processDropped); return; }
-                    active._copy(new LootObservationCallback(sequence, callId, threadId, method, LootObservationStage.After,
-                        context.Arguments, fish, bag, storage, slot, originalReturn, true));
+                    if (context.ThreadId != threadId || (method.HasValue && context.Method != method.Value) || (stage == LootObservationStage.After && context.PostfixObserved))
+                        throw new InvalidOperationException("Loot call completion mismatch.");
+                    if (!TrySequence(out long sequence))
+                    { Increment(ref _processDropped); throw new InvalidOperationException("Loot callback quota exhausted."); }
+                    if (stage == LootObservationStage.After)
+                    { context.PostfixObserved = true; context.OriginalReturn = originalReturn; context.OriginalIntReturn = originalIntReturn; }
+                    active._copy(new LootObservationCallback(sequence, callId, threadId, context.Method, stage, context.Arguments,
+                        fish, body, bag, storage, save, slot, null, context.OriginalReturn, context.OriginalIntReturn, originalException));
+                    if (stage == LootObservationStage.Finalizer) active._calls.Remove(callId);
                 }
             }
             catch { active.CallbackFailed(); }
         }
-
-        private static bool TrySequence(out long sequence)
+        private static bool TrySequence(out long sequence) => TryNext(ref _processAccepted, MaxProcessEvents, out sequence);
+        private static bool TryCallId(out long callId) => TryNext(ref _processNextCallId, long.MaxValue, out callId);
+        private static bool TryNext(ref long value, long maximum, out long next)
         {
             while (true)
             {
-                long current = Interlocked.Read(ref _processAccepted);
-                if (current >= MaxProcessEvents) { sequence = 0; return false; }
-                sequence = current + 1;
-                if (Interlocked.CompareExchange(ref _processAccepted, sequence, current) == current) return true;
+                long current = Interlocked.Read(ref value);
+                if (current >= maximum) { next = 0; return false; }
+                next = current + 1;
+                if (Interlocked.CompareExchange(ref value, next, current) == current) return true;
             }
         }
-
         private void CallbackFailed()
         {
             while (true)
@@ -323,11 +326,14 @@ namespace DaveCoop.Networking
                 int current = Volatile.Read(ref _processCallbackErrors);
                 if (current == int.MaxValue || Interlocked.CompareExchange(ref _processCallbackErrors, current + 1, current) == current) break;
             }
-            LatchFailure(); StopAccepting();
-            // Only a later Unity lifecycle operation may unpatch. Callback
-            // errors never escape into the original game execution.
+            LatchFailure(); RevokeCopyEvidence(); StopAccepting();
         }
-
+        private void RevokeCopyEvidence()
+        {
+            // Pure CLR invalidation is synchronous even if a hook quota or
+            // context fails before the next Capture callback/Unity Update.
+            try { _invalidate?.Invoke("Loot hook failure revoked synchronous evidence."); } catch { }
+        }
         private static void LatchFailure() => Volatile.Write(ref _processFailed, 1);
         private static void Increment(ref long value)
         {
@@ -337,45 +343,44 @@ namespace DaveCoop.Networking
                 if (current == long.MaxValue || Interlocked.CompareExchange(ref value, current + 1, current) == current) return;
             }
         }
-
         public void CheckHealthy()
         {
-            if (CallbackErrors != 0) { LatchFailure(); StopAccepting(); }
-            if (!Healthy) throw new InvalidOperationException("Loot observer is unavailable or failed; restart after a failure.");
+            try
+            {
+                if (!Healthy || _targets == null) throw new InvalidOperationException("Loot observer unavailable.");
+                foreach (var target in _targets) VerifyTarget(target);
+            }
+            catch { LatchFailure(); RevokeCopyEvidence(); StopAccepting(); throw; }
         }
-
         private void StopAccepting()
         {
             lock (_gate)
             {
-                _accepting = false; _copy = null;
+                _accepting = false;
                 for (int i = 0; i < _calls.Count; i++) Increment(ref _processDiscardedCalls);
                 _calls.Clear();
             }
-            Interlocked.CompareExchange(ref _active, null, this);
+            // Keep the owner/capture reference until one own cleanup is verified.
         }
-
-        private void RemoveOwnPatches()
-        {
-            _cleanupVerified = false;
-            if (_harmony != null) _harmony.UnpatchSelf();
-            if (_targets != null)
-            {
-                foreach (var target in _targets)
-                {
-                    var info = Harmony.GetPatchInfo(target.Original);
-                    if (info != null && info.Owners.Contains(Owner))
-                        throw new InvalidOperationException("Own loot observation hook is still registered: " + target.Original.DeclaringType.FullName + "." + target.Original.Name);
-                }
-            }
-            _harmony = null; _targets = null; _cleanupVerified = true;
-        }
-
         public void Dispose()
         {
             StopAccepting();
-            if (_harmony == null && _targets == null) return;
-            try { RemoveOwnPatches(); }
+            if (_cleanupVerified)
+            { _copy = null; _invalidate = null; Interlocked.CompareExchange(ref _active, null, this); return; }
+            if (Interlocked.CompareExchange(ref _cleanupAttempted, 1, 0) != 0)
+                throw new InvalidOperationException("Loot cleanup not verified.");
+            try
+            {
+                if (_harmony != null) _harmony.UnpatchSelf();
+                if (_targets != null)
+                    foreach (var target in _targets)
+                    {
+                        var info = Harmony.GetPatchInfo(target.Original);
+                        if (info != null && info.Owners.Contains(Owner)) throw new InvalidOperationException("Own loot removal not verified.");
+                    }
+                _harmony = null; _targets = null; _copy = null; _invalidate = null; _cleanupVerified = true;
+                Interlocked.CompareExchange(ref _active, null, this);
+            }
             catch { LatchFailure(); _cleanupVerified = false; throw; }
         }
     }

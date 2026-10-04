@@ -1,14 +1,25 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T12:49:26.099092+00:00",
-  "PluginVersion": "0.1.24-dev",
+  "RecordedUtc": "2026-10-04T13:13:07.872851+00:00",
+  "PluginVersion": "0.1.25-dev",
   "VerificationCommands": [
+    "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1",
-    "development/scripts/Test-Core.ps1"
+    "development/scripts/Inspect-CaptureLineageApi.ps1",
+    "development/scripts/Inspect-NativeCalls.ps1 (exact capture roots, offline)"
   ],
-  "CoreTestsPassed": 200,
-  "CoreTestsTotal": 200,
+  "CoreTestsPassed": 209,
+  "CoreTestsTotal": 209,
   "TestNames": [
+    "loot lineage same fish drop plus bag and original roll enclosure",
+    "loot lineage different fish and unknown scopes mask parent",
+    "loot lineage fixed prefix survives pool generation change",
+    "loot lineage postfix and original exceptions are not capture terminal",
+    "loot lineage missing postfix and changed scalar result lose integrity",
+    "loot lineage wrong thread cannot supply or close a scope",
+    "loot lineage high water foreign run and LIFO reject rebinding",
+    "loot lineage queue depth and run quota loss cannot heal",
+    "loot lineage stop counts pending and queued without restart",
     "cargo transport ledger pending and historical weight projection",
     "cargo transport returned ledger floating reservation residue",
     "cargo transport canonical fingerprints and deep copies",
@@ -211,7 +222,7 @@
     "TCP fish action protocol three rejection"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "2BA5D4501D4054D91A30360098E70C5B7BEA8C3242D190EA6AEFDFD71F0E049E",
+  "CompiledPluginSHA256": "970282A99808D88AFC8327F94DD9EE866384B270982AC3D40AF7CABADB158918",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
@@ -220,7 +231,7 @@
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Actual pure CLR and IPv4 loopback TCP fixtures, including production cargo projection, assembler, session and CargoInventoryController. Each member retains separate capacity, ledger weight, reservations and tracked confirmed products. Full room revisions cover non-BagRevision changes; bounded atomic batches, replay/identity fences, fair scheduling, slow publishers, scene persistence and disconnect retention are exercised. Inputs and native capability facts are synthetic CLR data. No native producer creates or attaches an authoritative expedition in the game, and no capture, bag diversion, capacity routing, storage, save, world adoption or two-game gameplay executes. Ledger weights are historical observations and host inventory is tracked-only. Complete M3-M7 and per-person bag gameplay, return and GitHub cold setup remain required.",
+  "Scope": "Actual pure CLR and IPv4 loopback TCP fixtures; nine new fixtures execute production LootCallLineage with synthetic prefix sources, returns, threads, exception flags and queues. Observed synchronous enclosure is not a direct native caller, operation/member binding, complete yield or capture receipt. Sixteen native read-only observation declarations compile, but callbacks and their ABI are not executed. Cecil and PE analysis read files only. No capture, random selection, capacity diversion, employee bag write, return storage, guest shadow, save, world adoption or two-game gameplay is executed. Complete M3-M7, per-person bags, actual return and GitHub cold configuration remain required.",
   "ProtocolVersion": 6,
   "MapChoiceTcpTransferVerified": true,
   "ProductionMapChoiceAdapterFixtureVerified": true,
@@ -267,14 +278,16 @@
   "IngameResourceGraphIsolated": false,
   "FullIngameCacheGraphVerified": false,
   "CoreTestsExecutedThisTurn": true,
-  "CoreTestRunRecordedUtc": "2026-10-04T12:49:26.099092+00:00",
+  "CoreTestRunRecordedUtc": "2026-10-04T13:13:07.872851+00:00",
   "NativeDictionaryComparerCompiled": true,
   "NativeDictionaryComparerExecuted": false,
   "NativeComparerEqualsAndHashVerified": false,
   "PartialConstructorAllocationRetentionVerified": false,
   "CurrentTurnVerificationCommands": [
+    "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1",
-    "development/scripts/Test-Core.ps1"
+    "development/scripts/Inspect-CaptureLineageApi.ps1",
+    "development/scripts/Inspect-NativeCalls.ps1 (exact capture roots, offline)"
   ],
   "StartupTraceFixtureVerified": true,
   "StartupTraceFixtureTestsPassed": 6,
@@ -312,5 +325,25 @@
   "NativeBagInventoryComplete": false,
   "EmployeeStorageReturnVerified": false,
   "GameCodeExecutedThisTurn": false,
-  "SavesReadOrModifiedThisTurn": false
+  "SavesReadOrModifiedThisTurn": false,
+  "LootLineageRegistryFixtureVerified": true,
+  "LootLineageFixtureTestsPassed": 9,
+  "LootLineageNewTestNames": [
+    "loot lineage same fish drop plus bag and original roll enclosure",
+    "loot lineage different fish and unknown scopes mask parent",
+    "loot lineage fixed prefix survives pool generation change",
+    "loot lineage postfix and original exceptions are not capture terminal",
+    "loot lineage missing postfix and changed scalar result lose integrity",
+    "loot lineage wrong thread cannot supply or close a scope",
+    "loot lineage high water foreign run and LIFO reject rebinding",
+    "loot lineage queue depth and run quota loss cannot heal",
+    "loot lineage stop counts pending and queued without restart"
+  ],
+  "CaptureObservationSourceCompiled": true,
+  "CaptureObservationNativeCallbacksExecuted": false,
+  "ObservedSynchronousEnclosureOnly": true,
+  "NativeDirectCallerVerified": false,
+  "SourceOperationBound": false,
+  "CompleteCaptureYieldVerified": false,
+  "EmployeeCapacityRoutingVerified": false
 }

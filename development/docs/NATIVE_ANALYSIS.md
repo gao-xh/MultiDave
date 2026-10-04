@@ -131,3 +131,7 @@ GuestStateIsolated、NativeExecutionImplemented等能力保持false。
 当前生产进入与静止边界恒false，事务在围栏安装前拒绝；startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。全部GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority保持false，未部署或启动。
 
 实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。
+
+## 0.1.25 捕获分流关键根
+
+本轮离线重查16精确选择器/18重载根/145方法记录，54条缺可用containing unwind；无方法配额触顶、根遗漏或指令截断。自然拾取包含普通与追加掉落，追加路径触及保底随机计数，Add_Impl还包含重量/槽位/任务等副作用。关键根未提供已证明的捕获协程来源。原报告仅存.local/analysis/capture-bag-diversion-critical-calls.json；静态边与共享别名不证明数据流/完整运行顺序。精确声明另由Inspect-CaptureLineageApi离线核对7types/16hooks/5fields/owner5层。生产时机限制及观察语义见[CAPTURE_LINEAGE](CAPTURE_LINEAGE.md)，本轮不执行游戏/native/save。
