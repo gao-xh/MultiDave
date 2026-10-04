@@ -1,0 +1,12 @@
+{
+  "VerifiedOn": "2026-10-03T20:08:44.5278227-07:00",
+  "Repository": "https://github.com/gao-xh/MultiDave",
+  "FreshClone": true,
+  "AutomaticSteamDetection": true,
+  "IdempotentInstall": true,
+  "FreshProcessLog": true,
+  "PluginLoaded": true,
+  "UnityUpdate": true,
+  "TitleScene": true,
+  "ColdFrameworkInstallationViaRootEntry": "Not independently tested; framework was already installed."
+}
