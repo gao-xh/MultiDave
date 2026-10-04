@@ -3,6 +3,7 @@ using DaveCoop.Core;
 using System.Collections.Generic;
 using System.Net;
 using System.Numerics;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DaveCoop.Core.Actions;
@@ -13,9 +14,9 @@ using DaveCoop.Core.World;
 
 internal static class MapChoiceTransportTests
 {
-    internal static void WirePayloadAndProtocolFive()
+    internal static void WirePayloadAndProtocolSeven()
     {
-        Assert(new PeerIdentity().ProtocolVersion == 6, "cargo inventory channel did not advance the protocol");
+        Assert(new PeerIdentity().ProtocolVersion == 7, "native route inputs did not advance the protocol");
         var pair = new Pair();
         MapRouteSelection route = Route(17);
         MapRouteSlice slice = MapChoiceFrames.SplitRoute(route, 1)[0];
@@ -141,7 +142,7 @@ internal static class MapChoiceTransportTests
         var future = new WirePacket { Kind = PacketKind.MapIgpChoice, RoomId = pair.Room, Sequence = 2,
             MapChoice = Choice(2, 1, MapSelections.FingerprintRoute(route)) };
         Throws<ProtocolException>(() => pair.Guest.Receive(future, 0.2));
-        future.MapChoice.Generation = 1; future.MapChoice.RouteFingerprint = "map-route-v1/" + new string('0', 64);
+        future.MapChoice.Generation = 1; future.MapChoice.RouteFingerprint = "map-route-v2/" + new string('0', 64);
         Throws<ProtocolException>(() => pair.Guest.Receive(future, 0.2));
         future.MapChoice.RouteFingerprint = MapSelections.FingerprintRoute(route); future.MapChoice.Revision = 2;
         Throws<ProtocolException>(() => pair.Guest.Receive(future, 0.2));
@@ -211,7 +212,7 @@ internal static class MapChoiceTransportTests
         pair.Host.RetireMapChoices("source cleared", 0.2);
         Assert(!pair.Host.RetireMapChoices("observer disabled", 0.2), "inactive source sent a conflicting duplicate retirement");
         Assert(!pair.Host.PublishMapIgpChoice(old, 0.2), "legitimate same-generation callback after retirement disconnected the room");
-        var forged = Choice(1, 1, "map-route-v1/" + new string('0', 64));
+        var forged = Choice(1, 1, "map-route-v2/" + new string('0', 64));
         Throws<ProtocolException>(() => pair.Host.PublishMapIgpChoice(forged, 0.2));
         pair.Host.PublishMapRoute(Route(4), 0.3);
         Assert(!pair.Host.PublishMapIgpChoice(old, 0.3) && pair.Host.Snapshot.MapChoiceRevision == 0, "old source callback changed the fresh generation");
@@ -257,18 +258,88 @@ internal static class MapChoiceTransportTests
         await guest.StopAsync(); await host.Completion.WaitAsync(cancellation.Token);
     }
 
-    internal static async Task RejectProtocolFour()
+    internal static void RouteWireRequiresExplicitNativeInputs()
+    {
+        MapRouteSelection route = Route(3); // Legal explicit zero/false inputs.
+        WirePacket packet = Packet(Guid.NewGuid().ToString("N"), MapChoiceFrames.SplitRoute(route, 1)[0]);
+        string encoded = Encoding.UTF8.GetString(PacketCodec.Encode(packet));
+        WirePacket decoded = PacketCodec.Decode(Encoding.UTF8.GetBytes(encoded));
+        Assert(decoded.MapRoute.TotalSceneHeight == 0 && decoded.MapRoute.Scenes[0].Priority == 0 &&
+            decoded.MapRoute.Scenes[0].PreferenceWeight == 0 && !decoded.MapRoute.Scenes[0].PreloadAndNotUnloadable,
+            "legal explicit native defaults were rejected or changed");
+        string[] required = { "\"totalSceneHeight\":0", "\"priority\":0", "\"preferenceWeight\":0", "\"preloadAndNotUnloadable\":false" };
+        foreach (string field in required)
+        {
+            RejectWireMutation(encoded, field + ",", "");
+            RejectWireMutation(encoded, field, field + "," + field);
+        }
+        RejectWireMutation(encoded, "\"priority\":0", "\"priority\":0.5");
+        RejectWireMutation(encoded, "\"preferenceWeight\":0", "\"preferenceWeight\":\"0\"");
+        RejectWireMutation(encoded, "\"preloadAndNotUnloadable\":false", "\"preloadAndNotUnloadable\":0");
+        RejectWireMutation(encoded, "\"totalSceneHeight\":0", "\"totalSceneHeight\":true");
+        RejectWireMutation(encoded, "\"priority\":0", "\"Priority\":0");
+        RejectWireMutation(encoded, "map-route-v2/", "map-route-v1/");
+    }
+
+    internal static async Task TcpNativeRouteInputsRoundTripAndReplacement()
     {
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         using var listener = new LanHost(IPAddress.Loopback, 0);
-        PeerIdentity legacy = Identity("Guest"); legacy.ProtocolVersion = 4;
+        Task<SessionPeer> accepting = listener.AcceptOneAsync(Identity("Host"), cancellation.Token);
+        using SessionPeer guest = await LanGuest.ConnectAsync("127.0.0.1", listener.Port, Identity("Guest"), cancellation.Token);
+        using SessionPeer host = await accepting;
+        MapRouteSelection source = Route(17); source.TotalSceneHeight = 7521.25f;
+        source.Scenes[0].Priority = int.MinValue; source.Scenes[0].PreferenceWeight = int.MaxValue;
+        source.Scenes[0].PreloadAndNotUnloadable = true;
+        source.Scenes[16].Priority = 3; source.Scenes[16].PreferenceWeight = 9;
+        MapRouteSelection expected = MapSelections.CopyRoute(source);
+        string fingerprint = MapSelections.FingerprintRoute(expected);
+        Assert(host.PublishMapRoute(source), "TCP host rejected a complete native input route");
+        source.TotalSceneHeight = 0; source.Scenes[0].Priority = 0; source.Scenes[0].PreferenceWeight = 0;
+        source.Scenes[0].PreloadAndNotUnloadable = false; source.Scenes[16] = null;
+        MapChoiceSnapshot received = null;
+        await Until(() => guest.TryTakeRemoteMapChoices(out received) && received.Route != null, cancellation.Token);
+        Assert(received.RouteFingerprint == fingerprint && received.Route.TotalSceneHeight == 7521.25f &&
+            received.Route.Scenes[0].Priority == int.MinValue && received.Route.Scenes[0].PreferenceWeight == int.MaxValue &&
+            received.Route.Scenes[0].PreloadAndNotUnloadable && received.Route.Scenes[16].Priority == 3 &&
+            received.Route.Scenes[16].PreferenceWeight == 9, "TCP copy/split/assembler lost or shared native fields");
+        received.Route.TotalSceneHeight = 1; received.Route.Scenes[0].Priority = 1;
+        received.Route.Scenes[0].PreloadAndNotUnloadable = false;
+        Assert(host.PublishMapIgpChoice(Choice(1, 1, fingerprint)), "TCP route could not accept a separate observed IGP choice");
+        await Until(() => guest.TryTakeRemoteMapChoices(out received) && received.LastChoiceRevision == 1, cancellation.Token);
+        Assert(received.Route.TotalSceneHeight == 7521.25f && received.Route.Scenes[0].Priority == int.MinValue &&
+            received.Route.Scenes[0].PreloadAndNotUnloadable, "a consumer mutation changed the receiver's stored native route");
+        expected.Scenes[0].PreferenceWeight--; expected.TotalSceneHeight += 0.25f;
+        string replacementFingerprint = MapSelections.FingerprintRoute(expected);
+        Assert(replacementFingerprint != fingerprint && host.PublishMapRoute(expected), "changed native input failed to publish a fresh route identity");
+        await Until(() => guest.TryTakeRemoteMapChoices(out received) && received.Generation == 2 && received.Route != null, cancellation.Token);
+        Assert(received.RouteFingerprint == replacementFingerprint && received.Route.TotalSceneHeight == 7521.5f &&
+            received.Route.Scenes[0].PreferenceWeight == int.MaxValue - 1 && received.Choices.Length == 0 &&
+            received.LastChoiceRevision == 0 && received.ObservationOnly && !received.HostSelectionApplied &&
+            host.Snapshot.Phase == SessionPhase.WaitingForScene && guest.Snapshot.SceneEpoch == 0,
+            "TCP replacement retained old IGP choices or falsely established applied-world readiness");
+        await guest.StopAsync(); await host.Completion.WaitAsync(cancellation.Token);
+    }
+
+    internal static async Task RejectProtocolSix()
+    {
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using var listener = new LanHost(IPAddress.Loopback, 0);
+        PeerIdentity legacy = Identity("Guest"); legacy.ProtocolVersion = 6;
         Task<SessionPeer> accepting = listener.AcceptOneAsync(Identity("Host"), cancellation.Token);
         bool guestRejected = false, hostRejected = false;
         try { using SessionPeer unexpected = await LanGuest.ConnectAsync("127.0.0.1", listener.Port, legacy, cancellation.Token); }
         catch (ProtocolException error) { guestRejected = error.Message.Contains("Protocol version mismatch"); }
         try { using SessionPeer unexpected = await accepting; }
         catch (ProtocolException error) { hostRejected = error.Message.Contains("Protocol version mismatch"); }
-        Assert(guestRejected && hostRejected, "protocol 4 silently ignored map selection source/retire semantics");
+        Assert(guestRejected && hostRejected, "protocol 6 silently accepted incomplete native route inputs");
+    }
+
+    private static void RejectWireMutation(string original, string from, string to)
+    {
+        string changed = original.Replace(from, to, StringComparison.Ordinal);
+        Assert(changed != original, "wire corruption fixture did not change its required field");
+        Throws<ProtocolException>(() => PacketCodec.Decode(Encoding.UTF8.GetBytes(changed)));
     }
 
     private static MapRouteSelection Route(int count)

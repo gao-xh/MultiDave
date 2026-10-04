@@ -19,7 +19,7 @@ internal static class MapSelectionTests
             Assert(MapSelections.Fingerprint(source) == expected, "culture or signed zero changed map fingerprint");
         }
         finally { CultureInfo.CurrentCulture = before; }
-        Assert(expected.StartsWith("map-selection-v1/", StringComparison.Ordinal) && expected.Length == 81,
+        Assert(expected.StartsWith("map-selection-v2/", StringComparison.Ordinal) && expected.Length == 81,
             "unexpected selection fingerprint schema/size");
     }
 
@@ -143,16 +143,17 @@ internal static class MapSelectionTests
     {
         MapSelectionManifest complete = Example();
         const string legacy = "map-selection-v1/0570621489ca994e1209b0a8c793973f8efa6b385e2735db6ae362740cf23e20";
-        Assert(MapSelections.Fingerprint(complete) == legacy, "shared route extraction changed the existing full-manifest fingerprint");
-        var route = new MapRouteSelection { EntrySceneId = complete.EntrySceneId, Scenes = complete.Scenes };
+        string full = MapSelections.Fingerprint(complete);
+        Assert(full != legacy && full.StartsWith("map-selection-v2/", StringComparison.Ordinal), "native route fields reused the legacy fingerprint schema");
+        var route = new MapRouteSelection { EntrySceneId = complete.EntrySceneId, TotalSceneHeight = complete.TotalSceneHeight, Scenes = complete.Scenes };
         MapSelections.ValidateRoute(route);
         string candidate = MapSelections.FingerprintRoute(route);
-        Assert(candidate.StartsWith("map-route-v1/", StringComparison.Ordinal) && candidate.Length == 77 && candidate != legacy,
+        Assert(candidate.StartsWith("map-route-v2/", StringComparison.Ordinal) && candidate.Length == 77 && candidate != full,
             "route-only candidate used the complete route-and-IGP fingerprint domain");
-        var incomplete = new MapSelectionManifest { EntrySceneId = route.EntrySceneId, Scenes = route.Scenes };
+        var incomplete = new MapSelectionManifest { EntrySceneId = route.EntrySceneId, TotalSceneHeight = route.TotalSceneHeight, Scenes = route.Scenes };
         Reject(incomplete); incomplete.Groups = Array.Empty<MapGroupSelection>(); Reject(incomplete);
         complete.Groups[0].SelectedPrefabName += "changed";
-        Assert(MapSelections.Fingerprint(complete) != legacy && MapSelections.FingerprintRoute(route) == candidate,
+        Assert(MapSelections.Fingerprint(complete) != full && MapSelections.FingerprintRoute(route) == candidate,
             "later IGP selection changed route identity or disappeared from the complete identity");
         incomplete.Groups = new MapGroupSelection[MapSelections.MaxGroups + 1]; Reject(incomplete);
         Assert(MapSelections.FingerprintRoute(route) == candidate, "rejected complete manifest damaged its independently valid route");
@@ -186,8 +187,9 @@ internal static class MapSelectionTests
     internal static void RouteCopyOwnershipAndCanonicalCompatibility()
     {
         MapRouteSelection source = RouteExample();
-        const string expected = "map-route-v1/7568e19089be0c484bd4473a98ba2d8768bb5146b72586caf3bd725ac6c9dba3";
-        Assert(MapSelections.FingerprintRoute(source) == expected, "route fingerprint lost its canonical field schema");
+        const string legacy = "map-route-v1/7568e19089be0c484bd4473a98ba2d8768bb5146b72586caf3bd725ac6c9dba3";
+        string expected = MapSelections.FingerprintRoute(source);
+        Assert(expected != legacy && expected.StartsWith("map-route-v2/", StringComparison.Ordinal), "route inputs reused the legacy fingerprint schema");
         MapRouteSelection copy = MapSelections.CopyRoute(source);
         Assert(copy.EntrySceneId == 30 && copy.Scenes[0].SceneId == 10 && copy.Scenes[1].SceneId == 20,
             "route copy used native discovery order instead of canonical scene order");
@@ -212,10 +214,54 @@ internal static class MapSelectionTests
             "route-only and complete canonical connection representation diverged");
     }
 
+    internal static void NativeRouteInputsOwnIdentityAndCopies()
+    {
+        MapSelectionManifest manifest = Example();
+        manifest.TotalSceneHeight = 300.25f;
+        manifest.Scenes[0].Priority = int.MinValue;
+        manifest.Scenes[0].PreferenceWeight = int.MaxValue;
+        manifest.Scenes[0].PreloadAndNotUnloadable = true;
+        var route = new MapRouteSelection { EntrySceneId = manifest.EntrySceneId,
+            TotalSceneHeight = manifest.TotalSceneHeight, Scenes = manifest.Scenes };
+        string routeFingerprint = MapSelections.FingerprintRoute(route);
+        string manifestFingerprint = MapSelections.Fingerprint(manifest);
+        MapRouteSelection ownedRoute = MapSelections.CopyRoute(route);
+        MapSelectionManifest ownedManifest = MapSelections.Copy(manifest);
+        MapRouteScene copiedEntry = Array.Find(ownedRoute.Scenes, scene => scene.SceneId == route.EntrySceneId);
+        Assert(copiedEntry.Priority == int.MinValue && copiedEntry.PreferenceWeight == int.MaxValue &&
+            copiedEntry.PreloadAndNotUnloadable && ownedRoute.TotalSceneHeight == 300.25f,
+            "native inputs were narrowed, guessed or lost in the owned route");
+        for (int changedField = 0; changedField < 4; changedField++)
+        {
+            MapSelectionManifest changed = MapSelections.Copy(manifest);
+            MapRouteScene entry = Array.Find(changed.Scenes, scene => scene.SceneId == manifest.EntrySceneId);
+            if (changedField == 0) changed.TotalSceneHeight += 0.25f;
+            else if (changedField == 1) entry.Priority++;
+            else if (changedField == 2) entry.PreferenceWeight--;
+            else entry.PreloadAndNotUnloadable = false;
+            Assert(MapSelections.Fingerprint(changed) != manifestFingerprint &&
+                MapSelections.FingerprintRoute(new MapRouteSelection { EntrySceneId = changed.EntrySceneId,
+                    TotalSceneHeight = changed.TotalSceneHeight, Scenes = changed.Scenes }) != routeFingerprint,
+                "changed native input did not change both selection identities");
+        }
+        manifest.TotalSceneHeight = 0; manifest.Scenes[0].Priority = 0; manifest.Scenes[0].PreferenceWeight = 0;
+        manifest.Scenes[0].PreloadAndNotUnloadable = false;
+        copiedEntry.Priority = 1;
+        Assert(MapSelections.Fingerprint(ownedManifest) == manifestFingerprint &&
+            MapSelections.FingerprintRoute(ownedRoute) != routeFingerprint,
+            "route and full-manifest copies shared native input elements");
+        MapRouteSelection bounded = RouteExample(); bounded.TotalSceneHeight = MapSelections.MaxTotalSceneHeight;
+        MapSelections.ValidateRoute(bounded); bounded.TotalSceneHeight = -MapSelections.MaxTotalSceneHeight;
+        MapSelections.ValidateRoute(bounded); // No native sign or sum rule is invented here.
+        bounded.TotalSceneHeight = float.NaN; Throws<ArgumentException>(() => MapSelections.ValidateRoute(bounded));
+        bounded.TotalSceneHeight = float.PositiveInfinity; Throws<ArgumentException>(() => MapSelections.ValidateRoute(bounded));
+        bounded.TotalSceneHeight = MapSelections.MaxTotalSceneHeight * 2; Throws<ArgumentException>(() => MapSelections.ValidateRoute(bounded));
+    }
+
     private static MapRouteSelection RouteExample()
     {
         MapSelectionManifest manifest = Example();
-        return new MapRouteSelection { EntrySceneId = manifest.EntrySceneId, Scenes = manifest.Scenes };
+        return new MapRouteSelection { EntrySceneId = manifest.EntrySceneId, TotalSceneHeight = manifest.TotalSceneHeight, Scenes = manifest.Scenes };
     }
 
     private static void InvalidRoute(Action<MapRouteSelection> mutation)

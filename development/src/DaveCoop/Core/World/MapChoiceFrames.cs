@@ -12,6 +12,7 @@ namespace DaveCoop.Core.World
         public long Generation { get; set; }
         public string RouteFingerprint { get; set; }
         public int EntrySceneId { get; set; }
+        public float TotalSceneHeight { get; set; }
         public int Index { get; set; }
         public int Count { get; set; }
         public MapRouteScene[] Scenes { get; set; }
@@ -54,12 +55,13 @@ namespace DaveCoop.Core.World
         public const int MaxChoices = MapSelections.MaxGroups;
         public const int MaxChoiceHistory = 128;
         public const int MaxRetireReason = 256;
-        private const string RoutePrefix = "map-route-v1/";
+        private const string RoutePrefix = "map-route-v2/";
 
         public static void Validate(MapRouteSlice slice)
         {
             if (slice == null) throw new ArgumentNullException(nameof(slice));
             Header(slice.Generation, slice.RouteFingerprint);
+            MapSelections.ValidateTotalSceneHeight(slice.TotalSceneHeight);
             if (slice.EntrySceneId < 1 || slice.Count < 1 || slice.Count > MaxRouteSlices ||
                 slice.Index < 0 || slice.Index >= slice.Count || slice.Scenes == null ||
                 slice.Scenes.Length < 1 || slice.Scenes.Length > ScenesPerSlice ||
@@ -98,6 +100,7 @@ namespace DaveCoop.Core.World
             return new MapRouteSlice
             {
                 Generation = slice.Generation, RouteFingerprint = slice.RouteFingerprint, EntrySceneId = slice.EntrySceneId,
+                TotalSceneHeight = slice.TotalSceneHeight,
                 Index = slice.Index, Count = slice.Count, Scenes = slice.Scenes.Select(CopyScene).ToArray()
             };
         }
@@ -133,6 +136,7 @@ namespace DaveCoop.Core.World
                 result[index] = new MapRouteSlice
                 {
                     Generation = generation, RouteFingerprint = fingerprint, EntrySceneId = owned.EntrySceneId,
+                    TotalSceneHeight = owned.TotalSceneHeight,
                     Index = index, Count = count, Scenes = scenes
                 };
             }
@@ -141,11 +145,13 @@ namespace DaveCoop.Core.World
 
         internal static string SliceIdentity(MapRouteSlice slice)
         {
-            var hash = new CanonicalHash("map-route-slice-v1").Add(slice.Generation.ToString(CultureInfo.InvariantCulture))
-                .Add(slice.RouteFingerprint).Add(slice.EntrySceneId).Add(slice.Index).Add(slice.Count).Add(slice.Scenes.Length);
+            var hash = new CanonicalHash("map-route-slice-v2").Add(slice.Generation.ToString(CultureInfo.InvariantCulture))
+                .Add(slice.RouteFingerprint).Add(slice.EntrySceneId).Add(slice.TotalSceneHeight).Add(slice.Index).Add(slice.Count).Add(slice.Scenes.Length);
             foreach (MapRouteScene scene in slice.Scenes)
                 hash.Add(scene.SceneId).Add(scene.SceneName).Add((int)scene.Layer).Add(scene.TopConnection ?? "").Add(scene.BottomConnection ?? "")
-                    .Add(scene.TopY).Add(scene.BottomY).Add(scene.MapHeight).Add(scene.Offset).Add(scene.PreviousSceneId).Add(scene.NextSceneId);
+                    .Add(scene.TopY).Add(scene.BottomY).Add(scene.MapHeight).Add(scene.Offset)
+                    .Add(scene.Priority).Add(scene.PreferenceWeight).Add(scene.PreloadAndNotUnloadable ? 1 : 0)
+                    .Add(scene.PreviousSceneId).Add(scene.NextSceneId);
             return hash.Finish();
         }
 
@@ -159,6 +165,7 @@ namespace DaveCoop.Core.World
             SceneId = scene.SceneId, SceneName = scene.SceneName, Layer = scene.Layer,
             TopConnection = scene.TopConnection ?? "", BottomConnection = scene.BottomConnection ?? "",
             TopY = scene.TopY, BottomY = scene.BottomY, MapHeight = scene.MapHeight, Offset = scene.Offset,
+            Priority = scene.Priority, PreferenceWeight = scene.PreferenceWeight, PreloadAndNotUnloadable = scene.PreloadAndNotUnloadable,
             PreviousSceneId = scene.PreviousSceneId, NextSceneId = scene.NextSceneId
         };
 
@@ -213,6 +220,7 @@ namespace DaveCoop.Core.World
         private long _generation;
         private string _fingerprint;
         private int _entrySceneId;
+        private float _totalSceneHeight;
         private MapRouteSlice[] _slices;
         private string[] _sliceIdentities;
         private int _nextSlice;
@@ -241,7 +249,8 @@ namespace DaveCoop.Core.World
                 if (owned.Index != 0) throw new ArgumentException("New map route must start at slice zero.");
                 Begin(owned);
             }
-            if (_slices == null || owned.RouteFingerprint != _fingerprint || owned.EntrySceneId != _entrySceneId || owned.Count != _slices.Length)
+            if (_slices == null || owned.RouteFingerprint != _fingerprint || owned.EntrySceneId != _entrySceneId ||
+                owned.TotalSceneHeight != _totalSceneHeight || owned.Count != _slices.Length)
                 throw new ArgumentException("Conflicting map route assembly header.");
             string identity = MapChoiceFrames.SliceIdentity(owned);
             if (owned.Index < _nextSlice)
@@ -262,7 +271,7 @@ namespace DaveCoop.Core.World
             MapRouteSelection complete = null;
             if (owned.Index + 1 == owned.Count)
             {
-                complete = MapSelections.CopyRoute(new MapRouteSelection { EntrySceneId = _entrySceneId, Scenes = scenes.ToArray() });
+                complete = MapSelections.CopyRoute(new MapRouteSelection { EntrySceneId = _entrySceneId, TotalSceneHeight = _totalSceneHeight, Scenes = scenes.ToArray() });
                 if (MapSelections.FingerprintRoute(complete) != _fingerprint) throw new ArgumentException("Map route fingerprint does not match the assembled selection.");
             }
             _slices[owned.Index] = owned; _sliceIdentities[owned.Index] = identity; _nextSlice++;
@@ -310,6 +319,7 @@ namespace DaveCoop.Core.World
         private void Begin(MapRouteSlice first)
         {
             _generation = first.Generation; _fingerprint = first.RouteFingerprint; _entrySceneId = first.EntrySceneId;
+            _totalSceneHeight = first.TotalSceneHeight;
             _slices = new MapRouteSlice[first.Count]; _sliceIdentities = new string[first.Count]; _nextSlice = 0;
             _route = null; _choices.Clear(); _history.Clear(); _historyOrder.Clear(); _revision = 0;
             _retired = false; _retireReason = null;

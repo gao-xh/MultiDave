@@ -1,5 +1,7 @@
 # 地图加载来源观察（0.1.16-dev）
 
+0.1.38当前补充见[客机路线采用](GUEST_MAP_ROUTE_ADOPTION.md)及[本轮285/285/Build摘要](../logs/map-route-adoption-build-verification.json)：protocol7/v2完整声明路线字段、30项host origin目标及固定pending-manager出生来源、9项默认关闭guest加载消费者，实际Reset后/CoLoad前六根安装源码已接；没有运行native、IGP采用或全世界/收益验收。以下0.1.37及更早数字/流程保留为历史。
+
 本页保留0.1.16历史观察与148项构建范围。0.1.17已接当前CLR来源清单到候选通道，流程与160项验证见[ORIGIN_MAP_TRANSPORT](ORIGIN_MAP_TRANSPORT.md)和[新摘要](../logs/origin-map-transport-build-verification.json)；本页“仅日志/不接候选”不再是当前传输状态。原生ABI、完整来源、跨机地址与全部权限仍未验收。
 
 本轮新增默认关闭的地图来源观察器，用于查明一次自然入海请求、加载协程、资源操作、实际场景和 IGP controller 之间的本机关系。它保留游戏原方法、参数和返回值，不采用房主地图，不修改生成、AI、捕获、库存或存档。源码接入和框架代码核对不能证明实机来源链已经成立；本轮未部署或启动游戏，原生验收仍待进行。

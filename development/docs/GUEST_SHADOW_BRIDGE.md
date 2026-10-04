@@ -1,6 +1,6 @@
 # 客机原生根影子桥
 
-当前源码0.1.37-dev（协议6），本轮实际Core/TCP275/275及插件Build警告视为错误通过。新增默认关闭的[客机自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接Plugin启动、实际Guest房间与首次原初始化的五根事务，尚未运行游戏或原生验证；房主地图采用仍未实现。见[本轮验证记录](../logs/guest-initialization-build-verification.json)。安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；完整客机隔离、房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.38-dev（协议7），本轮实际Core/TCP285/285及插件Build警告视为错误通过，执行前后输入封存一致。新增默认关闭的[客机路线加载前采用](GUEST_MAP_ROUTE_ADOPTION.md)：固定自然入海/Reset/原load来源，在资源加载前安装六个路线根；补齐native路线输入及精确pending-manager来源。见[本轮验证记录](../logs/map-route-adoption-build-verification.json)。未部署/启动或运行native；安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。完整IGP采用/客机隔离/房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
 
 0.1.18-dev 新增 [NativeGuestShadowBridge](../src/DaveCoop/Networking/NativeGuestShadowBridge.cs) 和纯 CLR 的 [GuestShadowTransaction](../src/DaveCoop/Core/Guest/GuestShadowTransaction.cs)。桥包含实际的原生序列化、强引用、直接根交换、回读及恢复代码；该历史阶段没有接入 Network、GUI 或游戏生命周期。0.1.37新增默认关闭的[自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接实际Guest房间与固定原iterator，仍未在游戏中执行这些原生操作。接口研究及其静态证据见 [GUEST_ISOLATION](GUEST_ISOLATION.md)，已枚举输出的围栏范围见 [GUEST_OUTPUT_FENCE](GUEST_OUTPUT_FENCE.md)。
 

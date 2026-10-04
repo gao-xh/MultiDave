@@ -19,7 +19,7 @@ namespace DaveCoop.Networking
         CoChangeMoveNext, CoLevelMoveNext, AdditiveMoveNext, ChildAdditiveMoveNext,
         CoLoadMoveNext, ManagerMoveNext, ControllerMoveNext, AddressablesLoad,
         RouteCached, RouteRestored, ContextClear, ContextReset, ContextClearCache, ContextCreated,
-        SceneLoaded, SceneLoadedCustom, SceneUnloaded, ControllerDestroy, Choice
+        SceneLoaded, SceneLoadedCustom, SceneUnloaded, ControllerDestroy, Choice, ManagerDestroy
     }
     internal enum MapOriginStage { Before, After, Finally }
 
@@ -151,6 +151,7 @@ namespace DaveCoop.Networking
             Add(targets, MapOriginMethod.ControllerDestroy, typeof(IGPSetController), "OnDestroy", false, typeof(void), Type.EmptyTypes);
             Add(targets, MapOriginMethod.Choice, typeof(IGPSetController), "GetRandomIGPSetInfo", false, typeof(IGPSetInfo), Type.EmptyTypes,
                 nameof(GeneralBefore), nameof(ChoiceAfter));
+            Add(targets, MapOriginMethod.ManagerDestroy, typeof(InGameManager), "OnDestroy_Impl", false, typeof(void), Type.EmptyTypes);
             return targets;
         }
         private void AddMove(List<Target> targets, MapOriginMethod kind, Type type)

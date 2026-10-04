@@ -1,5 +1,7 @@
 # 固定来源地图候选传输（0.1.17-dev）
 
+0.1.38当前补充见[客机路线采用](GUEST_MAP_ROUTE_ADOPTION.md)及[本轮285/285/Build摘要](../logs/map-route-adoption-build-verification.json)：protocol7/v2完整声明路线字段、30项host origin目标及固定pending-manager出生来源、9项默认关闭guest加载消费者，实际Reset后/CoLoad前六根安装源码已接；没有运行native、IGP采用或全世界/收益验收。以下0.1.37及更早数字/流程保留为历史。
+
 0.1.17 将本机固定来源登记器的当前 CLR 快照接入已有协议 5 地图候选通道。房主发送路线和已解析的 IGP 选择，客机接收候选证据；没有采用房主地图、替换随机选择或开放生成、AI、捕获、库存及存档权限。
 
 [地图加载来源观察](MAP_ORIGINS.md)记录的是 0.1.16-dev 的历史观察边界，包括原生入口、固定 scope、typed operation 轮询、限额和 ABI 未验项。其中“仅日志、不接候选通道”是该版本的范围；本页说明 0.1.17 新增的传输接线。原生 ABI、完整来源覆盖和跨机地址仍待实机验证。

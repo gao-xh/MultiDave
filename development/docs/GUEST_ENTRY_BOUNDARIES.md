@@ -1,5 +1,7 @@
 # 客机影子根的进入与退出边界
 
+0.1.38当前补充见[客机路线采用](GUEST_MAP_ROUTE_ADOPTION.md)及[本轮285/285/Build摘要](../logs/map-route-adoption-build-verification.json)：protocol7/v2完整声明路线字段、30项host origin目标及固定pending-manager出生来源、9项默认关闭guest加载消费者，实际Reset后/CoLoad前六根安装源码已接；没有运行native、IGP采用或全世界/收益验收。以下0.1.37及更早数字/流程保留为历史。
+
 0.1.37新增默认关闭的[五根自然启动接线](GUEST_INITIALIZATION_BOOTSTRAP.md)：Plugin startup → 实际Unity Update/Guest握手 → 配对Awake_Impl、LoadSavedData、LoadAllData、原InitAfter factory及未推进的首MoveNext → Natural围栏156+41一次Seal197 → 五根事务 → 放行原缓存初始化。275/275实际Core/TCP与插件Build通过，未运行native或游戏。旧ExistingCaches七根仍硬拒，真实quiet与完整缓存/输出/Guest隔离及地图采用仍未证；断线不恢复个人根。以下保留早期边界研究及0.1.36证据，不把这些历史建议当本轮已运行记录。
 
 最早值得补充观察的是 `SceneLoader.GoToInGameEntry` 的 **prefix**。原 PE 的静态直接目标显示，这个入口自身包含 Player 数据更新、任务查询/失败处理及 Ingame 清理；只等到 `ChangeSceneAsync` 再安装影子根，不能覆盖它之前可能发生的进度操作。prefix 可在本次原方法主体开始前冻结身份观察，但不能据此证明既有缓存已隔离、旧协程已退休或所有加载都经过这个入口。

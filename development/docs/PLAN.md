@@ -1,6 +1,6 @@
 # MultiDave 开发计划
 
-当前源码0.1.37-dev（协议6），本轮实际Core/TCP275/275及插件Build警告视为错误通过。新增默认关闭的[客机自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接Plugin启动、实际Guest房间与首次原初始化的五根事务，尚未运行游戏或原生验证；房主地图采用仍未实现。见[本轮验证记录](../logs/guest-initialization-build-verification.json)。安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；完整客机隔离、房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.38-dev（协议7），本轮实际Core/TCP285/285及插件Build警告视为错误通过，执行前后输入封存一致。新增默认关闭的[客机路线加载前采用](GUEST_MAP_ROUTE_ADOPTION.md)：固定自然入海/Reset/原load来源，在资源加载前安装六个路线根；补齐native路线输入及精确pending-manager来源。见[本轮验证记录](../logs/map-route-adoption-build-verification.json)。未部署/启动或运行native；安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。完整IGP采用/客机隔离/房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
 
 目标：Windows Steam 版双人潜水合作 MVP，先做局域网房主/客户端。
 房主负责游戏世界和结算。服务器方案暂缓。
@@ -248,3 +248,11 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 实际275/275及插件Build通过；四个新夹具仅synthetic backend，原生hook/克隆/五根/缓存未运行。测试完整stdout/确切UTC及preseal缺失，86Core hash为成功执行之后采集；147插件输入才有执行前seal和Build前后相同，见[本轮摘要](../logs/guest-initialization-build-verification.json)。未部署/启动，历史271和地图候选摘要保持。
 
 本轮没有完成M4或放开GuestStateIsolated：继续验证实际启动ABI/顺序/SaveGraph/cache/writer，再接房主完整route和本地IGP等待/采用；随后实现可信员工actor/装备/生存/命中、每人独立容量重量负重与完整产物分流、逐项返航delta/save。真实双端正常闭环和GitHub冷配置仍是完整M3—M7验收要求，不把进程固定Guest、候选TCP或合成backend当玩法通过。
+
+## 0.1.38 路线采用接线与下一步
+
+本轮补齐protocol7/v2路线输入（Priority、PreferenceWeight、PreloadAndNotUnloadable、TotalSceneHeight），Decoder要求实际出现且类型明确，0/false合法；本地IsSceneLoaded独立。房主actual Host在BindRoom来源floor前启用origin，manager出生冻结scene handle和当时eligible operation，只在精确完成后关联iterator/路线。客机依已放行的五根临时source，从原GoTo→固定CoChange首Move等route→SceneLoader原Reset返回→staticCoLoad之前，一次安装六根；未知bootstrap保原参数，独立catalog/list确证的兼容层才能绑定hostentry，先前Mod自建list不得当独立来源。未知嵌套遮父、原skip/异常/失效停止，partial roots与强引用保持，不热恢复、卸围栏或free。
+
+实际285/285（4新schema/TCP、6新manager来源夹具）及插件Build通过，输入执行前后相同；完整stdout/UTC/PASS清单已记录，全部只是CLR/回环TCP与编译。新增9处原生消费者未执行，完整初始scene/IGP/native ABI/GuestStateIsolated/WorldAuthority/CargoAuthority/HostSelectionApplied仍false；当前安装.12/潜水.11/default.0保持。详见[GUEST_MAP_ROUTE_ADOPTION](GUEST_MAP_ROUTE_ADOPTION.md)和[实际摘要](../logs/map-route-adoption-build-verification.json)。
+
+继续实际IGP控制器固定来源与原Init.Move异步等待/唯一匹配本地info，再接生成/AI隔离、可信员工actor/装备/氧气/受伤/投射物、房主命中、每人完整产物与前置容量分流/独立重量/负重以及逐产物返航仓库delta/save。真实双端正常返航保存及GitHub冷配置仍为完成条件，不缩减M3—M7。

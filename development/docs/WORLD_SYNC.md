@@ -1,6 +1,6 @@
 # 同一海洋、鱼与互动
 
-当前源码0.1.37-dev（协议6），本轮实际Core/TCP275/275及插件Build警告视为错误通过。新增默认关闭的[客机自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接Plugin启动、实际Guest房间与首次原初始化的五根事务，尚未运行游戏或原生验证；房主地图采用仍未实现。见[本轮验证记录](../logs/guest-initialization-build-verification.json)。安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；完整客机隔离、房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.38-dev（协议7），本轮实际Core/TCP285/285及插件Build警告视为错误通过，执行前后输入封存一致。新增默认关闭的[客机路线加载前采用](GUEST_MAP_ROUTE_ADOPTION.md)：固定自然入海/Reset/原load来源，在资源加载前安装六个路线根；补齐native路线输入及精确pending-manager来源。见[本轮验证记录](../logs/map-route-adoption-build-verification.json)。未部署/启动或运行native；安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。完整IGP采用/客机隔离/房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
 
 对应 PLAN 的 M4、M5 和 M6。这里区分设计、已确认的接口签名和待实机验证的行为。
 已验证第二角色本地回放；0.1.5-dev 在真实潜水中运行只读鱼探针、经本机 TCP 传输实际鱼清单并执行单鱼显示组件。
@@ -206,7 +206,7 @@ Core/World 的 HostEntityRegistry 将本机对象 token 映射为房主分配的
 同种鱼不同 ID；明确释放后复用 token 分配新 ID，同 epoch 清空也不会复用旧 ID。
 新 epoch 清空绑定；房间和 epoch 来自已确认的会话，不发送 Native 指针或本机实例 ID。
 
-当前协议 5 保留历史协议 3 引入的 WorldSlice：最多每块 16 个实体、每快照 4096 个实体。
+当前协议 7 保留历史协议 3 引入的 WorldSlice：最多每块 16 个实体、每快照 4096 个实体。
 快照携带 epoch、场景、递增修订和采样时间，含类型/TID、姿态、HP/MaxHP、死亡与捕获状态及可选显示描述。
 每块降至 16 个实体以容纳显示字段的合法最大值，保持 128 KiB 消息限制；双方版本必须匹配。
 检查数值、种类、数量、唯一 ID、分块顺序和一致的头部；完整收齐后才移交客机主线程。
@@ -382,7 +382,7 @@ F11 的 Check selected fish target 在 Guest 或 Local test 的 Ready/已选单�
 host 主线程重新 TryResolveNativeFish，并复核冻结身份和捕获/死亡状态，通过只返回 DryRunValidated、OperationId=0。
 状态读取前后复核 lifecycle 健康与代次，变化则撤销该次身份；同 epoch 开关观察保持世界 revision 单调。
 `FISH_ACTION_SENT` / ADMISSION / DECISION / RECEIVED 显示请求/结果及 NativeEffectsEnabled=false；未解析的目标明确拒绝。
-这个按钮只验证请求往返与有效目标，不发射鱼叉、不扣血或捕获。当前 174 项核心测试及三种 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，不证明两个游戏或 M5 成功。
+这个按钮只验证请求往返与有效目标，不发射鱼叉、不扣血或捕获。历史 174 项核心测试及三种 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，不证明两个游戏或 M5 成功。
 0.1.12-dev 的新版 Probe 与真实游戏场景切换仍未执行验收；主菜单启动和初始 RouteInputs 不能代替这些行为。
 
 可复现元数据研究：`scripts/Inspect-FishInteractionApi.ps1`。确认鱼自身覆写 HookedByProjectile(ProjectileInfo) 和 WinFromProjectileinFight，
@@ -393,7 +393,7 @@ Damager.GetAttackData 是 ref-return 属性，首轮宜观察原参数/字段，
 捕获收益至少分为 FishAISystem.SuccessPickupFish、LootBox.Add、SaveDataCaughtFishRouter.AddCaughtFish 和 IngredientsStorage.AddFromLootBox。
 QTE 胜利、捕获、入袋、图鉴与返航入仓须分别验证，不能由单个标记推断整个结算；这些写入入口尚未调用。
 
-用户此前观察第二个戴夫没有发射鱼叉。当前角色帧只包含显示姿态与部件；协议 4 已有发射意图的请求模型，但没有可执行发射桥、独立投射物事件/状态或真实伤害许可。
+用户此前观察第二个戴夫没有发射鱼叉。早期角色帧只包含显示姿态与部件；协议 4 引入发射意图请求模型，0.1.35补鱼叉头显示。独立员工的可执行发射桥、投射物与真实伤害许可仍未接通。
 后续需给每次发射分配会话/epoch/投射物 ID，同步鱼叉飞行、命中、QTE 绑定及回收，
 并由房主验证装备/攻击条件和裁定鱼的血量、捕获与收益。不能给显示副本直接启用原生武器，避免单例、命中和奖励重复执行。
 
@@ -449,3 +449,11 @@ cacheSelectedScenePath与IGP.Init还含持久缓存/实例保存目标，地图�
 0.1.36新增当前房主候选读取接口和实际加载边界研究，见[MAP_ADOPTION_ENTRY](MAP_ADOPTION_ENTRY.md)。API不等待Unity Update诊断消费，但尚无原生加载调用方；route完整不等于全部IGP/已采用/Ready。manager factory未绑定后不会补绑定的时序风险仍待解决，不能认为房主发布来源在实机必定成立。
 
 0.1.37将默认关闭的[客机自然初始化source](GUEST_INITIALIZATION_BOOTSTRAP.md)接到实际Guest握手、固定原初始化首MoveNext及五根事务，仍未运行native。它不消费TryCaptureRemoteChoices来加载route/IGP，地图采用、跨机控制器地址和世界权限仍未实现。原缓存初始化放行不等于全缓存或鱼AI隔离；quiet未证所以Disconnect保留临时根/围栏/引用，不能借Ready或RootShadowInstalled升格M4。
+
+## 0.1.38 路线采用接线与下一步
+
+本轮补齐protocol7/v2路线输入（Priority、PreferenceWeight、PreloadAndNotUnloadable、TotalSceneHeight），Decoder要求实际出现且类型明确，0/false合法；本地IsSceneLoaded独立。房主actual Host在BindRoom来源floor前启用origin，manager出生冻结scene handle和当时eligible operation，只在精确完成后关联iterator/路线。客机依已放行的五根临时source，从原GoTo→固定CoChange首Move等route→SceneLoader原Reset返回→staticCoLoad之前，一次安装六根；未知bootstrap保原参数，独立catalog/list确证的兼容层才能绑定hostentry，先前Mod自建list不得当独立来源。未知嵌套遮父、原skip/异常/失效停止，partial roots与强引用保持，不热恢复、卸围栏或free。
+
+实际285/285（4新schema/TCP、6新manager来源夹具）及插件Build通过，输入执行前后相同；完整stdout/UTC/PASS清单已记录，全部只是CLR/回环TCP与编译。新增9处原生消费者未执行，完整初始scene/IGP/native ABI/GuestStateIsolated/WorldAuthority/CargoAuthority/HostSelectionApplied仍false；当前安装.12/潜水.11/default.0保持。详见[GUEST_MAP_ROUTE_ADOPTION](GUEST_MAP_ROUTE_ADOPTION.md)和[实际摘要](../logs/map-route-adoption-build-verification.json)。
+
+继续实际IGP控制器固定来源与原Init.Move异步等待/唯一匹配本地info，再接生成/AI隔离、可信员工actor/装备/氧气/受伤/投射物、房主命中、每人完整产物与前置容量分流/独立重量/负重以及逐产物返航仓库delta/save。真实双端正常返航保存及GitHub冷配置仍为完成条件，不缩减M3—M7。

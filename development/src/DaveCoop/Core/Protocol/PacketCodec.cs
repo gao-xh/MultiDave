@@ -37,7 +37,44 @@ namespace DaveCoop.Core.Protocol
             try { packet = JsonSerializer.Deserialize<WirePacket>(bytes, Options); }
             catch (JsonException) { throw new ProtocolException("Invalid packet JSON."); }
             Validate(packet);
+            if (packet.Kind == PacketKind.MapRouteSlice) RequireRouteWireFields(bytes);
             return packet;
+        }
+
+        // Protocol 7 requires the native route inputs to be present on the
+        // wire. CLR defaults remain legal values, so deserialization alone
+        // cannot distinguish an old payload from an explicitly sampled zero.
+        private static void RequireRouteWireFields(ReadOnlySpan<byte> bytes)
+        {
+            using JsonDocument document = JsonDocument.Parse(bytes.ToArray());
+            JsonElement route = RequiredWireProperty(document.RootElement, "mapRoute");
+            if (route.ValueKind != JsonValueKind.Object) throw new ProtocolException("Invalid route JSON object.");
+            JsonElement totalHeight = RequiredWireProperty(route, "totalSceneHeight");
+            if (totalHeight.ValueKind != JsonValueKind.Number || !totalHeight.TryGetSingle(out float height) ||
+                !float.IsFinite(height) || Math.Abs(height) > MapSelections.MaxTotalSceneHeight)
+                throw new ProtocolException("Invalid route total height field.");
+            JsonElement scenes = RequiredWireProperty(route, "scenes");
+            if (scenes.ValueKind != JsonValueKind.Array) throw new ProtocolException("Invalid route scenes field.");
+            foreach (JsonElement scene in scenes.EnumerateArray())
+            {
+                JsonElement priority = RequiredWireProperty(scene, "priority");
+                JsonElement preference = RequiredWireProperty(scene, "preferenceWeight");
+                JsonElement preload = RequiredWireProperty(scene, "preloadAndNotUnloadable");
+                if (priority.ValueKind != JsonValueKind.Number || !priority.TryGetInt32(out _) ||
+                    preference.ValueKind != JsonValueKind.Number || !preference.TryGetInt32(out _) ||
+                    (preload.ValueKind != JsonValueKind.True && preload.ValueKind != JsonValueKind.False))
+                    throw new ProtocolException("Invalid native route input fields.");
+            }
+        }
+
+        private static JsonElement RequiredWireProperty(JsonElement value, string name)
+        {
+            if (value.ValueKind != JsonValueKind.Object) throw new ProtocolException("Invalid route JSON object.");
+            JsonElement result = default; int count = 0;
+            foreach (JsonProperty property in value.EnumerateObject())
+                if (string.Equals(property.Name, name, StringComparison.Ordinal)) { result = property.Value; count++; }
+            if (count != 1) throw new ProtocolException("Missing or duplicate native route field: " + name);
+            return result;
         }
 
         public static void RequireCompatible(PeerIdentity expected, PeerIdentity actual)

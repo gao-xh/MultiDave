@@ -50,7 +50,7 @@ namespace DaveCoop.Networking
         public long RemoteGeneration => _remote?.Generation ?? 0;
         public int RemoteRouteSceneCount => _remote?.Route?.Scenes?.Length ?? 0;
         public int RemoteChoiceCount => _remote?.Choices?.Length ?? 0;
-        public string Status { get; private set; } = "Map candidate evidence only; adoption not implemented.";
+        public string Status { get; private set; } = "Map candidate evidence only; native adoption uses a separate experimental consumer.";
 
         public void BindRoom(SessionPeer main, long callbackFloor) => BindRoom(main, callbackFloor, Guid.Empty, 0);
         public void BindRoom(SessionPeer main, long callbackFloor, Guid originRunFloor, long originOwnerFloor)
@@ -72,7 +72,7 @@ namespace DaveCoop.Networking
             SessionSnapshot state = main.Snapshot;
             if (state.Phase == SessionPhase.Closed || string.IsNullOrEmpty(state.RoomId)) return;
             _main = main; _roomId = state.RoomId;
-            Status = state.Role == SessionRole.Host ? "Awaiting a fresh fixed-origin map candidate; adoption not implemented." : "Awaiting host map candidate evidence; adoption not implemented.";
+            Status = state.Role == SessionRole.Host ? "Awaiting a fresh fixed-origin map candidate; native adoption uses a separate experimental consumer." : "Awaiting host map candidate evidence; native adoption uses a separate experimental consumer.";
             Trace("BOUND", new { CallbackFloor = _callbackFloor, OriginRunFloor = originRunFloor, OriginOwnerFloor = originOwnerFloor, Role = state.Role.ToString() });
         }
 
@@ -225,7 +225,7 @@ namespace DaveCoop.Networking
                 { RetireSource(main, "Route publication no longer has a matching room generation."); return false; }
                 ResetSource(); _sourceRoute = route; _sourceFingerprint = fingerprint; _sourceGeneration = after.MapChoiceGeneration;
                 _sourceRun = run; _sourceOwner = owner; PublishedRoutes++;
-                Status = "Host fixed-origin route candidate evidence sent; adoption not implemented.";
+                Status = "Host fixed-origin route candidate evidence sent; native adoption uses a separate experimental consumer.";
                 Trace("ROUTE_SENT", new { OriginRun = run, OwnerLife = owner, Generation = _sourceGeneration, RouteFingerprint = fingerprint, route.EntrySceneId, SceneCount = route.Scenes.Length });
                 return true;
             }
@@ -250,7 +250,7 @@ namespace DaveCoop.Networking
                         Trace("CHOICE_CANCELED", new { choice.Generation, choice.Revision, OwnerLife = owner }); return;
                     }
                     _publishedChoices[item.Key] = choice; PublishedChoices++; sent++;
-                    Status = "Host fixed-origin IGP candidate evidence sent; adoption not implemented.";
+                    Status = "Host fixed-origin IGP candidate evidence sent; native adoption uses a separate experimental consumer.";
                     Trace("CHOICE_SENT", new { OriginRun = _sourceRun, OwnerLife = _sourceOwner, item.Value.ControllerLife, Choice = choice });
                 }
                 catch (Exception error)
@@ -265,7 +265,7 @@ namespace DaveCoop.Networking
         public void Update(SessionPeer main, SessionPeer loopback)
         {
             if (!MatchesRoom(main, out SessionSnapshot state)) return;
-            if (_sourceRoute != null && !MatchesSource(state)) { SealCurrentOwner(); ResetSource(); Status = "Map candidate source canceled; adoption not implemented."; }
+            if (_sourceRoute != null && !MatchesSource(state)) { SealCurrentOwner(); ResetSource(); Status = "Map candidate source canceled; native adoption uses a separate experimental consumer."; }
             SessionPeer receiver = state.Role == SessionRole.Guest ? main : loopback;
             if (receiver == null) return;
             SessionSnapshot receiving = receiver.Snapshot;
@@ -304,7 +304,7 @@ namespace DaveCoop.Networking
             for (int i = 0; i < MaxReceivedPerUpdate && receiver.TryTakeRemoteMapChoices(out MapChoiceSnapshot evidence); i++)
             {
                 _remote = evidence; ReceivedSnapshots++;
-                Status = evidence.Retired ? "Host map candidate evidence retired; adoption not implemented." : evidence.Route == null ? "Host map candidate route assembling; adoption not implemented." : "Host map candidate evidence received; adoption not implemented.";
+                Status = evidence.Retired ? "Host map candidate evidence retired; native adoption uses a separate experimental consumer." : evidence.Route == null ? "Host map candidate route assembling; native adoption uses a separate experimental consumer." : "Host map candidate evidence received; native adoption uses a separate experimental consumer.";
                 Trace("RECEIVED", new { evidence.Generation, evidence.RouteFingerprint, evidence.LastChoiceRevision, evidence.Retired, RouteComplete = evidence.Route != null, SceneCount = RemoteRouteSceneCount, ChoiceCount = RemoteChoiceCount });
             }
         }
@@ -336,13 +336,13 @@ namespace DaveCoop.Networking
                 if (MatchesRoom(main, out SessionSnapshot state) && state.Role == SessionRole.Host && state.MapChoiceFingerprint != null) sent = main.RetireMapChoices(boundedReason);
             }
             catch (Exception error) { PublicationErrors++; Trace("RETIRE_ERROR", new { Error = Reason(error.GetType().Name + ": " + error.Message) }); }
-            Status = _remote != null && !_remote.Retired && _remote.Route != null ? "Host map candidate evidence retained; local observer stopped; adoption not implemented." : "Local map candidate source retired; adoption not implemented.";
+            Status = _remote != null && !_remote.Retired && _remote.Route != null ? "Host map candidate evidence retained; local observer stopped; native adoption uses a separate experimental consumer." : "Local map candidate source retired; native adoption uses a separate experimental consumer.";
             if (hadSource || sent) Trace("RETIRED", new { CallbackFloor = _callbackFloor, Reason = boundedReason, Sent = sent });
         }
         public void Clear(long floor = 0)
         {
             AdvanceFloor(floor); SealCurrentOwner(); ResetSource(); _remote = null; _main = null; _roomId = null;
-            Status = "Map candidate evidence only; adoption not implemented.";
+            Status = "Map candidate evidence only; native adoption uses a separate experimental consumer.";
         }
         private void AdvanceFloor(long floor) => _callbackFloor = Math.Max(_callbackFloor, Math.Max(_highestCallback, floor));
         private RunFence FindRun(Guid run)

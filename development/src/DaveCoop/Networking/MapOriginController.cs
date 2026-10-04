@@ -113,6 +113,7 @@ namespace DaveCoop.Networking
                 QueueLimit = MapOriginNativeCapture.MaxQueued,
                 DrainPerUpdate = MapOriginNativeCapture.MaxDrainPerUpdate,
                 RetainedOperationLimit = MapOriginNativeCapture.MaxOperations,
+                RetainedManagerLimit = MapOriginNativeCapture.MaxManagers,
                 ObservationOnly = true, NativeTypedReturnAbiVerified = false,
                 NativeGenerationBound = false, HostSelectionApplied = false,
                 WorldAuthority = false, CargoAuthority = false
@@ -162,6 +163,7 @@ namespace DaveCoop.Networking
                 HookDropped = _hooks.Dropped, _hooks.UnmatchedAfter, _hooks.PendingCalls,
                 CopyDropped = _capture.Dropped, _capture.ReadErrors, _capture.UnexpectedThreads,
                 _capture.Discarded, CopyPending = _capture.PendingCount, _capture.RetainedOperations,
+                _capture.RetainedManagers, _registry.ManagerCount, _registry.PendingManagerCount,
                 _registry.ActiveOwnerLife, _registry.OwnerCount, _registry.IteratorCount,
                 _registry.OperationCount, _registry.SceneCount, _registry.SceneHandleCount, _registry.ControllerCount,
                 _registry.PendingChoiceCount, _registry.ReadyChoiceCount, _registry.UnboundChoices,
@@ -207,6 +209,7 @@ namespace DaveCoop.Networking
                     _hooks.DiscardedCalls, CopyDiscarded = _capture?.Discarded ?? 0,
                     CopyPending = _capture?.PendingCount ?? 0,
                     RetainedOperations = _capture?.RetainedOperations ?? 0,
+                    RetainedManagers = _capture?.RetainedManagers ?? 0,
                     Events, BoundChoices, EvidenceRevoked = true, ObservationOnly = true,
                     NativeGenerationBound = false, HostSelectionApplied = false,
                     WorldAuthority = false, CargoAuthority = false

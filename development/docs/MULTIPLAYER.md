@@ -1,6 +1,6 @@
 # 第二角色与传输层
 
-当前源码0.1.37-dev（协议6），本轮实际Core/TCP275/275及插件Build警告视为错误通过。新增默认关闭的[客机自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接Plugin启动、实际Guest房间与首次原初始化的五根事务，尚未运行游戏或原生验证；房主地图采用仍未实现。见[本轮验证记录](../logs/guest-initialization-build-verification.json)。安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；完整客机隔离、房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.38-dev（协议7），本轮实际Core/TCP285/285及插件Build警告视为错误通过，执行前后输入封存一致。新增默认关闭的[客机路线加载前采用](GUEST_MAP_ROUTE_ADOPTION.md)：固定自然入海/Reset/原load来源，在资源加载前安装六个路线根；补齐native路线输入及精确pending-manager来源。见[本轮验证记录](../logs/map-route-adoption-build-verification.json)。未部署/启动或运行native；安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。完整IGP采用/客机隔离/房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
 
 0.1.22 历史源码 `0.1.22-dev`、协议 5，插件 Build 警告视为错误通过；未部署/启动。0.1.22 该轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重跑测试。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
@@ -56,7 +56,7 @@ F10 停用/重建与返航清理有日志，用户确认可见并正常模仿动
 游戏适配器在主线程处理已验证的数据，0.1.5-dev 已实际执行本机 TCP 路径；跨机器运行验证待完成。
 
 - Hello/Welcome 验证协议、Mod、Steam Build 和 Unity 版本，分配房主 1 / 客机 2。
-  当前源码协议版本 5 新增 MapRouteSlice/MapIgpChoice/MapChoiceRetire，保留协议 4 的 FishActionRequest/FishActionResult 和协议 3 的 WorldSlice/鱼显示描述，握手拒绝旧协议 4。
+  历史0.1.14源码的协议版本 5 新增 MapRouteSlice/MapIgpChoice/MapChoiceRetire，保留协议 4 的 FishActionRequest/FishActionResult 和协议 3 的 WorldSlice/鱼显示描述，当时握手拒绝旧协议 4。当前源码协议7，拒绝旧协议6，并保留后续Cargo通道与完整路线字段。
 - 房间使用会话 GUID；每个方向使用连续序号，重复或跳号关闭连接。
 - 使用 4 字节小端长度前缀，消息最大 128 KiB，循环读取支持 TCP 拆包。
 - 发送互斥，避免并发消息字节交错；无效出站消息不占用序号。

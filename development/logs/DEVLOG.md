@@ -838,3 +838,21 @@
 - 下一步验证真实冷启动来源/根/缓存/持久输出与未知保留，接完整房主route和IGP自然采用，再接可信员工actor/装备/生存/命中、每人完整产物与容量分流及返航仓库delta/save。真实双端正常闭环和GitHub冷配置仍待完成，不把source接线、275合成/TCP或Build当M4/完整隔离验收。
 
 - 两名非作者源码末审与公开证据/Skill/文档末审READY；已修确认实际Update前读取Pointer、首Move原生预检前重入、异线程配对、native Exception.Message及日志回调后放行等具体缺陷。最终仅文档调整，147插件构建输入仍相同，不重复运行Core或Build；原生初始化、fence安装及5根业务尚未执行。
+
+## 2026-10-04 — 0.1.38 房主路线加载前采用与pending-manager真实来源
+
+- 继续完整M3—M7及每人独立袋/容量/重量/负重、房主长期进度目标，未部署/启动游戏或运行原生业务，不读取/写入存档。当前安装.12、最近潜水.11、默认发行包.0保历史；本轮没有另查游戏进程或安装DLL。
+- 源码0.1.38-dev/协议7；route-v2/selection-v2纳Priority、PreferenceWeight、PreloadAndNotUnloadable、TotalSceneHeight，复制/分片/拼装/身份贯通。Decode要求实际字段存在且类型正确，合法0/false可通过；总高度只按finite/有界校验不猜与各层求和，本地IsSceneLoaded独立置false。旧协议6拒绝。
+- 房主实际Host在BindRoom来源floor前启用自己的origin producer；观察目标29→30，新增InGameManager.OnDestroy_Impl。manager实际出生冻结scene handle、当时eligible operation集合与actor/iterator身份；只有精确operation同owner及birth-handle完成才绑定/提交pending路线，不从后来singleton/当前owner猜。32 managers、64 operation wrappers/实际Move scope，newentry/unload/destroy/exception/quota撤证。
+- Guest默认false启动模式依.37实际自然五根source与真实peer-room，独立原map-call/origin observer互斥。新NativeGuestMapController的9个exact声明绑定GoToEntry→原CoChange factory返回→首state0/currentnull异步等完整route→同fixedMove的SceneLoader原Reset正常返回→staticCoLoad factory前六根安装→固定原childMove加载前后复核。支持StartCoroutine在原Entry主体返回前的同步首Move，允许后续yield/state/current自然变化，未知嵌套遮父，原skip不伪成功。源码未执行native Patch/ctor/字段写。
+- actualCatalog固定DataManager/dictionary指针及count/free/version/entries/buckets；SceneData只读direct backing五scalar，不用RuntimeInvoke业务getter。唯一独立nativeLayer id/name匹配且hostentry catalog/type/additive/diving相容，才在首CoChange之前一次绑定sceneData；无layer证据保原bootstrap/key/mode/activate，InitialSceneProfileVerified恒false。原Mod分配的任何旧layer list不作为下一轮独立证明；context在Reset原返回后即绑定、Clear/Reset/Cache清理撤销，partial准备也不复活。
+- NativeGuestMapRoute按Entry→Next/Previous链构造三类普通native record、明确capacity原生BCL容器与独立exact int comparer，写/回读cache/roadmap/首尾/list/总高度六根，各一次。record raw allocation先strong hold再wrapper；ctor返回前未知内部allocation完整保留未证。来源32entries×7=224明确handles；每路线最多106handles、32retained owners、每方法8192guarded steps，全部unknown保持owner/refs/partial roots、无热restore/unpatch/free/retry，不开World/Cargo/完整Guest权限。
+- 非作者真实入口/窗口审查修复Manager-only不可达入口、SceneLoader Reset实际decl、Entry同步首Move、out-token异常清窗、bootstrap无context、末尾source失效、旧Mod list自举证明等问题；第二非作者核host integration/pending-manager生产链，均READY。完整nativeABI/控制流/共享鱼AI及IGP仍未验收。
+- 首验证Core284/285，旧adapter测试绑定“not implemented”提示文本；修为实际owned observation-only candidate、host-selection false及真实WaitingForScene/epoch合同，不据文案授权限。第二验证Core285/285而Build CS0619拒绝旧5参Harmony.Patch；改为项目现用named参数重载。失败stdout/输入保留私下，不写成通过。
+- 最终实际Test-Core（包含编译）UTC `2026-10-04T18:43:35.4098120Z`→`2026-10-04T18:43:40.5384050Z`，285/285：4新路线schema/字段明确存在/TCP夹具、6新manager出生来源/生命周期夹具；完整stdout/PASS列表与Program全部注册逐一一致，只是CLR合成和实际回环TCP。87份实际Core源码、104份插件源码及项目/执行脚本分别按92/109份核对；149份联合输入含两个私有验证器执行前封存、自写bytes保留、执行后同hash；所选工具/显式编译引用另封存，不称完整OS/SDK传递依赖。
+- 最终Build警告视为错误通过，UTC `2026-10-04T18:43:41.8929187Z`→`2026-10-04T18:43:44.0024187Z`；插件SHA256 `BAD8A38F0B96F10895EA3E716BF3CAB719997C156BE4C020A89C3C22A483105B`，测试DLLSHA256 `350F174DDA3B48D123BC89C3B236E83F953195B4257062012728EDFF485AC907`。真实证据见[本轮摘要](map-route-adoption-build-verification.json)和currentcore，旧.37的275/postrun-only Core输入记录保持，不把本次preseal追补旧轮。
+- 离线两份Cecil实际4types/56properties/13ctors与6types/522properties/22selectedmethods，不将全部properties说成direct。新PE实际8roots/11methods/2128decoded/2127text/9indirect，有1partial/1unavailable/1invalid，完整body/runtime order未证。自写摘要附UTC/输入和report哈希，原PE/metadata/IL/地址/offset只.local，未执行原生。
+- 新GUEST_MAP_ROUTE_ADOPTION、12当前入口header、HANDOFF/PLAN/WORLD、MAP_ORIGINS/ORIGIN_MAP_TRANSPORT/Guest边界与fence历史路由已同步；Skill官方validator通过、protected目标hash与draft相同，SHA256 `CE0BB8DB20179B7D8BC304243152F7415F6A5BF8F2ACC2507959D6938C299EA4`。所有游戏能力/IGP/完整Guest/世界/货袋/正常返航验收仍false。
+- 下一步接实际IGP.Init固定来源与未收到选择时异步等待、唯一local info，再完成生成与AI隔离、可信员工actor/装备/生存/投射物、房主原生命中、每人完整产物/前置容量/重量/负重分流及员工逐项返航仓库delta/save。完整真实双端正常闭环和GitHub冷配置仍待实现，goal保持active。
+
+- 末次非作者源码及文档/证据/Skill审查READY；修正4处旧当前协议措辞并复验Skill。最终只有文档/记录变化，149份已编译输入仍相同，不重复运行Core/Build；公开提交只含47份自写源码、测试、文档/Skill与sanitized摘要，原生/双端验收未完成。

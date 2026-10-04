@@ -9,6 +9,7 @@ namespace DaveCoop.Core.World
     public sealed class MapRouteSelection
     {
         public int EntrySceneId { get; set; }
+        public float TotalSceneHeight { get; set; }
         public MapRouteScene[] Scenes { get; set; }
     }
 
@@ -17,6 +18,7 @@ namespace DaveCoop.Core.World
     public sealed class MapSelectionManifest
     {
         public int EntrySceneId { get; set; }
+        public float TotalSceneHeight { get; set; }
         public MapRouteScene[] Scenes { get; set; }
         public MapGroupSelection[] Groups { get; set; }
     }
@@ -31,6 +33,9 @@ namespace DaveCoop.Core.World
         public float TopY { get; set; }
         public float BottomY { get; set; }
         public float MapHeight { get; set; }
+        public int Priority { get; set; }
+        public int PreferenceWeight { get; set; }
+        public bool PreloadAndNotUnloadable { get; set; }
         public float Offset { get; set; }
         public int PreviousSceneId { get; set; }
         public int NextSceneId { get; set; }
@@ -54,10 +59,12 @@ namespace DaveCoop.Core.World
         public const int MaxConnection = 256;
         public const int MaxControllerAddress = 4096;
         public const int MaxPrefabName = 512;
+        public const float MaxTotalSceneHeight = MaxScenes * 1000000f;
 
         public static void Validate(MapSelectionManifest manifest)
         {
             if (manifest == null) throw new ArgumentNullException(nameof(manifest));
+            ValidateTotalSceneHeight(manifest.TotalSceneHeight);
             if (manifest.Groups == null || manifest.Groups.Length == 0 ||
                 manifest.Groups.Length > MaxGroups) throw new ArgumentException("Incomplete or excessive map selection.");
             Dictionary<int, MapRouteScene> byId = ValidateRoute(manifest.EntrySceneId, manifest.Scenes);
@@ -77,6 +84,7 @@ namespace DaveCoop.Core.World
         public static void ValidateRoute(MapRouteSelection route)
         {
             if (route == null) throw new ArgumentNullException(nameof(route));
+            ValidateTotalSceneHeight(route.TotalSceneHeight);
             ValidateRoute(route.EntrySceneId, route.Scenes);
         }
 
@@ -122,6 +130,7 @@ namespace DaveCoop.Core.World
             return new MapSelectionManifest
             {
                 EntrySceneId = manifest.EntrySceneId,
+                TotalSceneHeight = manifest.TotalSceneHeight,
                 Scenes = CopyScenes(manifest.Scenes),
                 Groups = manifest.Groups.OrderBy(group => group.SceneId).ThenBy(group => group.ControllerAddress, StringComparer.Ordinal)
                     .Select(group => new MapGroupSelection
@@ -135,19 +144,19 @@ namespace DaveCoop.Core.World
         public static string Fingerprint(MapSelectionManifest manifest)
         {
             MapSelectionManifest canonical = Copy(manifest);
-            var hash = new CanonicalHash("map-selection-v1");
-            AddRoute(hash, canonical.EntrySceneId, canonical.Scenes);
+            var hash = new CanonicalHash("map-selection-v2");
+            AddRoute(hash, canonical.EntrySceneId, canonical.TotalSceneHeight, canonical.Scenes);
             hash.Add(canonical.Groups.Length);
             foreach (MapGroupSelection group in canonical.Groups)
                 hash.Add(group.SceneId).Add(group.ControllerAddress).Add(group.Addressable ? 1 : 0)
                     .Add(group.SelectedPrefabName).Add(group.PrefabObjectName);
-            return "map-selection-v1/" + hash.Finish();
+            return "map-selection-v2/" + hash.Finish();
         }
 
         public static MapRouteSelection CopyRoute(MapRouteSelection route)
         {
             ValidateRoute(route);
-            return new MapRouteSelection { EntrySceneId = route.EntrySceneId, Scenes = CopyScenes(route.Scenes) };
+            return new MapRouteSelection { EntrySceneId = route.EntrySceneId, TotalSceneHeight = route.TotalSceneHeight, Scenes = CopyScenes(route.Scenes) };
         }
 
         public static string FingerprintRoute(MapRouteSelection route)
@@ -155,9 +164,9 @@ namespace DaveCoop.Core.World
             MapRouteSelection canonical = CopyRoute(route);
             // Separate hash domain prevents a route-only candidate from being
             // confused with a complete route-and-IGP selection fingerprint.
-            var hash = new CanonicalHash("map-route-v1");
-            AddRoute(hash, canonical.EntrySceneId, canonical.Scenes);
-            return "map-route-v1/" + hash.Finish();
+            var hash = new CanonicalHash("map-route-v2");
+            AddRoute(hash, canonical.EntrySceneId, canonical.TotalSceneHeight, canonical.Scenes);
+            return "map-route-v2/" + hash.Finish();
         }
 
         private static MapRouteScene[] CopyScenes(MapRouteScene[] scenes) =>
@@ -166,16 +175,26 @@ namespace DaveCoop.Core.World
                 SceneId = scene.SceneId, SceneName = scene.SceneName, Layer = scene.Layer,
                 TopConnection = scene.TopConnection ?? "", BottomConnection = scene.BottomConnection ?? "",
                 TopY = scene.TopY, BottomY = scene.BottomY, MapHeight = scene.MapHeight, Offset = scene.Offset,
+                Priority = scene.Priority, PreferenceWeight = scene.PreferenceWeight, PreloadAndNotUnloadable = scene.PreloadAndNotUnloadable,
                 PreviousSceneId = scene.PreviousSceneId, NextSceneId = scene.NextSceneId
             }).ToArray();
 
-        private static void AddRoute(CanonicalHash hash, int entrySceneId, MapRouteScene[] scenes)
+        private static void AddRoute(CanonicalHash hash, int entrySceneId, float totalSceneHeight, MapRouteScene[] scenes)
         {
-            hash.Add(entrySceneId).Add(scenes.Length);
+            hash.Add(entrySceneId).Add(totalSceneHeight).Add(scenes.Length);
             foreach (MapRouteScene scene in scenes)
                 hash.Add(scene.SceneId).Add(scene.SceneName).Add((int)scene.Layer).Add(scene.TopConnection).Add(scene.BottomConnection)
                     .Add(scene.TopY).Add(scene.BottomY).Add(scene.MapHeight).Add(scene.Offset)
+                    .Add(scene.Priority).Add(scene.PreferenceWeight).Add(scene.PreloadAndNotUnloadable ? 1 : 0)
                     .Add(scene.PreviousSceneId).Add(scene.NextSceneId);
+        }
+
+        // Preserve the sampled native scalar without guessing a sum, sign,
+        // priority range, or preference-weight business rule.
+        internal static void ValidateTotalSceneHeight(float value)
+        {
+            if (!float.IsFinite(value) || Math.Abs(value) > MaxTotalSceneHeight)
+                throw new ArgumentException("Invalid total route height.");
         }
 
         private static void Coordinate(float value)

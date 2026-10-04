@@ -1,5 +1,7 @@
 # 客机自然初始化的五根启动接线
 
+0.1.38当前补充见[客机路线采用](GUEST_MAP_ROUTE_ADOPTION.md)及[本轮285/285/Build摘要](../logs/map-route-adoption-build-verification.json)：protocol7/v2完整声明路线字段、30项host origin目标及固定pending-manager出生来源、9项默认关闭guest加载消费者，实际Reset后/CoLoad前六根安装源码已接；没有运行native、IGP采用或全世界/收益验收。以下0.1.37及更早数字/流程保留为历史。
+
 0.1.37-dev（协议6）增加默认关闭的 `Startup/ExperimentalGuestInitialization`。源码已从 Plugin 启动接到实际 Guest 握手、固定原初始化 iterator、已枚举输出围栏和五根影子事务；本轮实际 Core/TCP 为 275/275，新增四组事务夹具使用合成 backend。最终插件 Build 警告视为错误通过，DLL SHA256 `FB608E8763EBC4CCE0F7BF231ED43DD550110A1D438D7FBED12622132C4E71D0`，见[本轮验证摘要](../logs/guest-initialization-build-verification.json)。没有部署、启动游戏、运行这些 native hooks、读取存档或执行克隆/换根；安装0.1.12、最近潜水0.1.11、默认包0.1.0不变。
 
 这条源码接线解决了旧七根桥必须先有运行缓存才能 Prepare 的启动依赖。它允许原游戏在临时五根安装后自然创建缓存，仍没有证明完整存档图、缓存图、在途 writer、原生 ABI 或客机完整隔离。`GuestStateIsolated`、`NativePermission`、世界/捕获/结算权限和 `HostSelectionApplied` 均不因此改变；房主路线/IGP 的原生采用仍未接通。每人独立背包、容量、重量和自身负重惩罚仍是完整目标。

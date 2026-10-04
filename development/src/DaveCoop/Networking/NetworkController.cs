@@ -114,7 +114,13 @@ namespace DaveCoop.Networking
                 ObserveMapSelectionCalls();
                 ObserveRouteInputs();
                 _lootObserver.Update(NetworkDriver.ObserveLootCalls.Value, Time.unscaledTime);
-                _mapOrigins.Update(NetworkDriver.ObserveMapOrigins.Value, Time.unscaledTime);
+                bool temporaryGuest = NativeGuestInitializationController.Current != null;
+                bool hostMapSource = _peers != null && _peers.Main.Snapshot.Role == SessionRole.Host &&
+                    _peers.Main.Snapshot.Phase != SessionPhase.Closed;
+                // The host producer starts before a fresh dive. Experimental
+                // guest replacements cannot be mistaken for original results
+                // by the independent read-only origin observer.
+                _mapOrigins.Update(!temporaryGuest && (NetworkDriver.ObserveMapOrigins.Value || hostMapSource), Time.unscaledTime);
                 FinishAttempt();
                 if (_peers == null) return;
                 SessionSnapshot state = _peers.Main.Snapshot;
@@ -223,6 +229,8 @@ namespace DaveCoop.Networking
                         MapChoiceReceivedSnapshots = _mapChoices.ReceivedSnapshots, MapChoiceUnboundChoices = _mapChoices.UnboundChoices,
                         MapChoiceRemoteGeneration = _mapChoices.RemoteGeneration, MapChoiceRemoteRouteScenes = _mapChoices.RemoteRouteSceneCount,
                         MapChoiceRemoteChoices = _mapChoices.RemoteChoiceCount, HostMapSelectionApplied = false,
+                        ExperimentalGuestInstalledRoutes = NativeGuestInitializationController.Current?.MapController.InstalledRoutes ?? 0,
+                        ExperimentalGuestMapStatus = NativeGuestInitializationController.Current?.MapController.Status,
                         MapChoiceOriginRunId = _mapChoices.SourceOriginRunId,
                         MapChoiceOriginOwnerLife = _mapChoices.SourceOriginOwnerLife,
                         MapChoiceOriginPending = _mapChoices.PendingOriginChoices,
@@ -438,7 +446,7 @@ namespace DaveCoop.Networking
 
         private void ObserveMapSelectionCalls()
         {
-            if (!NetworkDriver.ObserveMapSelectionCalls.Value)
+            if (!NetworkDriver.ObserveMapSelectionCalls.Value || NativeGuestInitializationController.Current != null)
             {
                 StopMapSelectionCalls(); return;
             }
@@ -709,10 +717,14 @@ namespace DaveCoop.Networking
             _peers = finished.GetAwaiter().GetResult();
             _fishActions.BindRoom(_peers.Main);
             _cargoInventory.BindRoom(_peers.Main); _nextCargoObservation = 0;
+            if (NativeGuestInitializationController.Current == null && _peers.Main.Snapshot.Role == SessionRole.Host)
+                _mapOrigins.Update(true, Time.unscaledTime);
             _mapChoices.BindRoom(_peers.Main, _mapSelectionHooks.ProcessAccepted, _mapOrigins.RunId, _mapOrigins.ActiveOwnerLife);
             var startupGuest = NativeGuestInitializationController.Current;
             if (startupGuest != null && !startupGuest.BindPeer(_peers.Main))
                 throw new InvalidOperationException("Guest startup room binding was rejected.");
+            if (startupGuest != null && !startupGuest.MapController.BindTransport(_peers.Main, _mapChoices))
+                throw new InvalidOperationException("Guest map transport binding was rejected.");
             RemotePreview.NetworkActive = true;
             _nextOwnerCheck = 0; _nextCapture = 0; _lastError = null;
             NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_CONNECTED: " + (_peers.Loopback == null ? _peers.Main.Snapshot.Role.ToString() : "local TCP diagnostic; one game process"));

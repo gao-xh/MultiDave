@@ -79,9 +79,13 @@ internal static class MapChoiceControllerTests
         await Remote(received, pair, () => received.RemoteGeneration == 2 && received.RemoteChoiceCount == 1);
         source.ObserveOrigin(Frame(run, 3, 9, 0), pair.Host);
         await Remote(received, pair, () => received.RemoteGeneration == 3 && received.RemoteChoiceCount == 0);
+        Assert(received.TryCaptureRemoteChoices(pair.Guest, out MapChoiceSnapshot candidate) &&
+            candidate.Generation == 3 && candidate.Route != null && candidate.Choices.Length == 0 &&
+            candidate.ObservationOnly && !candidate.HostSelectionApplied,
+            "fixed-origin candidates changed their observation-only adoption contract");
         Assert(source.PublishedRoutes == 3 && source.PublishedChoices == 3 && source.SuppressedLegacyObservations == 3 &&
-            pair.Host.Snapshot.Phase == SessionPhase.WaitingForScene && pair.Guest.Snapshot.SceneEpoch == 0 &&
-            received.Status.Contains("not implemented"), "fixed-origin candidates elevated readiness or admitted late legacy evidence");
+            pair.Host.Snapshot.Phase == SessionPhase.WaitingForScene && pair.Guest.Snapshot.SceneEpoch == 0,
+            "fixed-origin candidates elevated readiness or admitted late legacy evidence");
     }
 
     public static async Task TcpUnavailableSamplesRetireAndRecover()

@@ -33,6 +33,9 @@ description: Configure or continue development of the MultiDave prototype for Wi
 研究捕获、背包、员工及返航时另读 `CREW_MODE.md`，按用户确定的每人独立背包方案开发。
 源码在 `development/src/DaveCoop/`。
 
+当前源码0.1.38-dev/协议7：继续同一海洋先读 `development/docs/GUEST_MAP_ROUTE_ADOPTION.md` 和其实际验证摘要。285/285 CLR/TCP及插件Build通过，源码/脚本输入执行前封存且前后相同；native消费者未运行，安装仍.12、最近潜水.11、默认包.0。Guest路线消费者依默认关闭的自然初始化五根source与真实peer，从原GoTo/fixedCoChange异步等route、配对SceneLoader.Reset返回后，在staticCoLoad前一次装六根；不要把Manager首Move的未见Build调用当入口。protocol7/v2要求4新增字段实际存在，0/false合法。Host在BindRoom前启用origin，pending manager只按出生已冻结operation/scene handle升级；Guest禁止独立原选择观察误报。无独立layer成员证明保原bootstrap，先前Mod自建list不能证明原生层。核DAVECOOP_GUEST_MAP_WAITING_ROUTE/INSTALLED及NETWORK_STATE.ExperimentalGuestInstalledRoutes/ExperimentalGuestMapStatus只记新鲜来源/字段事实，不据此开放IGP/AI/世界/收益权限。未知partial/Disconnect保持临时状态/fence/handles，不热恢复或retry，切个人模式仍需新进程。继续IGP真实Init等待/唯一info、完整资源/actor/生成与AI隔离、每人独立袋产物/前置容量/负重与返航；完整M3—M7/双端正常闭环/GitHub冷配置保持。
+
+
 - C# 修改后运行 `development/scripts/Build-Plugin.ps1`。
   纯 CLR 姿态、协议或会话修改后另运行 `development/scripts/Test-Core.ps1`。
   现有脚本使用已安装 SDK 的 Roslyn 与框架 .NET 6 库；测试运行需要 .NET 6 runtime。
@@ -56,7 +59,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   请用户确认标签下方的鱼可见及动画/转向正常，并核对捕获后移除、断线与返航清理、本地输入/镜头。
   组件启用、镜头内、网格顶点和标签分别是不同证据，仅有标签不能证明鱼网格可见。
   0.1.7-dev 用户确认鱼可见但会突然消失；0.1.8-dev 无旧异常但标签换鱼；0.1.9-dev 已获用户确认不再突然消失；单游戏显示不能证明客机地图/鱼群/AI 接管或合作捕获。
-  当前协议为 6，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
+  当前协议为 7，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
   `development/scripts/Inspect-FishRenderApi.ps1` 可复现游戏/Spine 显示与生命周期接口签名研究。
 - 0.1.6-dev 在房主开启鱼诊断且发布状态时安装自己的生命周期观察挂钩。
   核对 FISH_LIFECYCLE_READY 及 NETWORK_STATE 中 FishLifecycleHooks/Tracked/Transitions/CallbackErrors；
@@ -308,7 +311,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   LoadSavedData发起Init，InitAfterSaveSystem首次MoveNext才是具体早期候选；缺cache自然出生未支持。RestoreRoot需先证消费者退休，不能仅release前查quiet。manager factory早于完成operation时owner0不补绑定，实机顺序未证。
   本轮未部署/启动，installed.12/dive.11/default.0保持；每人独立袋、原生employee命中/产物分流与返航保存、guest隔离/房主世界、真实双端正常返航和GitHub冷配置继续完整M3—M7。
 
-- 当前源码0.1.37-dev/协议6，实际Core/TCP275/275及最终Build通过。继续guest初始化先读development/docs/GUEST_INITIALIZATION_BOOTSTRAP.md与guest-initialization-build-verification.json；.36候选接口证据保留历史。
+- 历史源码0.1.37-dev/协议6，实际Core/TCP275/275及最终Build通过。继续guest初始化先读development/docs/GUEST_INITIALIZATION_BOOTSTRAP.md与guest-initialization-build-verification.json；.36候选接口证据保留历史。
   Startup.ExperimentalGuestInitialization默认false，玩家默认安装流程不启用实验。开启是进程级existing-save Guest模式：自动连接已配置host，重启才能回个人模式；不支持初次无存档的CreateNewAndSave回退，File.Copy/Delete尝试即拒绝此次启动。
   真实Awake/LoadSaved/LoadAll/factory早期只保opaque CLR wrappers与同安装线程事实，实际Unity Update确认后才在fixedreturned iterator首次MoveNext核native身份/state0/currentnull、paired原返回、same live Guest peer/Room及已列cold cache。仅此来源绑定五根Natural事务，先seal197声明再clone/install，再放原初始化；七根既有缓存入口仍硬拒。
   Natural fence源端初始156、延后41并single-use seal；197只是expected声明数，非全部writer或已在游戏安装成功。bool __runOriginal有本机HarmonyX离线依据，不等于detour/typed ABI实测。原生异常只type不转Message/JSON；32日志、64非Move回调、3来源stronghandles另于桥最多21显式handle计数（当前冷路径15次）。

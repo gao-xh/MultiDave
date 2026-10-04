@@ -57,6 +57,7 @@ namespace DaveCoop.Core.World
         public const int MaxOperations = 128;
         public const int MaxScenes = 128;
         public const int MaxControllers = 256;
+        public const int MaxManagers = 32;
         public const int MaxChoices = 128;
         public const int MaxScopes = 32;
         public const int MaxLoadKey = 512;
@@ -72,6 +73,8 @@ namespace DaveCoop.Core.World
         private readonly HashSet<int> _retiredSceneHandles = new HashSet<int>();
         private readonly Dictionary<long, Controller> _controllers = new Dictionary<long, Controller>();
         private readonly Dictionary<long, Controller> _controllerPointers = new Dictionary<long, Controller>();
+        private readonly Dictionary<long, Manager> _managers = new Dictionary<long, Manager>();
+        private readonly Dictionary<long, Manager> _managerPointers = new Dictionary<long, Manager>();
         private readonly List<Scope> _scopes = new List<Scope>();
         private readonly List<Selection> _pending = new List<Selection>();
         private readonly Queue<MapOriginChoiceEvidence> _ready = new Queue<MapOriginChoiceEvidence>();
@@ -96,6 +99,12 @@ namespace DaveCoop.Core.World
         public int SceneCount { get { lock (_gate) return _scenes.Count; } }
         public int SceneHandleCount { get { lock (_gate) return _sceneHandleCount; } }
         public int ControllerCount { get { lock (_gate) return _controllers.Count; } }
+        public int ManagerCount { get { lock (_gate) return _managers.Count; } }
+        public int PendingManagerCount
+        {
+            get { lock (_gate) { int count = 0; foreach (Manager item in _managers.Values)
+                if (!item.Retired && item.OwnerLife == 0 && item.BoundaryOwnerLife != 0) count++; return count; } }
+        }
         public int PendingChoiceCount { get { lock (_gate) return _pending.Count; } }
         public int ReadyChoiceCount { get { lock (_gate) return _ready.Count; } }
         public long UnboundChoices { get { lock (_gate) return _unboundChoices; } }
@@ -163,6 +172,86 @@ namespace DaveCoop.Core.World
             }
         }
 
+        // Only operations already observed when the actual manager was born
+        // are eligible. Their fixed scopes supply an exclusion boundary, not a
+        // current-owner fallback. Completion must also match the birth handle.
+        public MapOriginStatus RegisterManagerBirth(long pointer, int sceneHandle,
+            long[] eligibleOperationLives, out long managerLife)
+        {
+            lock (_gate)
+            {
+                managerLife = 0; MapOriginStatus status = Guard();
+                if (status != MapOriginStatus.Accepted) return status;
+                if (pointer == 0 || sceneHandle == 0 || eligibleOperationLives == null || eligibleOperationLives.Length > MaxOperations)
+                    return Fail(MapOriginStatus.Invalid, "Invalid manager birth.");
+                var candidates = (long[])eligibleOperationLives.Clone(); Array.Sort(candidates);
+                long boundary = 0;
+                for (int index = 0; index < candidates.Length; index++)
+                {
+                    if (candidates[index] <= 0 || (index > 0 && candidates[index] == candidates[index - 1]) ||
+                        !_operations.TryGetValue(candidates[index], out Operation operation))
+                        return Fail(MapOriginStatus.Invalid, "Invalid manager operation set.");
+                    if (operation.Retired || !Active(operation.OwnerLife)) return MapOriginStatus.Retired;
+                    if (boundary != 0 && boundary != operation.OwnerLife)
+                        return Fail(MapOriginStatus.Conflict, "Manager operation set spans owners.");
+                    boundary = operation.OwnerLife;
+                }
+                if (_managerPointers.TryGetValue(pointer, out Manager previous))
+                {
+                    managerLife = previous.Life;
+                    if (previous.Retired) return MapOriginStatus.Retired;
+                    if (previous.SceneHandle != sceneHandle || !EqualLives(previous.EligibleOperations, candidates))
+                        return Fail(MapOriginStatus.Conflict, "Manager birth cannot change.");
+                    return previous.OwnerLife != 0 ? MapOriginStatus.Duplicate :
+                        previous.BoundaryOwnerLife == 0 ? MapOriginStatus.Unbound : MapOriginStatus.Pending;
+                }
+                if (_retiredSceneHandles.Contains(sceneHandle)) return MapOriginStatus.Retired;
+                if (_managers.Count == MaxManagers) return Fail(MapOriginStatus.LimitExceeded, "Manager quota.");
+                if (!Next(out managerLife)) return MapOriginStatus.LimitExceeded;
+                var item = new Manager { Life = managerLife, Pointer = pointer, SceneHandle = sceneHandle,
+                    BoundaryOwnerLife = boundary, EligibleOperations = candidates };
+                _managers.Add(managerLife, item); _managerPointers.Add(pointer, item);
+                if (_scenes.TryGetValue(sceneHandle, out Scene scene) && !scene.Retired && Active(scene.OwnerLife))
+                {
+                    // Already-completed actual scene ownership needs no pending
+                    // operation. A nonempty frozen set must agree with it.
+                    if (boundary != 0 && (boundary != scene.OwnerLife || !Contains(candidates, scene.OperationLife)))
+                    { RetireManagerLocked(item, false); return MapOriginStatus.Retired; }
+                    item.BoundaryOwnerLife = scene.OwnerLife; BindManager(item, scene);
+                }
+                return item.Retired ? MapOriginStatus.Retired : item.OwnerLife != 0 ? MapOriginStatus.Accepted :
+                    boundary == 0 ? MapOriginStatus.Unbound : MapOriginStatus.Pending;
+            }
+        }
+
+        public MapOriginStatus RegisterManagerIterator(long managerLife, long managerPointer,
+            long iteratorPointer, out long iteratorLife)
+        {
+            lock (_gate)
+            {
+                iteratorLife = 0; MapOriginStatus status = Guard(); if (status != MapOriginStatus.Accepted) return status;
+                if (!_managers.TryGetValue(managerLife, out Manager manager)) return MapOriginStatus.Unbound;
+                if (manager.Pointer != managerPointer || iteratorPointer == 0)
+                    return Fail(MapOriginStatus.Conflict, "Manager iterator identity differs from birth.");
+                if (manager.Retired || (manager.BoundaryOwnerLife != 0 && !Active(manager.BoundaryOwnerLife))) return MapOriginStatus.Retired;
+                if (manager.IteratorLife != 0)
+                {
+                    Iterator previous = _iterators[manager.IteratorLife]; iteratorLife = previous.Life;
+                    if (previous.Pointer != iteratorPointer) return Fail(MapOriginStatus.Conflict, "Manager returned another iterator.");
+                    return previous.Retired ? MapOriginStatus.Retired : MapOriginStatus.Duplicate;
+                }
+                if (_iteratorPointers.ContainsKey(iteratorPointer))
+                    return Fail(MapOriginStatus.Conflict, "Manager iterator pointer was already registered.");
+                if (_iterators.Count == MaxIterators) return Fail(MapOriginStatus.LimitExceeded, "Iterator quota.");
+                if (!Next(out iteratorLife)) return MapOriginStatus.LimitExceeded;
+                var item = new Iterator { Life = iteratorLife, Pointer = iteratorPointer,
+                    OwnerLife = manager.OwnerLife, ManagerLife = managerLife };
+                _iterators.Add(iteratorLife, item); _iteratorPointers.Add(iteratorPointer, item); manager.IteratorLife = iteratorLife;
+                return manager.OwnerLife != 0 ? MapOriginStatus.Accepted :
+                    manager.BoundaryOwnerLife != 0 ? MapOriginStatus.Pending : MapOriginStatus.Unbound;
+            }
+        }
+
         // Even an unknown/retired iterator pushes an UNBOUND scope. A prefix
         // receiving Unbound and a nonzero token must still call ExitScope.
         public MapOriginStatus EnterMoveNext(long pointer, long iteratorLife, out long scopeToken)
@@ -171,10 +260,11 @@ namespace DaveCoop.Core.World
             {
                 scopeToken = 0; MapOriginStatus status = Guard();
                 if (status != MapOriginStatus.Accepted) return status;
-                long owner = 0;
+                long owner = 0, fixedIterator = 0;
                 if (_iterators.TryGetValue(iteratorLife, out Iterator item) && item.Pointer == pointer &&
-                    !item.Retired && Active(item.OwnerLife)) owner = item.OwnerLife;
-                return PushScope(owner, out scopeToken);
+                    !item.Retired)
+                { fixedIterator = item.Life; if (Active(item.OwnerLife)) owner = item.OwnerLife; }
+                return PushScope(owner, out scopeToken, fixedIterator);
             }
         }
 
@@ -194,7 +284,20 @@ namespace DaveCoop.Core.World
             lock (_gate)
             {
                 MapOriginStatus status = Guard(); if (status != MapOriginStatus.Accepted) return status;
-                Owner owner = ScopeOwner(scopeToken); if (owner == null) return MapOriginStatus.Unbound;
+                Owner owner = ScopeOwner(scopeToken);
+                Manager manager = ScopeManager(scopeToken);
+                if (owner == null)
+                {
+                    if (manager == null || manager.Retired || !Active(manager.BoundaryOwnerLife)) return MapOriginStatus.Unbound;
+                    if (manager.PendingRoute != null || manager.RouteCommitted)
+                    { RetireOwnerLocked(manager.BoundaryOwnerLife); return MapOriginStatus.Retired; }
+                    if (contextPointer == 0) return Fail(MapOriginStatus.Invalid, "Missing route context.");
+                    try { manager.PendingRoute = MapSelections.CopyRoute(route); }
+                    catch (ArgumentException) { return Fail(MapOriginStatus.Invalid, "Invalid pending route copy."); }
+                    manager.ContextPointer = contextPointer;
+                    if (manager.OwnerLife == 0) return MapOriginStatus.Pending;
+                    return CommitManagerRoute(manager);
+                }
                 // A cache/restore is a new boundary even when the bytes match.
                 // An existing iterator never acquires the replacement context.
                 if (owner.Route != null) { RetireOwnerLocked(owner.Life); return MapOriginStatus.Retired; }
@@ -204,6 +307,7 @@ namespace DaveCoop.Core.World
                 catch (ArgumentException) { return Fail(MapOriginStatus.Invalid, "Invalid route copy."); }
                 owner.ContextPointer = contextPointer; owner.Route = copy;
                 owner.Fingerprint = MapSelections.FingerprintRoute(copy);
+                if (manager != null) { manager.RouteCommitted = true; manager.ContextPointer = contextPointer; }
                 FlushPending(); return _fault == null ? MapOriginStatus.Accepted : MapOriginStatus.Faulted;
             }
         }
@@ -268,9 +372,12 @@ namespace DaveCoop.Core.World
                 _scenes.Add(sceneHandle, new Scene { Life = sceneLife, Handle = sceneHandle,
                     OwnerLife = operation.OwnerLife, OperationLife = operationLife });
                 _sceneHandleCount++;
+                foreach (Manager manager in _managers.Values)
+                    if (!manager.Retired && manager.SceneHandle == sceneHandle) BindManager(manager, _scenes[sceneHandle]);
                 foreach (Controller controller in _controllers.Values)
                     if (!controller.Retired && controller.SceneHandle == sceneHandle) BindController(controller);
-                FlushPending(); return _fault == null ? MapOriginStatus.Accepted : MapOriginStatus.Faulted;
+                FlushPending(); return _fault != null ? MapOriginStatus.Faulted :
+                    Active(operation.OwnerLife) ? MapOriginStatus.Accepted : MapOriginStatus.Retired;
             }
         }
 
@@ -396,6 +503,56 @@ namespace DaveCoop.Core.World
                 !_controllerPointers.TryGetValue(pointer, out Controller item)) return false; life = item.Life; return true; }
         }
 
+        public bool TryGetManagerLife(long pointer, out long life)
+        {
+            lock (_gate) { life = 0; if (Guard() != MapOriginStatus.Accepted ||
+                !_managerPointers.TryGetValue(pointer, out Manager item)) return false; life = item.Life; return true; }
+        }
+
+        public bool TryGetManagerOwner(long managerLife, out long ownerLife)
+        {
+            lock (_gate) { ownerLife = 0; if (Guard() != MapOriginStatus.Accepted ||
+                !_managers.TryGetValue(managerLife, out Manager item) || item.Retired || !Active(item.OwnerLife)) return false;
+                ownerLife = item.OwnerLife; return true; }
+        }
+
+        public bool IsManagerRetired(long managerLife)
+        {
+            lock (_gate) return Guard() != MapOriginStatus.Accepted ||
+                !_managers.TryGetValue(managerLife, out Manager item) || item.Retired;
+        }
+
+        // Also exposes the fixed operation boundary of a staged route for
+        // retirement only. It does not make that route a published source.
+        public bool TryGetRouteOwner(long contextPointer, out long ownerLife)
+        {
+            lock (_gate)
+            {
+                ownerLife = 0; if (Guard() != MapOriginStatus.Accepted || contextPointer == 0) return false;
+                foreach (Owner owner in _owners.Values)
+                    if (!owner.Retired && owner.ContextPointer == contextPointer) { ownerLife = owner.Life; return true; }
+                foreach (Manager manager in _managers.Values)
+                    if (!manager.Retired && manager.ContextPointer == contextPointer && Active(manager.BoundaryOwnerLife))
+                    { ownerLife = manager.BoundaryOwnerLife; return true; }
+                return false;
+            }
+        }
+
+        public MapOriginStatus RetireManager(long managerLife)
+        {
+            lock (_gate)
+            {
+                MapOriginStatus status = Guard(); if (status != MapOriginStatus.Accepted) return status;
+                if (!_managers.TryGetValue(managerLife, out Manager item)) return MapOriginStatus.Unbound;
+                if (item.Retired) return MapOriginStatus.Duplicate;
+                // A failed pending manager also invalidates its fixed entry;
+                // its partially captured route must never become current later.
+                if (Active(item.BoundaryOwnerLife)) RetireOwnerLocked(item.BoundaryOwnerLife);
+                else RetireManagerLocked(item, false);
+                return MapOriginStatus.Accepted;
+            }
+        }
+
         public bool TryGetSceneOwner(int sceneHandle, out long ownerLife)
         {
             lock (_gate) { ownerLife = 0; if (Guard() != MapOriginStatus.Accepted ||
@@ -437,6 +594,8 @@ namespace DaveCoop.Core.World
                     return Fail(MapOriginStatus.LimitExceeded, "Scene tombstone quota.");
                 if (!found) _sceneHandleCount++;
                 _retiredSceneHandles.Add(sceneHandle); if (found) scene.Retired = true;
+                foreach (Manager manager in _managers.Values)
+                    if (manager.SceneHandle == sceneHandle) RetireManagerLocked(manager, true);
                 foreach (Controller controller in _controllers.Values)
                     if (controller.SceneHandle == sceneHandle) controller.Retired = true;
                 RemoveSelections(selection => _controllers[selection.ControllerLife].SceneHandle == sceneHandle);
@@ -484,6 +643,7 @@ namespace DaveCoop.Core.World
             if (_fault == null) _fault = reason;
             foreach (Owner owner in _owners.Values) RetireOwnerLocked(owner.Life);
             foreach (Controller controller in _controllers.Values) controller.Retired = true;
+            foreach (Manager manager in _managers.Values) RetireManagerLocked(manager, false);
             _pending.Clear(); _ready.Clear(); _scopes.Clear(); _activeOwnerLife = 0;
             return status;
         }
@@ -497,12 +657,12 @@ namespace DaveCoop.Core.World
 
         private bool Active(long ownerLife) => ownerLife != 0 && _owners.TryGetValue(ownerLife, out Owner owner) && !owner.Retired;
 
-        private MapOriginStatus PushScope(long ownerLife, out long scopeToken)
+        private MapOriginStatus PushScope(long ownerLife, out long scopeToken, long iteratorLife = 0)
         {
             scopeToken = 0;
             if (_scopes.Count == MaxScopes) return Fail(MapOriginStatus.LimitExceeded, "Scope quota.");
             if (!Next(out scopeToken)) return MapOriginStatus.LimitExceeded;
-            _scopes.Add(new Scope { Token = scopeToken, OwnerLife = ownerLife });
+            _scopes.Add(new Scope { Token = scopeToken, OwnerLife = ownerLife, IteratorLife = iteratorLife });
             return ownerLife == 0 ? MapOriginStatus.Unbound : MapOriginStatus.Accepted;
         }
 
@@ -513,10 +673,21 @@ namespace DaveCoop.Core.World
             return Active(ownerLife) ? _owners[ownerLife] : null;
         }
 
+        private Manager ScopeManager(long scopeToken)
+        {
+            if (_scopes.Count == 0 || scopeToken == 0 || _scopes[_scopes.Count - 1].Token != scopeToken) return null;
+            long iteratorLife = _scopes[_scopes.Count - 1].IteratorLife;
+            if (!_iterators.TryGetValue(iteratorLife, out Iterator iterator) || iterator.Retired ||
+                !_managers.TryGetValue(iterator.ManagerLife, out Manager manager) || manager.IteratorLife != iteratorLife) return null;
+            return manager;
+        }
+
         private void RetireOwnerLocked(long ownerLife)
         {
             if (!_owners.TryGetValue(ownerLife, out Owner owner)) return;
             owner.Retired = true;
+            foreach (Manager manager in _managers.Values)
+                if (manager.BoundaryOwnerLife == ownerLife || manager.OwnerLife == ownerLife) RetireManagerLocked(manager, false);
             foreach (Iterator iterator in _iterators.Values) if (iterator.OwnerLife == ownerLife) iterator.Retired = true;
             foreach (Operation operation in _operations.Values) if (operation.OwnerLife == ownerLife) operation.Retired = true;
             foreach (Scene scene in _scenes.Values)
@@ -525,6 +696,52 @@ namespace DaveCoop.Core.World
                 if (controller.BirthBoundary == ownerLife || controller.OwnerLife == ownerLife) controller.Retired = true;
             RemoveSelections(selection => _controllers[selection.ControllerLife].Retired);
             if (_activeOwnerLife == ownerLife) _activeOwnerLife = 0;
+        }
+
+        private void RetireManagerLocked(Manager manager, bool retireRouteOwner)
+        {
+            if (manager.Retired) return;
+            manager.Retired = true; manager.PendingRoute = null;
+            if (manager.IteratorLife != 0) _iterators[manager.IteratorLife].Retired = true;
+            if (retireRouteOwner && manager.RouteCommitted && Active(manager.OwnerLife)) RetireOwnerLocked(manager.OwnerLife);
+        }
+
+        private void BindManager(Manager manager, Scene scene)
+        {
+            if (manager.Retired || manager.OwnerLife != 0) return;
+            if (scene.Retired || !Active(scene.OwnerLife) || manager.BoundaryOwnerLife == 0 ||
+                manager.BoundaryOwnerLife != scene.OwnerLife ||
+                (manager.EligibleOperations.Length != 0 && !Contains(manager.EligibleOperations, scene.OperationLife)))
+            { RetireManagerLocked(manager, false); return; }
+            manager.OwnerLife = scene.OwnerLife; manager.OperationLife = scene.OperationLife; manager.SceneLife = scene.Life;
+            if (manager.IteratorLife != 0)
+            {
+                Iterator iterator = _iterators[manager.IteratorLife];
+                if (iterator.Retired || iterator.ManagerLife != manager.Life || iterator.OwnerLife != 0)
+                { Fail(MapOriginStatus.Conflict, "Pending manager iterator cannot be rebound."); return; }
+                iterator.OwnerLife = scene.OwnerLife;
+            }
+            if (manager.PendingRoute != null) CommitManagerRoute(manager);
+        }
+
+        private MapOriginStatus CommitManagerRoute(Manager manager)
+        {
+            if (manager.Retired || !Active(manager.OwnerLife)) return MapOriginStatus.Retired;
+            Owner owner = _owners[manager.OwnerLife];
+            if (owner.Route != null || manager.RouteCommitted)
+            { RetireOwnerLocked(owner.Life); return MapOriginStatus.Retired; }
+            owner.ContextPointer = manager.ContextPointer; owner.Route = manager.PendingRoute;
+            owner.Fingerprint = MapSelections.FingerprintRoute(owner.Route);
+            manager.PendingRoute = null; manager.RouteCommitted = true;
+            FlushPending(); return _fault == null ? MapOriginStatus.Accepted : MapOriginStatus.Faulted;
+        }
+
+        private static bool Contains(long[] values, long value) => Array.BinarySearch(values, value) >= 0;
+        private static bool EqualLives(long[] first, long[] second)
+        {
+            if (first.Length != second.Length) return false;
+            for (int index = 0; index < first.Length; index++) if (first[index] != second[index]) return false;
+            return true;
         }
 
         private void BindController(Controller controller)
@@ -625,7 +842,13 @@ namespace DaveCoop.Core.World
         };
 
         private sealed class Owner { public long Life, Pointer, ContextPointer; public bool Retired; public string Fingerprint; public MapRouteSelection Route; }
-        private sealed class Iterator { public long Life, Pointer, OwnerLife; public bool Retired; }
+        private sealed class Iterator { public long Life, Pointer, OwnerLife, ManagerLife; public bool Retired; }
+        private sealed class Manager
+        {
+            public long Life, Pointer, BoundaryOwnerLife, OwnerLife, OperationLife, SceneLife, IteratorLife, ContextPointer;
+            public int SceneHandle; public bool Retired, RouteCommitted;
+            public long[] EligibleOperations; public MapRouteSelection PendingRoute;
+        }
         private sealed class Operation { public long Life, Pointer, OwnerLife, SceneLife; public int Version, SceneHandle; public string LoadKey; public bool Retired; }
         private sealed class Scene { public long Life, OwnerLife, OperationLife; public int Handle; public bool Retired; }
         private sealed class Controller
@@ -633,7 +856,7 @@ namespace DaveCoop.Core.World
             public long Life, Pointer, BirthBoundary, OwnerLife, SceneLife, OperationLife, LastSequence;
             public int SceneHandle; public string SceneName; public bool Retired; public MapGroupSelection LastChoice;
         }
-        private sealed class Scope { public long Token, OwnerLife; }
+        private sealed class Scope { public long Token, OwnerLife, IteratorLife; }
         private sealed class Selection { public long ControllerLife, Sequence; public MapGroupSelection Choice; }
     }
 }

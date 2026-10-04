@@ -1,5 +1,7 @@
 # 客机持久输出围栏的精确声明
 
+0.1.38当前补充见[客机路线采用](GUEST_MAP_ROUTE_ADOPTION.md)及[本轮285/285/Build摘要](../logs/map-route-adoption-build-verification.json)：protocol7/v2完整声明路线字段、30项host origin目标及固定pending-manager出生来源、9项默认关闭guest加载消费者，实际Reset后/CoLoad前六根安装源码已接；没有运行native、IGP采用或全世界/收益验收。以下0.1.37及更早数字/流程保留为历史。
+
 本页给出可直接用于声明匹配的清单和返回策略。它来自本机生成互操作元数据、包装器 IL，以及此前原 GameAssembly 的静态调用报告；没有运行游戏、原生克隆、字段交换、保存或挂钩。它不是所有 writer 的覆盖证明，不授予 `GuestStateIsolated`、`WorldAuthority`、捕获或结算权限。影子根和旧引用边界另见 [GUEST_ISOLATION](GUEST_ISOLATION.md)。
 
 ## 0.1.37 默认关闭的自然初始化 profile

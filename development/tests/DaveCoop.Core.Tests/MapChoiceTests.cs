@@ -40,7 +40,7 @@ internal static class MapChoiceTests
         Assert(assembler.AcceptRoute(slices[0]) && assembler.Snapshot.RouteFingerprint == slices[0].RouteFingerprint,
             "changed duplicate corrupted the already committed route");
         var badHashAssembler = new MapChoiceAssembler(); MapRouteSlice[] badHash = MapChoiceFrames.SplitRoute(Route(9), 2);
-        foreach (MapRouteSlice slice in badHash) slice.RouteFingerprint = "map-route-v1/" + new string('f', 64);
+        foreach (MapRouteSlice slice in badHash) slice.RouteFingerprint = "map-route-v2/" + new string('f', 64);
         badHashAssembler.AcceptRoute(badHash[0]); Throws<ArgumentException>(() => badHashAssembler.AcceptRoute(badHash[1]));
         Assert(badHashAssembler.Snapshot.Route == null, "declared fingerprint was trusted without computing the complete route");
         var duplicateAssembler = new MapChoiceAssembler(); duplicateAssembler.AcceptRoute(slices[0]);
@@ -82,7 +82,7 @@ internal static class MapChoiceTests
         MapIgpChoice choice = Choice(route, 2); Throws<ArgumentException>(() => assembler.AcceptChoice(choice));
         choice = Choice(route, 1); choice.SceneId = 999; Throws<ArgumentException>(() => assembler.AcceptChoice(choice));
         choice = Choice(route, 1); choice.Generation = 2; Throws<ArgumentException>(() => assembler.AcceptChoice(choice));
-        choice = Choice(route, 1); choice.RouteFingerprint = "map-route-v1/" + new string('0', 64);
+        choice = Choice(route, 1); choice.RouteFingerprint = "map-route-v2/" + new string('0', 64);
         Throws<ArgumentException>(() => assembler.AcceptChoice(choice));
         Assert(assembler.Snapshot.Choices.Length == 0 && assembler.Snapshot.LastChoiceRevision == 0,
             "invalid choice partially consumed revision or group capacity");
@@ -188,8 +188,8 @@ internal static class MapChoiceTests
         InvalidSlice(source, s => s.Scenes[0].TopY = float.NaN); InvalidSlice(source, s => s.Scenes[0].BottomY = float.PositiveInfinity);
         InvalidSlice(source, s => s.Scenes[0].MapHeight = 0); InvalidSlice(source, s => s.Scenes[0].Offset = 1000001);
         InvalidSlice(source, s => s.Scenes[0].SceneName = "bad\ud800"); InvalidSlice(source, s => s.Scenes[0].TopConnection = "bad\n");
-        InvalidSlice(source, s => s.RouteFingerprint = "map-route-v1/" + s.RouteFingerprint.Substring(13).ToUpperInvariant());
-        InvalidSlice(source, s => s.RouteFingerprint = "map-selection-v1/" + new string('0', 64));
+        InvalidSlice(source, s => s.RouteFingerprint = "map-route-v2/" + s.RouteFingerprint.Substring(13).ToUpperInvariant());
+        InvalidSlice(source, s => s.RouteFingerprint = "map-selection-v2/" + new string('0', 64));
         InvalidSlice(source, s => s.Scenes[1].SceneName = s.Scenes[0].SceneName);
         MapIgpChoice choice = Choice(source, 1); choice.SelectedPrefabName = null;
         Throws<ArgumentException>(() => MapChoiceFrames.Validate(choice));
@@ -202,6 +202,37 @@ internal static class MapChoiceTests
         Throws<ArgumentException>(() => MapChoiceFrames.Validate(new MapChoiceRetire { Generation = 1, Reason = " " }));
         Throws<ArgumentException>(() => MapChoiceFrames.Validate(new MapChoiceRetire { Generation = 1, Reason = new string('x', 257) }));
         MapChoiceFrames.Validate(new MapChoiceRetire { Generation = long.MaxValue, Reason = new string('x', 256) });
+    }
+
+    internal static void NativeRouteInputsCorruptionCannotCommit()
+    {
+        MapRouteSelection source = Route(9); source.TotalSceneHeight = 900.25f;
+        source.Scenes[0].Priority = 12; source.Scenes[8].PreferenceWeight = 7;
+        source.Scenes[8].PreloadAndNotUnloadable = true;
+        MapRouteSlice[] original = MapChoiceFrames.SplitRoute(source, 1);
+        var assembler = new MapChoiceAssembler();
+        Assert(!assembler.AcceptRoute(original[0]) && assembler.Snapshot.Route == null, "first route page exposed a partial route");
+        original[0].Scenes[0].Priority = 999;
+        MapRouteSlice replay = MapChoiceFrames.SplitRoute(source, 1)[0]; replay.Scenes[0].Priority++;
+        Throws<ArgumentException>(() => assembler.AcceptRoute(replay));
+        MapRouteSlice final = MapChoiceFrames.SplitRoute(source, 1)[1]; final.Scenes[0].PreferenceWeight++;
+        Throws<ArgumentException>(() => assembler.AcceptRoute(final));
+        Assert(assembler.Snapshot.Route == null, "a modified native input survived the full fingerprint check");
+        final = MapChoiceFrames.SplitRoute(source, 1)[1]; final.TotalSceneHeight += 1;
+        Throws<ArgumentException>(() => assembler.AcceptRoute(final));
+        Assert(assembler.AcceptRoute(MapChoiceFrames.SplitRoute(source, 1)[1]), "failed page advanced the atomic route cursor");
+        MapChoiceSnapshot committed = assembler.Snapshot;
+        Assert(committed.Route.TotalSceneHeight == 900.25f && committed.Route.Scenes[0].Priority == 12 &&
+            committed.Route.Scenes[8].PreferenceWeight == 7 && committed.Route.Scenes[8].PreloadAndNotUnloadable,
+            "assembled route omitted native inputs or retained the caller page");
+        committed.Route.TotalSceneHeight = 0; committed.Route.Scenes[8].PreloadAndNotUnloadable = false;
+        Assert(assembler.Snapshot.Route.TotalSceneHeight == 900.25f && assembler.Snapshot.Route.Scenes[8].PreloadAndNotUnloadable,
+            "mutable consumer snapshot corrupted the stored route");
+        MapRouteSlice[] replacement = MapChoiceFrames.SplitRoute(source, 2);
+        Assert(!assembler.AcceptRoute(replacement[0]) && assembler.Snapshot.Route == null && assembler.Snapshot.Choices.Length == 0,
+            "new native input generation kept the old committed route");
+        Assert(assembler.AcceptRoute(replacement[1]) && assembler.Snapshot.ObservationOnly && !assembler.Snapshot.HostSelectionApplied,
+            "complete input pages incorrectly granted map adoption");
     }
 
     private static MapRouteSelection Route(int count)

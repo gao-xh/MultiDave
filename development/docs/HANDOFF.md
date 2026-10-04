@@ -1,6 +1,6 @@
 # MultiDave 接手记录
 
-当前源码0.1.37-dev（协议6），本轮实际Core/TCP275/275及插件Build警告视为错误通过。新增默认关闭的[客机自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接Plugin启动、实际Guest房间与首次原初始化的五根事务，尚未运行游戏或原生验证；房主地图采用仍未实现。见[本轮验证记录](../logs/guest-initialization-build-verification.json)。安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；完整客机隔离、房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.38-dev（协议7），本轮实际Core/TCP285/285及插件Build警告视为错误通过，执行前后输入封存一致。新增默认关闭的[客机路线加载前采用](GUEST_MAP_ROUTE_ADOPTION.md)：固定自然入海/Reset/原load来源，在资源加载前安装六个路线根；补齐native路线输入及精确pending-manager来源。见[本轮验证记录](../logs/map-route-adoption-build-verification.json)。未部署/启动或运行native；安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。完整IGP采用/客机隔离/房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
 
 ## 已完成
 
@@ -44,7 +44,7 @@ M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态�
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
 0.1.4-dev 引入默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，0.1.5-dev 加入一条鱼的 Sprite/Spine 显示验证入口。
-当前源码协议版本为 6，拒绝旧协议 5；WorldSlice 保持每块最多 16 个实体，保留 FishActionRequest/FishActionResult 独立通道，保留 MapRouteSlice/MapIgpChoice/MapChoiceRetire，并新增 CargoInventorySlice。
+当前源码协议版本为 7，拒绝旧协议 6；WorldSlice 保持每块最多 16 个实体，保留 FishActionRequest/FishActionResult、MapRouteSlice/MapIgpChoice/MapChoiceRetire 与 CargoInventorySlice。协议7补齐路线原生输入并要求 wire 字段实际存在。
 F11 的 Transmit read-only fish observations / Preview one received fish 均默认关闭。
 0.1.11-dev 另增默认关闭的 Display received fish roster / Observe host harpoon and fish interactions；
 本机显示及房主交互观察仍依赖 Transmit read-only fish observations。
@@ -364,3 +364,11 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 新增3exact File.Copy/Delete初始阻断，任一尝试计数并锁存失败；不能把skip void当加载迁移成功。旧ExistingCaches七根仍硬拒，不用Room或flags开放热Join。quiet仍false，失败/Disconnect不Restore/unpatch/free；切回个人角色需退出并以关开关的新进程启动。源已接到原游戏自然初始化，只是源码进展；首次加载顺序、typed ABI、完整SaveGraph/cache/writer覆盖和Guest隔离仍未验证，地图原生消费者未接，M4未完成。
 
 本轮实际275/275含4新synthetic事务夹具；exit0/tail275和4.55秒保留，完整stdout及确切测试UTC未留。86Core输入仅postrun hash，不声称执行前封存或前后字节相同。最终插件Build警告视为错误通过，147份插件输入有执行前seal及Build前后相同，DLL SHA256 `FB608E8763EBC4CCE0F7BF231ED43DD550110A1D438D7FBED12622132C4E71D0`。未部署/启动；安装.12/潜水.11/default.0保持。下一步验证真实首加载/五根/缓存输出，接完整房主路线与IGP采用、可信员工actor及每人独立袋分流/负重和正常返航；双端与GitHub冷配置仍为完成条件。
+
+## 0.1.38 路线采用接线与下一步
+
+本轮补齐protocol7/v2路线输入（Priority、PreferenceWeight、PreloadAndNotUnloadable、TotalSceneHeight），Decoder要求实际出现且类型明确，0/false合法；本地IsSceneLoaded独立。房主actual Host在BindRoom来源floor前启用origin，manager出生冻结scene handle和当时eligible operation，只在精确完成后关联iterator/路线。客机依已放行的五根临时source，从原GoTo→固定CoChange首Move等route→SceneLoader原Reset返回→staticCoLoad之前，一次安装六根；未知bootstrap保原参数，独立catalog/list确证的兼容层才能绑定hostentry，先前Mod自建list不得当独立来源。未知嵌套遮父、原skip/异常/失效停止，partial roots与强引用保持，不热恢复、卸围栏或free。
+
+实际285/285（4新schema/TCP、6新manager来源夹具）及插件Build通过，输入执行前后相同；完整stdout/UTC/PASS清单已记录，全部只是CLR/回环TCP与编译。新增9处原生消费者未执行，完整初始scene/IGP/native ABI/GuestStateIsolated/WorldAuthority/CargoAuthority/HostSelectionApplied仍false；当前安装.12/潜水.11/default.0保持。详见[GUEST_MAP_ROUTE_ADOPTION](GUEST_MAP_ROUTE_ADOPTION.md)和[实际摘要](../logs/map-route-adoption-build-verification.json)。
+
+继续实际IGP控制器固定来源与原Init.Move异步等待/唯一匹配本地info，再接生成/AI隔离、可信员工actor/装备/氧气/受伤/投射物、房主命中、每人完整产物与前置容量分流/独立重量/负重以及逐产物返航仓库delta/save。真实双端正常返航保存及GitHub冷配置仍为完成条件，不缩减M3—M7。

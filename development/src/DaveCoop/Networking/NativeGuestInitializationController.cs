@@ -19,6 +19,7 @@ namespace DaveCoop.Networking
         private readonly int _installationThread;
         private readonly GuestOutputFence _fence;
         private readonly NativeGuestInitializationHooks _hooks;
+        private readonly NativeGuestMapController _maps;
         private readonly List<IntPtr> _sourceHandles = new List<IntPtr>();
         private readonly List<Il2CppObjectBase> _sourceReferences = new List<Il2CppObjectBase>();
         private int _unityThread, _candidateThread, _traces;
@@ -47,12 +48,15 @@ namespace DaveCoop.Networking
         public bool NativePermission => false;
         public int SourceHandleCount => _sourceHandles.Count;
         internal GuestOutputFence Fence => _fence;
+        internal int ConfirmedUnityThreadId => _unityThread;
+        internal NativeGuestMapController MapController => _maps;
 
         private NativeGuestInitializationController(ManualLogSource logger, int installationThread)
         {
             _logger = logger; _installationThread = installationThread;
             _fence = new GuestOutputFence(installationThread, Guid.NewGuid(), GuestOutputFenceProfile.NaturalInitialization);
             _hooks = new NativeGuestInitializationHooks(this);
+            _maps = new NativeGuestMapController(this, logger);
         }
 
         public static void Start(ManualLogSource logger, int installationThread)
@@ -66,6 +70,7 @@ namespace DaveCoop.Networking
                 // callback. No save/root/cache is read until actual Update.
                 if (!controller._fence.Install()) throw new Rejected("Initial output fence is not healthy.");
                 controller._hooks.Install();
+                controller._maps.Install();
                 controller.Trace("ARMED", "Guest startup mode armed; restart is required to return to personal progress.");
             }
             catch (Exception error) { controller.Fail("Startup installation failed: " + error.GetType().Name); }
@@ -289,6 +294,13 @@ namespace DaveCoop.Networking
             return state != null && state.Role == SessionRole.Guest && state.Phase != SessionPhase.Closed && state.RoomId == _room;
         }
         private bool OnUnityThread() => _unityThread > 0 && Environment.CurrentManagedThreadId == _unityThread;
+
+        internal bool MapSourceCurrent(SessionPeer peer)
+        {
+            if (!ReferenceEquals(peer, _peer) || !_nativeReleased || !RootsInstalled || !ActiveSource()) return false;
+            GuestShadowResult result = _transaction.ValidateActive();
+            return result.Accepted && ActiveSource();
+        }
 
         private void RequireCurrentPreflight()
         {
