@@ -145,3 +145,5 @@ GuestStateIsolated、NativeExecutionImplemented等能力保持false。
 0.1.30补两组新精确私有报告：GetPickUpGrade一方法66指令，grade helper三方法148指令（其中IsInInvenType无containing range，不猜叶body）。它们改变下一桥的顺序：品质选择也计入已进入RNG/可能cache副作用；与主/Plus一起一次固定。完整方法、closed generic选择/cache、最终产品与native ABI仍未证明，原文本/地址不发布；构建与236项synthetic/Core验证见[EMPLOYEE_FISH_SELECTION](EMPLOYEE_FISH_SELECTION.md)。
 
 0.1.31补一份AddFromLootBox精确Depth0私有报告，1方法112指令、1间接call、无截断/配额；完整方法/间接调用仍未证。原metadata实际3类14getter，确认TID编号与DR.Items接口支持范围。新源/测试为捕获产品归一化，不执行game；原报告/文本/地址仅.local，见[产品桥](EMPLOYEE_FISH_PRODUCTS.md)。
+
+0.1.32无新PE执行，仅新私有Cecil原语/直接字段绑定核对，13声明42代理＋6storage/save代理。利用已知六参形成实际typed Add helper，同ledger进入后一次调用；没有原生运行/转换策略/入仓或存档证明。原报告/IL/依赖仅.local，构建与Core范围见[EMPLOYEE_RETURN_PLAN](EMPLOYEE_RETURN_PLAN.md)。

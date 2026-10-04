@@ -43,6 +43,7 @@ namespace DaveCoop.Core.Cargo
             public Capture Capture;
             public int Index;
             public CargoReturnStage Stage = CargoReturnStage.Unclaimed;
+            public CargoEmployeeReturnPlan Plan;
         }
         private readonly string _expedition;
         private readonly Dictionary<string, Member> _members = new Dictionary<string, Member>(StringComparer.Ordinal);
@@ -104,7 +105,8 @@ namespace DaveCoop.Core.Cargo
             {
                 CaptureId = item.Capture.Id, ProductIndex = item.Index, MemberId = item.Capture.Request.MemberId,
                 BagMode = _members[item.Capture.Request.MemberId].Setup.BagMode,
-                Product = CargoValues.Copy(item.Capture.Request.Products[item.Index]), Stage = item.Stage
+                Product = CargoValues.Copy(item.Capture.Request.Products[item.Index]), Stage = item.Stage,
+                Plan = item.Plan, PlanFingerprint = item.Plan?.Fingerprint
             }).ToArray()
         };
 
@@ -417,6 +419,30 @@ namespace DaveCoop.Core.Cargo
             return Result(CargoReason.None);
         }
 
+        // Bind converted output once in the existing per-product return item.
+        // This is neither a dispatch lease nor proof of native conversion.
+        public CargoResult BindEmployeeReturnPlan(CargoEmployeeReturnPlan plan, CargoStorageFacts facts, double now)
+        {
+            if (plan == null) return Result(CargoReason.InvalidInput);
+            if (!TryReturnItem(plan.CaptureId, plan.ProductIndex, out ReturnItem item, out CargoReason failure)) return Result(failure, plan.CaptureId);
+            if (_members[item.Capture.Request.MemberId].Setup.BagMode != CargoBagMode.EmployeeVirtual) return Result(CargoReason.WrongBagMode, plan.CaptureId);
+            failure = StorageFacts(item, facts, now, false);
+            if (failure != CargoReason.None) return Result(failure, plan.CaptureId);
+            if (plan.ExpeditionId != _expedition || plan.ReturnId != _returnId || plan.MemberId != item.Capture.Request.MemberId ||
+                plan.RawProductFingerprint != CargoValues.ProductFingerprint(item.Capture.Request.Products[item.Index]) ||
+                facts.ReturnPlanFingerprint != plan.Fingerprint) return Result(CargoReason.WrongIdentity, plan.CaptureId);
+            if (item.Plan != null) return Result(item.Plan.Fingerprint == plan.Fingerprint ? CargoReason.Duplicate : CargoReason.Conflict, plan.CaptureId);
+            if (_phase != CargoExpeditionPhase.Returning || item.Capture.Stage != CargoCaptureStage.Confirmed || item.Stage != CargoReturnStage.Unclaimed)
+                return Result(CargoReason.InvalidStage, plan.CaptureId);
+            if (!facts.ReturnConversionVerified) return Result(CargoReason.MissingCapability, plan.CaptureId);
+            item.Plan = plan; _lastNow = now; return Result(CargoReason.None, plan.CaptureId);
+        }
+
+        internal bool OwnsEmployeeReturnPlan(CargoEmployeeReturnPlan plan, CargoReturnStage stage) => plan != null &&
+            _phase == CargoExpeditionPhase.Returning && TryReturnItem(plan.CaptureId, plan.ProductIndex, out ReturnItem item, out _) &&
+            _members[item.Capture.Request.MemberId].Setup.BagMode == CargoBagMode.EmployeeVirtual &&
+            item.Capture.Stage == CargoCaptureStage.Confirmed && ReferenceEquals(item.Plan, plan) && item.Stage == stage;
+
         public CargoResult LeaseMaterialization(long captureId, int productIndex, CargoStorageFacts facts, double now)
         {
             if (!TryReturnItem(captureId, productIndex, out ReturnItem item, out CargoReason failure)) return Result(failure, captureId);
@@ -635,7 +661,7 @@ namespace DaveCoop.Core.Cargo
             catch (ArgumentException) { return CargoReason.InvalidInput; }
             return facts.HostAuthority ? CargoReason.None : CargoReason.MissingCapability;
         }
-        private CargoReason StorageFacts(ReturnItem item, CargoStorageFacts facts, double now)
+        private CargoReason StorageFacts(ReturnItem item, CargoStorageFacts facts, double now, bool requirePlan = true)
         {
             if (facts == null) return CargoReason.MissingCapability;
             CargoReason failure = Fresh(facts.SampledAt, now);
@@ -647,7 +673,13 @@ namespace DaveCoop.Core.Cargo
                     facts.ProductFingerprint != CargoValues.ProductFingerprint(item.Capture.Request.Products[item.Index])) return CargoReason.WrongIdentity;
             }
             catch (ArgumentException) { return CargoReason.InvalidInput; }
-            return facts.HostAuthority ? CargoReason.None : CargoReason.MissingCapability;
+            if (!facts.HostAuthority) return CargoReason.MissingCapability;
+            if (requirePlan && _members[item.Capture.Request.MemberId].Setup.BagMode == CargoBagMode.EmployeeVirtual)
+            {
+                if (item.Plan == null) return CargoReason.MissingCapability;
+                if (facts.ReturnPlanFingerprint != item.Plan.Fingerprint) return CargoReason.WrongIdentity;
+            }
+            return CargoReason.None;
         }
         private CargoReason Fresh(double sampledAt, double now)
         {

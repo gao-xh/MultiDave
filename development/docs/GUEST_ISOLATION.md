@@ -1,6 +1,6 @@
 # 客机原生存档影子桥研究
 
-当前插件源码0.1.31-dev、协议6；本轮实际Core/TCP246/246与Build警告视为错误通过（新增10项产品归一化夹具）。[员工捕获产品](EMPLOYEE_FISH_PRODUCTS.md)在一次性选择后固定产品TID、原槽品质与float重量，仅用缓存批次接既有LateSeal；容量复核不重读/重选。尚无网络/可信actor producer、真实分流或捕获凭证。证据见[构建摘要](../logs/employee-fish-products-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕获/返航、客机隔离/房主世界、双端与冷配置仍待完成。
+当前插件源码0.1.32-dev、协议6；本轮实际Core/TCP256/256与Build警告视为错误通过（新增6项返航计划、4项提交夹具）。[员工逐项返航计划](EMPLOYEE_RETURN_PLAN.md)固定独立转换指纹并沿既有ledger一次提交；typed入仓helper已编译，无GUI/network producer，真实品质/数量政策、分流与库存增量/保存未验。证据见[构建摘要](../logs/employee-return-plan-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕鱼/返航、客机隔离/房主世界、双端与冷配置仍待完成。
 
 员工的游戏应在临时状态上运行，长期进度与返航收益由房主保存。每人仍有独立背包：房主使用自己的原生 `LootBox`，员工的独立容量、重量与物料由房主 Mod 账本持有；不能先加到房主袋再复制。详见 [CREW_MODE](CREW_MODE.md)。
 

@@ -230,6 +230,7 @@ internal static class CargoLateYieldTests
         for (int index = 0; index < 2; index++)
         {
             CargoStorageFacts storage = f.Storage(lease, index);
+            Accept(f.Ledger.BindEmployeeReturnPlan(CargoReturnPlanTests.FixturePlan(f.Ledger.Snapshot, lease.CaptureId, index), storage, f.Now));
             Accept(f.Ledger.LeaseMaterialization(lease.CaptureId, index, storage, f.Now));
             Accept(f.Ledger.EnterMaterialization(lease.CaptureId, index, storage, f.Now));
             Accept(f.Ledger.ObserveEmployeeStorage(lease.CaptureId, index, storage, f.Now));
@@ -400,6 +401,7 @@ internal static class CargoLateYieldTests
         {
             ExpeditionId = Expedition, ReturnId = Ledger.Snapshot.ReturnId, MemberId = lease.Intent.MemberId, CaptureId = lease.CaptureId, ProductIndex = index,
             ProductFingerprint = CargoValues.ProductFingerprint(Capture(lease).Request.Products[index]), SampledAt = Now, HostAuthority = true,
+            ReturnPlanFingerprint = CargoReturnPlanTests.FixturePlan(Ledger.Snapshot, lease.CaptureId, index).Fingerprint, ReturnConversionVerified = true,
             EmployeeStorageAdapterVerified = true, NativeEntryCapabilityVerified = true, StorageDeltaVerified = true, SaveConfirmed = true
         };
     }

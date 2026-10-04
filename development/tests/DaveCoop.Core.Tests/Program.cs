@@ -8,6 +8,16 @@ internal static class Program
     {
         var tests = new (string Name, Action Run)[]
         {
+            ("cargo return bound materializer enters ledger and arbitrates once", CargoReturnMaterializerTests.BoundPlanDispatchEntersLedgerAndArbitratesOnce),
+            ("cargo return materializer guard and add failures stay unknown", CargoReturnMaterializerTests.GuardAndAddFailuresRemainUnknownWithoutRetry),
+            ("cargo return materializer creator thread and reentry cannot redispatch", CargoReturnMaterializerTests.CreatorThreadAndReentrantCallsCannotDispatchAgain),
+            ("cargo return materializer fresh facts and exact plan identity", CargoReturnMaterializerTests.FreshFactsAndExactPlanIdentityRejectBeforeBackend),
+            ("cargo return capture and conversion grades stay independent and owned", CargoReturnPlanTests.CaptureAndReturnGradesRemainIndependentAndOwned),
+            ("cargo return binding rejects identity and unverified conversion", CargoReturnPlanTests.BindingRejectsInvalidIdentityAndUnverifiedConversion),
+            ("cargo return first policy and output stay fixed after native entry", CargoReturnPlanTests.FirstPolicyAndOutputStayFixedThroughUnknownMaterialization),
+            ("cargo return employee stages require plan host original chain does not", CargoReturnPlanTests.EveryEmployeeStageRequiresItsPlanWhileHostKeepsTheOriginalChain),
+            ("cargo return partial save disconnect and abort retain unknown plan", CargoReturnPlanTests.PartialSaveDisconnectAndAbortKeepTheUnknownPlan),
+            ("cargo return late confirmed capture binds only original products", CargoReturnPlanTests.FrozenLateConfirmedCaptureBindsOnlyItsOriginalProducts),
             ("fish product original TID capture grade and float weights", FishYieldProductTests.OriginalTidCaptureGradeAndFloatWeightsStayFixed),
             ("fish product lift policy raw values and owned snapshots", FishYieldProductTests.LiftPolicyAndSnapshotsPreserveRawValuesAndOwnedProducts),
             ("fish product getter failures retain partial results without retry", FishYieldProductTests.GetterFailuresRetainEveryReturnedScalarWithoutRetry),

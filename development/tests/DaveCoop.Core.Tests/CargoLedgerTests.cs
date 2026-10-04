@@ -270,6 +270,7 @@ internal static class CargoLedgerTests
         CargoStorageFacts storage = f.Storage(employeeId, 0); storage.ProductFingerprint = "wrong";
         Reject(f.Ledger.LeaseMaterialization(employeeId, 0, storage, f.Now), CargoReason.WrongIdentity);
         storage = f.Storage(employeeId, 0);
+        Accept(f.Ledger.BindEmployeeReturnPlan(CargoReturnPlanTests.FixturePlan(f.Ledger.Snapshot, employeeId, 0), storage, f.Now));
         Accept(f.Ledger.LeaseMaterialization(employeeId, 0, storage, f.Now));
         Reject(f.Ledger.LeaseMaterialization(employeeId, 0, storage, f.Now), CargoReason.InvalidStage);
         storage.SampledAt = f.Now - 1;
@@ -288,6 +289,7 @@ internal static class CargoLedgerTests
         storage.SaveConfirmed = true;
         Accept(f.Ledger.ConfirmStorageSave(employeeId, 0, storage, f.Now));
         storage = f.Storage(employeeId, 1);
+        Accept(f.Ledger.BindEmployeeReturnPlan(CargoReturnPlanTests.FixturePlan(f.Ledger.Snapshot, employeeId, 1), storage, f.Now));
         Accept(f.Ledger.LeaseMaterialization(employeeId, 1, storage, f.Now));
         Accept(f.Ledger.EnterMaterialization(employeeId, 1, storage, f.Now));
         Reject(f.Ledger.CompleteReturn(), CargoReason.ReturnIncomplete);
@@ -320,6 +322,7 @@ internal static class CargoLedgerTests
         CargoCaptureFacts late = f.Facts(entered); late.SourceAvailable = false; late.ActorPermitted = false;
         Accept(f.Ledger.ConfirmCapture(enteredId, CargoReceiptKind.EmployeeDivertedYield, entered.Products, late, f.Now));
         CargoStorageFacts storage = f.Storage(enteredId, 0);
+        Accept(f.Ledger.BindEmployeeReturnPlan(CargoReturnPlanTests.FixturePlan(f.Ledger.Snapshot, enteredId, 0), storage, f.Now));
         Accept(f.Ledger.LeaseMaterialization(enteredId, 0, storage, f.Now));
         Accept(f.Ledger.EnterMaterialization(enteredId, 0, storage, f.Now));
         Accept(f.Ledger.Abort());
@@ -456,10 +459,12 @@ internal static class CargoLedgerTests
         {
             CargoLedgerSnapshot snapshot = Ledger.Snapshot;
             CargoCaptureSnapshot capture = snapshot.Captures.Single(item => item.CaptureId == captureId);
+            CargoEmployeeReturnPlan plan = capture.Request.MemberId == Host ? null : CargoReturnPlanTests.FixturePlan(snapshot, captureId, productIndex);
             return new CargoStorageFacts
             {
                 ExpeditionId = Expedition, ReturnId = snapshot.ReturnId, MemberId = capture.Request.MemberId, CaptureId = captureId, ProductIndex = productIndex,
                 ProductFingerprint = CargoValues.ProductFingerprint(capture.Request.Products[productIndex]), SampledAt = Now, HostAuthority = true,
+                ReturnPlanFingerprint = plan?.Fingerprint, ReturnConversionVerified = true,
                 EmployeeStorageAdapterVerified = true, NativeEntryCapabilityVerified = true, HostNativeStorageChainVerified = true,
                 StorageDeltaVerified = true, SaveConfirmed = true
             };

@@ -1,6 +1,6 @@
 # MultiDave 开发计划
 
-当前插件源码0.1.31-dev、协议6；本轮实际Core/TCP246/246与Build警告视为错误通过（新增10项产品归一化夹具）。[员工捕获产品](EMPLOYEE_FISH_PRODUCTS.md)在一次性选择后固定产品TID、原槽品质与float重量，仅用缓存批次接既有LateSeal；容量复核不重读/重选。尚无网络/可信actor producer、真实分流或捕获凭证。证据见[构建摘要](../logs/employee-fish-products-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕获/返航、客机隔离/房主世界、双端与冷配置仍待完成。
+当前插件源码0.1.32-dev、协议6；本轮实际Core/TCP256/256与Build警告视为错误通过（新增6项返航计划、4项提交夹具）。[员工逐项返航计划](EMPLOYEE_RETURN_PLAN.md)固定独立转换指纹并沿既有ledger一次提交；typed入仓helper已编译，无GUI/network producer，真实品质/数量政策、分流与库存增量/保存未验。证据见[构建摘要](../logs/employee-return-plan-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕鱼/返航、客机隔离/房主世界、双端与冷配置仍待完成。
 
 目标：Windows Steam 版双人潜水合作 MVP，先做局域网房主/客户端。
 房主负责游戏世界和结算。服务器方案暂缓。
@@ -224,3 +224,5 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 0.1.30已落地一次性员工选择编排与typed原生原语，详见[EMPLOYEE_FISH_SELECTION](EMPLOYEE_FISH_SELECTION.md)。236项Core/TCP与Build实际通过；先登记既有租约，再一次品质、多tier主与一次Plus，保留未知及强资源。下一步建立真实host-owned员工actor事实与完整grade/weight/product映射，接LateSeal、单次分流/共享进度/终态receipt及逐项返航；typed helper未接网络，不放开玩法。完整M3—M7继续。
 
 0.1.31已固定捕获产品并提供同批LateSeal入口，详见[EMPLOYEE_FISH_PRODUCTS](EMPLOYEE_FISH_PRODUCTS.md)。下一步接真实host-owned员工actor与实际分流/共享进度/鱼终态凭证；返航另固定原品质兑换数量与FinalGrade计划。完整M3—M7继续，不把字段完成当玩法授权。
+
+0.1.32已沿原ReturnItem固定员工独立转换计划，并实现同ledger Enter前后的一次typed入仓原语；详见[EMPLOYEE_RETURN_PLAN](EMPLOYEE_RETURN_PLAN.md)。下一步冻结真实资源映射与一次原品质兑换/FinalGrade政策，再接实际仓库桶增量与保存。可信员工actor/捕鱼分流、guest隔离/房主世界、双实例正常返航与冷配置继续完整M3—M7。

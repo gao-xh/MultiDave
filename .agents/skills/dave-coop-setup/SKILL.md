@@ -270,7 +270,12 @@ description: Configure or continue development of the MultiDave prototype for Wi
   typed helper仅编译，无network/GUI生产调用。NativeEmployeeFishSelectionBridge.TryPrepare需实际健康active lifecycle owner和capture same tracker、existing profile/provider；业务必须Core Selecting窗口，业务尝试先单次标记，末代次复核。最多13显式reference/handle尝试与256未释放桥；只有同ledger Confirmed/NativeNotEntered才release，unknown free不retry。partial native allocation retention/ABI/field invariants未证。
   不能把Body actor参数、显示pose、Room2、rawgrade/weight或fixture flags当可信员工/完整产物/权限。现缺host-owned actor空间/存活事实及complete grade/weight/product映射，随后接LateSeal、员工分流/共享进度/terminal receipt/逐项返航。全部真实native/guest/world/cargo能力未验；未部署启动，不催延后测试，安装0.1.12/潜水0.1.11/default0.1.0保持。完整M3—M7/真实双端正常返航/GitHub冷配置继续。
 
-- 当前源码0.1.31-dev/协议6，实际Core/TCP246/246与Build警告视为错误通过；10新产品夹具仅synthetic backend。继续个人袋产品/返航先读development/docs/EMPLOYEE_FISH_PRODUCTS.md及employee-fish-products-build-verification.json；.30选择236摘要保留历史。
+- 历史源码0.1.31-dev/协议6，实际Core/TCP246/246与Build警告视为错误通过；10新产品夹具仅synthetic backend。继续个人袋产品/返航先读development/docs/EMPLOYEE_FISH_PRODUCTS.md及employee-fish-products-build-verification.json；.30选择236摘要保留历史。
   同exact已进入选择四getter一次冻结TID/raw captureGrade/float-derived重量/ItemType；lookup ID可不同TID，IntegratedItem不是IItemBase，native当前仅exact DR.Items。getter attempt先标记，partial失败/全-1不重读不造receipt。员工袋double累加是Mod规则，非host float总值。
   TrySeal只cache批次与fresh existing facts，容量拒绝不重选；无producer/network/GUI接线，不补true、不Confirm。捕获Grade/指纹不被返航FinalGrade覆盖，兑换数量与品质政策另冻结。返航还需资源时先freeze metadata/transfer ownership再release，Confirmed不是return done。
   全native ABI/实际分流/receipt/入仓保存/guest隔离/world权限未验，安装.12/潜水.11/default.0保持。未部署启动，不催延后测试，完整M3—M7/真实双端正常返航/GitHub冷配置继续。
+
+- 当前源码0.1.32-dev/协议6，实际Core/TCP256/256与Build警告视为错误通过，新增6返航计划+4提交夹具及4旧流程适配；只synthetic CLR。继续个人袋返航先读development/docs/EMPLOYEE_RETURN_PLAN.md及employee-return-plan-build-verification.json；.31产品246摘要保留历史。
+  既有ReturnItem绑定immutable rawProductFP+policyFP+六参输出的独立planFP，captureGrade/数量/重量不覆写；首次Confirmed Returning employee Unclaimed，fresh转换proof。sameplan Duplicate/changedConflict，employee Lease/Enter/Observe/Save全核固定FP；host自然链无employeeplan不重复Add。
+  materializer exactplan同ledger先Enter再guard/一次Add，Add仅精确invocation窗口，creator thread/reentry/competing拒，失败unknown不retry，void仅CallReturned不delta/save。Native helper5existingrefs、storage/dictionary/loaded+SaveSystem→manager→SaveData核；只Main/Branch拒Max/Unknown，无活鱼要求；unknownretain跨断线，sameplan SaveConfirmed且整Dispatch退栈才free/清wrapper（独立in-flight围栏，不能只看ledger阶段），unknownfree不retry。
+  没有policy/mapping/network/GUI producer，不造true；实际ItemDataID/Ingredients/Items映射、raw兑换数量与FinalGrade政策/类别leaf/ABI/入仓增量保存未验。installed.12/dive.11/default.0保持，未部署启动不催延后测试，完整M3—M7/双端正常返航/GitHub冷配置继续。

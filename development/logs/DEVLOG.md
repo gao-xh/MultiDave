@@ -768,3 +768,14 @@
 - 实际Core/TCP246/246，新增10 production coordinator+ledger产品夹具；只synthetic backend，不执行native。Build警告视为错误通过，SHA256 `D5C9D930C17EBEB991C1DA26FF3723287E52C919C1F07426FE75A529F2EC6078`；133输入执行前封存、后相同。
 - 新EMPLOYEE_FISH_PRODUCTS与实际构建摘要/currentcore/交接/计划/Skill同步；修正CAPTURE_SELECTION最终品质歧义，旧.30选择236摘要保持。下一步接真实员工actor/分流/共享进度/鱼终态，再接独立返航转换与逐项实际入仓/保存。资源须先冻结返航metadata或转移ownership再free。guest隔离/房主世界、双端正常闭环及冷配置继续完整M3—M7。
 - 两名独立只读源/文档末审READY，正式Skill校验/复制hash匹配，SHA256 `04B0EEAD11D05EC83EB6202B1DFD8B1B92ED3A82326287E5BECC4C0891AB810B`。最终133验证输入相同，无新代码变更不重复测试；新鲜游戏进程0，安装DLL保持8F90042C…E5F5B，原binary/metadata与两个interop最终hash匹配。
+
+## 2026-10-04 — 0.1.32 独立员工返航计划与一次入仓原语
+
+- 前轮830c235已推送并核远端，属于实际进展；本轮沿每人独立容量/负重和房主长期进度继续完整M3—M7。未部署/启动、原生业务或存档执行。
+- 新CargoEmployeeReturnPlan绑定捕获raw产品FP、独立policyFP和六参入仓输出，readonly且culture稳定；既有ReturnItem首次pin只Confirmed Returning员工Unclaimed。sameplan Duplicate、changedpolicy/任一输出Conflict；employee四阶段都核sameplanFP，host自然链不需员工plan、不重复Add。
+- 新CargoReturnMaterializer同ledger Enter之后才guard/一次Add，exactplan/线程/重入/竞争仲裁；失败unknown不重复，returnedcall单独记录但不delta/save。新NativeEmployeeStorageBridge typed Add有5explicit strongdeps、既有storage/dictionary/SaveSystem→manager→SaveData守卫、Main/Branch窄profile、未知跨断线保留、sameplan SaveConfirmed后free，未知free不重试。无GUI/network/可信producer。
+- metadata实际1程序集13精确声明42direct代理；补storage/save 5类7property6direct代理，inputhash匹配。ItemDataID/Items/Ingredients映射与六参分开，兑换用capture rawGrade，FinalGrade政策另核；分类leaf、原资源/GetItems等价及完整转换仍未知。未跑新PE，原报告/IL只.local。
+- 独立末审在执行前发现hash大小写不一致（生产ctor及一组synthetic policy），已按现CanonicalHash小写规范修复；Native Place Enum.IsDefined包含sentinel，已改Main/Branch白名单；save后显式清wrapper refs。修后再封存运行，不把未运行检查当通过。
+- 本轮实际Core/TCP256/256，新增6返航计划+4提交夹具，4旧员工返航流程适配；只synthetic facts/backend，不native。Build警告视为错误通过，SHA256 `27D31C9BEC68F535BF8584729A234DE60CB370A25BC81C2918E40FECA5341DE9`；138执行前封存输入后相同。
+- 新EMPLOYEE_RETURN_PLAN/currentcore/实际构建摘要与接手/计划/Skill同步，旧.31产品246摘要保持。下一步冻结实际资源/分类/品质数量政策和生命周期证据，接仓库bucket增量/保存；可信员工actor/捕获分流、guest隔离/房主世界、双端正常闭环与冷配置仍必须完成。
+- 两名独立只读末审READY，正式Skill校验/复制hash匹配，SHA256 `A1A057A73ED035B3026CABA1ADF51C843BAABBDA72ABBE1889CAE68134438831`。另补精确Add调用窗口与独立整Dispatch in-flight释放围栏，不能同步回调推进SaveConfirmed后提前free。最终138输入字节相同，无新代码变化不重复测试；新鲜game进程0、安装DLL保持8F90042C…E5F5B，原binary/metadata及两个interop最终hash匹配。Cecil主私有脚本与Binding内联追加分列，不声称主脚本单独复现追加记录。

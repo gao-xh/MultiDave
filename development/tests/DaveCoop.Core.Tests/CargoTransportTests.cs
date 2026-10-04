@@ -59,6 +59,7 @@ internal static class CargoTransportTests
         foreach ((long id, CargoCaptureRequest request) in new[] { (oneId, one), (twoId, two) })
         {
             CargoStorageFacts facts = f.Storage(id, request);
+            Accept(f.Ledger.BindEmployeeReturnPlan(CargoReturnPlanTests.FixturePlan(f.Ledger.Snapshot, id, 0), facts, 10));
             Accept(f.Ledger.LeaseMaterialization(id, 0, facts, 10));
             Accept(f.Ledger.EnterMaterialization(id, 0, facts, 10));
             Accept(f.Ledger.ObserveEmployeeStorage(id, 0, facts, 10));
@@ -302,6 +303,7 @@ internal static class CargoTransportTests
         {
             ExpeditionId = Expedition, ReturnId = Ledger.Snapshot.ReturnId, MemberId = Employee, CaptureId = id, ProductIndex = 0,
             ProductFingerprint = CargoValues.ProductFingerprint(request.Products[0]), SampledAt = 10, HostAuthority = true,
+            ReturnPlanFingerprint = CargoReturnPlanTests.FixturePlan(Ledger.Snapshot, id, 0).Fingerprint, ReturnConversionVerified = true,
             EmployeeStorageAdapterVerified = true, NativeEntryCapabilityVerified = true, StorageDeltaVerified = true, SaveConfirmed = true
         };
     }

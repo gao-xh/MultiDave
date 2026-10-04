@@ -1,6 +1,6 @@
 # 玩家与摄像机发现
 
-当前插件源码0.1.31-dev、协议6；本轮实际Core/TCP246/246与Build警告视为错误通过（新增10项产品归一化夹具）。[员工捕获产品](EMPLOYEE_FISH_PRODUCTS.md)在一次性选择后固定产品TID、原槽品质与float重量，仅用缓存批次接既有LateSeal；容量复核不重读/重选。尚无网络/可信actor producer、真实分流或捕获凭证。证据见[构建摘要](../logs/employee-fish-products-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕获/返航、客机隔离/房主世界、双端与冷配置仍待完成。
+当前插件源码0.1.32-dev、协议6；本轮实际Core/TCP256/256与Build警告视为错误通过（新增6项返航计划、4项提交夹具）。[员工逐项返航计划](EMPLOYEE_RETURN_PLAN.md)固定独立转换指纹并沿既有ledger一次提交；typed入仓helper已编译，无GUI/network producer，真实品质/数量政策、分流与库存增量/保存未验。证据见[构建摘要](../logs/employee-return-plan-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕鱼/返航、客机隔离/房主世界、双端与冷配置仍待完成。
 
 对应开发计划 M1。发布包仍为 0.1.0 加载原型；本页 M1 运行证据来自 0.1.1-dev。
 当前源码与后续阶段见 HANDOFF 和 MULTIPLAYER。
@@ -152,3 +152,5 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 0.1.30的[员工选择桥](EMPLOYEE_FISH_SELECTION.md)另核对4个typed业务声明、10个direct字段代理与4lift枚举，2个interop输入前后hash一致。两组新PE研究4方法214指令，其中IsInInvenType叶方法无range不猜。GetPickUpGrade从body品质配置随机选择；不是已证装备算法。已知raw Grade/float重量与后续FinalGrade分别处理，不拿字段候选造完整CargoProduct；helper仅编译未运行。
 
 0.1.31原metadata实际核对3类14getter：DR.Items实现IItemBase；IntegratedItem相似字段不是接口实现。原产品编号用TID，ItemDataID仅食材关联。新AddFromLootBox研究1方法112指令：入仓用FinalGrade与默认TotalCount/实际delegate数量，不能把原品质兑换规则与FinalGrade合并。typed getter只编译，native ABI及完整语义未证。
+
+0.1.32离线Cecil实际核对1程序集13精确声明/42direct代理，storage/save另5types7properties6direct代理。IngredientsStorage.Add实际六参顺序ingredientID,parentID,rank,grade,count,Place；只Main/Branch，拒Max/Unknown。IItemBase.ItemDataID是业务virtual，IngredientsEntity无ParentID/Rank；GetItems与GetItemV2资源等价未证。typed Add primitive已编译，转换/ABI/执行与delta/save未验。

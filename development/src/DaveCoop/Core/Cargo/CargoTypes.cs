@@ -108,8 +108,10 @@ namespace DaveCoop.Core.Cargo
         public long CaptureId { get; set; }
         public int ProductIndex { get; set; }
         public string ProductFingerprint { get; set; }
+        public string ReturnPlanFingerprint { get; set; }
         public double SampledAt { get; set; }
         public bool HostAuthority { get; set; }
+        public bool ReturnConversionVerified { get; set; }
         public bool EmployeeStorageAdapterVerified { get; set; }
         public bool NativeEntryCapabilityVerified { get; set; }
         public bool HostNativeStorageChainVerified { get; set; }
@@ -161,6 +163,8 @@ namespace DaveCoop.Core.Cargo
         public CargoBagMode BagMode { get; set; }
         public CargoProduct Product { get; set; }
         public CargoReturnStage Stage { get; set; }
+        public CargoEmployeeReturnPlan Plan { get; set; }
+        public string PlanFingerprint { get; set; }
     }
     public sealed class CargoLedgerSnapshot
     {
