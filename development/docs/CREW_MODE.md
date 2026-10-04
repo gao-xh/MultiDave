@@ -1,6 +1,6 @@
 # 房主与员工模式
 
-当前源码为 0.1.25-dev、协议 6，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 209/209 通过。[捕获来源观察](CAPTURE_LINEAGE.md)扩至 16 个默认关闭的只读入口，固定鱼源候选、同步包含和原结果；候选不能证明玩家归属、完整产物或捕获成功，每人独立容量和负重规则保持。范围见[当前摘要](../logs/capture-lineage-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。真实个人捕获/容量分流、返航入仓、客机隔离、房主世界采用与双端/冷配置仍待完成。
+当前源码为 0.1.26-dev、协议 6，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 222/222 通过。[捕获两阶段账本](CAPTURE_SELECTION.md)先固定玩家/鱼来源及潜水级捕获编号，再绑定已选完整产物和个人容量；未选产物保持未知并阻止返航完成，真实原生选择/分流仍未接通。范围见[当前摘要](../logs/capture-selection-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。实际个人容量/负重、返航入仓、客机隔离、房主世界采用与双端/冷配置仍待完成。
 
 这是按用户提出的“房主掌主动权，第二人充当员工”确定的首版玩法方案。
 房主带队潜水，员工提供捕鱼和搬运协作，长期进度归房主。
@@ -170,7 +170,7 @@ Unity线程内即时复制参数及袋重量/容量直接字段，只排队CLR�
 鱼来源仅在鱼产物入口prefix冻结候选身份；嵌套的袋、图鉴或仓库调用不会按时间/线程推测所属鱼或员工。
 槽位加密字段和返航转换数量暂不读取，`ActualBagDeltaProven/SourceOperationBound/CaptureSuccess/StorageDeltaProven`始终false。
 
-历史0.1.15的限额是全进程1024条、队列64；当前0.1.25限额与16入口来源语义见[CAPTURE_LINEAGE](CAPTURE_LINEAGE.md)。
+历史0.1.15的限额是全进程1024条、队列64；0.1.25引入且当前沿用的16入口限额和来源语义见[CAPTURE_LINEAGE](CAPTURE_LINEAGE.md)。
 关闭或Disconnect只移除自己的挂钩并清诊断队列，统计与错误锁存不因重开归零；队列丢失或停止时丢弃要计数，日志不是完整链保证。
 新版编译和纯CLR测试结果见[独立背包构建摘要](../logs/cargo-ledger-build-verification.json)。
 目前未部署或启动0.1.15，四处挂钩的原生ABI、实际读取与完整捕获/正常返航均待实机。
@@ -216,3 +216,7 @@ Unity线程内即时复制参数及袋重量/容量直接字段，只排队CLR�
 本轮 Build 及实际 Core/TCP 209/209 通过，新增9组生产 CLR 来源栈夹具。已有默认关闭的 Loot 观察扩至16精确入口，区分主/追加产物、原随机返回、容量检查、入袋与水下进度；prefix冻结候选、postfix保留scope、void finalizer退出，未知鱼边界遮父，异常/丢失/错线程锁存。详见[CAPTURE_LINEAGE](CAPTURE_LINEAGE.md)与[本轮摘要](../logs/capture-lineage-build-verification.json)。同步包含不是直接caller或员工归属，原bool/int、鱼消失和袋重量都不单独确认捕获；原生回调/ABI未运行。
 
 下一步接独立的潜水级操作编号与来源租约，再在原游戏已经选定整批主/追加产物后的受控阶段进行个人容量检查和分流。不提前重掷保底随机、不把事后Add参数冒充入口前完整计划，不先入房主袋再复制。需要覆盖现有槽合并与任务/成就/解锁副作用；正常返航不能清未知结果，逐产物入仓与客机完整隔离仍待接。
+
+## 0.1.26 来源预约与延后完整产物
+
+Build及实际Core/TCP222/222通过；新增11组生产账本夹具、2组实际清单适配器/TCP。详见[CAPTURE_SELECTION](CAPTURE_SELECTION.md)与[本轮摘要](../logs/capture-selection-build-verification.json)。SourceReserve共享潜水账本捕获编号与来源围栏，EnterSelection在native业务前须已有整批隔离能力，LateSeal仅绑定已选完整且仍未写袋的产物和个人容量。未选Request=null、Intent保留；EnteredUnknown不重新执行/取消，return或断线不把它当零产物完成；晚绑定只补原capture的返航条目。第一份完整已核选择在容量检查之前固定，容量拒绝也不能改成较轻产物；同批次可以新鲜容量再核，不重Roll。旧Reserve仍需已核完整计划，Gate局部编号与Unity实例编号不能当潜水operation或会话player身份。真实native证明全部false，无producer attach、选择/分流/入仓/save执行；下一步显式原选择与提交桥、最终grade/effectiveweight/slot/任务与鱼终态、客机隔离及双端/冷配置。

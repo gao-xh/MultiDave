@@ -1,6 +1,6 @@
 # 客机运行缓存的类型与恢复边界
 
-当前源码为 0.1.25-dev、协议 6，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 209/209 通过。[捕获来源观察](CAPTURE_LINEAGE.md)扩至 16 个默认关闭的只读入口，固定鱼源候选、同步包含和原结果；候选不能证明玩家归属、完整产物或捕获成功，每人独立容量和负重规则保持。范围见[当前摘要](../logs/capture-lineage-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。真实个人捕获/容量分流、返航入仓、客机隔离、房主世界采用与双端/冷配置仍待完成。
+当前源码为 0.1.26-dev、协议 6，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 222/222 通过。[捕获两阶段账本](CAPTURE_SELECTION.md)先固定玩家/鱼来源及潜水级捕获编号，再绑定已选完整产物和个人容量；未选产物保持未知并阻止返航完成，真实原生选择/分流仍未接通。范围见[当前摘要](../logs/capture-selection-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。实际个人容量/负重、返航入仓、客机隔离、房主世界采用与双端/冷配置仍待完成。
 
 五个 manager 根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。本页初版0.1.19为离线研究；历史0.1.22继续准备有限typed缓存，插件Build警告视为错误通过，见[comparer摘要](../logs/guest-comparer-build-verification.json)。0.1.22 该轮 Core 输入未改，复用[0.1.21实际176/176结果及该版构建](../logs/guest-ingame-cache-build-verification.json)，没有重跑测试。没有安装、切换、清空或恢复任何游戏缓存，没有调用 Init、Load、Build、克隆或存档。已有桥的真实进入和静止边界仍关闭，`GuestStateIsolated`、`RuntimeCachesIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority` 均不能因此开放。
 

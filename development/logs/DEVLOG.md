@@ -694,3 +694,14 @@
 - 静态路径显示原生进入后才选追加物且会更新保底计数，当前Cargo.Reserve入口前完整产物合同不足以直接接捕获。下一桥须单独来源/操作租约及已选产物受控阶段，避免预Roll、重复执行、房主袋污染与两Gate OperationId冲突；Add_Impl/现有槽/进度副作用都需明确归属。
 - 本轮实际Core/TCP209/209通过，新增9组生产来源栈夹具；Build警告视为错误通过，SHA256 `970282A99808D88AFC8327F94DD9EE866384B270982AC3D40AF7CABADB158918`。测试不运行native callbacks/ABI，所有员工/产物完整/捕获/袋增量/native权限false。两个独立只读末审无阻断；新脚本AST错误0，正式Skill校验通过并同步。
 - 新CAPTURE_LINEAGE和构建摘要、当前core记录及交接/计划/Skill同步；历史0.1.24的200和cargo-transport摘要不改。新鲜进程0、安装DLL仍8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B。后续真实个人分流/入仓、guest隔离、房主世界采用、双端正常闭环/冷配置继续必需。
+
+## 2026-10-04 — 0.1.26 来源租约与延后个人产物
+
+- 前一goal turn为实际进展：0.1.25已提交aee2df4并核验远端，本轮继续完整M3—M7 active，每人独立袋/容量/负重与房主长期进度保持；未部署/启动/native业务或读改存档。
+- 新CargoSourceLease及实际ExpeditionCargoLedger两阶段：SourceReserve铸造exactownedlease、统一capture operation高水位、固定member/source/actor/loadout；旧Reserve成功纳同高水位而失败op90不推高。两成员request/gate同1可mint1/2；256记录含关闭/取消tombstone不淘汰。
+- EnterSelection在随机/其它native业务前需已存在整批隔离proof，标EnteredUnknown；LateSeal需完整已选products+held+NoBagWriteYet/current个人容量，才绑定weight，不重Roll/重进/自动confirm。未选Snapshot Requestnull/Intent/YieldBoundfalse，原wire6仍计reserved/unknown。
+- 返航冻结原capture成员，未选unknown即使没有returnitems也不complete；offline/Returning/Aborted原lease可晚绑定并只补原productitems，不恢复nativeentry或新成员。真正receipt、逐itemstorage/save仍独立；unknown/断线/scene/newroom不清来源。
+- 本轮交叉源审查发现0.1.25 Loot复制器误把HostEntityTarget.LocalToken与nativeptr比：真实LocalToken=UnityGetInstanceID，ObservedHostTargets另按pointer索引且resolver前后核代次。改非0且允许负ID，不新增native读；旧纯CLR tests未执行此native适配器，旧末审也未核出，此次已沿实际调用链核对。
+- 首轮221/Build通过，末审发现首次完整选定产物因容量拒绝后仍可换轻批次；修为容量检查前固定首份fullvalid选择，拒换weight/grade，但同批可fresh capacity再核。新增专门fixture后重跑两套检查，最终Core/TCP222/222、Build警告视为错误通过，SHA256 `B176F3346119311C29A7A4A4CA1C82B4BE4EA110B7130BC3FC76471B60371E1A`；11生产账本＋2生产controller/TCP新增fixtures。全部能力来自synthetic facts，不执行native或声明玩家实际归属。
+- 新CAPTURE_SELECTION、currentcore/capture-selection摘要及交接/计划/相关Skill同步；旧0.1.25的209、观察摘要与安装0.1.12/潜水0.1.11/default0.1.0保留。实际原生整批选择/首次write暂停桥、finalgrade/effectiveweight/Obscuredslot/副作用/终态、员工分流和逐项入仓、guest隔离/房主世界与双端冷配置仍必需。
+- 独立只读末审确认产物固定缺口已修复；正式Skill校验通过并同步。最终新鲜游戏进程为0，已安装DLL仍为`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，未部署或启动本轮源码。

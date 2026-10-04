@@ -8,6 +8,19 @@ internal static class Program
     {
         var tests = new (string Name, Action Run)[]
         {
+            ("cargo selection capacity rejection cannot replace the selected batch", CargoLateYieldTests.CapacityDeniedSelectedYieldCannotBeReplacedOrRerolled),
+            ("cargo selection source leases mint global IDs without inventing yield", CargoLateYieldTests.SourceOnlyLeasesMintAcrossMembersWithoutInventingYield),
+            ("cargo selection requires isolation before any native business", CargoLateYieldTests.SelectionEntryNeedsAnIsolationBarrierBeforeAnyNativeBusiness),
+            ("cargo selection late yield reserves personal weight and requires receipt", CargoLateYieldTests.CompleteLateYieldReservesPersonalWeightButNeedsAReceipt),
+            ("cargo selection missing coverage and capacity preserve unknown source", CargoLateYieldTests.MissingYieldCoverageAndOverCapacityKeepTheEnteredSourceUnknown),
+            ("cargo selection replay cancellation and permanent tombstones", CargoLateYieldTests.SourceReplayAndNotEnteredCancellationKeepAllTombstones),
+            ("cargo selection unknown survives epoch room disconnect return and abort", CargoLateYieldTests.UnselectedUnknownSurvivesEpochRoomDisconnectReturnAndAbort),
+            ("cargo selection frozen offline capture seals only its original batch", CargoLateYieldTests.FrozenDisconnectedCaptureCanSealAndSettleOnlyItsOriginalBatch),
+            ("cargo selection host fresh baseline and native total counted once", CargoLateYieldTests.HostLateYieldRequiresFreshBaselineAndUsesNativeTotalOnce),
+            ("cargo selection opaque leases and owned snapshot copies", CargoLateYieldTests.OpaqueLeaseAndSnapshotCopiesCannotChangeSourceOrOwnership),
+            ("cargo selection legacy and source captures share global quota", CargoLateYieldTests.LegacyReservationsAndSourceLeasesSharePermanentGlobalQuota),
+            ("TCP cargo selection unknown survives scene disconnect and return barrier", () => CargoLateYieldTransportTests.UnselectedUnknownSurvivesSceneDisconnectAndReturnBarrier().GetAwaiter().GetResult()),
+            ("TCP cargo selection late yield preserves employee ownership and return batch", () => CargoLateYieldTransportTests.LateSelectedYieldPublishesOnlyEmployeeBagAndOriginalReturnBatch().GetAwaiter().GetResult()),
             ("loot lineage same fish drop plus bag and original roll enclosure", LootCallLineageTests.SameFishDropPlusBagAndRollKeepFixedEnclosure),
             ("loot lineage different fish and unknown scopes mask parent", LootCallLineageTests.DifferentFishAndUnknownScopesMaskTheOuterCandidate),
             ("loot lineage fixed prefix survives pool generation change", LootCallLineageTests.FrozenSourceAndPoolGenerationNeverRebindAfterPrefix),

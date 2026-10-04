@@ -41,7 +41,7 @@ Parent 是被观察方法之间的同步包含关系，不是原生直接 caller
 
 具体上限是：Core 与复制队列各 512，待配对上下文 128、同步深度 32、每次 Update 消费 16、鱼 ordinal 256；Core run 与 Hook 全进程各 8192 条事件。key 最多 512 个 UTF-16 代码单元，全进程最多处理 65536 单元；状态与生命周期日志各限 128 次。切换观察不重置全进程预算或故障。只有已确认自己挂钩卸载成功，下一次开启才创建新 Hook、复制器及 Core Run。
 
-## 下一生产桥必须解决的时机问题
+## 0.1.25 发现的时机问题与后续桥
 
 现有 `ExpeditionCargoLedger.Reserve` 接受入口前已核实的完整产物计划。原游戏的追加随机物却在进入捕获后才选择，并且选择本身可能改保底计数。不能为了填账本提前调用一次随机函数，再运行原捕获；不能把事后 Add 参数冒充入口前的完整计划。
 
@@ -54,3 +54,5 @@ Parent 是被观察方法之间的同步包含关系，不是原生直接 caller
 运行 `Inspect-CaptureLineageApi.ps1` 复现精确声明检查；`Test-Core.ps1` 验证生产 CLR 调用栈、固定来源、遮挡、配对、异常、丢失和限额；`Build-Plugin.ps1` 编译真实观察适配器。实际数量、哈希和原生未验证项见 [capture-lineage-build-verification.json](../logs/capture-lineage-build-verification.json)。
 
 用户暂不方便试玩时继续实现桥及隔离；不自动部署、启动或重复催测。后续实机核对 LOOT_HOOKS_READY、LOOT_CALL、调用来源记录、LOOT_OBSERVER_STATE 及自己的卸钩，验证自然拾取、追加物和容量检查，再核对每人独立负重及正常返航。本机 CLR 测试不替代真实双游戏捕鱼或返航验收。
+
+0.1.26 已把来源预约、统一捕获编号与延后产物绑定接入真实CLR账本，详见[CAPTURE_SELECTION](CAPTURE_SELECTION.md)。原生完整选择和受控首次写入阶段仍待实现；不能据此升级本观察的SourceOperationBound或Receipt。另修复LocalToken是Unity实例ID而不是nativepointer的错误比较；此处原生执行仍待实机。

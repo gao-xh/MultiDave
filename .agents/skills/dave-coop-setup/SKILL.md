@@ -227,9 +227,18 @@ description: Configure or continue development of the MultiDave prototype for Wi
   游戏没有verified producer attach，不创建fakeledger或GUI权限入口；tests仅synthetic CLR与回环TCP，不是原生捕获/容量/分流/返航或双游戏。
   本轮未部署/启动，安装0.1.12/潜水0.1.11/default0.1.0保持；完整guest隔离、房主世界采用、独立actor/装备/氧气、个人袋与正常逐项入仓、M3—M7双端/冷配置继续推进。
 
-- 当前源码0.1.25-dev/协议6，Build与实际Core/TCP 209/209通过；继续捕获分流先读development/docs/CAPTURE_LINEAGE.md及capture-lineage-build-verification.json。
+- 历史源码0.1.25-dev/协议6，Build与实际Core/TCP 209/209通过；继续捕获分流先读development/docs/CAPTURE_LINEAGE.md及capture-lineage-build-verification.json。
   既有ObserveLootCalls默认关闭，16声明只观察自然拾取/主与追加产物/随机原返回/容量/入袋/进度；prefix固定候选、postfix不pop、void finalizer退出。
   Parent只是同步包含、ordinal仅本地run；未知鱼边界遮父、不从drain/最近鱼补来源。回调冻结重入、错线程/配对/queue/预算/原异常立即撤证；日志另看CurrentLineageHealthy。
   Core/copy队列512、context128、depth32、fishordinal256、Update16、run和process8192events；key512UTF16、process65536，state/lifecycle各128。只有已确认卸钩才newinstance，未知cleanup不retry，全局预算不reset。
   SourceOperationBound/MemberOwnership/FullYield/CaptureSuccess/BagDelta/ABI等全false，没有CargoFacts producer；9fixture只运行synthetic CLR，不等于native调用/员工归属。
   下一桥需潜水级operation/source lease与原游戏已经选产物后的受控阶段，不能提前Roll/retry、把事后Add当完整预计划或只跳Add_Impl/新槽写入。保留每人独立袋/容量/负重及逐产物返航；本轮未部署/启动，完整M3—M7/双端/冷配置继续。
+
+- 当前源码0.1.26-dev/协议6，Build与实际Core/TCP222/222通过；继续每人独立袋先读development/docs/CAPTURE_SELECTION.md和capture-selection-build-verification.json。
+  同一真实CLR ledger的SourceReserve统一capture ID/opaque lease，不用两Gate各自operation或Unity player/fish instanceID当session身份；旧Reserve仍预verified完整products。
+  EnterSelection必须preexisting YieldSelectionIsolationVerified且一次性EnteredUnknown；LateSeal需complete/heldbeforewrite/NoBagWriteYet＋个人currentcapacity，仍不是capture或nativeentry。
+  未选Request=null/Intent有值，weight0只是unknown；return未有items也阻complete。LateSeal在offline/Returning/Aborted只填原capture原batch，不恢复dispatch。
+  第一份fullvalid选择在容量/袋修订检查前固定，容量拒不能换轻/换grade；sameplan可fresh capacity再验，非native重Roll。
+  取消只reserved+notenteredproof；进入后不能retry/重Roll/改owner/清unknown，新Room不自动迁移。11CLR＋2生产controller/TCP使用synthetic facts，native权限全false、无游戏producer。
+  已修Loot观察LocalToken(可负UnityID)与pointer独立键，resolver有pointer/generation前后围栏；编译不等于native观察已跑。
+  接真实业务须拆开main/plus选择和commit，核finalgrade/effectiveweight/Obscuredslot合并/任务/鱼终态及个人分流；未部署启动，不催用户延后试玩，完整M3—M7、隔离/世界/返航/双端/冷配置继续。

@@ -137,7 +137,16 @@ namespace DaveCoop.Core.Cargo
     public sealed class CargoCaptureSnapshot
     {
         public long CaptureId { get; set; }
+        // Source-only captures have no request/products until a complete yield
+        // is sealed. Null is unknown, never a proved empty capture.
+        public CargoSourceIntent Intent { get; set; }
         public CargoCaptureRequest Request { get; set; }
+        public bool YieldBound { get; set; }
+        // A full selected plan can be known while capacity is refused. It is
+        // fixed evidence, not reserved weight, bag inventory or materialization.
+        public bool SelectedYieldKnown { get; set; }
+        public string SelectedYieldFingerprint { get; set; }
+        public long OperationId { get; set; }
         public string Fingerprint { get; set; }
         public CargoCaptureStage Stage { get; set; }
         public CargoReceiptKind? ReceiptKind { get; set; }

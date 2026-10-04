@@ -286,7 +286,10 @@ namespace DaveCoop.Networking
             HostEntityTarget? binding = Read(() => _fishResolver?.Invoke(pointer));
             if (!binding.HasValue) return null; // unknown fish boundary masks its parent
             HostEntityTarget target = binding.Value;
-            if (target.Kind != EntityKind.Fish || target.LocalToken != pointer || target.SceneEpoch < 1 ||
+            // ResolveObservedPointer already matches the native pointer and
+            // lifecycle generation. LocalToken is Unity's GetInstanceID value,
+            // which is a different namespace and can legitimately be negative.
+            if (target.Kind != EntityKind.Fish || target.LocalToken == 0 || target.SceneEpoch < 1 ||
                 target.EntityId < 1 || target.Generation < 1 || target.DataTid < 1)
                 throw new InvalidOperationException("Copied fish source fields invalid.");
             return new LootLineageSource(ordinal, target.SceneEpoch, target.EntityId, target.Generation, target.DataTid);

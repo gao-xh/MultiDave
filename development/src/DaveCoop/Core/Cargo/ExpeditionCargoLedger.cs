@@ -6,8 +6,9 @@ namespace DaveCoop.Core.Cargo
 {
     // Host-owned, caller-serialized CLR evidence. Lifetime is one expedition,
     // not a socket/scene. No method calls native code or grants native permission.
-    // Reserve requires an already verified complete yield plan; unknown native
-    // random yields cannot be guessed, rerolled or inferred from a fish species.
+    // Legacy Reserve requires an already verified complete yield plan. The
+    // source-only path binds products after an isolated selection mark; unknown
+    // native random yields are never guessed, rerolled or inferred from a TID.
     public sealed class ExpeditionCargoLedger
     {
         private sealed class Member
@@ -25,6 +26,10 @@ namespace DaveCoop.Core.Cargo
         private sealed class Capture
         {
             public long Id;
+            public CargoSourceIntent Intent;
+            public CargoSourceLease SourceLease;
+            public bool SelectionIsolationEntered;
+            public CargoProduct[] SelectedProducts;
             public CargoCaptureRequest Request;
             public string Fingerprint;
             public string ProductsFingerprint;
@@ -49,6 +54,8 @@ namespace DaveCoop.Core.Cargo
         private string _returnId;
         private string _sourceRoom;
         private double _lastNow = -1;
+        private long _operationHighWater;
+        public long GlobalOperationHighWater => _operationHighWater;
 
         public ExpeditionCargoLedger(string expeditionId, CargoMemberSetup[] members)
         {
@@ -76,7 +83,11 @@ namespace DaveCoop.Core.Cargo
             Members = _members.Values.OrderBy(member => member.PlayerId).Select(MemberSnapshot).ToArray(),
             Captures = _captures.Values.OrderBy(capture => capture.Id).Select(capture => new CargoCaptureSnapshot
             {
-                CaptureId = capture.Id, Request = CargoValues.Copy(capture.Request), Fingerprint = capture.Fingerprint,
+                CaptureId = capture.Id, Intent = capture.Intent == null ? null : CargoSourceValues.Copy(capture.Intent),
+                Request = capture.Request == null ? null : CargoValues.Copy(capture.Request), YieldBound = capture.Request != null,
+                SelectedYieldKnown = capture.SelectedProducts != null,
+                SelectedYieldFingerprint = capture.SelectedProducts == null ? null : capture.ProductsFingerprint,
+                OperationId = CaptureOperation(capture), Fingerprint = capture.Fingerprint,
                 Stage = capture.Stage, ReceiptKind = capture.ReceiptKind
             }).ToArray(),
             ReturnItems = _returnItems.Values.OrderBy(item => item.Capture.Id).ThenBy(item => item.Index).Select(item => new CargoReturnItemSnapshot
@@ -125,14 +136,14 @@ namespace DaveCoop.Core.Cargo
             failure = EntryFacts(member, facts);
             if (failure != CargoReason.None) return Result(failure);
             if (owned.BagRevision != member.Revision) return Result(CargoReason.Conflict);
-            if (_operations.ContainsKey(owned.OperationId)) return Result(CargoReason.Conflict);
+            if (_operations.ContainsKey(owned.OperationId) || owned.OperationId <= _operationHighWater) return Result(CargoReason.Conflict);
             if (_sourceLeases.ContainsKey(sourceKey)) return Result(CargoReason.SourceBusy);
             // A network epoch can change without changing the physical fish.
             // Without a verified native-origin migration, no new epoch may
             // bypass an outstanding reservation/unknown call in the old one.
             if (_captures.Values.Any(item =>
                 (item.Stage == CargoCaptureStage.Reserved || item.Stage == CargoCaptureStage.EnteredUnknown) &&
-                item.Request.Source.SceneEpoch != owned.Source.SceneEpoch)) return Result(CargoReason.SourceBusy);
+                CaptureSource(item).SceneEpoch != owned.Source.SceneEpoch)) return Result(CargoReason.SourceBusy);
             if (_captures.Count >= CargoValues.MaxCaptures || member.Revision == long.MaxValue) return Result(CargoReason.QuotaExceeded);
             double weight = CargoValues.ProductWeight(owned.Products);
             failure = Capacity(member, weight, facts.CapacityPolicy);
@@ -146,14 +157,134 @@ namespace DaveCoop.Core.Cargo
             _captures.Add(captureId, capture); _operations.Add(owned.OperationId, captureId);
             _sourceLeases.Add(sourceKey, captureId); member.Requests.Add(owned.RequestId, captureId);
             _sourceRoom = owned.Source.RoomId;
+            _operationHighWater = owned.OperationId;
             member.Reserved += weight; member.Revision++;
             RememberNativeWeightSample(member, facts);
             return Result(CargoReason.None, captureId);
         }
 
+        // Reserve a member/source before the native generator chooses products.
+        // Zero reserved weight means unknown yield, not an empty or safe bag.
+        public CargoResult SourceReserve(CargoSourceIntent intent, CargoSourceFacts facts, double now, out CargoSourceLease lease)
+        {
+            lease = null; CargoSourceIntent owned; string fingerprint; string sourceKey;
+            try { owned = CargoSourceValues.Copy(intent); fingerprint = CargoSourceValues.Fingerprint(owned); sourceKey = CargoValues.SourceKey(owned.Source); }
+            catch (ArgumentException) { return Result(CargoReason.InvalidInput); }
+            if (!TryMember(owned.MemberId, out Member member, out CargoReason failure)) return Result(failure);
+            failure = SourceFacts(member, owned, facts, now);
+            if (failure != CargoReason.None) return Result(failure);
+            if (facts.OperationId != 0 || facts.IntentFingerprint != null) return Result(CargoReason.WrongIdentity);
+            if (member.Requests.TryGetValue(owned.RequestId, out long previous))
+            {
+                Capture old = _captures[previous];
+                if (old.SourceLease == null || old.Fingerprint != fingerprint) return Result(CargoReason.Conflict, previous);
+                lease = old.SourceLease; return Result(CargoReason.Duplicate, previous);
+            }
+            if (owned.RequestId <= member.HighestRequest) return Result(CargoReason.Replay);
+            member.HighestRequest = owned.RequestId; _lastNow = now;
+            if (_phase != CargoExpeditionPhase.Active) return Result(CargoReason.ReturnFrozen);
+            failure = SourceEntryFacts(member, facts, true);
+            if (failure != CargoReason.None) return Result(failure);
+            if (owned.BagRevision != member.Revision) return Result(CargoReason.Conflict);
+            if (_sourceLeases.ContainsKey(sourceKey) || _captures.Values.Any(item =>
+                (item.Stage == CargoCaptureStage.Reserved || item.Stage == CargoCaptureStage.EnteredUnknown) &&
+                CaptureSource(item).SceneEpoch != owned.Source.SceneEpoch)) return Result(CargoReason.SourceBusy);
+            if (_captures.Count >= CargoValues.MaxCaptures || member.Revision == long.MaxValue || _operationHighWater == long.MaxValue)
+                return Result(CargoReason.QuotaExceeded);
+            failure = Capacity(member, 0, facts.CapacityPolicy);
+            if (failure != CargoReason.None) return Result(failure);
+            long captureId = _captures.Count + 1, operation = _operationHighWater + 1;
+            lease = new CargoSourceLease(captureId, operation, member.PlayerId, owned, fingerprint);
+            var capture = new Capture { Id = captureId, Intent = owned, SourceLease = lease, Fingerprint = fingerprint, SourceKey = sourceKey };
+            _captures.Add(captureId, capture); _operations.Add(operation, captureId); _sourceLeases.Add(sourceKey, captureId);
+            member.Requests.Add(owned.RequestId, captureId); _sourceRoom = owned.Source.RoomId; _operationHighWater = operation;
+            member.Revision++; RememberNativeWeightSample(member, facts); return Result(CargoReason.None, captureId);
+        }
+
+        // This one-way mark is BEFORE any native selection or pity mutation.
+        // The adapter must already be able to hold all materialization, including
+        // an ordinary Add that precedes a later plus-item roll in the game.
+        public CargoResult EnterSelection(CargoSourceLease lease, CargoSourceFacts facts, double now)
+        {
+            if (!TrySourceLease(lease, out Capture capture, out CargoReason failure)) return Result(failure);
+            if (_phase != CargoExpeditionPhase.Active) return Result(CargoReason.ReturnFrozen, capture.Id);
+            if (capture.Stage != CargoCaptureStage.Reserved || capture.Request != null) return Result(CargoReason.InvalidStage, capture.Id);
+            Member member = _members[capture.Intent.MemberId];
+            failure = BoundSourceFacts(member, capture, facts, now);
+            if (failure == CargoReason.None) failure = SourceEntryFacts(member, facts, true);
+            if (failure == CargoReason.None && (!facts.NativeEntryCapabilityVerified || !facts.YieldSelectionIsolationVerified))
+                failure = CargoReason.MissingCapability;
+            if (failure == CargoReason.None) failure = Capacity(member, 0, facts.CapacityPolicy);
+            if (failure != CargoReason.None) return Result(failure, capture.Id);
+            capture.Stage = CargoCaptureStage.EnteredUnknown; capture.SelectionIsolationEntered = true;
+            _lastNow = now; RememberNativeWeightSample(member, facts); return Result(CargoReason.None, capture.Id);
+        }
+
+        // Binding a complete already-selected yield is not native entry, a bag
+        // commit or a capture receipt. Failed capacity/coverage leaves unknown.
+        public CargoResult LateSeal(CargoSourceLease lease, CargoProduct[] selectedProducts, CargoLateYieldFacts facts, double now)
+        {
+            if (!TrySourceLease(lease, out Capture capture, out CargoReason failure)) return Result(failure);
+            CargoProduct[] owned; string productsFingerprint;
+            try { owned = CargoValues.CopyProducts(selectedProducts); productsFingerprint = CargoValues.ProductsFingerprint(owned); }
+            catch (ArgumentException) { return Result(CargoReason.InvalidInput, capture.Id); }
+            Member member = _members[capture.Intent.MemberId];
+            failure = BoundSourceFacts(member, capture, facts, now);
+            if (failure != CargoReason.None) return Result(failure, capture.Id);
+            if (facts.ProductsFingerprint != productsFingerprint) return Result(CargoReason.WrongIdentity, capture.Id);
+            if (capture.Request != null) return Result(capture.ProductsFingerprint == productsFingerprint ? CargoReason.Duplicate : CargoReason.Conflict, capture.Id);
+            if (capture.SelectedProducts != null && capture.ProductsFingerprint != productsFingerprint)
+                return Result(CargoReason.Conflict, capture.Id);
+            if (capture.Stage != CargoCaptureStage.EnteredUnknown || !capture.SelectionIsolationEntered)
+                return Result(CargoReason.InvalidStage, capture.Id);
+            if (!facts.CompleteSelectedYield || !facts.MaterializationBoundaryHeld || !facts.NoBagWriteYet || !facts.YieldSelectionIsolationVerified)
+                return Result(CargoReason.MissingCapability, capture.Id);
+            // The native selector already chose this complete batch. Capacity
+            // failure must not permit another roll, a lighter result or changed
+            // quality under the same operation. No weight or receipt is added.
+            if (capture.SelectedProducts == null)
+            {
+                capture.SelectedProducts = owned; capture.ProductsFingerprint = productsFingerprint; _lastNow = now;
+            }
+            // A disconnected actor may resolve its existing held yield. This is
+            // not permission to dispatch a new native call or restore membership.
+            failure = SourceEntryFacts(member, facts, false);
+            if (failure != CargoReason.None) return Result(failure, capture.Id);
+            if (member.Revision == long.MaxValue) return Result(CargoReason.QuotaExceeded, capture.Id);
+            double weight = CargoValues.ProductWeight(capture.SelectedProducts);
+            failure = Capacity(member, weight, facts.CapacityPolicy);
+            if (failure != CargoReason.None) return Result(failure, capture.Id);
+            var request = new CargoCaptureRequest
+            {
+                ExpeditionId = capture.Intent.ExpeditionId, MemberId = capture.Intent.MemberId, RequestId = capture.Intent.RequestId,
+                OperationId = lease.OperationId, BagRevision = capture.Intent.BagRevision, Source = CargoValues.Copy(capture.Intent.Source),
+                Products = CargoValues.CopyProducts(capture.SelectedProducts)
+            };
+            capture.Request = request; capture.ProductsFingerprint = productsFingerprint; capture.Weight = weight;
+            member.Reserved += weight; member.Revision++; RememberNativeWeightSample(member, facts); _lastNow = now;
+            // FreezeReturn sealed capture membership, not fabricated products.
+            // A late yield can fill only this pre-existing capture's batch items.
+            if (_returnId != null) AddReturnItems(capture);
+            return Result(CargoReason.None, capture.Id);
+        }
+
+        public CargoResult CancelSelectionNotEntered(CargoSourceLease lease, CargoSourceFacts facts, double now)
+        {
+            if (!TrySourceLease(lease, out Capture capture, out CargoReason failure)) return Result(failure);
+            if (capture.Stage != CargoCaptureStage.Reserved || capture.Request != null) return Result(CargoReason.InvalidStage, capture.Id);
+            Member member = _members[capture.Intent.MemberId];
+            failure = BoundSourceFacts(member, capture, facts, now);
+            if (failure != CargoReason.None) return Result(failure, capture.Id);
+            if (!facts.NativeNotEntered) return Result(CargoReason.NotEnteredProofRequired, capture.Id);
+            if (member.Revision == long.MaxValue) return Result(CargoReason.QuotaExceeded, capture.Id);
+            capture.Stage = CargoCaptureStage.NativeNotEntered; _sourceLeases.Remove(capture.SourceKey); member.Revision++; _lastNow = now;
+            return Result(CargoReason.None, capture.Id);
+        }
+
         public CargoResult EnterCapture(long captureId, CargoCaptureFacts freshFacts, double now)
         {
             if (!TryCapture(captureId, out Capture capture, out CargoReason failure)) return Result(failure);
+            if (capture.Request == null || capture.SourceLease != null) return Result(CargoReason.InvalidStage, captureId);
             if (_phase != CargoExpeditionPhase.Active) return Result(CargoReason.ReturnFrozen, captureId);
             if (capture.Stage != CargoCaptureStage.Reserved) return Result(CargoReason.InvalidStage, captureId);
             Member member = _members[capture.Request.MemberId];
@@ -172,6 +303,7 @@ namespace DaveCoop.Core.Cargo
         public CargoResult CaptureNotEntered(long captureId, CargoCaptureFacts facts, double now)
         {
             if (!TryCapture(captureId, out Capture capture, out CargoReason failure)) return Result(failure);
+            if (capture.Request == null || capture.SourceLease != null) return Result(CargoReason.InvalidStage, captureId);
             if (capture.Stage != CargoCaptureStage.Reserved) return Result(CargoReason.InvalidStage, captureId);
             Member member = _members[capture.Request.MemberId];
             failure = CaptureFacts(member, capture.Request, capture.ProductsFingerprint, facts, now);
@@ -217,6 +349,7 @@ namespace DaveCoop.Core.Cargo
             catch (ArgumentException) { return Result(CargoReason.InvalidInput); }
             if (!Enum.IsDefined(typeof(CargoReceiptKind), kind)) return Result(CargoReason.InvalidInput);
             if (!TryCapture(captureId, out Capture capture, out CargoReason failure)) return Result(failure);
+            if (capture.Request == null) return Result(CargoReason.InvalidStage, captureId);
             Member member = _members[capture.Request.MemberId];
             failure = CaptureFacts(member, capture.Request, capture.ProductsFingerprint, facts, now);
             if (failure != CargoReason.None) return Result(failure, captureId);
@@ -269,13 +402,7 @@ namespace DaveCoop.Core.Cargo
             // Membership and every product index are sealed, including pending
             // captures. Late proven receipts can resolve those original members
             // of the batch, but cannot append a new reserve/capture.
-            foreach (Capture capture in _captures.Values)
-                for (int i = 0; i < capture.Request.Products.Length; i++)
-                    _returnItems.Add((capture.Id, i), new ReturnItem
-                    {
-                        Capture = capture, Index = i,
-                        Stage = capture.Stage == CargoCaptureStage.NativeNotEntered ? CargoReturnStage.NotRequired : CargoReturnStage.Unclaimed
-                    });
+            foreach (Capture capture in _captures.Values) if (capture.Request != null) AddReturnItems(capture);
             _returnId = owned; _phase = CargoExpeditionPhase.Returning;
             return Result(CargoReason.None);
         }
@@ -364,7 +491,7 @@ namespace DaveCoop.Core.Cargo
         {
             var inventory = new List<CargoInventoryItem>();
             if (_phase != CargoExpeditionPhase.Returned)
-                foreach (Capture capture in _captures.Values.Where(item => item.Request.MemberId == member.Setup.MemberId && item.Stage == CargoCaptureStage.Confirmed).OrderBy(item => item.Id))
+                foreach (Capture capture in _captures.Values.Where(item => CaptureMemberId(item) == member.Setup.MemberId && item.Stage == CargoCaptureStage.Confirmed).OrderBy(item => item.Id))
                     for (int i = 0; i < capture.Request.Products.Length; i++) inventory.Add(new CargoInventoryItem
                     { CaptureId = capture.Id, ProductIndex = i, Product = CargoValues.Copy(capture.Request.Products[i]) });
             return new CargoMemberSnapshot
@@ -393,6 +520,71 @@ namespace DaveCoop.Core.Cargo
         {
             if (member.Setup.BagMode == CargoBagMode.HostNative) member.NativeWeightSampledAt = facts.SampledAt;
         }
+        private static void RememberNativeWeightSample(Member member, CargoSourceFacts facts)
+        {
+            if (member.Setup.BagMode == CargoBagMode.HostNative) member.NativeWeightSampledAt = facts.SampledAt;
+        }
+        private CargoReason SourceFacts(Member member, CargoSourceIntent intent, CargoSourceFacts facts, double now)
+        {
+            if (facts == null) return CargoReason.MissingCapability;
+            CargoReason failure = Fresh(facts.SampledAt, now);
+            if (failure != CargoReason.None) return failure;
+            try
+            {
+                if (intent.ExpeditionId != _expedition || CargoValues.GuidKey(facts.ExpeditionId) != _expedition ||
+                    CargoValues.GuidKey(facts.MemberId) != member.Setup.MemberId || facts.BoundPlayerId != member.PlayerId ||
+                    facts.RequestId != intent.RequestId || facts.ActorRevision != intent.ActorRevision || facts.LoadoutRevision != intent.LoadoutRevision ||
+                    CargoValues.SourceKey(facts.Source) != CargoValues.SourceKey(intent.Source)) return CargoReason.WrongIdentity;
+                string currentRoom = CargoValues.GuidKey(facts.CurrentRoomId);
+                if (currentRoom != intent.Source.RoomId || (_sourceRoom != null && currentRoom != _sourceRoom)) return CargoReason.WrongIdentity;
+                if (facts.BagRevision < 1) return CargoReason.InvalidInput;
+                CargoValues.Weight(facts.NativeCurrentWeight);
+            }
+            catch (ArgumentException) { return CargoReason.InvalidInput; }
+            if (!facts.HostAuthority || !facts.SourceIdentityVerified || !facts.OrdinaryFishVerified) return CargoReason.MissingCapability;
+            if (facts.CapacityPolicyVerified && !Enum.IsDefined(typeof(CargoCapacityPolicy), facts.CapacityPolicy)) return CargoReason.InvalidInput;
+            return CargoReason.None;
+        }
+        private CargoReason BoundSourceFacts(Member member, Capture capture, CargoSourceFacts facts, double now)
+        {
+            CargoReason failure = SourceFacts(member, capture.Intent, facts, now);
+            if (failure != CargoReason.None) return failure;
+            return facts.OperationId == capture.SourceLease.OperationId && facts.IntentFingerprint == capture.Fingerprint
+                ? CargoReason.None : CargoReason.WrongIdentity;
+        }
+        private CargoReason SourceEntryFacts(Member member, CargoSourceFacts facts, bool newEntry)
+        {
+            if (newEntry && !member.Connected) return CargoReason.Disconnected;
+            if (facts.BagRevision != member.Revision) return CargoReason.Conflict;
+            if (!facts.CapacityPolicyVerified || (member.Setup.BagMode == CargoBagMode.EmployeeVirtual && !facts.CapacityRoutingVerified))
+                return CargoReason.MissingCapability;
+            if (newEntry && (!facts.ActorPermitted || !facts.SourceAvailable)) return CargoReason.MissingCapability;
+            if (member.Setup.BagMode == CargoBagMode.HostNative)
+            {
+                if (!facts.HostBagWeightVerified) return CargoReason.MissingCapability;
+                if (facts.NativeCurrentWeight != member.Weight) return CargoReason.Conflict;
+                if (facts.SampledAt < member.NativeWeightSampledAt) return CargoReason.StaleFacts;
+            }
+            return CargoReason.None;
+        }
+        private bool TrySourceLease(CargoSourceLease lease, out Capture capture, out CargoReason failure)
+        {
+            capture = null; failure = lease == null ? CargoReason.InvalidInput : CargoReason.WrongIdentity;
+            if (lease == null || !_captures.TryGetValue(lease.CaptureId, out Capture candidate) || !ReferenceEquals(candidate.SourceLease, lease)) return false;
+            capture = candidate; failure = CargoReason.None; return true;
+        }
+        private void AddReturnItems(Capture capture)
+        {
+            for (int i = 0; i < capture.Request.Products.Length; i++)
+                _returnItems.Add((capture.Id, i), new ReturnItem
+                {
+                    Capture = capture, Index = i,
+                    Stage = capture.Stage == CargoCaptureStage.NativeNotEntered ? CargoReturnStage.NotRequired : CargoReturnStage.Unclaimed
+                });
+        }
+        private static string CaptureMemberId(Capture capture) => capture.Intent?.MemberId ?? capture.Request.MemberId;
+        private static CargoSource CaptureSource(Capture capture) => capture.Intent?.Source ?? capture.Request.Source;
+        private static long CaptureOperation(Capture capture) => capture.SourceLease?.OperationId ?? capture.Request.OperationId;
         private CargoReason CaptureFacts(Member member, CargoCaptureRequest request, string productFingerprint, CargoCaptureFacts facts, double now)
         {
             CargoReason failure = MemberFacts(member, facts, now);
