@@ -19,7 +19,7 @@ namespace DaveCoop.Core.Protocol
 
     public sealed class PeerIdentity
     {
-        public int ProtocolVersion { get; set; } = 9;
+        public int ProtocolVersion { get; set; } = 10;
         public string ModVersion { get; set; }
         public string SteamBuildId { get; set; }
         public string UnityVersion { get; set; }

@@ -19,7 +19,7 @@ internal static class CargoSessionTests
         var pair = new Pair(); CargoInventorySnapshot source = Inventory(pair.Room, 33);
         WirePacket packet = Packet(pair.Room, CargoInventoryFrames.Split(source)[0]);
         WirePacket decoded = PacketCodec.Decode(PacketCodec.Encode(packet));
-        Assert(new PeerIdentity().ProtocolVersion == 9 && (int)PacketKind.CargoInventorySlice == 80 &&
+        Assert(new PeerIdentity().ProtocolVersion == 10 && (int)PacketKind.CargoInventorySlice == 80 &&
             decoded.CargoInventory.EntryCount == 33 && decoded.CargoInventory.SourceRoomId == pair.Room,
             "cargo wire contract or protocol default was lost");
         Throws<ProtocolException>(() => pair.Guest.PublishCargoInventory(source, 0.1));

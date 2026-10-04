@@ -30,11 +30,12 @@ namespace DaveCoop.Networking
         private readonly List<Reference> _references = new List<Reference>();
         private Source _source;
         private GameObject _root;
+        private Transform _weaponTransform;
         private Rigidbody2D _body;
         private Collider2D _collider;
         private Il2CppStructArray<RaycastHit2D> _hits;
         private Il2CppReferenceArray<Collider2D> _overlaps;
-        private IntPtr _rootPointer, _rootUnity, _bodyPointer, _bodyUnity, _colliderPointer, _colliderUnity;
+        private IntPtr _rootPointer, _rootUnity, _bodyPointer, _bodyUnity, _colliderPointer, _colliderUnity, _weaponPointer, _weaponUnity;
         private ContactFilter2D _filter;
         private long _revision, _epoch, _serial, _operationSerial;
         private string _sceneKey;
@@ -106,6 +107,7 @@ namespace DaveCoop.Networking
                 Write(() => _root.SetActive(false));
                 Write(() => SceneManager.MoveGameObjectToScene(_root, _source.Scene));
                 Transform transform = Read(() => _root.transform);
+                _weaponTransform = transform; Keep(_weaponTransform); Freeze(_weaponTransform, out _weaponPointer, out _weaponUnity);
                 Write(() => transform.rotation = _source.Rotation);
                 Write(() => transform.localScale = _source.Scale);
                 Write(() => _root.layer = _source.Layer);
@@ -143,6 +145,28 @@ namespace DaveCoop.Networking
         }
 
         public bool TryReadPosition(out NVector3 position) => TryReadMotion(out position, out _);
+
+        // Own actor/scene for an independently created Mod projectile. Neither
+        // the observed guest pose nor the original host weapon supplies this.
+        public bool TryReadWeaponScene(out Scene actualScene, out int collisionMask, out Transform ownedActor)
+        {
+            actualScene = default; collisionMask = 0; ownedActor = null;
+            if (!Active || !Begin()) return false;
+            try
+            {
+                ValidateSource(); ValidateOwned(true);
+                ValidateOwnedIdentity(_weaponTransform, _weaponPointer, _weaponUnity);
+                Transform current = Read(() => _root.transform);
+                if (ReferenceEquals(current, null) || Read(() => current.Pointer) != _weaponPointer ||
+                    Read(() => current.m_CachedPtr) != _weaponUnity) throw Invalid();
+                Scene scene = Read(() => _root.scene);
+                if (Read(() => scene.handle) != _source.SceneHandle || !Read(() => scene.IsValid()) || !Read(() => scene.isLoaded)) throw Invalid();
+                ValidateOwned(true); ValidateSource();
+                actualScene = scene; collisionMask = _source.Mask; ownedActor = _weaponTransform; return true;
+            }
+            catch (Exception) { Fault("WeaponSourceReadFailed"); return false; }
+            finally { End(); }
+        }
 
         public bool TryReadMotion(out NVector3 position, out NVector2 velocity)
         {

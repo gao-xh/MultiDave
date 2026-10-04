@@ -1,6 +1,6 @@
 # MultiDave 接手记录
 
-当前源码0.1.44-dev（协议9），本轮实际Core/TCP347/347及插件Build警告视为错误通过，执行输入前后相同。新增[员工输入与房主移动接线](CREW_ACTOR.md)：默认关闭、双方握手显式选择；房主独立物理身体接受输入并回读位置/速度，客机临时角色按房主状态校正。HP/O2是独立Mod规则，氧气为零仅禁止boost；真实伤害、装备、武器、命中和账本负重尚未接入。见[本轮记录](../logs/crew-actor-build-verification.json)。原生身体创建、碰撞、校正、生存、ABI与双游戏尚未执行或验证，Guest完整隔离/World/Cargo权限仍false。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、每人独立袋/容量/重量/负重、完整产物前置分流、逐项返航保存与GitHub冷配置仍待完成。
+当前源码0.1.45-dev（协议10），本轮实际Core/TCP358/358及插件Build警告视为错误通过，执行输入前后相同。新增[员工独立鱼叉](CREW_HARPOON.md)：逐输入边沿消费、房主真实身体发射、同场景CircleCast与原生普通鱼伤害一次派发，状态回读供客机独立显示；ExperimentalCrewHarpoon默认false。原TakeDamage bool仅观察，不代表HP变化、捕获或收益。见[实际记录](../logs/crew-harpoon-build-verification.json)。原生创建/碰撞/伤害/显示/ABI及远距离双游戏未执行，Guest完整隔离/World/Cargo权限仍false；员工incoming环境伤害/装备、两人独立袋/容量/重量/负重、完整产物分流和逐项返航保存仍待接通。未部署/启动，安装.12/最近潜水.11/默认包.0保持；完整M3—M7、真实双端闭环和GitHub冷配置仍必须完成。
 
 ## 已完成
 
@@ -44,7 +44,7 @@ M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态�
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
 0.1.4-dev 引入默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，0.1.5-dev 加入一条鱼的 Sprite/Spine 显示验证入口。
-当前源码协议版本为 9，拒绝旧协议 8 及更早版本；WorldSlice 保持每块最多 16 个实体，保留 FishActionRequest/FishActionResult、MapRouteSlice/MapIgpChoice/MapChoiceRetire 与 CargoInventorySlice。历史协议7补齐路线原生输入并要求 wire 字段实际存在；协议8保留路线schema2并要求Hello/Welcome显式鱼观察请求。
+当前源码协议版本为 10，拒绝旧协议 9 及更早版本；CrewActorState另有鱼叉编号、活动、位置、方向四字段，只供显示，不授权命中或收益。WorldSlice 保持每块最多 16 个实体，保留 FishActionRequest/FishActionResult、MapRouteSlice/MapIgpChoice/MapChoiceRetire 与 CargoInventorySlice。历史协议7补齐路线原生输入并要求 wire 字段实际存在；协议8保留路线schema2并要求Hello/Welcome显式鱼观察请求。
 F11 的 Transmit read-only fish observations / Preview one received fish 均默认关闭。
 0.1.11-dev 另增默认关闭的 Display received fish roster / Observe host harpoon and fish interactions；
 本机显示及房主交互观察仍依赖 Transmit read-only fish observations。
@@ -396,3 +396,7 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 ## 0.1.44-dev 员工输入与房主移动接线
 
 见[CREW_ACTOR](CREW_ACTOR.md)与[实际验证摘要](../logs/crew-actor-build-verification.json)。双方显式UsesCrewActor且Host/Ready/currentRoom/epoch/actor来源成立后，实际输入FIFO与FixedUpdate驱动房主自写独立物理身体；回传位置/速度来自身体读取，客机校正当前临时角色，客户端姿态只作显示。输入边沿保留但不派发武器；暂停/旧场景/断线停止，同peer/Room换层继承HP/O2，不补满或复活。氧气为零只禁止boost，真实伤害/窒息/装备尚无生产者。默认开关关闭，普通配置不自动启用；真实原生创建、碰撞查询、校正和生存未执行，full GuestStateIsolated/Native/World/Cargo权限仍false。本轮实际347/347 CLR/TCP及Build通过，完整stdout/PASS与封存输入一致，不能当作原生或两游戏验收。房成员token尚未绑定潜水账本，profile容量与未知BagWeight不作已确认库存或实时负重UI；每人独立背包/容量/重量/负重规则不变，员工产物必须在房主原袋写入前分流。后续继续真实员工装备/投射物/命中终局、独立生存环境输入、完整main+plus与前置容量分流、个人负重、逐项正常返航warehouse delta/save、Guest完整隔离、完整M3—M7及真实双端/GitHub冷配置与测试发行。未部署/启动，installed.12/dive.11/default.0历史保持；不催延后测试，完整goal保持active。
+
+## 0.1.45-dev 员工独立鱼叉
+
+逐输入边沿→房主实际身体→同场景扫掠→fresh普通鱼/lifecycle→一次原生伤害，客机状态仅显示。见[接线](CREW_HARPOON.md)；实际358/358及Build通过，无native/双游戏/部署。下一步接真实捕获/完整产物前置分流、每人袋/容量/重量/负重与逐项返航保存，随后完整双端和冷配置验收，M3—M7不缩减。

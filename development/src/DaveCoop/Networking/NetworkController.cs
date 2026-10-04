@@ -107,12 +107,17 @@ namespace DaveCoop.Networking
                     _lootObserver = new LootObservationController(Environment.CurrentManagedThreadId, ResolveHealthyFish);
                     _mapOrigins = new MapOriginController(Environment.CurrentManagedThreadId);
                     bool crewEnabled = NetworkDriver.ExperimentalCrewActor.Value;
+                    bool harpoonEnabled = crewEnabled && NetworkDriver.ExperimentalCrewHarpoon.Value;
                     HostCrewProfile crewProfile = crewEnabled ? new HostCrewProfile(NetworkDriver.CrewSpeed.Value,
                         NetworkDriver.CrewBoostMultiplier.Value, NetworkDriver.CrewMaxHP.Value, NetworkDriver.CrewMaxOxygen.Value,
                         NetworkDriver.CrewOxygenPerSecond.Value, NetworkDriver.CrewBoostOxygenPerSecond.Value,
                         NetworkDriver.CrewCapacityKg.Value) : new HostCrewProfile();
                     _crewActor = new CrewActorController(_local, () => _peers?.Main, () => _peers?.Loopback != null,
-                        Environment.CurrentManagedThreadId, NetworkDriver.Logger, crewEnabled, crewProfile);
+                        Environment.CurrentManagedThreadId, NetworkDriver.Logger, crewEnabled, crewProfile,
+                        harpoonEnabled,
+                        harpoonEnabled ? new HostHarpoonProfile(NetworkDriver.HarpoonSpeed.Value, NetworkDriver.HarpoonRange.Value,
+                            NetworkDriver.HarpoonCooldown.Value, NetworkDriver.HarpoonRadius.Value, NetworkDriver.HarpoonDamage.Value) : new HostHarpoonProfile(),
+                        _fish, _fishLifecycle);
                     if (NetworkDriver.ExperimentalHostFishAreas.Value && NativeGuestInitializationController.Current == null)
                     {
                         _hostFishInterest = new HostFishInterestSource(() => _peers?.Main,
@@ -239,7 +244,10 @@ namespace DaveCoop.Networking
                         CrewStatesSent = _crewActor.StatesSent, CrewStatesReceived = _crewActor.StatesReceived,
                         CrewMoves = _crewActor.Moves, CrewBlockedMoves = _crewActor.BlockedMoves, CrewCorrections = _crewActor.Corrections,
                         CrewHP = _crewActor.HP, CrewOxygen = _crewActor.Oxygen, CrewFireEdgesObserved = _crewActor.FireEdgesObserved,
-                        CrewNativeRuntimeVerified = false, CrewNativeDamageConnected = false, CrewWeaponsConnected = false,
+                        CrewHarpoonStatus = _crewActor.HarpoonStatus, CrewHarpoonsFired = _crewActor.HarpoonsFired,
+                        CrewHarpoonCollisions = _crewActor.HarpoonCollisions, CrewHarpoonDamageDispatches = _crewActor.HarpoonDamageDispatches,
+                        CrewNativeRuntimeVerified = false, CrewEmployeeDamagePipelineImplemented = true,
+                        CrewEmployeeHarpoonImplemented = true, CrewDamageDeltaProven = false, CrewCaptureConnected = false,
                         CrewBagWeightConfirmed = false,
                         HostFishAreasEnabled = _hostFishInterest != null,
                         HostFishAreasFailed = _hostFishAreasFailed,

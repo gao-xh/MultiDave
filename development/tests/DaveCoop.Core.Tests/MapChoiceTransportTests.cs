@@ -16,7 +16,7 @@ internal static class MapChoiceTransportTests
 {
     internal static void WirePayloadAndProtocolSeven()
     {
-        Assert(new PeerIdentity().ProtocolVersion == 9, "crew actor negotiation did not advance the protocol");
+        Assert(new PeerIdentity().ProtocolVersion == 10, "crew actor negotiation did not advance the protocol");
         var pair = new Pair();
         MapRouteSelection route = Route(17);
         MapRouteSlice slice = MapChoiceFrames.SplitRoute(route, 1)[0];

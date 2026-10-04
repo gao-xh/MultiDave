@@ -19,7 +19,7 @@ internal static class CrewTransportTests
     internal static void CodecRequiresUniqueOptInAndCompleteInputStateSchema()
     {
         string room = Guid.NewGuid().ToString("N");
-        Assert(new PeerIdentity().ProtocolVersion == 9 && (int)PacketKind.CrewInput == 90 && (int)PacketKind.CrewActorState == 91,
+        Assert(new PeerIdentity().ProtocolVersion == 10 && (int)PacketKind.CrewInput == 90 && (int)PacketKind.CrewActorState == 91,
             "crew channel did not advance its exact protocol contract");
         string hello = Json(new WirePacket { Kind = PacketKind.Hello, Sequence = 1, Hello = Identity("Guest", true) });
         Assert(Decode(hello).Hello.UsesCrewActor, "explicit opt-in was lost");
@@ -73,6 +73,58 @@ internal static class CrewTransportTests
         receipt.Frame.InputSequence = 999;
         Assert(pair.Host.Snapshot.CrewInputSequence == 1 && pair.Guest.Snapshot.CrewStateRevision == 1,
             "taking a mutable owned copy changed internal transport high-water marks");
+    }
+
+    internal static void HarpoonStateSchemaAndRoomFencesCannotReopenAConsumedShot()
+    {
+        var pair = Pair.Active();
+        CrewActorState first = State(revision: 2);
+        first.HarpoonShotId = 5; first.HarpoonActive = true;
+        first.HarpoonPosition = new Vector3(7, 8, 0); first.HarpoonDirection = Vector2.UnitX;
+        string json = Json(StatePacket(pair.Room, first));
+        foreach (string field in new[] { "harpoonShotId", "harpoonActive", "harpoonPosition", "harpoonDirection" })
+            Throws<ProtocolException>(() => Decode(Change(json, "\"" + field + "\":", "\"unexpected\":")));
+        Throws<ProtocolException>(() => Decode(Change(json, "\"harpoonShotId\":5", "\"harpoonShotId\":5,\"harpoonShotId\":5")));
+        Throws<ProtocolException>(() => Decode(Change(json, "\"harpoonDirection\":{", "\"harpoonDirection\":{\"x\":1,")));
+        CrewActorState bad = CrewFrames.Copy(first); bad.HarpoonShotId = 0;
+        Throws<ProtocolException>(() => CrewFrames.Validate(bad));
+        bad = CrewFrames.Copy(first); bad.HarpoonDirection = new Vector2(0.5f, 0);
+        Throws<ProtocolException>(() => CrewFrames.Validate(bad));
+        bad = CrewFrames.Copy(first); bad.Active = false;
+        Throws<ProtocolException>(() => CrewFrames.Validate(bad));
+        Assert(pair.Host.PublishCrewActorState(first, 0.1), "actual shot state was not accepted"); first.HarpoonPosition = Vector3.Zero;
+        pair.Pump(0.1);
+        Assert(pair.Guest.TryTakeRemoteCrewActorState(out ReceivedCrewActorState received) && received.Frame.HarpoonShotId == 5 &&
+            received.Frame.HarpoonPosition == new Vector3(7, 8, 0), "shot state borrowed mutable caller storage");
+        bad = CrewFrames.Copy(received.Frame); bad.HarpoonPosition = new Vector3(9, 8, 0);
+        Throws<ProtocolException>(() => pair.Host.PublishCrewActorState(bad, 0.2));
+        Throws<ProtocolException>(() => pair.Guest.Receive(StatePacket(pair.Room, bad), 0.2));
+        bad = CrewFrames.Copy(received.Frame); bad.ActorRevision = 2; bad.StateRevision = 1;
+        Throws<ProtocolException>(() => pair.Host.PublishCrewActorState(bad, 0.2));
+        Throws<ProtocolException>(() => pair.Guest.Receive(StatePacket(pair.Room, bad), 0.2));
+        CrewActorState ended = CrewFrames.Copy(received.Frame); ended.HarpoonActive = false; ended.StateRevision = 3;
+        Assert(pair.Host.PublishCrewActorState(ended, 0.2), "ended shot did not publish"); pair.Pump(0.2);
+        Assert(!pair.Host.PublishCrewActorState(received.Frame, 0.21), "older active revision reopened an ended shot");
+        pair.Guest.Receive(StatePacket(pair.Room, received.Frame), 0.21);
+        Assert(pair.Guest.TryTakeRemoteCrewActorState(out ReceivedCrewActorState latest) && latest.Frame.StateRevision == 3 && !latest.Frame.HarpoonActive,
+            "old legal revision replaced the ended state or closed the room");
+        bad = CrewFrames.Copy(received.Frame); bad.StateRevision = 4;
+        Throws<ProtocolException>(() => pair.Host.PublishCrewActorState(bad, 0.22));
+        Throws<ProtocolException>(() => pair.Guest.Receive(StatePacket(pair.Room, bad), 0.22));
+        bad = State(revision: 3);
+        Throws<ProtocolException>(() => pair.Host.PublishCrewActorState(bad, 0.23));
+        Throws<ProtocolException>(() => pair.Guest.Receive(StatePacket(pair.Room, bad), 0.23));
+        pair.Host.SetLocalScene(null, 0.3); pair.Pump(0.3); pair.Host.SetLocalScene(Scene(), 0.4); pair.Pump(0.4);
+        long epoch = pair.Host.Snapshot.SceneEpoch;
+        bad = State(actor: 2, epoch: epoch);
+        Throws<ProtocolException>(() => pair.Host.PublishCrewActorState(bad, 0.5));
+        Throws<ProtocolException>(() => pair.Guest.Receive(StatePacket(pair.Room, bad), 0.5));
+        CrewActorState resumed = State(actor: 2, epoch: epoch);
+        resumed.HarpoonShotId = 5; resumed.HarpoonDirection = Vector2.UnitX;
+        Assert(pair.Host.PublishCrewActorState(resumed, 0.6), "room fence could not survive an inactive replacement actor");
+        pair.Pump(0.6);
+        Assert(pair.Guest.TryTakeRemoteCrewActorState(out received) && received.Frame.HarpoonShotId == 5 && !received.Frame.HarpoonActive,
+            "old flight revived when the actor was replaced");
     }
 
     internal static void RolesBothOptInsAndActorBindingsRejectForgedInputs()
@@ -208,11 +260,16 @@ internal static class CrewTransportTests
         Assert(host.Snapshot.LocalUsesCrewActor && host.Snapshot.RemoteUsesCrewActor && guest.Snapshot.LocalUsesCrewActor &&
             guest.Snapshot.RemoteUsesCrewActor, "asynchronous handshake borrowed mutable opt-in values");
         await Ready(host, guest, cancellation.Token);
-        CrewActorState source = State(epoch: host.Snapshot.SceneEpoch); host.PublishCrewActorState(source); source.HP = 99;
+        CrewActorState source = State(epoch: host.Snapshot.SceneEpoch);
+        source.HarpoonShotId = 1; source.HarpoonActive = true; source.HarpoonDirection = Vector2.UnitY;
+        source.HarpoonPosition = new Vector3(12, 15, 0);
+        host.PublishCrewActorState(source); source.HP = 99; source.HarpoonPosition = Vector3.Zero;
         ReceivedCrewActorState state = null;
         await Until(() => guest.TryTakeRemoteCrewActorState(out state), cancellation.Token);
         Assert(state.Frame.HP == 30 && state.RoomId == listener.RoomId && state.BoundPlayerId == 1 && state.Frame.PlayerId == 2 &&
-            state.PacketSequence > 1 && state.ReceivedAt >= 0, "actual state TCP source or ownership was lost");
+            state.PacketSequence > 1 && state.ReceivedAt >= 0 && state.Frame.HarpoonShotId == 1 && state.Frame.HarpoonActive &&
+            state.Frame.HarpoonPosition == new Vector3(12, 15, 0) && state.Frame.HarpoonDirection == Vector2.UnitY,
+            "actual state TCP source or owned projectile position was lost");
         CrewButtons[] edges = { CrewButtons.Fire, CrewButtons.None, CrewButtons.Recall };
         for (int i = 0; i < edges.Length; i++)
         {
@@ -226,8 +283,10 @@ internal static class CrewTransportTests
                 received[i].BoundPlayerId == 2 && received[i].PacketSequence > 1 && (i == 0 || received[i].PacketSequence > received[i - 1].PacketSequence),
                 "TCP collapsed an input edge or invented its sender");
         CrewActorState next = State(revision: 2, epoch: host.Snapshot.SceneEpoch); next.LastInputSequence = 3;
+        next.HarpoonShotId = 1; next.HarpoonDirection = Vector2.UnitY; next.HarpoonPosition = new Vector3(12, 16, 0);
         host.PublishCrewActorState(next); await Until(() => guest.TryTakeRemoteCrewActorState(out state), cancellation.Token);
-        Assert(state.Frame.LastInputSequence == 3 && state.Frame.HasConfirmedCargoWeight == false && state.Frame.BagWeightKg == null,
+        Assert(state.Frame.LastInputSequence == 3 && state.Frame.HasConfirmedCargoWeight == false && state.Frame.BagWeightKg == null &&
+            state.Frame.HarpoonShotId == 1 && !state.Frame.HarpoonActive && state.Frame.HarpoonPosition == new Vector3(12, 16, 0),
             "input acknowledgement fabricated a cargo receipt");
         await guest.StopAsync(); await host.Completion.WaitAsync(cancellation.Token);
     }
@@ -267,10 +326,11 @@ internal static class CrewTransportTests
     internal static async Task TcpProtocolEightRejectedAndOneSidedOptInCannotSendCrew()
     {
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+        foreach (int oldProtocol in new[] { 8, 9 })
         using (var listener = new LanHost(IPAddress.Loopback, 0))
         {
             Task<SessionPeer> accepting = listener.AcceptOneAsync(Identity("Host", true), cancellation.Token);
-            PeerIdentity legacy = Identity("Guest", true); legacy.ProtocolVersion = 8;
+            PeerIdentity legacy = Identity("Guest", true); legacy.ProtocolVersion = oldProtocol;
             await ThrowsAsync<ProtocolException>(async () => { using SessionPeer ignored = await LanGuest.ConnectAsync("127.0.0.1", listener.Port, legacy, cancellation.Token); });
             await ThrowsAsync<ProtocolException>(async () => { using SessionPeer ignored = await accepting; });
         }
@@ -331,7 +391,7 @@ internal static class CrewTransportTests
     private static WirePacket StatePacket(string room, CrewActorState frame) => new WirePacket
     { Kind = PacketKind.CrewActorState, Sequence = 1, RoomId = room, CrewActorState = CrewFrames.Copy(frame) };
     private static PeerIdentity Identity(string name, bool crew) => new PeerIdentity
-    { ModVersion = "0.1.44-dev", SteamBuildId = "25315876", UnityVersion = "6000.0.52f1", Name = name, UsesCrewActor = crew };
+    { ModVersion = "0.1.45-dev", SteamBuildId = "25315876", UnityVersion = "6000.0.52f1", Name = name, UsesCrewActor = crew };
     private static SceneDescriptor Scene() => new SceneDescriptor("dive", "layout");
     private static async Task Ready(SessionPeer host, SessionPeer guest, CancellationToken cancellation)
     { host.SetLocalScene(Scene()); guest.SetLocalScene(Scene()); await Until(() => host.Snapshot.Phase == SessionPhase.Ready && guest.Snapshot.Phase == SessionPhase.Ready, cancellation); }

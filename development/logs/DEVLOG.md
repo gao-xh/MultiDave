@@ -946,3 +946,15 @@
 - 非作者末审后拆分guest Rigidbody.transform与Transform.position读取，在首项setter前再次核最新state；写后固定receipt/actor来源，不声称全段latest原子性。第一次封存347/347和Build通过后因这一源码修改重封存并完整复测；两次独立private run保留，没有失败执行。
 - 最终实际347/347、Build及176个联合输入封存前后相同；官方Skill草稿/受保护复制后双校验通过，同SHA `38CDA2387E0F9DCF8480C46E859176B36BA3A503091279C2E92CB6C12D7405B5`。后续仅文档/Skill/摘要收尾，不复跑测试或游戏。
 - 身体8192预算计Read前后Check，静态已知分支估计Box4702/Capsule4530/Circle4400，排除wrapper内部native调用；不是实际CPU/ABI/碰撞证据。Stop回读与Destroy请求分开，引用/强handle保留，完整销毁未验证。
+
+## 2026-10-04 — 0.1.45-dev 员工独立鱼叉
+
+- 目的：让员工从房主自己创建的实际身体发射，保持真实碰撞/目标和一次原生伤害来源，不按显示副本命中。新增武器模型/10组CLR夹具、scene CircleCast投射物、fresh原生damage桥、guest独立显示和协议10四字段；修复跨actor活旧shot复用、旧revision取消顺序、guest显示失源清理与30Hz短按漏帧。
+- 实际Core/TCP 358/358，UTC 2026-10-04T22:42:56.8112594Z → 2026-10-04T22:43:02.6068785Z；Build警告视为错误，UTC 2026-10-04T22:43:04.3951351Z → 2026-10-04T22:43:06.8142278Z。181联合输入执行前/后相同，完整stdout/stderr/PASS/rsp/源码/程序集私有保留；DLL SHA256 `DC8C72DB0A849DE08820D8AF9DA84A3D3B788308D930D2FF9B3E0781B7DAC20F`。
+- 实际研究统计/UTC/hash范围见[新摘要](crew-harpoon-build-verification.json)，raw声明/PE/IL仅.local。离线已核声明和有限指令范围不证明Unity ABI、完整leaf或游戏方法；原TakeDamage bool仅观察。
+- 非作者审查后收紧同Shot同actor延续、合法旧revision丢弃、Display cleanup失败锁存及每UnityUpdate即时按钮变化；未知已进入不重试、收益/捕获不确认。保留历史.44及更早摘要。未部署、启动、检查运行游戏/安装DLL或保存。
+- 仍需真实原生投射物/普通鱼伤害/显示/远距离双端，员工incoming环境伤害/装备/完整敌方选择、完整捕获/产物前置分流、个人袋/容量/重量/负重、逐项返航save、Guest完整隔离/GitHub冷配置/测试发行；完整goal保持active。
+
+- 本轮前两次独立封存验证均保留：第一次357/358（新夹具后段时钟回退，修正fixture时间，Build未运行）；第二次358/358、Build拒绝当前wrapper不存在的SceneManager.GetSceneByHandle；改从实际临时客机角色/GO读取Scene并核当前source后第三次完整Core/Build通过。未复用失败构建，未删除原run/stdout/stderr。
+
+- 官方Skill草稿/受保护复制后实际双校验通过，同SHA `E62AB013E4A1A8CCF97E1A3A3E125C2DC3EB2344648C9EA2909B0123BE602197`；验证UTC与validator hash保在.local，摘要同步。源码封存保持，未复跑测试或启动游戏。

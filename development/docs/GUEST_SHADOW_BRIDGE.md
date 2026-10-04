@@ -1,6 +1,6 @@
 # 客机原生根影子桥
 
-当前源码0.1.44-dev（协议9），本轮实际Core/TCP347/347及插件Build警告视为错误通过，执行输入前后相同。新增[员工输入与房主移动接线](CREW_ACTOR.md)：默认关闭、双方握手显式选择；房主独立物理身体接受输入并回读位置/速度，客机临时角色按房主状态校正。HP/O2是独立Mod规则，氧气为零仅禁止boost；真实伤害、装备、武器、命中和账本负重尚未接入。见[本轮记录](../logs/crew-actor-build-verification.json)。原生身体创建、碰撞、校正、生存、ABI与双游戏尚未执行或验证，Guest完整隔离/World/Cargo权限仍false。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、每人独立袋/容量/重量/负重、完整产物前置分流、逐项返航保存与GitHub冷配置仍待完成。
+当前源码0.1.45-dev（协议10），本轮实际Core/TCP358/358及插件Build警告视为错误通过，执行输入前后相同。新增[员工独立鱼叉](CREW_HARPOON.md)：逐输入边沿消费、房主真实身体发射、同场景CircleCast与原生普通鱼伤害一次派发，状态回读供客机独立显示；ExperimentalCrewHarpoon默认false。原TakeDamage bool仅观察，不代表HP变化、捕获或收益。见[实际记录](../logs/crew-harpoon-build-verification.json)。原生创建/碰撞/伤害/显示/ABI及远距离双游戏未执行，Guest完整隔离/World/Cargo权限仍false；员工incoming环境伤害/装备、两人独立袋/容量/重量/负重、完整产物分流和逐项返航保存仍待接通。未部署/启动，安装.12/最近潜水.11/默认包.0保持；完整M3—M7、真实双端闭环和GitHub冷配置仍必须完成。
 
 0.1.18-dev 新增 [NativeGuestShadowBridge](../src/DaveCoop/Networking/NativeGuestShadowBridge.cs) 和纯 CLR 的 [GuestShadowTransaction](../src/DaveCoop/Core/Guest/GuestShadowTransaction.cs)。桥包含实际的原生序列化、强引用、直接根交换、回读及恢复代码；该历史阶段没有接入 Network、GUI 或游戏生命周期。0.1.37新增默认关闭的[自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接实际Guest房间与固定原iterator，仍未在游戏中执行这些原生操作。接口研究及其静态证据见 [GUEST_ISOLATION](GUEST_ISOLATION.md)，已枚举输出的围栏范围见 [GUEST_OUTPUT_FENCE](GUEST_OUTPUT_FENCE.md)。
 

@@ -276,7 +276,7 @@ namespace DaveCoop.Core.Protocol
             "moveX", "moveY", "aimX", "aimY", "buttons" };
         private static readonly string[] CrewStateFields = { "playerId", "sceneEpoch", "sceneKey", "actorRevision", "stateRevision",
             "lastInputSequence", "position", "velocity", "hp", "maxHP", "oxygen", "maxOxygen", "alive", "active", "loadoutRevision",
-            "capacityKg", "hasConfirmedCargoWeight" };
+            "capacityKg", "hasConfirmedCargoWeight", "harpoonShotId", "harpoonActive", "harpoonPosition", "harpoonDirection" };
         private static void RequireCrewWireFields(ReadOnlySpan<byte> bytes, PacketKind kind)
         {
             using JsonDocument document = JsonDocument.Parse(bytes.ToArray());
@@ -288,6 +288,8 @@ namespace DaveCoop.Core.Protocol
             {
                 RequireExactWireFields(RequiredWireProperty(payload, "position"), new[] { "x", "y", "z" });
                 RequireExactWireFields(RequiredWireProperty(payload, "velocity"), new[] { "x", "y" });
+                RequireExactWireFields(RequiredWireProperty(payload, "harpoonPosition"), new[] { "x", "y", "z" });
+                RequireExactWireFields(RequiredWireProperty(payload, "harpoonDirection"), new[] { "x", "y" });
             }
         }
         private static void RequireExactWireFields(JsonElement value, string[] names)

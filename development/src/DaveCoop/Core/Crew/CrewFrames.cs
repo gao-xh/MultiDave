@@ -44,6 +44,12 @@ namespace DaveCoop.Core.Crew
         public float CapacityKg { get; set; }
         public float? BagWeightKg { get; set; }
         public bool HasConfirmedCargoWeight { get; set; }
+        // Read back from the host's own projectile. Inactive retains the shot
+        // fence; this display state does not report damage, capture or rewards.
+        public long HarpoonShotId { get; set; }
+        public bool HarpoonActive { get; set; }
+        public Vector3 HarpoonPosition { get; set; }
+        public Vector2 HarpoonDirection { get; set; }
     }
 
     public sealed class ReceivedCrewInput
@@ -94,6 +100,17 @@ namespace DaveCoop.Core.Crew
             // turn a guessed initial/old bag sample into a live capacity result.
             if (frame.HasConfirmedCargoWeight || frame.BagWeightKg.HasValue)
                 throw new ProtocolException("Crew actor cargo weight is not connected.");
+            if (frame.HarpoonShotId < 0 || !PositionValid(frame.HarpoonPosition) || !VelocityValid(frame.HarpoonDirection) ||
+                (frame.HarpoonShotId == 0 && (frame.HarpoonActive || frame.HarpoonPosition != Vector3.Zero || frame.HarpoonDirection != Vector2.Zero)) ||
+                (frame.HarpoonActive && (!frame.Alive || !frame.Active)))
+                throw new ProtocolException("Invalid host harpoon display state.");
+            if (frame.HarpoonShotId > 0)
+            {
+                double length = (double)frame.HarpoonDirection.X * frame.HarpoonDirection.X +
+                    (double)frame.HarpoonDirection.Y * frame.HarpoonDirection.Y;
+                if (!double.IsFinite(length) || Math.Abs(length - 1) > 0.0001)
+                    throw new ProtocolException("Invalid host harpoon direction.");
+            }
         }
 
         public static void Validate(ReceivedCrewInput receipt)
@@ -125,7 +142,9 @@ namespace DaveCoop.Core.Crew
             Position = frame.Position, Velocity = frame.Velocity, HP = frame.HP, MaxHP = frame.MaxHP,
             Oxygen = frame.Oxygen, MaxOxygen = frame.MaxOxygen, Alive = frame.Alive, Active = frame.Active,
             LoadoutRevision = frame.LoadoutRevision, CapacityKg = frame.CapacityKg,
-            BagWeightKg = frame.BagWeightKg, HasConfirmedCargoWeight = frame.HasConfirmedCargoWeight
+            BagWeightKg = frame.BagWeightKg, HasConfirmedCargoWeight = frame.HasConfirmedCargoWeight,
+            HarpoonShotId = frame.HarpoonShotId, HarpoonActive = frame.HarpoonActive,
+            HarpoonPosition = frame.HarpoonPosition, HarpoonDirection = frame.HarpoonDirection
         };
 
         public static ReceivedCrewInput Copy(ReceivedCrewInput receipt) => receipt == null ? null : new ReceivedCrewInput

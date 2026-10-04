@@ -104,6 +104,7 @@ namespace DaveCoop.Core.Session
         private long _highestLocalCrewInput, _highestRemoteCrewInput;
         private long _highestLocalCrewActor, _highestRemoteCrewActor;
         private long _currentLocalCrewActor, _currentRemoteCrewActor;
+        private long _highestLocalHarpoon, _highestRemoteHarpoon;
         private CrewActorState _lastLocalCrewState, _lastRemoteCrewState;
 
         public SessionMachine(SessionRole role, HandshakeResult identity, double now, SessionOptions options = null)
@@ -399,11 +400,14 @@ namespace DaveCoop.Core.Session
                 }
                 if (copy.LastInputSequence < _lastLocalCrewState.LastInputSequence) throw new ProtocolException("Crew state input acknowledgement regressed.");
             }
+            if (copy.HarpoonShotId < _highestLocalHarpoon) throw new ProtocolException("Host harpoon shot fence regressed.");
+            ValidateHarpoonContinuation(copy, _lastLocalCrewState, _highestLocalHarpoon);
             if (copy.ActorRevision > _highestLocalCrewActor)
             {
                 _incomingCrewInputs.Clear(); _highestLocalCrewActor = copy.ActorRevision;
             }
             _currentLocalCrewActor = copy.ActorRevision; _lastLocalCrewState = copy;
+            _highestLocalHarpoon = copy.HarpoonShotId;
             _outgoingCrewState = new WirePacket { Kind = PacketKind.CrewActorState, RoomId = _identity.RoomId, CrewActorState = CrewFrames.Copy(copy) };
             return true;
         }
@@ -472,9 +476,12 @@ namespace DaveCoop.Core.Session
                 }
                 if (copy.LastInputSequence < _lastRemoteCrewState.LastInputSequence) throw new ProtocolException("Crew state input acknowledgement regressed.");
             }
+            if (copy.HarpoonShotId < _highestRemoteHarpoon) throw new ProtocolException("Received harpoon shot fence regressed.");
+            ValidateHarpoonContinuation(copy, _lastRemoteCrewState, _highestRemoteHarpoon);
             if (copy.ActorRevision > _highestRemoteCrewActor)
             { _outgoingCrewInputs.Clear(); _highestRemoteCrewActor = copy.ActorRevision; }
             _currentRemoteCrewActor = copy.ActorRevision; _lastRemoteCrewState = copy;
+            _highestRemoteHarpoon = copy.HarpoonShotId;
             _incomingCrewState = new ReceivedCrewActorState { RoomId = _identity.RoomId, BoundPlayerId = _identity.RemotePlayerId,
                 PacketSequence = packet.Sequence, ReceivedAt = now, Frame = CrewFrames.Copy(copy) };
         }
@@ -484,7 +491,18 @@ namespace DaveCoop.Core.Session
             a.Position == b.Position && a.Velocity == b.Velocity && a.HP == b.HP && a.MaxHP == b.MaxHP &&
             a.Oxygen == b.Oxygen && a.MaxOxygen == b.MaxOxygen && a.Alive == b.Alive && a.Active == b.Active &&
             a.LoadoutRevision == b.LoadoutRevision && a.CapacityKg == b.CapacityKg && a.BagWeightKg == b.BagWeightKg &&
-            a.HasConfirmedCargoWeight == b.HasConfirmedCargoWeight;
+            a.HasConfirmedCargoWeight == b.HasConfirmedCargoWeight && a.HarpoonShotId == b.HarpoonShotId &&
+            a.HarpoonActive == b.HarpoonActive && a.HarpoonPosition == b.HarpoonPosition && a.HarpoonDirection == b.HarpoonDirection;
+
+        private static void ValidateHarpoonContinuation(CrewActorState next, CrewActorState previous, long highest)
+        {
+            if (highest == 0 || next.HarpoonShotId != highest) return;
+            if (next.HarpoonActive && (previous == null || previous.HarpoonShotId != highest || !previous.HarpoonActive ||
+                previous.ActorRevision != next.ActorRevision || previous.SceneEpoch != next.SceneEpoch || previous.SceneKey != next.SceneKey))
+                throw new ProtocolException("An ended or retired harpoon cannot fly again.");
+            if (previous != null && previous.HarpoonShotId == highest && next.HarpoonDirection != previous.HarpoonDirection)
+                throw new ProtocolException("Harpoon direction changed within one shot.");
+        }
 
         public bool PublishFishAction(FishActionRequest request, double now)
         {

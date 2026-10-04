@@ -33,7 +33,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
 研究捕获、背包、员工及返航时另读 `CREW_MODE.md`，按用户确定的每人独立背包方案开发。
 源码在 `development/src/DaveCoop/`。
 
-当前源码0.1.44-dev/协议9：先读development/docs/CREW_ACTOR.md及crew-actor-build-verification.json。实际347/347 CLR/TCP与Build警告视为错误通过，编译/执行输入前后相同；未部署/启动/native执行，installed.12/dive.11/default.0保持。Network.ExperimentalCrewActor默认false、首Network Update固定；Host/Guest握手UsesCrewActor双方显式选择。真实Main/Ready/Room/epoch/actor与host接收时间绑定输入，序列高水位跨暂停/换层保持；不把guest pose当权威位置。房主Mod独立身体沿实际FixedUpdate扫掠/MovePosition提交并回读位置/速度；命令提交不是碰撞通过证明。客机按最新actor/state校正自己的真实临时角色，写入前后持续核来源，已进入未知写不重派。HP/O2是独立Mod规则，同peer/Room换层继承，氧气为零只禁止boost；真实环境伤害/装备/武器/投射物/捕获尚未接通。成员token尚未绑定CargoLedger；BagWeightKg=null/HasConfirmedCargoWeight=false，profile容量不是已确认个人货袋。原生创建/扫掠/校正/生存/ABI、Guest完整隔离、远距离双游戏和性能未验；Native/World/Cargo/GuestStateIsolated通用权限false。同层双区域/避让源码及其限制继续读HOST_FISH_INTEREST、HOST_FISH_VISIBILITY；不据观察位置或显示授命中/收益。不自动部署/启动或催延后测试。完整M3—M7、员工真实战斗/装备/生存、每人独立袋/容量/重量/负重及完整产物前置分流、逐项返航delta/save、真实双端/GitHub冷配置与测试发行仍必须完成。
+当前源码0.1.45-dev/协议10：先读development/docs/CREW_HARPOON.md、CREW_ACTOR.md及crew-harpoon-build-verification.json。实际358/358 CLR/TCP与Build警告视为错误通过，执行闭包前后相同。ExperimentalCrewHarpoon默认false且首次Network Update固定，需双方CrewActor+真实临时guest来源及房主Transmit/lifecycle。每UnityUpdate按钮变化即时发；房主逐receipt消费，实际body原点→scene CircleCast→fresh普通fish/defense/HitCollider→onceCoreHit→own Damager/HarpoonIDamager/AttackData→目标Damageable.TakeDamage(AttackData)，原bool只是observedReturn，无HPdelta/capture/奖励或bag证明。四flat host-readback shot字段只显示，旧protocol9/8拒绝；同Shot不可跨actor/暂停复活，合法oldrevision丢弃。失源/校正失败/过期/断线清自己显示，cleanup未知锁存，不新Room重建；已进入native不重派、强引用保留，Destroy不是销毁完成。body/投射物/伤害/显示/ABI/远距离双游戏未执行；完整Guest隔离和World/Cargo/Native权限false。HP/O2仍独立Mod，员工incoming环境伤害/装备/窒息未接，袋重量null；64碰撞解析开发限额（包括墙/不支持目标）等见新页。本轮不自动改cfg/部署/启动或催延后测试，installed.12/dive.11/default.0仅历史。完整M3—M7、真实捕获/完整产物前置分流、每人独立袋/容量/重量/负重、逐项返航delta/save、真实双端闭环/GitHub冷配置及测试发行仍必须完成。
 
 
 - C# 修改后运行 `development/scripts/Build-Plugin.ps1`。
@@ -59,7 +59,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   请用户确认标签下方的鱼可见及动画/转向正常，并核对捕获后移除、断线与返航清理、本地输入/镜头。
   组件启用、镜头内、网格顶点和标签分别是不同证据，仅有标签不能证明鱼网格可见。
   0.1.7-dev 用户确认鱼可见但会突然消失；0.1.8-dev 无旧异常但标签换鱼；0.1.9-dev 已获用户确认不再突然消失；单游戏显示不能证明客机地图/鱼群/AI 接管或合作捕获。
-  当前协议为 9，握手拒绝旧协议8及更早版本，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
+  当前协议为 10，握手拒绝旧协议9、8及更早版本，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
   `development/scripts/Inspect-FishRenderApi.ps1` 可复现游戏/Spine 显示与生命周期接口签名研究。
 - 0.1.6-dev 在房主开启鱼诊断且发布状态时安装自己的生命周期观察挂钩。
   核对 FISH_LIFECYCLE_READY 及 NETWORK_STATE 中 FishLifecycleHooks/Tracked/Transitions/CallbackErrors；
@@ -67,7 +67,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   已有原生安装/回调记录，但池重新启用和退出恢复仍待验收。
   0.1.7-dev 的 FISH_LIFECYCLE_STOPPED 和 NETWORK_DISCONNECTED 记录自己挂钩/显示清理；
   结合后续帧及玩家操作/返航验证恢复。挂钩失败或回调异常会停止鱼发布，保留错误证据。
-  角色帧不包含鱼叉发射或独立投射物；第二角色不发射鱼叉属于当前实现范围，后续按 M5 接入。
+  历史.11角色帧不包含独立鱼叉；当前.45另有实际body投射物/显示通道，完整捕获仍按M5接入，不把历史显示当武器。
 - 0.1.8-dev 修复角色临时显示部件销毁导致自动断开：跳过过期槽位，下一次 Update 刷新列表。
   射击/装备变化时核对 NETWORK_PARTS_STALE 和后续 NETWORK_PARTS_CHANGED、鱼清单持续更新；
   核心测试不验证 Unity 销毁对象恢复，必须结合实机和用户反馈，不把旧异常会话当成修复通过。

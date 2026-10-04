@@ -17,7 +17,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.44-dev";
+        public const string Version = "0.1.45-dev";
 
         public override void Load()
         {
@@ -77,7 +77,14 @@ namespace DaveCoop
             NetworkDriver.ExperimentalHostFishAreas = Config.Bind("Network", "ExperimentalHostFishAreas", false,
                 "Experimental same-scene host fish spawning and activity around both members. Read at first network Update; restart to change. Requires real Host/Join frames; native behavior and distant gameplay remain unverified.");
             NetworkDriver.ExperimentalCrewActor = Config.Bind("Network", "ExperimentalCrewActor", false,
-                "Experimental host-owned employee physics/input/state. Fixed at first network Update; both peers must opt in. Guest requires ExperimentalGuestInitialization. Native collision, camera correction and independent survival remain unverified; weapons and cargo are not connected.");
+                "Experimental host-owned employee physics/input/state. Fixed at first network Update; both peers must opt in. Guest requires ExperimentalGuestInitialization. Native collision, camera correction and independent survival remain unverified. Harpoon has a separate default-off switch; capture/cargo are not connected.");
+            NetworkDriver.ExperimentalCrewHarpoon = Config.Bind("Network", "ExperimentalCrewHarpoon", false,
+                "Experimental host-owned employee Mod harpoon; fixed at first network Update. Requires CrewActor on both peers and actual host fish observation/lifecycle sources. Native projectile collision and damage ABI remain unverified; no capture or cargo receipt.");
+            NetworkDriver.HarpoonSpeed = Config.Bind("CrewHarpoon", "Speed", 12f, "Host-approved Mod projectile speed, fixed on startup.");
+            NetworkDriver.HarpoonRange = Config.Bind("CrewHarpoon", "Range", 8f, "Host-approved Mod maximum projectile travel distance.");
+            NetworkDriver.HarpoonCooldown = Config.Bind("CrewHarpoon", "CooldownSeconds", 0.5f, "Host-approved Mod delay between fire edges; blocked fire is consumed.");
+            NetworkDriver.HarpoonRadius = Config.Bind("CrewHarpoon", "Radius", 0.08f, "Host-approved Mod swept circle radius.");
+            NetworkDriver.HarpoonDamage = Config.Bind("CrewHarpoon", "Damage", 10, "Host-approved fixed Mod base damage for the narrow ordinary-fish pipeline; client never supplies damage.");
             NetworkDriver.CrewSpeed = Config.Bind("Crew", "Speed", 3f, "Host-approved Mod swim speed, greater than 0 and at most 20; fixed on startup.");
             NetworkDriver.CrewBoostMultiplier = Config.Bind("Crew", "BoostMultiplier", 1.5f, "Host-approved Mod boost multiplier, 1..3.");
             NetworkDriver.CrewMaxHP = Config.Bind("Crew", "MaxHP", 100f, "Host-approved employee Mod maximum HP; native damage is not connected.");

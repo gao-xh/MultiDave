@@ -22,8 +22,11 @@ namespace DaveCoop.Networking
         internal static ConfigEntry<bool> ObserveMapOrigins;
         internal static ConfigEntry<bool> ExperimentalHostFishAreas;
         internal static ConfigEntry<bool> ExperimentalCrewActor;
+        internal static ConfigEntry<bool> ExperimentalCrewHarpoon;
         internal static ConfigEntry<float> CrewSpeed, CrewBoostMultiplier, CrewMaxHP, CrewMaxOxygen;
         internal static ConfigEntry<float> CrewOxygenPerSecond, CrewBoostOxygenPerSecond, CrewCapacityKg;
+        internal static ConfigEntry<float> HarpoonSpeed, HarpoonRange, HarpoonCooldown, HarpoonRadius;
+        internal static ConfigEntry<int> HarpoonDamage;
         internal static string Status = "Network: offline (F11)";
         private readonly NetworkController _controller;
 
