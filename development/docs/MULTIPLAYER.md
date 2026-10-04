@@ -1,6 +1,6 @@
 # 第二角色与传输层
 
-当前源码 `0.1.18-dev`、协议 5，Build 警告视为错误通过、Test-Core 167/167 通过；本轮未部署/启动。
+当前源码 `0.1.19-dev`、协议 5，Build 警告视为错误通过、Test-Core 170/170 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 `0.1.11-dev`。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，主菜单启动通过不扩展为玩法验收。
@@ -13,7 +13,7 @@ M2 在 0.1.2-dev 的真实潜水中通过基础验收。M3 会话/资源键/布�
 0.1.7-dev 用户确认预览鱼可见但会突然消失；日志定位到角色临时部件销毁触发自动断开。
 0.1.8-dev 已修复该失败路径但仍自动换鱼。0.1.9-dev 锁定目标，用户确认不再突然消失；动画、Disconnect/返航及两游戏验收待完成。
 启动证据见 `../logs/network-bootstrap-verification.json`，海洋同步、探针和一条鱼显示诊断见 [WORLD_SYNC](WORLD_SYNC.md)。
-当前边界见[原生影子桥构建摘要](../logs/guest-shadow-build-verification.json)，0.1.14历史传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，已安装0.1.12-dev见[操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史0.1.11-dev潜水边界见[鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
+当前边界见[原生影子桥构建摘要](../logs/guest-interaction-build-verification.json)，0.1.14历史传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，已安装0.1.12-dev见[操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史0.1.11-dev潜水边界见[鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
 
 ## M2 显示对象
 
@@ -185,7 +185,7 @@ DAVECOOP_LAYOUT_READY / WARNING。真实验证至少覆盖本机显示、双机�
 dotnet run --project development/tests/DaveCoop.Core.Tests/DaveCoop.Core.Tests.csproj
 ```
 
-本机当前已通过 167/167 项测试。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
+本机当前已通过 170/170 项测试。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
 JSON 数字结构往返、错误数据拒绝、拆包/截断、TCP 双端握手及双向快照、
 版本不匹配、并发发送、重复序号、连接关闭和读取取消；另覆盖场景握手与不一致超时、
 旧 epoch 清理、客机重载、身份/权限错误、时钟偏移、深拷贝与队列上限、

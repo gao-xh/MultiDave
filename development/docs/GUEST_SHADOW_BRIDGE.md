@@ -18,7 +18,7 @@
 | --- | --- | --- |
 | GameData | `SaveSystemGameDataManager._Data_k__BackingField` | `SaveData` 原生 JSON round trip |
 | PlayerData | `SaveSystemPlayerDataManager._Data_k__BackingField` | `SavePlayerData` 原生 JSON round trip |
-| PlayerInteraction | `SaveSystemPlayerDataManager._InstanceData_k__BackingField` | 新 `InstanceInteractionData(false)` |
+| PlayerInteraction | `SaveSystemPlayerDataManager._InstanceData_k__BackingField` | 新 `InstanceInteractionData(false)`，0.1.19 以类型化字段绑定 detached Player 的十组容器及新 IGP HashSet |
 | PhotoData | `SaveSystemPhotoDataManager._Data_k__BackingField` | `SavePhotoData` 原生 JSON round trip |
 | UserOption | `SaveSystemUserOptionManager._Data_k__BackingField` | `SaveUserOptions` 原生 JSON round trip |
 
@@ -51,3 +51,9 @@ bridge 捕获四个 manager 的 `IsNewData` backing field，以及四个原 Data
 必须先证明原游戏尚未创建员工世界对象且旧 writer、load、cache、delegate 和 coroutine 不会改原进度的真实进入边界，并证明退出时原生静止边界；仅新增 caller gate 不够。还需验收四个具体 T 的 native round trip、完整 mutable 子树与 Obscured 状态、Interaction 重建和双向缓存/反向引用，以及全部持久输出和阻断 ABI。围栏枚举清单不是所有输出覆盖证明。
 
 通过这些核对后才能安排受控 native 安装与失败恢复测试，随后另接游戏生命周期。RootShadowInstalled 仍与 GuestStateIsolated 分开；影子桥不授予 guest 原生动作或收益权限。每个人独立容量/重量、房主原生袋与员工临时袋的分流和返航一次入仓，继续按 [CREW_MODE](CREW_MODE.md) 的真实产物与 receipt 合同实现，不能用根交换或保存 bool 当作捕获/结算证据。
+
+## 0.1.19 交互准备的具体接线
+
+空的临时Interaction已改为[typed helper](GUEST_INTERACTION_SHADOW.md)：拒原dirty，比较十组已知Player/Interaction内容，绑定detachedPlayer、新建IGP hash，并审计已核对的可变容器/数组/记录。准备及逐根安装/验证再次核对已知绑定；恢复原Interaction仍只按保存的原引用，不调用Sync或Load。
+
+完整source baseline/可变图、泛型数组/Entry ABI、其它运行缓存与输出/静止未验证。准备窗口仍恒false，未执行此helper或任何native；总170项中的三项新测试只执行生产CLR引用审计，不执行native图读取或容器构造。

@@ -22,6 +22,8 @@ namespace DaveCoop.Networking
         private readonly bool[] _installAttempted = new bool[5], _restoreAttempted = new bool[5];
         private Managers _managers;
         private Roots _original, _detached;
+        private NativeGuestInteractionShadowResult _interactionShadow;
+        private NativeGuestInteractionBaseline _interactionBaseline;
         private DataStamp[] _originalStamps;
         private bool _claimAttempted, _claimed, _captureAttempted, _captured, _prepareAttempted, _prepared;
         private bool _fenceAttempted, _removeAttempted, _releaseAttempted, _released, _busy;
@@ -77,6 +79,7 @@ namespace DaveCoop.Networking
         public long UnexpectedThreads => Interlocked.Read(ref _unexpectedThreads);
         public bool RootsCaptured => _captured;
         public bool DetachedRootsPrepared => _prepared;
+        public bool KnownInteractionReferencesDisjoint => _interactionShadow?.KnownReferencesDisjoint ?? false;
         public bool GuestStateIsolated => false;
         public bool NativePermission => false;
         public bool WorldAuthority => false;
@@ -187,6 +190,10 @@ namespace DaveCoop.Networking
                 _originalStamps = new[] { CaptureStamp(_original.Game), CaptureStamp(_original.Player),
                     CaptureStamp(_original.Photo), CaptureStamp(_original.Options) };
                 _captured = true;
+                // Snapshot known original interaction state before the first
+                // native serializer can run callbacks or mutate a child.
+                _interactionBaseline = NativeGuestInteractionShadow.CaptureOriginal(
+                    _original.Player, _original.Interaction, RequireCloneWindow);
                 return CanEnterBoundary() && ReferencesValid() && ManagersCurrent() && OriginalScalarsUnchanged() && AllRoots(GuestShadowRootReadback.Original) && FenceReady();
             }
             catch (Exception) { return ExceptionFailure("Original root capture failed; owned references and fence remain retained."); }
@@ -208,11 +215,16 @@ namespace DaveCoop.Networking
                 _detached.Photo = Clone(_original.Photo, SaveDataType.PhotoData);
                 _detached.Options = Clone(_original.Options, SaveDataType.UserOption);
                 RequireCloneWindow();
-                // A fresh temporary cache, never a copy/share of original
-                // InteractionData. No Sync/SetLoadedData/Load original methods.
-                _detached.Interaction = new SaveSystemPlayerDataManager.InstanceInteractionData(false);
+                // Bind only the cloned player's declared containers, after
+                // checking the original known baseline and mutable aliases.
+                // This is not a complete source/cache isolation certificate.
+                _interactionShadow = NativeGuestInteractionShadow.Prepare(
+                    _original.Player, _original.Interaction, _detached.Player, _interactionBaseline, RequireCloneWindow);
+                _detached.Interaction = _interactionShadow.Interaction;
                 Keep(_detached.Interaction);
                 RequireCloneWindow();
+                if (!_interactionShadow.ValidateKnownBinding(RequireCloneWindow))
+                    return Reject("Detached interaction binding could not be confirmed.");
                 _prepared = true;
                 return true;
             }
@@ -229,6 +241,9 @@ namespace DaveCoop.Networking
                 if (!_prepared || _installAttempted[index]) return Reject("Root installation requires prepared data and is single-use.");
                 if (!ReferencesValid() || !ManagersCurrent() || !OriginalScalarsUnchanged() || ReadRootCore(root) != GuestShadowRootReadback.Original)
                     return Reject("Install will not overwrite a foreign or unknown root.");
+                if (!CanEnterBoundary() || !FenceReady()) return false;
+                if (_interactionShadow == null || !_interactionShadow.ValidateKnownBinding(RequireInteractionInstallationWindow))
+                    return Reject("Prepared interaction binding changed before root installation.");
                 if (!CanEnterBoundary() || !FenceReady()) return false;
                 _installAttempted[index] = true;
                 WriteRoot(root, _detached);
@@ -252,7 +267,9 @@ namespace DaveCoop.Networking
         public bool ValidateRoots()
         {
             if (!BeginNativeWork()) return false;
-            try { return _prepared && ReferencesValid() && ManagersCurrent() && OriginalScalarsUnchanged() && AllRoots(GuestShadowRootReadback.Detached) && FenceReady(); }
+            try { return _prepared && ReferencesValid() && ManagersCurrent() && OriginalScalarsUnchanged() &&
+                    AllRoots(GuestShadowRootReadback.Detached) && FenceReady() && _interactionShadow != null &&
+                    _interactionShadow.ValidateKnownReferences(RequireInteractionBindingWindow); }
             catch (Exception) { return ExceptionFailure("Installed root validation failed; fence and references remain retained."); }
             finally { _busy = false; }
         }
@@ -279,7 +296,9 @@ namespace DaveCoop.Networking
         public bool ConfirmOriginalManagersAndRoots()
         {
             if (!LeaseCurrent() || !_captured) return false;
-            try { return ReferencesValid() && ManagersCurrent() && OriginalScalarsUnchanged() && AllRoots(GuestShadowRootReadback.Original); }
+            try { return ReferencesValid() && ManagersCurrent() && OriginalScalarsUnchanged() &&
+                    AllRoots(GuestShadowRootReadback.Original) && (_interactionBaseline == null ||
+                    _interactionBaseline.ConfirmOriginalKnownGraph(RequireOriginalReadWindow)); }
             catch (Exception) { return ExceptionFailure("Original roots/managers could not be confirmed."); }
         }
 
@@ -315,6 +334,7 @@ namespace DaveCoop.Networking
                     Volatile.Write(ref _ownedHandleCount, _ownedHandleCount - 1);
                 }
                 _references.Clear(); _original = null; _detached = null; _managers = null; _originalStamps = null;
+                _interactionShadow = null; _interactionBaseline = null;
                 _captured = false; _prepared = false; _released = true;
                 Interlocked.CompareExchange(ref _processLease, null, this);
                 return true;
@@ -347,6 +367,33 @@ namespace DaveCoop.Networking
         {
             if (!CanEnterBoundary() || !FenceReady() || !ReferencesValid() || !ManagersCurrent() || !OriginalScalarsUnchanged() || !AllRoots(GuestShadowRootReadback.Original))
                 throw new InvalidOperationException("Native clone window lost its manager/root/fence binding.");
+        }
+
+        private void RequireInteractionInstallationWindow()
+        {
+            if (!CanEnterBoundary()) throw new InvalidOperationException("Interaction installation lost its original entry boundary.");
+            RequireInteractionBindingWindow();
+        }
+
+        private void RequireOriginalReadWindow()
+        {
+            // Cleanup rereads originals both before unpatch and before freeing
+            // handles afterwards. It does not require a still-active fence,
+            // does not construct business data or change roots, and never
+            // grants permission to save. Interop entry reads can value-box.
+            if (!LeaseCurrent() || !ReferencesValid() || !ManagersCurrent() || !OriginalScalarsUnchanged() ||
+                !AllRoots(GuestShadowRootReadback.Original))
+                throw new InvalidOperationException("Original interaction readback lost its original manager/root binding.");
+        }
+
+        private void RequireInteractionBindingWindow()
+        {
+            // Roots can be mixed during installation or wholly detached during
+            // active validation. This guard must not demand all-original roots
+            // or the pre-generation entry phase after world execution begins.
+            // Actual permission remains false independently of this read check.
+            if (!LeaseCurrent() || !FenceReady() || !ReferencesValid() || !ManagersCurrent() || !OriginalScalarsUnchanged())
+                throw new InvalidOperationException("Interaction validation lost its manager/reference/fence binding.");
         }
 
         private static DataStamp CaptureStamp(SaveDataBase data)

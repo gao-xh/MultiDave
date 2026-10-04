@@ -615,3 +615,17 @@
 - 新guest-shadow-build-verification和更新core摘要，0.1.17历史160/hash保留；同步README/开发README/AGENTS/PLAN/HANDOFF/MULTIPLAYER/WORLD_SYNC/CREW_MODE/GAME_API/NATIVE_ANALYSIS/GUEST_ISOLATION与配置Skill。
   Skill正式草稿校验通过并同步；新PowerShell工具解析错误0。最终独立只读评审未发现本轮阻断，确认进入拒绝在原生调用/patch之前；新鲜进程检查0，已安装DLL的SHA256仍为`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`。
   下一步实现可信原生pre-generation/退出静止边界、Interaction/运行缓存切换及完整输出覆盖，随后受控实机原生准备/恢复；继续实际房主地图采用、个人捕获/入仓、双端完整闭环与冷配置发行。全部native权限false，goal仍active。
+
+## 2026-10-04 — 0.1.19 交互缓存准备与已知共享引用检查
+
+- 前一goal turn是实际进展：0.1.18 typed根桥/输出fence已提交a31195e并核验远端。完整M3—M7保持active，不缩减双实例世界/捕获/返航/冷配置范围；独立个人袋规则保持。
+- 新typed Interaction helper接入根桥PrepareDetached及已知安装/验证，十direct容器映射+新HashSet，拒原dirty与已知baseline差异，mutable容器/非空arrays/7records/货槽已知图走bounded审计；不调用Sync/SetLoadedData/Load，不写原manager或root作准备。
+  原known基线在CaptureOriginal的native serializer前捕获，Prepare必需原绑定baseline且重查，避免把serializer后的改动当原状态；cleanup独立只读核对原known图。严格准备校验与active当前图校验分离，允许detached合法值/版本/dirty变化，原known图及父身份保持；不升全图权限。
+  Reader累计16384个storage visits（包括free/tail/bucket），不能凭4096个引用计数忽略大量空尾工作。实际Interop WrapElement会il2cpp_value_box，所以字段/数组只读检查可分配临时native box/框架句柄，并非仅CLR分配；未执行这些读取，不声称精确box数或零native allocation。
+  CLR引用审计允许一侧内部共享，跨原/新任何已读节点共享锁存；每侧4096含重复次数、original pass关闭后拒late原引用。三个新生产helper fixture覆盖共享child/跨分支、己方共享及空/0/late/重复工作限额，总170/170通过；不执行native图/容器/field读写。
+- Build新增实际Il2CppSystem.Core引用，不复制第三方DLL。首编译CS0576：Interaction别名与游戏global类型冲突，改为PlayerInteractionCache后最终警告视为错误编译通过，SHA256：`778F9E402C4B65731164F97600882C4F8CAC72B20EC6490C92E0C7B34AF9F6A5`。新helper未被native执行，原生entry/quiescence仍false，没有Network/GUI或自动调用，未部署/启动/读改存档。
+- 新runtime-cache Cecil脚本实际离线3程序集、25类型/6异构InGame派生/457引用声明/5collections；新Depth1原PE cache分析11roots/78方法、无quota/遗漏，GameCodeExecuted=false。
+  entry静态前部可UpdatePlayer/Mission/Clear，下游scene hook已偏晚；Ingredients.Init与Mission.Build触及当前存档时间/任务，不作纯clone。LootBox getter没有可交换m_Box backing；DateTime是真CLR struct、Dictionary.Entry是native ValueType wrapper，不能把后者当无引用leaf。
+- 新GUEST_INTERACTION_SHADOW/GUEST_ENTRY_BOUNDARIES/GUEST_RUNTIME_CACHES及可复现Inspector；更新当前验证摘要/core、README/AGENTS/PLAN/HANDOFF/相关接口/玩法和Skill。两个新Inspector及修改后的Build脚本解析错误0，Skill草稿校验通过。新鲜游戏进程检查0，已安装DLL哈希仍为`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`；旧0.1.18的167/hash及installed0.1.12/dive0.1.11/distribution0.1.0历史保留。
+  两次独立只读源码评审无本轮阻断，确认序列化前baseline、严格/活动验证分离、baseline失败撤销缓存的KnownDisjoint，以及卸fence后的原图确认路径；不把评审或编译当原生运行证据。
+  下一步必须证明真实进入/静止、其它typed运行缓存与旧引用、完整writer/在途工作以及native clone/恢复ABI，再接房主实际地图采用、员工容量/捕获分流、逐产物入仓、双端玩法与冷配置发布。已知绑定/别名不升完整baseline/graph或GuestStateIsolated，手动验证继续延后。

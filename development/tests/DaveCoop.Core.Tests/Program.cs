@@ -8,6 +8,9 @@ internal static class Program
     {
         var tests = new (string Name, Action Run)[]
         {
+            ("guest reference audit rejects shared children despite distinct roots", GuestReferenceAuditTests.DistinctRootsCannotHideSharedChildren),
+            ("guest reference audit permits sharing within detached state", GuestReferenceAuditTests.SharingWithinOneSideIsAllowed),
+            ("guest reference audit incomplete and excessive traversal rejection", GuestReferenceAuditTests.IncompleteOrExcessiveTraversalCannotPass),
             ("timeline boundaries and interpolation", TimelineBoundaries),
             ("timeline capacity, ordering and reset", TimelineCapacity),
             ("pose interpolation and quaternion hemisphere", PoseInterpolation),

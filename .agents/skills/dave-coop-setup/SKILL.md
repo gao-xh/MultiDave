@@ -177,13 +177,19 @@ description: Configure or continue development of the MultiDave prototype for Wi
   Serialize<T>/Deserialize<T>是实际native clone候选，SaveData(string ver)不是JSON构造器，SetLoadedData/Load有副作用不能作纯恢复。
   双Data/Interaction直接字段交换仍需detached子树、旧协程/缓存及全部输出围栏验证，Photo/UserOption也需明确隔离。178签名候选/static边不是所有writer覆盖或GuestStateIsolated证明。
   Prepare/Activate/Validate/Restore代码与实机待完成，未知恢复不放开写入；每人独立袋/容量/负重规则保持，房主原袋不重复Add，员工逐产物入仓另证。
-- 当前源码0.1.18-dev、协议5、Build警告视为错误通过、167/167测试通过；见development/docs/GUEST_SHADOW_BRIDGE.md、GUEST_OUTPUT_FENCE.md及guest-shadow-build-verification.json。
+- 上一版源码0.1.18-dev、协议5、Build警告视为错误通过、167/167测试通过；见development/docs/GUEST_SHADOW_BRIDGE.md、GUEST_OUTPUT_FENCE.md及guest-shadow-build-verification.json。
   actual typed bridge具备4Data native roundtrip、5direct根/回读/一次恢复及15 explicit IntPtr强handles；temp Interaction(false)未Sync，不证明private子树/cache/旧引用隔离。
   Native CanEnterBoundary/HasQuiescentBoundary恒false，Core在InstallFence前拒绝且primitive自身fresh核对；没有Network/GUI入口，不为了试玩改true/加入开关/伪造几个callerbool，也不从Room或loaded/writer0授native权限。
   frozen output manifest194严格declared/static/params/return匹配；8closed typedout失败置null/false，Injected输入ref不乱改。Steam流invalidMaxValue/异步0、Toolbox Save/Delete失败2/1，不能default伪报成功。
   sharedgeneric/typedABI/在途输出/具体service实现及全writer仍未证；检查自己owner并且失败保持阻断，不Patch任意System.IO全局。新脚本Inspect-GuestOutputApi.ps1只读取Cecil元数据/框架IL，报告仅.local，不运行native或读存档。
   7组新事务测试合成backend不执行native bridge/fence；RootShadowInstalled也不升级GuestStateIsolated。原根/manager、强handle及真实静止边界确认前不卸围栏/free；未知恢复/free不重复，尚未有实际原生恢复验证。
   未部署/启动，用户手动验证继续延后；安装0.1.12/潜水0.1.11/默认包0.1.0保持原范围。新source初次调用须先可信native边界/cache与全输出隔离，不能锁住正常保存冒充诊断。
+- 当前源码0.1.19-dev、协议5、Build警告视为错误通过、170/170核心测试通过，见development/docs/GUEST_INTERACTION_SHADOW.md、GUEST_ENTRY_BOUNDARIES.md、GUEST_RUNTIME_CACHES.md及guest-interaction-build-verification.json。
+  typed Interaction从detached Player十组容器绑定并新IGP hash，拒原dirty/已知baseline不同或共享mutable引用；不调用manager Sync/SetLoadedData/Load，已接根桥准备/安装/验证。
+  KnownReferencesDisjoint仅已读图；0长数组可不含可变元素，非空arrays/records仍须查。comparer/其它Player/旧UI和coroutine、native泛型array/Entry布局、完整baseline/cache/output均未证，不授GuestStateIsolated或收益权限。
+  原生进入/静止仍恒false，helper未执行，不能拿170项CLR/TCP（新增3引用审计）当native或双游戏验收。GameAssembly唯一staticedge不证运行顺序；GoToInGameEntry自身可改Player/Mission，下游ChangeSceneAsync不能覆盖它前部，Init/Build也不作无副作用clone。
+  新Inspect-GuestInteractionApi/Inspect-GuestRuntimeCacheApi仅Cecil离线读取元数据/IL，原报告仅.local；不读存档/调用native。Build新增Il2CppSystem.Core引用，保持SDK/依赖版本核对，不发布interop DLL。
+  未部署/启动，用户手动测试延后时不催测；安装0.1.12、潜水0.1.11、默认包0.1.0证据范围保持。继续真实缓存/输出/旧引用及normal restore，个人员工捕获/逐产物入仓和双游戏/冷安装仍待完整验收。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

@@ -112,3 +112,5 @@ M2 先研究只复制显示组件/姿态的方式。直接克隆完整 `PlayerCh
 当前生产进入与静止边界恒false，事务在围栏安装前拒绝；startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。全部GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority保持false，未部署或启动。
 
 实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。
+
+交互缓存的实际typed准备、字段映射和已知图验证见[GUEST_INTERACTION_SHADOW](GUEST_INTERACTION_SHADOW.md)；新增离线Cecil工具可复现对应元数据。其它运行缓存及entry签名见[GUEST_RUNTIME_CACHES](GUEST_RUNTIME_CACHES.md)、[GUEST_ENTRY_BOUNDARIES](GUEST_ENTRY_BOUNDARIES.md)。这些声明和可编译源码不代替native ABI、输出或运行隔离验证。

@@ -22,7 +22,7 @@
 真实 `A01_01_01` 潜水已确认管理器玩家引用、位置、朝向、移动输入、动画与摄像机跟随。
 继续进入 `Boss_000` 后，旧玩家不再出现在当前采样中，新实例与管理器和摄像机正确绑定，
 跨场景读取无探针错误。完整旧日志后来还确认返航、大厅与主菜单，1886 条快照无探针错误。
-默认发行包保持 0.1.0，当前源码为 0.1.18-dev、协议 5，Build 警告视为错误通过、Test-Core 167/167 通过；本轮未部署/启动。
+默认发行包保持 0.1.0，当前源码为 0.1.19-dev、协议 5，Build 警告视为错误通过、Test-Core 170/170 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试，加载/Update/网络入口及 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后；后续自主开发保持各项实机验收边界。
 最近完成潜水验证的是 0.1.11-dev。
@@ -120,7 +120,7 @@ prefix 固定当时房主身份，postfix 复用同一绑定；伤害 bool 只�
 F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房主主线程重新查原生目标/代次，通过只返回 DryRunValidated、OperationId=0。
 真实发射/QTE/召回/拾取缺少可信 actor/loadout、MapAuthorityReady/GuestStateIsolated/LocalActorArbitrated 与 native bridge，effects 仍 false；格式/门禁通过不等于攻击或捕获。
 下一步实测只读请求往返及失效，继续原生 owner/投射物/命中/入袋证据与客机隔离，再接入实际装备/距离/冷却和房主原生裁定。
-当前核心与构建范围见[原生影子桥构建摘要](../logs/guest-shadow-build-verification.json)，0.1.15历史个人账本见[独立背包摘要](../logs/cargo-ledger-build-verification.json)，0.1.14历史候选传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，操作门禁见[0.1.12-dev摘要](../logs/fish-action-gate-build-verification.json)；
+当前核心与构建范围见[原生影子桥构建摘要](../logs/guest-interaction-build-verification.json)，0.1.15历史个人账本见[独立背包摘要](../logs/cargo-ledger-build-verification.json)，0.1.14历史候选传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，操作门禁见[0.1.12-dev摘要](../logs/fish-action-gate-build-verification.json)；
 上述历史实机见 [0.1.11-dev 鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，均不作为 M4/M5 或真实双游戏完成证据。
 
 ## M6 — 返航、结算与进度
@@ -170,3 +170,9 @@ F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房
 当前生产进入与静止边界恒false，事务在围栏安装前拒绝；startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。全部GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority保持false，未部署或启动。
 
 实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。
+
+## 0.1.19 当前进展与下一步
+
+已将[typed交互缓存准备](GUEST_INTERACTION_SHADOW.md)接入原生根桥源码，含已知baseline/共享引用检查；Build及170项测试通过，未部署或执行native。当前进入/静止仍false，不把十组绑定或已读节点不相交当完整GuestStateIsolated。
+
+下一步在[更早的entry候选](GUEST_ENTRY_BOUNDARIES.md)补真实自然生命周期证据，接[其它运行缓存的typed准备/恢复](GUEST_RUNTIME_CACHES.md)，证明旧引用和全输出隔离，再推进房主地图采用、独立员工捕获/容量分流与逐产物返航结算。原M3—M7和冷配置/真实双端闭环验收保持完整范围。

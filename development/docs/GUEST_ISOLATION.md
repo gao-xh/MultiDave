@@ -123,3 +123,5 @@ var playerShadow = DR.Save.SaveDataBase.Deserialize<DR.Save.SavePlayerData>(
 当前生产进入与静止边界恒false，事务在围栏安装前拒绝；startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。全部GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority保持false，未部署或启动。
 
 实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。
+
+0.1.19已实现[十组typed交互绑定](GUEST_INTERACTION_SHADOW.md)并接入根桥源码；实际进入仍关闭。其它缓存与副作用见[GUEST_RUNTIME_CACHES](GUEST_RUNTIME_CACHES.md)，原入口保护时机见[GUEST_ENTRY_BOUNDARIES](GUEST_ENTRY_BOUNDARIES.md)。已知字段等值和别名检查是必要条件，完整基线/深复制/所有旧引用仍未证。
