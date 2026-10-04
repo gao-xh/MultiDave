@@ -10,6 +10,18 @@ description: Configure or continue development of the MultiDave prototype for Wi
 默认发行包是 0.1.0 插件加载原型。开发源码进度以 HANDOFF 和 PLAN 为准；
 本机 TCP 测试通过不能代替真实双游戏联机验收。
 
+## 存档备份与恢复
+
+配置Mod、替换开发插件、修改实验配置或启动试玩前，先检查游戏进程；游戏运行时让玩家正常保存退出，继续准备文件，脚本不得终止游戏。游戏已退出后执行[Backup-Saves.ps1](../../../development/scripts/Backup-Saves.ps1)，按[SAVE_BACKUP.md](../../../development/docs/SAVE_BACKUP.md)核对备份范围和结果。用户的配置或备份请求已包含创建备份的授权；沿用现有会话授权，不重复确认可逆的备份。
+
+默认定位当前用户LocalLow下的完整DAVE THE DIVER目录，以及Steam安装根的userdata各账户1868140目录。Codex沙盒的UserProfile可能不同于玩家目录；遇到缺失先核对实际玩家目录，使用已确认的`-UserProfilePath`、`-SteamRoot`与`-GamePath`，不能把沙盒空目录当成没有存档。明确没有历史存档的首次安装可以记录缺失并继续普通加载原型，实验客机模式仍保持关闭。
+
+备份复制到仓库忽略的`development/.local/save-backups/`唯一新目录。只有脚本成功、manifest记录Verified且`-VerifyBackup <备份目录>`再次通过，才能报告备份完成；记录具体目录、文件数、校验结果，并逐项核对`Missing`和`CoverageComplete`，不能仅凭Verified声称云存档已全部备份。失败/变化/未完成的目录保留但不算成功。存档、账户目录名、绝对源路径和备份manifest全部私有，不提交Git或发布到GitHub。
+
+恢复按用户明确的恢复请求或已有覆盖授权执行；授权不明确时才询问，备份请求本身不授权覆盖当前存档。先保存退出游戏并新备份当前状态，再验证选定旧备份，核对实际账户与目标目录。游戏和Steam均退出、云同步状态已由玩家核对后，按恢复说明逐文件恢复并比对哈希，保留恢复前备份；不删除原目录、不把云缓存当最新本地档、不自动决定云冲突或修改Steam云设置。当前备份脚本没有自动恢复开关。
+
+文件一致性校验只证明备份与当时源文件一致，不证明源档游戏语义有效，也不覆盖Steam服务器、其它设备或不可见用户注册表。备份不能替代完整Guest隔离验收；当前实验功能默认关闭，用户延后试玩时不自动部署、改游戏cfg或启动游戏。
+
 ## 用户给 GitHub 链接并要求配置
 
 1. 克隆用户指定仓库到可写的新目录，读取 README、AGENTS 和本 Skill。

@@ -1,0 +1,124 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-04T23:54:50.143806+00:00",
+  "Script": "development/scripts/Backup-Saves.ps1",
+  "ScriptSHA256": "A78C6069C23651F564B273A466842AF29D8A0FFDAAC77DC193BE6A20559BCBBD",
+  "ActualLocalBackup": {
+    "StartedUtc": "2026-10-04T23:48:05.8880531+00:00",
+    "FinishedUtc": "2026-10-04T23:48:26.6505106+00:00",
+    "Verified": true,
+    "SourceFilesStable": true,
+    "GameClosedBeforeAndAfter": true,
+    "Files": 38,
+    "LocalLowSavFiles": 12,
+    "SourceGroups": [
+      {
+        "Kind": "BepInExConfig",
+        "Files": 2,
+        "Bytes": 10306
+      },
+      {
+        "Kind": "DaveLocalLow",
+        "Files": 18,
+        "Bytes": 2812535
+      },
+      {
+        "Kind": "SteamAppCache",
+        "Files": 18,
+        "Bytes": 1798205
+      }
+    ],
+    "SteamAppCacheDirectoriesCopied": 2,
+    "CoverageComplete": false,
+    "Missing": [
+      {
+        "Kind": "SteamAppCache",
+        "Count": 1,
+        "Reason": "Application directory absent for an additional Steam account"
+      }
+    ],
+    "IndependentRecordedByteVerification": {
+      "RecordedUtc": "2026-10-04T23:54:50.143806+00:00",
+      "Command": "Backup-Saves.ps1 -VerifyBackup <private backup directory>",
+      "ExitCode": 0,
+      "ReturnedVerified": true,
+      "ReturnedFiles": 38,
+      "ReturnedCoverageComplete": false,
+      "MissingSteamAppCacheCount": 1,
+      "Scope": "Recorded backup bytes only; current live saves are not compared."
+    },
+    "BackupFilesAndManifestRemainPrivate": true
+  },
+  "FixtureVerification": {
+    "SuccessfulBackupFiles": 7,
+    "ReadOnlyVerificationPassed": true,
+    "SourceFilesUnchanged": true,
+    "RejectedCaseGroups": [
+      "missing selected profile",
+      "nested backup destination",
+      "verify mixed with copy parameters",
+      "corrupt backup bytes",
+      "manifest traversal path",
+      "reparse source root",
+      "source changes during copy",
+      "simulated game start during copy",
+      "failed manifest verification"
+    ],
+    "RealGameNotLaunched": true
+  },
+  "SkillValidation": {
+    "Draft": {
+      "StartedUtc": "2026-10-04T23:52:10.6792961Z",
+      "FinishedUtc": "2026-10-04T23:52:10.8190909Z",
+      "Passed": true,
+      "SkillSHA256": "8260CB8C966C7AB4108329F5B8A204BD5EC743A6D4773B842D4DCCDAE6FDB3BF",
+      "ValidatorSHA256": "6068513D924ED3559E186DFCDEAD7439129828DCF402167FD925C06DFFBF2806",
+      "Stdout": [
+        "Skill is valid!"
+      ]
+    },
+    "Protected": {
+      "StartedUtc": "2026-10-04T23:52:47.3013349Z",
+      "FinishedUtc": "2026-10-04T23:52:47.6691564Z",
+      "Passed": true,
+      "SkillSHA256": "8260CB8C966C7AB4108329F5B8A204BD5EC743A6D4773B842D4DCCDAE6FDB3BF",
+      "ValidatorSHA256": "6068513D924ED3559E186DFCDEAD7439129828DCF402167FD925C06DFFBF2806",
+      "Stdout": [
+        "Skill is valid!"
+      ]
+    }
+  },
+  "AdjacentPreparation": {
+    "PackageVersion": "0.1.46-dev",
+    "PackageSHA256": "82DCA622043E48138CB27891D5CB9D1D056D09B57CCCC8D94D7D822E6B87FD09",
+    "PluginSHA256": "85FBFAEE4A9CF827C2FDCBC35C9D1AC47F77CF777211E4672B693C82827E3BCC",
+    "PackageEntries": [
+      "BepInEx/plugins/DaveCoop/DaveCoop.dll",
+      "manifest.json"
+    ],
+    "PackageUnpackedVerified": true,
+    "PackageRejectedCases": 9,
+    "ConfigurationChecksPassed": 8,
+    "ConfigurationUsedReservedTestAddress": true,
+    "ScriptSHA256": {
+      "development/scripts/Package-Plugin.ps1": "DA5EF6A6C3601DFD6B06CE0F4CA35A6F993AB04A15DA90BEF6618E29A89E8D05",
+      "development/scripts/New-PlaytestConfig.ps1": "66CAB91AB675FCED8C2359C647E54C0C10F37AFBBF9C6D1B8C506FDE83079906"
+    }
+  },
+  "Limits": {
+    "SaveContentParsedOrDisplayed": false,
+    "LiveSaveFilesModified": false,
+    "Restored": false,
+    "GameConfigurationChanged": false,
+    "PluginDeployed": false,
+    "GameLaunched": false,
+    "NativeGameplayExecuted": false,
+    "SaveGameSemanticValidityVerified": false,
+    "SteamCloudServerBackedUp": false,
+    "OtherDevicesBackedUp": false,
+    "InvisibleOriginalUserRegistryBackedUp": false,
+    "CompleteGuestIsolationVerified": false,
+    "TwoRealGameSessionsVerified": false,
+    "Historical46BuildRecordsUnchanged": true
+  }
+}

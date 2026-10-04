@@ -983,3 +983,18 @@
 - 官方Skill草稿与受保护复制后实际双校验通过，同SHA256 `CFEDA894DB813FCB50CDF95C264F80BC86D164DAC69DECE278BDC75000C71BE9`；验证UTC、validator hash与完整结果保留.local。源码与研究封存保持，未重复Core/Build或启动游戏。
 
 - 末审更正 ExperimentalCrewActor 的旧配置说明：鱼叉与个人袋各有默认关闭开关。前一成功轮及其完整输出保留私有 run 6194087b56e74750b87b42aba9606739；仅 Plugin.cs 说明文本改变，重新封存并执行完整 Core/Build，以上最终时间、run 和 DLL 哈希已更新为新结果，未把旧构建当最新源码产物。
+
+## 2026-10-04 — 交付进度纠偏
+
+- 用户指出约20小时仍没有可用结果。核对goal累计运行约19小时，最新源码0.1.46及367项CLR/TCP/Build通过，最新实机加载证据仍为历史0.1.12，真实双端验收未通过。接口研究、分散接线及多轮验证/文档占用过多时间，未及时收敛成可试玩交付。
+- PLAN/HANDOFF新增当前优先交付：双端连接、同潜水场景独立移动/互见/各自镜头和正常断开；集中解决该构建直接阻断、准备可复现配置及验证步骤。缺少实机条件明确报告，不以模块或版本增长代替验收。
+- 本轮只调整三份开发文档，无源码或游戏配置变更，未重复测试、构建、部署、启动或读写存档。完整目标和每人独立背包约定保持，goal仍active；不把用户质疑进度解释为明确暂停指令。
+
+## 2026-10-04 — 存档保护优先与试玩准备
+
+- 用户确认目前只有一台电脑，并要求先保护存档、把备份流程写入Skill。新增`scripts/Backup-Saves.ps1`和`docs/SAVE_BACKUP.md`：游戏退出后只读复制整LocalLow游戏目录、每个Steam账户的1868140应用缓存及可用BepInEx cfg，到忽略的`.local/save-backups/`唯一新目录。核对前后完整文件/目录集合、长度及SHA256，运行中/源变化/越界/reparse/副本失配均拒绝成功；失败目录保留、manifest不标成功。独立`-VerifyBackup`只复核旧备份，不恢复或比较当前live档。
+- 已实际备份38个文件：LocalLow18个（含12份本地`.sav`）、两个Steam应用缓存共18个、配置2个。UTC `2026-10-04T23:48:05.8880531+00:00` → `2026-10-04T23:48:26.6505106+00:00`，源文件前后稳定，副本逐文件一致；随后独立复核exit0/Verified=true。一个其它Steam账户没有游戏应用缓存，CoverageComplete=false如实保留。脱敏结果见`logs/save-backup-verification.json`；真实备份、账号目录、绝对源路径与原manifest只在.local，不提交Git。
+- 自写夹具实际成功复制7文件、验证Missing/空目录/原文件不变及只读复核；验证缺profile、嵌套目标、混用verify参数、损坏副本、manifest越界、reparse、复制中源变化、模拟游戏启动与失败manifest的拒绝。没有运行游戏或解析/展示存档内容；字节读取仅用于复制/hash。备份未覆盖Steam云服务器、其它设备或不可见用户注册表，也不证明源档语义有效或Guest完整隔离。
+- Skill加入安装/配置/替换插件/试玩前保存退出、备份及再次复核；恢复须先备当前、验证旧备份和目标、沿用明确覆盖授权，核对Steam云状态，保留恢复前备份。未实现自动恢复、不自动改云设置。官方validator对草稿及受保护复制后均实际通过，Skill同SHA256 `8260CB8C966C7AB4108329F5B8A204BD5EC743A6D4773B842D4DCCDAE6FDB3BF`，记录独立保留.local；历史.46构建摘要未改。
+- 同时准备当前已构建.46的开发ZIP：`Package-Plugin.ps1 -Development`核Cecil插件版本、实际通过/封存输入及DLL SHA，不重编译、不更换默认.0。实际包`artifacts/playtest/DaveCoop-0.1.46-dev.zip`SHA256 `82DCA622043E48138CB27891D5CB9D1D056D09B57CCCC8D94D7D822E6B87FD09`，解包确认仅DLL+manifest，9项错误参数/证据失配拒绝；默认distribution/dependencies未改。新增`New-PlaytestConfig.ps1`只在artifacts生成Host/Guest cfg，用保留测试地址验证8项生成/拒绝检查通过，实际地址仍需配置，未安装cfg。详见`docs/PLAYTEST_PACKAGE.md`。
+- 本轮无C#修改，因此未重复Core/Build，版本仍.46。无原存档写入、恢复、游戏cfg更改、插件部署、游戏启动或native玩法执行。双游戏移动闭环仍待实机，只有一台电脑/两个cfg不算通过；Guest自动Join/Unity线程初始化存在待核的顺序风险，未视为已复现或修复。完整M3—M7及每人独立袋/收益/返航保存目标仍active，先完成存档保护再推进。

@@ -1,0 +1,41 @@
+# 开发试玩包
+
+当前可生成 `DaveCoop-0.1.46-dev.zip`（协议11），这是原生玩法尚未验证的开发包。
+它使用[已通过构建的 DLL](../logs/crew-cargo-build-verification.json)，不重新编译、不更换默认0.1.0发行包或`dependencies.json`。
+
+在仓库根目录执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\development\scripts\Package-Plugin.ps1 -Development
+```
+
+需要已安装的游戏与BepInEx中的Cecil，脚本只读取游戏版本及程序集元数据，不加载插件或启动游戏。
+可传`-GamePath`选择安装目录；可传`-VerificationPath`选择对应构建摘要，默认使用`development/logs/core-verification.json`。
+摘要必须记录Build通过、警告视为错误及执行前封存/执行后输入一致；DLL哈希与Cecil读取的插件版本必须匹配摘要。
+没有`-Development`时仍执行旧发行版本限制，不能将开发DLL误打成0.1.0。
+
+输出位于`development/artifacts/playtest/`，包括ZIP和同名`.zip.sha256`。
+ZIP只有`manifest.json`及`BepInEx/plugins/DaveCoop/DaveCoop.dll`；schema1兼容既有安装器，额外标记`development-native-unverified`。
+不包含游戏、interop/框架DLL、配置、存档、研究报告或机器日志。
+
+当前实际生成包：
+
+- ZIP SHA256：`82DCA622043E48138CB27891D5CB9D1D056D09B57CCCC8D94D7D822E6B87FD09`
+- DLL SHA256：`85FBFAEE4A9CF827C2FDCBC35C9D1AC47F77CF777211E4672B693C82827E3BCC`
+- 已实际解包核对两条文件、manifest、sidecar、DLL哈希及编译版本；9项错误参数/失配检查均拒绝，默认发行文件未变。
+
+将ZIP与sidecar放在一起，游戏保存退出并按[存档备份说明](SAVE_BACKUP.md)完成备份和`-VerifyBackup`复核后，才可用现有入口安装；双方应使用同一开发包：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\setup.ps1 -PackagePath .\development\artifacts\playtest\DaveCoop-0.1.46-dev.zip
+```
+
+安装命令会写插件目录，本轮没有执行安装、部署或启动，也没有改配置或存档。
+
+角色配置可由`development/scripts/New-PlaytestConfig.ps1 -HostAddress <房主实际IPv4> -Port <双方约定端口>`生成到新的`development/artifacts/`目录。它只生成Host/Guest两份cfg，不安装、不覆盖现有cfg、不启动游戏。已用保留测试地址验证生成及7项输入/路径拒绝，共8项检查通过；测试地址不能作为实际连接地址。
+
+Guest配置开启实验Guest启动及角色功能；鱼叉、个人袋和其它诊断默认关闭。完整Guest持久写隔离尚未验收，备份不是隔离证明。不能因为生成成功而直接覆盖玩家配置。本机目前只有一台电脑，尚未执行双游戏测试，也未安装任一配置。
+
+试玩应先核对新进程版本与加载日志，再确认双端连接、同层独立移动/互见/各自镜头及正常断开；这些还不是已通过验收。
+实验功能保持原有默认关闭设置；原生ABI、Guest完整隔离、远区实际玩法、捕获收益及正常返航入仓保存均未验证，
+每人独立袋/容量/重量/负重及完整M3—M7仍须完成。详细范围见[员工个人袋](CREW_CARGO.md)和[接手记录](HANDOFF.md)。

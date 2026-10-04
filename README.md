@@ -13,7 +13,7 @@
 
 > 请配置 https://github.com/gao-xh/MultiDave 。先克隆仓库，读取 AGENTS.md
 > 和 .agents/skills/dave-coop-setup/SKILL.md，自动定位 Steam 游戏，运行
-> setup.ps1，启动到主菜单并检查真实加载日志。遇到版本不兼容或游戏正在运行时，
+> 存档备份并复核后再运行 setup.ps1，启动到主菜单并检查真实加载日志。遇到版本不兼容或游戏正在运行时，
 > 明确说明需要处理的步骤，不要强制关闭游戏。请记录配置结果。
 
 Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动验证和日志记录。
@@ -23,9 +23,15 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 # 仓库根目录：只检查环境。
 .\setup.ps1 -InspectOnly
 
-# 保存并退出游戏后，安装仓库附带的原型包并启动验证。
+# 保存并退出游戏后，先备份实际玩家目录；沙盒目录不同时按说明传入实际路径。
+.\development\scripts\Backup-Saves.ps1
+.\development\scripts\Backup-Saves.ps1 -VerifyBackup '上一步返回的 BackupPath'
+
+# 备份与复核通过后，安装仓库附带的原型包并启动验证。
 .\setup.ps1 -LaunchGame
 ```
+
+备份范围、缺失项及恢复条件见[存档备份说明](development/docs/SAVE_BACKUP.md)。备份和账户信息只保留本机，不提交仓库。
 
 玩家安装不需要 .NET SDK。首次启动框架需要联网下载 Unity 依赖并生成接口，
 可能耗时数分钟。安装后左上角出现 `DaveCoop Prototype`，F8 切换面板。
@@ -45,6 +51,8 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 - [开发日志与现有证据](development/logs/DEVLOG.md)
 - [阶段记录与下一步](development/docs/HANDOFF.md)
 - [分阶段开发计划](development/docs/PLAN.md)
+- [存档备份与复核](development/docs/SAVE_BACKUP.md)
+- [开发试玩包与双端配置](development/docs/PLAYTEST_PACKAGE.md)
 - [玩家与摄像机发现](development/docs/GAME_API.md)
 - [第二角色与传输层](development/docs/MULTIPLAYER.md)
 - [同一海洋、鱼与互动](development/docs/WORLD_SYNC.md)
