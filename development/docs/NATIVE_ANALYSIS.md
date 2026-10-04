@@ -55,8 +55,10 @@ parser按本机Unity版本识别为metadata31.1。定义数量不是可调用方
 结构依据：[Microsoft x64 exception handling](https://learn.microsoft.com/en-us/cpp/build/exception-handling-x64?view=msvc-170)，
 metadata版本依据：[LibCpp2IL metadata实现](https://github.com/SamboyCoding/Cpp2IL/blob/development/LibCpp2IL/Metadata/Il2CppMetadata.cs)。
 
-报告只记录直接调用/外部跳转地址、精确方法指针匹配的候选名称及未解析计数，
-不输出机器码或完整指令文本。同一地址可能被多个方法共用，最多展示16个别名，
+报告默认只记录直接调用/外部跳转地址、精确方法指针匹配的候选名称及未解析计数，
+不输出机器码或完整指令文本。开发时可显式 `-IncludeInstructions` 保留有界私有指令文本，范围与验证见 [货槽观察](LOOT_SLOT_OBSERVATION.md)。
+`-MaxInstructionTextPerMethod` 默认2048、上限8192；`-MaxInstructionTextTotal` 默认8192、上限16384。每条最多256 UTF-16单元、全报告最多1048576保留字符，整条省略会另标文本截断，不改变原解码边界或方法完整性。格式化临时分配不受保留字符预算保证；原文本/地址/立即数仍只留.local，不提交Git。
+同一地址可能被多个方法共用，最多展示16个别名，
 总数和截断另外记录；即使只有一个`Singleton<T>`候选，具体泛型T仍未解析。
 间接调用、虚调用、delegate、泛型实例、分支条件及数据流保持未知。
 已知unwind族全部解码也不证明方法完整或指令可达；partial/缺边不是业务不存在的证据。

@@ -243,7 +243,13 @@ description: Configure or continue development of the MultiDave prototype for Wi
   已修Loot观察LocalToken(可负UnityID)与pointer独立键，resolver有pointer/generation前后围栏；编译不等于native观察已跑。
   接真实业务须拆开main/plus选择和commit，核finalgrade/effectiveweight/Obscuredslot合并/任务/鱼终态及个人分流；未部署启动，不催用户延后试玩，完整M3—M7、隔离/世界/返航/双端/冷配置继续。
 
-- 当前源码0.1.27-dev/协议6，Build警告视为错误通过；Core/TCP输入逐文件与前commit一致，复用0.1.26实际222/222，未重跑。继续产物/个人袋先读development/docs/LOOT_PRODUCT_OBSERVATION.md及loot-product-build-verification.json。
+- 历史源码0.1.27-dev/协议6，Build警告视为错误通过；Core/TCP输入逐文件与前commit一致，复用0.1.26实际222/222，未重跑。继续产物/个人袋先读development/docs/LOOT_PRODUCT_OBSERVATION.md及loot-product-build-verification.json。
   ObserveLootCalls仍默认false/16targets；Add_Impl仅Before读两exactclass四direct字段，prefix只CLR，After/Finalizer不重读资源。未知class/null明示不可用，失败清资源候选/撤链；线程、读取窗口、重入、quota与owncleanup沿用现规则。
   TID/ItemDataID与basegrade/baseweight只候选，不猜产品映射、bonus/count/weightParameter最终计算；ClassStore可能初始化，二次样本一致不证静止/原子/ABI。新Inspect-LootProductApi只离线metadata/wrapperIL，报告private.local；ObscuredInt解码纯度未证，不执行。
   无native callback/producer/分流/入仓/存档执行或新GUI授权；所有finalgrade/effectiveweight/full-yield/isolation/world/cargo权限false。未部署/启动，不催延后测试；每人独立容量/负重、捕获与正常逐项返航、真实双端和GitHub冷配置继续完整M3—M7。
+
+- 当前源码0.1.28-dev/协议6，Build与实际Core/TCP226/226通过（4新增纯CLR槽标量候选fixture）。继续槽/品质/个人袋先读development/docs/LOOT_SLOT_OBSERVATION.md及loot-slot-build-verification.json。
+  ObserveLootCalls仍defaultfalse/16targets；exactLootBoxSlot四directstruct字段仅Before两次copy、pointer/class/store守卫复核，prefix只存immutable候选、After/Finalizer不重读slot；raw密钥/隐藏值不入Context/queue/log。slot32reads/prefix、process65536不toggle归零。
+  CLR decoder仅initedtrue/key非0，fakeactive要求一致；未知/null/key0/未init/不符返回Unavailable。不调用原解码、publicslot getter/setter/静态key/检测器；采样不证原子/ABI，最终grade字段Before不证捕获终局。
+  Inspect-NativeCalls可显式-IncludeInstructions，默认false；text2048/method8192/report，硬8192/16384、256单条/1048576字符；整条省略不改原decode/edges/coverage。原asm/地址/立即数仅.local；真实3模式13/464/58一致、weight18/1687含4leaf不补猜。
+  最终grade含条件/clamp，重量和超重参数分工、GetExchangeCount转换仍不能猜；全native/isolation/world/cargo/receipt权限false。未部署/启动，不催延后测试；每人独立容量/负重、真实捕获/逐项返航、双端与GitHub冷配置继续完整M3—M7。

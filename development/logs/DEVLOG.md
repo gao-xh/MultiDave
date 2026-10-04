@@ -715,3 +715,13 @@
 - Build警告视为错误通过，SHA256 `687C8F6959163C33B85C026C05D2F645D0900BE12328761BB2CDFC64158BCD60`。75个Core/TCP源和runner输入核对前commit内容，并核对上一轮实际验证输入SHA256；一个历史文件的Git blob与工作区换行表示不同，实际验证字节hash仍一致。复用0.1.26真实222/222，本轮未重跑；这些测试不编译/执行新原生复制器。两名独立只读末审无阻断。
 - 新LOOT_PRODUCT_OBSERVATION、当前core/loot-product摘要与交接/计划/Skill草稿同步；历史0.1.26选择摘要、实际测试时间及安装0.1.12/潜水0.1.11/default0.1.0保留。实际整批选择/首次写入暂停、最终grade/effectiveweight/Obscured槽、个人容量分流与鱼终态、员工逐项返航入仓、客机隔离/房主世界与双端/GitHub冷配置仍需完成。
 - 正式Skill校验通过并同步到仓库，SHA256 `4C2A47E506D6FB0E41C77B0AF961BA0C4333C83D728EC14A33AE1307654CE3D7`；Inspector解析错误0。新鲜进程检查0，安装DLL仍`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，本轮没有部署或启动。
+
+## 2026-10-04 — 0.1.28 货槽候选与原计算路径
+
+- 前轮0.1.27基础资源观察已提交5d0618d并远端核验，属于实际进展。本轮继续完整M3—M7 active、每人独立袋/容量/负重与房主唯一长期进度；未部署/启动，不执行原游戏业务或读改存档。
+- NativeCallInspector新增显式默认关闭的私有指令文本输出，2048/method与8192/report默认，硬限8192/16384、256单条/1048576保留字符；只记录已有合法mapped/unwind范围指令，整条omit不改decode/edges。实际off/on/cap三模式13method/464decoded/58edges逐项相同，on464条/8083字符，cap3条/461省略；weight18method/1687decoded/278edges/30011字符，4个no-range leaf无文本且不补猜。四次工具warning-as-error编译与私下逐记录/范围/统计校验通过，原文本/地址/立即数只.local。
+- 原非零key已初始化分支给出32位XOR子集；key0取静态key、未init初始化接收器、detector路径含未解析间接call，不能把原decode当无副作用getter。初始化写接收器不证明struct副本必改原slot。新Core decoder仅复制五标量、initedtrue/key非0并保守fakeactive校验，缺条件返回null/固定原因，不补key/初始化/调用检测器，不等价完整原GetDecrypted。
+- 既有默认关闭16 Loot入口中，仅AddLootBox/IngredientsAddFromLootBox Before向复制器传slot。exactclass+4directstruct各二读、五CLR原值比较和末ptr/class/store复核，正常14read，32/prefix与65536/process不toggle归零；prefix/queue/log只immutable4candidate，不存wrapper、密钥或hidden值。After/Finalizer复用Before；faulting事件无条件清slot candidate/撤prefix，先前队列仅历史诊断带CurrentLineageHealthy=false。unknown/null或decoderunavailable不改原游戏；全部权限/ABI/最终品质/重量/完整yield/BagDelta仍false。
+- 实际weight已知路径有lift类别/接口取值，超重参数用于阈值/debuff，新槽Add边界未给终局FinalGrade时刻；ApplyFinalGrade有类别/阈值/clamp，GetExchangeCount还走物料转换。不能用basegrade+bonus/count×baseweight直接填捕获/肉量；完整capture/成员/受控选择提交/个人容量分流及receipt仍需真实桥。
+- 本轮真实Core/TCP226/226通过，新增4组literal signed边界/immutable输入、未init/key0、fake/未知与无CargoPermission夹具；不执行native sampler/decoder或真实slot。Build警告视为错误通过，SHA256 `17C60F94E17BE08001BB9E6984388C15ABC85640574CE3076B89616C1A3FE5EA`；两名独立native/文档末审无阻断，Core与工具均另有非作者审查。126源/项目/验证输入已封存。
+- 新LOOT_SLOT_OBSERVATION、NATIVE_ANALYSIS及当前core/loot-slot摘要、交接/计划/Skill更新；保留0.1.27的复用222与旧构建/实机证据。官方Skill校验通过并同步，SHA256 `1544C800E23BBD97E5B68C6E41E3024D05FDA1DE050E9E91C8A9AF43FDEB645E`；两个Inspector AST错误0。新鲜进程0，安装DLL仍`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，实际回调、个人分流/逐项入仓、guest隔离/房主世界与双端/GitHub冷配置待完成。

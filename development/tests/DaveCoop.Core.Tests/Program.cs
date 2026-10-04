@@ -8,6 +8,10 @@ internal static class Program
     {
         var tests = new (string Name, Action Run)[]
         {
+            ("loot slot scalar signed boundaries and immutable inputs", LootSlotSnapshotTests.SignedBoundaryVectorsRemainBitExact),
+            ("loot slot scalar inactive fake value does not reject or repair", LootSlotSnapshotTests.InactiveFakeValueDoesNotRejectOrRepairTheSnapshot),
+            ("loot slot scalar initialization and zero key remain unavailable", LootSlotSnapshotTests.MissingInitializationAndZeroKeyNeverInventAValue),
+            ("loot slot scalar tamper and later grades cannot grant cargo proof", LootSlotSnapshotTests.TamperAndLaterGradeCandidatesCannotGrantCargoProof),
             ("cargo selection capacity rejection cannot replace the selected batch", CargoLateYieldTests.CapacityDeniedSelectedYieldCannotBeReplacedOrRerolled),
             ("cargo selection source leases mint global IDs without inventing yield", CargoLateYieldTests.SourceOnlyLeasesMintAcrossMembersWithoutInventingYield),
             ("cargo selection requires isolation before any native business", CargoLateYieldTests.SelectionEntryNeedsAnIsolationBarrierBeforeAnyNativeBusiness),

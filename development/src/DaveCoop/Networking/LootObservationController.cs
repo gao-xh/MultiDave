@@ -61,6 +61,10 @@ namespace DaveCoop.Networking
                         ResourceReadLimitPerPrefix = LootObservationCapture.MaxResourceReadsPerPrefix,
                         ProcessResourceReadLimit = LootObservationCapture.MaxProcessResourceReads,
                         ResourceSampleStage = "Before", SupportedResourceClasses = new[] { "DR.Items", "IntegratedItem" },
+                        SlotReadLimitPerPrefix = LootObservationCapture.MaxSlotReadsPerPrefix,
+                        ProcessSlotReadLimit = LootObservationCapture.MaxProcessSlotReads,
+                        SlotSampleStage = "Before", SupportedSlotClass = "LootBoxSlot", NoNativeDecodeCalls = true,
+                        SlotDataReadable = false, NativeFieldAbiVerified = false,
                         StateLogLimit = MaxStateLogs, LifecycleLogLimit = MaxLifecycleLogs,
                         ObservedSynchronousEnclosureOnly = true, DirectCallerVerified = false,
                         ObservationOnly = true, SourceOperationBound = false, FullYield = false,
@@ -119,7 +123,7 @@ namespace DaveCoop.Networking
                 HookDropped = _hooks.Dropped, _hooks.UnmatchedAfter, _hooks.PendingCalls,
                 CopyDropped = _capture.Dropped, _capture.UnexpectedThreads, _capture.ReadErrors,
                 CopyPending = _capture.PendingCount, _capture.PendingContexts, _capture.Discarded,
-                _capture.FishOrdinalCount, _capture.ProcessKeyUtf16, _capture.ProcessResourceReads,
+                _capture.FishOrdinalCount, _capture.ProcessKeyUtf16, _capture.ProcessResourceReads, _capture.ProcessSlotReads,
                 LineageHealthy = lineage.Healthy, lineage.IntegrityLost, lineage.Reason,
                 lineage.HighestCallId, lineage.LastSequence, lineage.RunEvents, lineage.PendingCount,
                 lineage.Unmatched, lineage.ReplayRejected, lineage.OriginalExceptions, lineage.WrongThreadCalls,
@@ -129,6 +133,7 @@ namespace DaveCoop.Networking
                 NativeSourceOperationBound = false, SourceOperationBound = false, MemberOwnershipVerified = false,
                 FullYield = false, YieldComplete = false, NativeGenerationVerified = false,
                 NativeHookAbiVerified = false, CaptureSuccess = false, StorageDeltaProven = false, NativeRewardsEnabled = false,
+                NoNativeDecodeCalls = true, SlotDataReadable = false, NativeFieldAbiVerified = false,
                 FinalGradeVerified = false, EffectiveWeightVerified = false, ResourceProductMappingVerified = false, CargoPermission = false
             }));
         }

@@ -10,6 +10,11 @@ param(
     [int]$MaxMethods = 128,
     [ValidateRange(64, 32768)]
     [int]$MaxInstructions = 8192,
+    [switch]$IncludeInstructions,
+    [ValidateRange(1, 8192)]
+    [int]$MaxInstructionTextPerMethod = 2048,
+    [ValidateRange(1, 16384)]
+    [int]$MaxInstructionTextTotal = 8192,
     [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$')]
     [string]$ReportName = 'native-calls'
 )
@@ -68,6 +73,8 @@ $requestPath = Join-Path $outputRoot 'request.json'
     CorePath = $coreRoot; BinaryPath = $binaryPath; MetadataPath = $metadataPath
     UnityVersion = $environment.UnityVersion; Selectors = @($Method); OutputPath = $reportPath
     Depth = $Depth; MaxMethods = $MaxMethods; MaxInstructions = $MaxInstructions
+    IncludeInstructions = [bool]$IncludeInstructions
+    MaxInstructionTextPerMethod = $MaxInstructionTextPerMethod; MaxInstructionTextTotal = $MaxInstructionTextTotal
 } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $requestPath -Encoding utf8
 & $dotnetCommand $outputDll $requestPath
 if ($LASTEXITCODE -ne 0) { throw "Native call inspection failed ($LASTEXITCODE). Existing reports must not be treated as fresh evidence." }

@@ -41,6 +41,42 @@ namespace DaveCoop.Networking
         internal static LootResourceObservation Unavailable(string reason) => new LootResourceObservation(reason);
     }
 
+    // Only decoded CLR candidates survive the callback. Encrypted snapshots,
+    // native wrappers and pointers never enter a prefix context or the queue.
+    internal sealed class LootSlotObservation
+    {
+        public string SlotSampleStage => "Before";
+        public string ExactClassKind { get; }
+        public LootObscuredIntCandidate ItemId { get; }
+        public LootObscuredIntCandidate Grade { get; }
+        public LootObscuredIntCandidate FinalGrade { get; }
+        public LootObscuredIntCandidate TotalCount { get; }
+        public bool SamplesMatch { get; }
+        public bool CandidatesAvailable => ItemId?.Available == true || Grade?.Available == true ||
+            FinalGrade?.Available == true || TotalCount?.Available == true;
+        public bool AllCandidatesAvailable => ItemId?.Available == true && Grade?.Available == true &&
+            FinalGrade?.Available == true && TotalCount?.Available == true;
+        public string UnavailableReason { get; }
+        public bool ObservationOnly => true;
+        public bool NoNativeDecodeCalls => true;
+        public bool NativeFieldAbiVerified => false;
+        public bool FinalGradeVerified => false;
+        public bool EffectiveWeightVerified => false;
+        public bool ResourceProductMappingVerified => false;
+        public bool BagDelta => false;
+        public bool FullYield => false;
+        public bool Permission => false;
+
+        internal LootSlotObservation(LootObscuredIntCandidate itemId, LootObscuredIntCandidate grade,
+            LootObscuredIntCandidate finalGrade, LootObscuredIntCandidate totalCount)
+        {
+            ExactClassKind = "LootBoxSlot"; ItemId = itemId; Grade = grade;
+            FinalGrade = finalGrade; TotalCount = totalCount; SamplesMatch = true;
+        }
+        private LootSlotObservation(string reason) { UnavailableReason = reason; }
+        internal static LootSlotObservation Unavailable(string reason) => new LootSlotObservation(reason);
+    }
+
     // Owned CLR diagnostics only. A source is an observed synchronous enclosure,
     // not a direct caller, employee binding, complete yield or cargo receipt.
     internal sealed class LootCallObservation
@@ -77,6 +113,10 @@ namespace DaveCoop.Networking
         public bool ItemDataArgumentPresent { get; internal set; }
         public LootResourceObservation Resource { get; internal set; }
         public string ResourceSampleStage => Resource?.ResourceSampleStage;
+        public LootSlotObservation SlotCandidates { get; internal set; }
+        public string SlotSampleStage => SlotCandidates?.SlotSampleStage;
+        public bool SlotCandidatesAvailable => SlotCandidates?.CandidatesAvailable == true;
+        public bool NoNativeDecodeCalls => true;
         public bool ActorArgumentPresent { get; internal set; }
         public bool InstanceWrapperPresent { get; internal set; }
         public bool SlotWrapperPresent { get; internal set; }
@@ -132,6 +172,8 @@ namespace DaveCoop.Networking
         public const int MaxProcessKeyUtf16 = 65536;
         public const int MaxResourceReadsPerPrefix = 32;
         public const int MaxProcessResourceReads = 65536;
+        public const int MaxSlotReadsPerPrefix = 32;
+        public const int MaxProcessSlotReads = 65536;
         private readonly object _gate = new object();
         private readonly Queue<LootCallObservation> _pending = new Queue<LootCallObservation>(MaxQueued);
         private readonly Dictionary<long, PrefixContext> _prefixes = new Dictionary<long, PrefixContext>();
@@ -142,6 +184,7 @@ namespace DaveCoop.Networking
         private bool _accepting = true, _insideCapture;
         private static long _processDropped, _processUnexpectedThreads, _processReadErrors, _processDiscarded, _processKeyUtf16;
         private static long _processResourceReads;
+        private static long _processSlotReads;
         private static int _processFailed;
         private sealed class PrefixContext
         {
@@ -154,6 +197,7 @@ namespace DaveCoop.Networking
             public string KeyHash;
             public bool InstancePresent, SlotPresent;
             public LootResourceObservation Resource;
+            public LootSlotObservation SlotCandidates;
         }
         public Guid RunId => _lineage.RunId;
         public LootCallLineage Lineage => _lineage;
@@ -163,6 +207,7 @@ namespace DaveCoop.Networking
         public long Discarded => Interlocked.Read(ref _processDiscarded);
         public long ProcessKeyUtf16 => Interlocked.Read(ref _processKeyUtf16);
         public long ProcessResourceReads => Interlocked.Read(ref _processResourceReads);
+        public long ProcessSlotReads => Interlocked.Read(ref _processSlotReads);
         public bool Failed => Volatile.Read(ref _processFailed) != 0;
         public bool Healthy => !Failed && _accepting && _lineage.Healthy;
         public int PendingCount { get { lock (_gate) return _pending.Count; } }
@@ -237,6 +282,7 @@ namespace DaveCoop.Networking
                         if (prefix.Token == null || !_lineage.Healthy) throw new InvalidOperationException("Loot prefix lineage rejected.");
                         if (call.Method == LootObservationMethod.LootBoxAddImpl)
                             prefix.Resource = FreezeResource(call.ItemResource);
+                        if (IsSlotBoundary(call.Method)) prefix.SlotCandidates = FreezeSlot(call.Slot);
                         _prefixes.Add(call.CallId, prefix);
                     }
                     else
@@ -285,6 +331,8 @@ namespace DaveCoop.Networking
                     // failing event, including a previously queued finalizer.
                     observed.Resource = call.Method == LootObservationMethod.LootBoxAddImpl
                         ? LootResourceObservation.Unavailable("Resource candidate discarded after callback evidence failure.") : null;
+                    observed.SlotCandidates = IsSlotBoundary(call.Method)
+                        ? LootSlotObservation.Unavailable("Slot candidates discarded after callback evidence failure.") : null;
                     if (!Failed)
                     {
                         observed.ReadError = observed.MainThread ? "Loot scalar/direct-field freezing rejected." : "Unbound callback thread; native fields were not read.";
@@ -339,6 +387,70 @@ namespace DaveCoop.Networking
                 if (Interlocked.CompareExchange(ref _processResourceReads, current + 1, current) == current) return true;
             }
         }
+        private sealed class SlotReader
+        {
+            private readonly LootObservationCapture _capture;
+            private int _reads;
+            public SlotReader(LootObservationCapture capture) { _capture = capture; }
+            public T Read<T>(Func<T> read)
+            {
+                _capture.CheckReadWindow();
+                if (_reads >= MaxSlotReadsPerPrefix || !ClaimSlotRead())
+                    throw new InvalidOperationException("Loot slot read quota exhausted.");
+                _reads++;
+                return _capture.Read(read);
+            }
+        }
+        private static bool ClaimSlotRead()
+        {
+            while (true)
+            {
+                long current = Interlocked.Read(ref _processSlotReads);
+                if (current >= MaxProcessSlotReads) return false;
+                if (Interlocked.CompareExchange(ref _processSlotReads, current + 1, current) == current) return true;
+            }
+        }
+        private LootSlotObservation FreezeSlot(LootBoxSlot slot)
+        {
+            if (ReferenceEquals(slot, null))
+                return LootSlotObservation.Unavailable("Original slot argument is null.");
+            var reader = new SlotReader(this);
+            long pointer = reader.Read(() => slot.Pointer.ToInt64());
+            if (pointer == 0) throw new InvalidOperationException("Loot slot identity unavailable.");
+            IntPtr actual = reader.Read(() => IL2CPP.il2cpp_object_get_class(new IntPtr(pointer)));
+            if (actual == IntPtr.Zero) throw new InvalidOperationException("Loot slot native class unavailable.");
+            // Class-store initialization may perform native work. Exact class
+            // checks and all direct struct reads stay inside the same window.
+            IntPtr expected = reader.Read(() => Il2CppClassPointerStore<LootBoxSlot>.NativeClassPtr);
+            if (expected == IntPtr.Zero || actual != expected)
+                return LootSlotObservation.Unavailable("Exact slot class is outside the supported LootBoxSlot schema.");
+            LootObscuredIntSnapshot itemId = reader.Read(() => CopyObscured(slot.m_ItemID));
+            LootObscuredIntSnapshot grade = reader.Read(() => CopyObscured(slot.m_Grade));
+            LootObscuredIntSnapshot finalGrade = reader.Read(() => CopyObscured(slot.m_FinalGrade));
+            LootObscuredIntSnapshot totalCount = reader.Read(() => CopyObscured(slot.m_TotalCount));
+            LootObscuredIntSnapshot itemIdAgain = reader.Read(() => CopyObscured(slot.m_ItemID));
+            LootObscuredIntSnapshot gradeAgain = reader.Read(() => CopyObscured(slot.m_Grade));
+            LootObscuredIntSnapshot finalGradeAgain = reader.Read(() => CopyObscured(slot.m_FinalGrade));
+            LootObscuredIntSnapshot totalCountAgain = reader.Read(() => CopyObscured(slot.m_TotalCount));
+            if (!SamplesEqual(itemId, itemIdAgain) || !SamplesEqual(grade, gradeAgain) ||
+                !SamplesEqual(finalGrade, finalGradeAgain) || !SamplesEqual(totalCount, totalCountAgain) ||
+                reader.Read(() => slot.Pointer.ToInt64()) != pointer ||
+                reader.Read(() => IL2CPP.il2cpp_object_get_class(new IntPtr(pointer))) != expected ||
+                reader.Read(() => Il2CppClassPointerStore<LootBoxSlot>.NativeClassPtr) != expected)
+                throw new InvalidOperationException("Loot slot samples did not match.");
+            // Decode only the copied CLR scalars. No getter, conversion,
+            // initialization, detector query or static-key lookup is invoked.
+            var observed = new LootSlotObservation(LootSlotSnapshot.DecodeInt(itemId), LootSlotSnapshot.DecodeInt(grade),
+                LootSlotSnapshot.DecodeInt(finalGrade), LootSlotSnapshot.DecodeInt(totalCount));
+            CheckReadWindow(); GC.KeepAlive(slot);
+            return observed;
+        }
+        private static LootObscuredIntSnapshot CopyObscured(CodeStage.AntiCheat.ObscuredTypes.ObscuredInt value)
+            => new LootObscuredIntSnapshot(value.currentCryptoKey, value.hiddenValue, value.inited,
+                value.fakeValue, value.fakeValueActive);
+        private static bool SamplesEqual(LootObscuredIntSnapshot first, LootObscuredIntSnapshot second)
+            => first.CurrentCryptoKey == second.CurrentCryptoKey && first.HiddenValue == second.HiddenValue &&
+                first.Inited == second.Inited && first.FakeValue == second.FakeValue && first.FakeValueActive == second.FakeValueActive;
         private LootResourceObservation FreezeResource(DR.IItemBase resource)
         {
             if (ReferenceEquals(resource, null))
@@ -460,6 +572,8 @@ namespace DaveCoop.Networking
             => method == LootObservationMethod.FishAddDropItem || method == LootObservationMethod.FishPickup ||
                 method == LootObservationMethod.FishDropWithPlus || method == LootObservationMethod.FishDropPlus ||
                 method == LootObservationMethod.FishBodySuccessInteract || method == LootObservationMethod.FishBodyCheckAvailable;
+        private static bool IsSlotBoundary(LootObservationMethod method)
+            => method == LootObservationMethod.IngredientsAddFromLootBox || method == LootObservationMethod.SaveDataAddLootBox;
         private LootCallObservation CopyScalars(LootObservationCallback call)
         {
             LootObservationArguments args = call.Arguments;
@@ -480,8 +594,8 @@ namespace DaveCoop.Networking
                 InstanceWrapperPresent = !ReferenceEquals(call.Fish, null) || !ReferenceEquals(call.Body, null) || !ReferenceEquals(call.Bag, null) ||
                     !ReferenceEquals(call.Storage, null) || !ReferenceEquals(call.Save, null) || args.OtherInstanceWrapperPresent,
                 SlotWrapperPresent = !ReferenceEquals(call.Slot, null),
-                SlotDataUnavailableReason = call.Method == LootObservationMethod.IngredientsAddFromLootBox || call.Method == LootObservationMethod.SaveDataAddLootBox
-                    ? "Slot ObscuredInt item/count/final quality not verified; wrapper presence only." : null
+                SlotDataUnavailableReason = IsSlotBoundary(call.Method)
+                    ? "Before scalar candidates only; native ABI, final quality, bag delta and full yield are not verified." : null
             };
         }
         private static void CopyPrefix(PrefixContext prefix, LootCallObservation observed)
@@ -490,6 +604,7 @@ namespace DaveCoop.Networking
             observed.UnityFrame = prefix.UnityFrame; observed.KeyLength = prefix.KeyLength; observed.KeyHash = prefix.KeyHash;
             observed.InstanceWrapperPresent = prefix.InstancePresent; observed.SlotWrapperPresent = prefix.SlotPresent;
             observed.Resource = prefix.Resource;
+            observed.SlotCandidates = prefix.SlotCandidates;
             // No IsFishCaptured/ReactiveProperty.Value getter is invoked. The
             // terminal state is deliberately unavailable in this observation.
             observed.FishCapturedStateWrapperPresent = null;

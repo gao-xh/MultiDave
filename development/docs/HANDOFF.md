@@ -1,6 +1,6 @@
 # MultiDave 接手记录
 
-当前源码为 0.1.27-dev、协议 6，插件构建警告视为错误通过；Core/TCP输入与前commit逐文件一致，复用0.1.26实际222/222，本轮未重跑。[入袋资源观察](LOOT_PRODUCT_OBSERVATION.md)在既有默认关闭入口复制两种精确资源类的基础字段；最终品质、有效重量与完整产物仍待原生核实，不能授予个人分流权限。范围见[当前摘要](../logs/loot-product-build-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。实际个人容量/负重、返航入仓、客机隔离、房主世界与双端/冷配置仍待完成。
+当前源码为0.1.28-dev、协议6，插件构建警告视为错误通过；本轮实际Core/TCP226/226通过（新增4组CLR槽标量候选夹具）。[货槽观察](LOOT_SLOT_OBSERVATION.md)仅在默认关闭的原边界复制字段，用受限本地算法形成候选；不调用原生解码、不能证明最终品质/有效重量或完整产物。范围见[当前摘要](../logs/loot-slot-build-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。实际个人容量/分流与返航、客机隔离/房主世界、双端和冷配置仍待完成。
 
 ## 已完成
 
@@ -210,7 +210,7 @@ Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可�
 已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
 Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
 探针记录本机 ID 仅用于观察；网络数值实体已使用房主分配的 RoomId/epoch/EntityId。
-当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.26-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
+当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.28-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
 当前候选测试先建Host/Join或Local test，再开启Observe loading coroutine and scene ownership并进行新自然入海。旧Observe map selection calls仅可选诊断，不能发送候选；可核对 MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE、MAP_SELECTION_HOOKS_STOPPED 的五处自然边界、线程、路线候选、空/截断/读取错误及自己的卸载。
 随后按目标检查范围在 F11 / Local test 开启 Transmit read-only fish observations 后进入潜水。
 开启单鱼预览取得选中身份，点 Check selected fish target，核对 FISH_ACTION_SENT / ADMISSION / DECISION / RECEIVED 的请求元数据、指纹及 DryRunValidated/op0。
@@ -324,3 +324,7 @@ Build及实际Core/TCP222/222通过；新增11组生产账本夹具、2组实际
 ## 0.1.27 原参数基础资源观察
 
 既有默认关闭16入口在Add_Impl Before同步读取两种精确类的四个资源direct backing fields，After/Finalizer复用owned CLR候选。未知类/null明示不可用，不调用业务getter、主动抽随机或解码货槽。TID/ItemDataID、basegrade/baseweight不代替最终产品映射/品质/有效重量；原生调用、ABI、整批产物与个人分流权限仍false。Build通过；纯CLR/TCP输入与前commit逐文件一致，复用0.1.26实际222/222，本轮未重跑。详见[资源观察](LOOT_PRODUCT_OBSERVATION.md)与[本轮摘要](../logs/loot-product-build-verification.json)。未部署/启动，继续真实选择/提交桥、个人容量/捕获/逐项返航、客机隔离/房主世界及双端冷配置。
+
+## 0.1.28 受限货槽候选
+
+Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的CLR标量解码夹具；原生slot仍仅编译未执行，16默认关闭入口保持。Before对exact槽四struct字段两次守卫采样，prefix仅存候选，After/Finalizer复用且不读原生槽；密钥/隐藏值不入队/日志。未init/key0/fake校验不符明确Unavailable，不补初始化/查静态key或检测器。离线新工具文本默认关闭，三模式原decode/edges不变，4无范围leaf不补猜。最终品质时刻、接口重量、肉量转换与完整产物/个人分流/入仓仍待实际桥。详见[货槽观察](LOOT_SLOT_OBSERVATION.md)及[本轮摘要](../logs/loot-slot-build-verification.json)。

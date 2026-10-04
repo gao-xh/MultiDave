@@ -58,3 +58,5 @@ Parent 是被观察方法之间的同步包含关系，不是原生直接 caller
 0.1.26 已把来源预约、统一捕获编号与延后产物绑定接入真实CLR账本，详见[CAPTURE_SELECTION](CAPTURE_SELECTION.md)。原生完整选择和受控首次写入阶段仍待实现；不能据此升级本观察的SourceOperationBound或Receipt。另修复LocalToken是Unity实例ID而不是nativepointer的错误比较；此处原生执行仍待实机。
 
 0.1.27 在既有入口增加[基础资源观察](LOOT_PRODUCT_OBSERVATION.md)，资源字段仍不能代替最终品质、有效重量、完整选择或原生分流凭证。
+
+0.1.28 另增加[受限货槽候选](LOOT_SLOT_OBSERVATION.md)，不调用原生解码或把Before的FinalGrade候选当捕获终局/入仓凭证。

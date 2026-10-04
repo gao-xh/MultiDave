@@ -113,7 +113,8 @@ try {
     })
     $obscured = $types[$obscuredName]
     $obscuredFields = @($obscured.Fields | Where-Object { !$_.IsStatic } | ForEach-Object {
-        [pscustomobject]@{ Name=$_.Name; Type=$_.FieldType.FullName; AssemblyScope=$_.FieldType.Scope.Name }
+        [pscustomobject]@{ Name=$_.Name; Type=$_.FieldType.FullName; AssemblyScope=$_.FieldType.Scope.Name
+            Public=$_.IsPublic; InitOnly=$_.IsInitOnly; GeneratedClrFieldOffset=$_.Offset }
     })
     $obscuredMethods = @($obscured.Methods | Where-Object {
         $_.Name -match '^(Encrypt|Decrypt|GetEncrypted|SetEncrypted|GetDecrypted|InternalDecrypt|op_Implicit)$' -or
@@ -152,6 +153,8 @@ try {
         ObscuredInt=[pscustomobject]@{
             Type=$obscured.FullName; Assembly=$productAssembly.Name.Name; BaseType=$obscured.BaseType.FullName
             IsClrValueType=$obscured.IsValueType; Layout=$obscured.Attributes.ToString()
+            GeneratedClrClassSize=$obscured.ClassSize; GeneratedClrPackingSize=$obscured.PackingSize
+            NativeLayoutAbiVerified=$false
             InstanceFields=$obscuredFields; Methods=$obscuredMethods; CryptoKeyGetter=$cryptoKeyGetter
             DecryptionExecuted=$false; DecryptionPureVerified=$false; AntiCheatSideEffectsKnown=$false
         }

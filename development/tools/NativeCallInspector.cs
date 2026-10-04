@@ -15,6 +15,9 @@ using LibCpp2IL.Metadata;
 // Runs as a separate CLR process. Reads the original files as data; never loads game code.
 internal static class NativeCallInspector
 {
+    private const int MaxInstructionTextLength = 256;
+    private const int MaxInstructionTextCharacters = 1048576;
+
     private static int Main(string[] args)
     {
         try
@@ -43,6 +46,8 @@ internal static class NativeCallInspector
     {
         if (request.Depth < 0 || request.Depth > 3 || request.MaxMethods < 1 || request.MaxMethods > 256 ||
             request.MaxInstructions < 64 || request.MaxInstructions > 32768 ||
+            request.MaxInstructionTextPerMethod < 1 || request.MaxInstructionTextPerMethod > 8192 ||
+            request.MaxInstructionTextTotal < 1 || request.MaxInstructionTextTotal > 16384 ||
             request.Selectors == null || request.Selectors.Length < 1 || request.Selectors.Length > 16)
             throw new ArgumentException("Invalid analysis bounds.");
         var binaryHash = FileHash(request.BinaryPath);
@@ -52,6 +57,11 @@ internal static class NativeCallInspector
             StartedUtc = DateTimeOffset.UtcNow.ToString("o"), UnityVersion = request.UnityVersion,
             BinarySha256 = binaryHash, MetadataSha256 = metadataHash, RequestedDepth = request.Depth,
             MaxMethods = request.MaxMethods, MaxInstructions = request.MaxInstructions,
+            IncludeInstructions = request.IncludeInstructions, InstructionTextNotRequested = !request.IncludeInstructions,
+            MaxInstructionTextPerMethod = request.MaxInstructionTextPerMethod,
+            MaxInstructionTextTotal = request.MaxInstructionTextTotal,
+            MaxInstructionTextLength = MaxInstructionTextLength,
+            MaxInstructionTextCharacters = MaxInstructionTextCharacters,
             ParserAssemblyVersion = typeof(LibCpp2IlMain).Assembly.GetName().Version.ToString(),
             DisassemblerAssemblyVersion = typeof(Decoder).Assembly.GetName().Version.ToString()
         };
@@ -123,7 +133,9 @@ internal static class NativeCallInspector
             var row = new MethodInspection
             {
                 Type = method.DeclaringType.FullName, Signature = method.HumanReadableSignature,
-                EntryRva = Hex(method.Rva), Depth = next.Depth, IncludedBecause = next.Reason
+                EntryRva = Hex(method.Rva), Depth = next.Depth, IncludedBecause = next.Reason,
+                InstructionTextNotRequested = !request.IncludeInstructions,
+                Instructions = request.IncludeInstructions ? new List<InstructionText>() : null
             };
             report.Methods.Add(row);
             if (method.MethodPointer == 0) { row.BodyStatus = "No native pointer"; continue; }
@@ -155,7 +167,8 @@ internal static class NativeCallInspector
                 var decoder = Decoder.Create(64, new ByteArrayCodeReader(code));
                 decoder.IP = pe.ImageBase + start;
                 var fragmentRow = new DecodedRange { StartRva = Hex(start), EndRva = Hex(fragment.End),
-                    IncludedBecause = fragment == function ? "Containing entry range" : "Exact chained unwind family" };
+                    IncludedBecause = fragment == function ? "Containing entry range" : "Exact chained unwind family",
+                    InstructionTextNotRequested = !request.IncludeInstructions };
                 row.Ranges.Add(fragmentRow);
                 FlowControl lastFlow = FlowControl.Next;
                 while (decoder.IP < pe.ImageBase + fragment.End && row.InstructionCount < request.MaxInstructions)
@@ -165,6 +178,9 @@ internal static class NativeCallInspector
                     fragmentRow.InstructionCount++;
                     if (instruction.Code == Code.INVALID) { row.InvalidInstruction = true; break; }
                     if (instruction.NextIP > pe.ImageBase + fragment.End) { row.RangeOverrun = true; break; }
+                    // Only validated instructions from the existing mapped byte
+                    // range are formatted. Text quotas never alter decoding or edges.
+                    CaptureInstructionText(request, report, row, fragmentRow, instruction, pe.ImageBase);
                     lastFlow = instruction.FlowControl;
                     if (instruction.FlowControl == FlowControl.IndirectCall) { row.IndirectCalls++; continue; }
                     if (instruction.FlowControl == FlowControl.IndirectBranch) { row.IndirectBranches++; continue; }
@@ -228,6 +244,46 @@ internal static class NativeCallInspector
         return 0;
     }
 
+    private static void CaptureInstructionText(InspectionRequest request, InspectionReport report,
+        MethodInspection method, DecodedRange fragment, Instruction instruction, ulong imageBase)
+    {
+        // Disabled mode does not allocate a formatter or call Instruction.ToString.
+        if (!request.IncludeInstructions) return;
+        if (method.InstructionTextCaptured >= request.MaxInstructionTextPerMethod ||
+            report.InstructionTextCaptured >= request.MaxInstructionTextTotal ||
+            report.InstructionTextCharacters >= MaxInstructionTextCharacters)
+        {
+            OmitInstructionText(report, method, fragment);
+            return;
+        }
+        // The installed Iced declaration has a public parameterless string
+        // ToString using MasmFormatter. No game symbol resolver is involved.
+        string text = instruction.ToString();
+        if (text.Length > MaxInstructionTextLength ||
+            text.Length > MaxInstructionTextCharacters - report.InstructionTextCharacters)
+        {
+            OmitInstructionText(report, method, fragment);
+            return;
+        }
+        method.Instructions.Add(new InstructionText
+        {
+            InstructionRva = Hex(instruction.IP - imageBase),
+            NextRva = Hex(instruction.NextIP - imageBase), Length = instruction.Length,
+            Text = text, FlowControl = instruction.FlowControl.ToString()
+        });
+        report.InstructionTextCaptured++; method.InstructionTextCaptured++; fragment.InstructionTextCaptured++;
+        report.InstructionTextCharacters += text.Length; method.InstructionTextCharacters += text.Length;
+        fragment.InstructionTextCharacters += text.Length;
+    }
+    private static void OmitInstructionText(InspectionReport report, MethodInspection method, DecodedRange fragment)
+    {
+        // Omit the complete record, never trim a mnemonic/operand string. These
+        // flags describe text retention, not method or reachable-path coverage.
+        report.InstructionTextTruncated = true; method.InstructionTextTruncated = true;
+        fragment.InstructionTextTruncated = true;
+        report.InstructionTextOmitted++; method.InstructionTextOmitted++; fragment.InstructionTextOmitted++;
+    }
+
     private static string FileHash(string path)
     {
         using var input = File.OpenRead(path);
@@ -250,6 +306,9 @@ internal sealed class InspectionRequest
     public int Depth { get; set; }
     public int MaxMethods { get; set; }
     public int MaxInstructions { get; set; }
+    public bool IncludeInstructions { get; set; }
+    public int MaxInstructionTextPerMethod { get; set; } = 2048;
+    public int MaxInstructionTextTotal { get; set; } = 8192;
 }
 internal sealed class InspectionReport
 {
@@ -267,6 +326,16 @@ internal sealed class InspectionReport
     public int RequestedDepth { get; set; }
     public int MaxMethods { get; set; }
     public int MaxInstructions { get; set; }
+    public bool IncludeInstructions { get; set; }
+    public bool InstructionTextNotRequested { get; set; }
+    public int MaxInstructionTextPerMethod { get; set; }
+    public int MaxInstructionTextTotal { get; set; }
+    public int MaxInstructionTextLength { get; set; }
+    public int MaxInstructionTextCharacters { get; set; }
+    public long InstructionTextCaptured { get; set; }
+    public long InstructionTextOmitted { get; set; }
+    public long InstructionTextCharacters { get; set; }
+    public bool InstructionTextTruncated { get; set; }
     public bool MethodLimitReached { get; set; }
     public int OmittedRootMethods { get; set; }
     public bool GameCodeExecuted { get; set; } = false;
@@ -296,6 +365,12 @@ internal sealed class MethodInspection
     public bool InvalidInstruction { get; set; }
     public bool RangeOverrun { get; set; }
     public bool InstructionLimitReached { get; set; }
+    public bool InstructionTextNotRequested { get; set; }
+    public int InstructionTextCaptured { get; set; }
+    public int InstructionTextOmitted { get; set; }
+    public int InstructionTextCharacters { get; set; }
+    public bool InstructionTextTruncated { get; set; }
+    public List<InstructionText> Instructions { get; set; }
     public List<CallEdge> Edges { get; set; } = new List<CallEdge>();
     public List<DecodedRange> Ranges { get; set; } = new List<DecodedRange>();
 }
@@ -307,6 +382,19 @@ internal sealed class DecodedRange
     public int InstructionCount { get; set; }
     public bool RangeDecoded { get; set; }
     public bool FallthroughOutsideKnownFamily { get; set; }
+    public bool InstructionTextNotRequested { get; set; }
+    public int InstructionTextCaptured { get; set; }
+    public int InstructionTextOmitted { get; set; }
+    public int InstructionTextCharacters { get; set; }
+    public bool InstructionTextTruncated { get; set; }
+}
+internal sealed class InstructionText
+{
+    public string InstructionRva { get; set; }
+    public string NextRva { get; set; }
+    public int Length { get; set; }
+    public string Text { get; set; }
+    public string FlowControl { get; set; }
 }
 internal sealed class CallEdge
 {

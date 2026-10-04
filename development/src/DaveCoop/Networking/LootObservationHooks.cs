@@ -56,6 +56,8 @@ namespace DaveCoop.Networking
         public LootBox Bag { get; }
         public IngredientsStorage Storage { get; }
         public SaveData Save { get; }
+        // Original slot argument is offered only to the synchronous prefix
+        // copier. Postfix/finalizer reuse its owned CLR candidates.
         public LootBoxSlot Slot { get; }
         // The original Add_Impl argument is held only for this synchronous
         // prefix callback. It never enters CallContext or a diagnostic queue.
@@ -253,7 +255,7 @@ namespace DaveCoop.Networking
         private static void CollectionAfter(long __state) => Postfix(__state, LootObservationMethod.CaughtFishAdd);
         private static void StorageBefore(IngredientsStorage __instance, LootBoxSlot __0, Il2CppSystem.Func<int> __1, out long __state)
             => __state = Begin(LootObservationMethod.IngredientsAddFromLootBox, new LootObservationArguments { ExchangeCallbackArgumentPresent = !ReferenceEquals(__1, null) }, storage: __instance, slot: __0);
-        private static void StorageAfter(IngredientsStorage __instance, LootBoxSlot __0, long __state) => Postfix(__state, LootObservationMethod.IngredientsAddFromLootBox, storage: __instance, slot: __0);
+        private static void StorageAfter(IngredientsStorage __instance, LootBoxSlot __0, long __state) => Postfix(__state, LootObservationMethod.IngredientsAddFromLootBox, storage: __instance);
         private static void RollBefore(FishPlusItemPity __instance, int __0, int __1, out long __state)
             => __state = Begin(LootObservationMethod.FishPlusItemRoll, new LootObservationArguments { RollFishTid = __0, BonusGrade = __1, OtherInstanceWrapperPresent = !ReferenceEquals(__instance, null) });
         private static void RollAfter(long __state, int __result) => Postfix(__state, LootObservationMethod.FishPlusItemRoll, originalIntReturn: __result);

@@ -1,14 +1,20 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T13:52:53.815386+00:00",
-  "PluginVersion": "0.1.27-dev",
+  "RecordedUtc": "2026-10-04T14:11:35.097549+00:00",
+  "PluginVersion": "0.1.28-dev",
   "VerificationCommands": [
+    "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1",
-    "development/scripts/Test-Core.ps1"
+    "development/scripts/Inspect-NativeCalls.ps1 (text off/on/low quota and weight)",
+    "development/scripts/Inspect-LootProductApi.ps1"
   ],
-  "CoreTestsPassed": 222,
-  "CoreTestsTotal": 222,
+  "CoreTestsPassed": 226,
+  "CoreTestsTotal": 226,
   "TestNames": [
+    "loot slot scalar signed boundaries and immutable inputs",
+    "loot slot scalar inactive fake value does not reject or repair",
+    "loot slot scalar initialization and zero key remain unavailable",
+    "loot slot scalar tamper and later grades cannot grant cargo proof",
     "cargo selection capacity rejection cannot replace the selected batch",
     "cargo selection source leases mint global IDs without inventing yield",
     "cargo selection requires isolation before any native business",
@@ -233,7 +239,7 @@
     "TCP fish action protocol three rejection"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "687C8F6959163C33B85C026C05D2F645D0900BE12328761BB2CDFC64158BCD60",
+  "CompiledPluginSHA256": "17C60F94E17BE08001BB9E6984388C15ABC85640574CE3076B89616C1A3FE5EA",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
@@ -242,7 +248,7 @@
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Default-off production LootBox.Add_Impl observation synchronously freezes direct resource fields for two exact known native classes into CLR-only prefix context and diagnostics. Native callbacks are compiled only, not executed; the offline Cecil inspector reads declarations and generated wrapper IL only. Resource IDs/base grade/base weight are candidates, not final product identity, slot quality, effective personal weight or complete selected yield. Unchanged Core/TCP inputs retain the exact SHA256 values of prior verified input bytes; Git content is also unchanged after accounting for CRLF representation. They reuse the prior actual 222/222 result without rerunning tests. No native selection, diversion, storage, save, guest isolation, world adoption or two-game gameplay executes. Full M3-M7 and cold configuration remain required.",
+  "Scope": "Four new production CLR decoder fixtures exercise literal signed boundary vectors, immutable inputs and candidates, unavailable initialization/key-zero branches and conservative fake-value checks. Static instruction evidence supports only the initialized nonzero-key XOR subpath, not complete native decoder equivalence or ABI. The default-off production observer compiles exact-class four-slot-field matching samples into CLR-only candidates at Before; native slots and callbacks are not executed. Three actual offline tool modes retain identical decoded instructions and edges while correctly limiting private text; a weight report retains leaf and dataflow uncertainty. No full selected yield, actual final quality/effective weight, member binding, diversion, receipt, storage, save, guest/world adoption or two-game gameplay runs. Full M3-M7, normal return and cold configuration remain required.",
   "ProtocolVersion": 6,
   "MapChoiceTcpTransferVerified": true,
   "ProductionMapChoiceAdapterFixtureVerified": true,
@@ -288,14 +294,16 @@
   "NativeIngameCacheRestored": false,
   "IngameResourceGraphIsolated": false,
   "FullIngameCacheGraphVerified": false,
-  "CoreTestsExecutedThisTurn": false,
-  "CoreTestRunRecordedUtc": "2026-10-04T13:35:08.243492+00:00",
+  "CoreTestsExecutedThisTurn": true,
+  "CoreTestRunRecordedUtc": "2026-10-04T14:11:35.097549+00:00",
   "NativeDictionaryComparerCompiled": true,
   "NativeDictionaryComparerExecuted": false,
   "NativeComparerEqualsAndHashVerified": false,
   "PartialConstructorAllocationRetentionVerified": false,
   "CurrentTurnVerificationCommands": [
+    "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1",
+    "development/scripts/Inspect-NativeCalls.ps1 (text off/on/low quota and weight)",
     "development/scripts/Inspect-LootProductApi.ps1"
   ],
   "StartupTraceFixtureVerified": true,
@@ -380,14 +388,19 @@
   "NativeYieldSelectionExecuted": false,
   "NativeYieldSelectionIsolationVerified": false,
   "NativeCompleteYieldVerified": false,
-  "ReusedCoreTestsFromVersion": "0.1.26-dev",
-  "ReusedCoreTestsFromCommit": "e9d36e61f0cfe00385c34da65b88bdc32d2dce13",
-  "CoreTestInputsCompared": 75,
-  "CoreTestInputsByteIdentical": true,
-  "CoreInputsGitContentUnchanged": true,
-  "CoreInputComparison": "Prior actual validation SHA256 seal; Git blobs checked with CRLF normalization only.",
   "NativeResourceCallbacksExecuted": false,
   "ResourceProductMappingVerified": false,
   "FinalGradeVerified": false,
-  "EffectiveWeightVerified": false
+  "EffectiveWeightVerified": false,
+  "LootSlotScalarFixtureTestsPassed": 4,
+  "LootSlotScalarNewTestNames": [
+    "loot slot scalar signed boundaries and immutable inputs",
+    "loot slot scalar inactive fake value does not reject or repair",
+    "loot slot scalar initialization and zero key remain unavailable",
+    "loot slot scalar tamper and later grades cannot grant cargo proof"
+  ],
+  "NativeSlotCopySourceCompiled": true,
+  "NativeSlotCopyExecuted": false,
+  "NativeObscuredDecoderCalled": false,
+  "RawEncryptedSlotFieldsQueuedOrLogged": false
 }
