@@ -275,7 +275,13 @@ description: Configure or continue development of the MultiDave prototype for Wi
   TrySeal只cache批次与fresh existing facts，容量拒绝不重选；无producer/network/GUI接线，不补true、不Confirm。捕获Grade/指纹不被返航FinalGrade覆盖，兑换数量与品质政策另冻结。返航还需资源时先freeze metadata/transfer ownership再release，Confirmed不是return done。
   全native ABI/实际分流/receipt/入仓保存/guest隔离/world权限未验，安装.12/潜水.11/default.0保持。未部署启动，不催延后测试，完整M3—M7/真实双端正常返航/GitHub冷配置继续。
 
-- 当前源码0.1.32-dev/协议6，实际Core/TCP256/256与Build警告视为错误通过，新增6返航计划+4提交夹具及4旧流程适配；只synthetic CLR。继续个人袋返航先读development/docs/EMPLOYEE_RETURN_PLAN.md及employee-return-plan-build-verification.json；.31产品246摘要保留历史。
+- 历史源码0.1.32-dev/协议6，实际Core/TCP256/256与Build警告视为错误通过，新增6返航计划+4提交夹具及4旧流程适配；只synthetic CLR。继续个人袋返航先读development/docs/EMPLOYEE_RETURN_PLAN.md及employee-return-plan-build-verification.json；.31产品246摘要保留历史。
   既有ReturnItem绑定immutable rawProductFP+policyFP+六参输出的独立planFP，captureGrade/数量/重量不覆写；首次Confirmed Returning employee Unclaimed，fresh转换proof。sameplan Duplicate/changedConflict，employee Lease/Enter/Observe/Save全核固定FP；host自然链无employeeplan不重复Add。
   materializer exactplan同ledger先Enter再guard/一次Add，Add仅精确invocation窗口，creator thread/reentry/competing拒，失败unknown不retry，void仅CallReturned不delta/save。Native helper5existingrefs、storage/dictionary/loaded+SaveSystem→manager→SaveData核；只Main/Branch拒Max/Unknown，无活鱼要求；unknownretain跨断线，sameplan SaveConfirmed且整Dispatch退栈才free/清wrapper（独立in-flight围栏，不能只看ledger阶段），unknownfree不retry。
   没有policy/mapping/network/GUI producer，不造true；实际ItemDataID/Ingredients/Items映射、raw兑换数量与FinalGrade政策/类别leaf/ABI/入仓增量保存未验。installed.12/dive.11/default.0保持，未部署启动不催延后测试，完整M3—M7/双端正常返航/GitHub冷配置继续。
+
+- 当前源码0.1.33-dev/协议6，实际Core/TCP267/267，新增11返航映射夹具；最终Build警告视为错误通过。Native-only末审修owner保留后Core84源不改不重跑，141全插件输入freshseal并最终编译。继续先读development/docs/EMPLOYEE_RETURN_MAPPING.md与employee-return-mapping-build-verification.json，.32计划摘要保持历史。
+  Map只在同ledgerEntered、完整原产品后且Confirm前；固定原lookup/ProductTid/rawGrade/count/type/产品FP和每压缩index模式，-1不占mode，重复ID不合并。数组owned、preflight零business；各scalar先freeze再postguard、partialunknown不retry，整批才Ready。Direct原count，Exchange原rawGrade/count一次positive schema；当前rawCount1窄profile。
+  Native精确immutableCurrentRequest+attemptmask先于guard/classstore/lookup；GetItems/GetIngredients及direct代理，Ingredients继承TID保守==ItemDataID，不能用ItemsTID作parent。数量helper内部再查Items，内部公式/资源一致/full语义仍未知，不自己eval/retry或猜ItemType为delegate政策。
+  新17explicitref/256owner独立保同bridge/ledger/selection上下文；原13free需Confirmed+Ready且wholeMap退栈，成功clear5wrapper，unknown保留。全部sameledger products匹配fixedplan SaveConfirmed才free17，unknownfree不retry。cached结果/纯candidate计划在鱼失效后可读、不Bind/不授权，不造FinalGrade/ReturnConversionVerified。
+  实际离线Cecil4types/2lookupdecls/2pointerctors/5intproxies/4classinit、新PE1method48instr7directedges0indirect1range，只.private原指令，fullbody/ABI/内部公式/分类模式/品质/入仓保存未知。installed.12/dive.11/default.0保持，未部署启动不催延后测试；员工actor/实际两袋/客机隔离/房主世界/真实双端正常返航/GitHub冷配置继续完整M3—M7。

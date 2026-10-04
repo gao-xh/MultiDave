@@ -122,7 +122,11 @@ namespace DaveCoop.Networking
             return _selection.SelectOnce(freshFacts, now);
         }
 
-        void IFishYieldSelectionBackend.ValidateSource() => ValidateSource();
+        void IFishYieldSelectionBackend.ValidateSource()
+        {
+            if (_returnMappingInFlight) ValidateReturnSource();
+            else ValidateSource();
+        }
         int IFishYieldSelectionBackend.SelectPickupBonusGrade()
         {
             RequireDispatch();
@@ -245,12 +249,14 @@ namespace DaveCoop.Networking
         // No caller bool can release it: resolution must exist in the same ledger.
         public bool ReleaseAfterResolution()
         {
-            if (Environment.CurrentManagedThreadId != _unityThreadId || _releaseAttempted) return false;
+            if (Environment.CurrentManagedThreadId != _unityThreadId || _releaseAttempted || _returnMappingInFlight) return false;
             CargoCaptureSnapshot found = null;
             foreach (CargoCaptureSnapshot capture in _ledger.Snapshot.Captures)
                 if (capture.CaptureId == _lease.CaptureId) { found = capture; break; }
             if (found == null || found.OperationId != _lease.OperationId || found.Fingerprint != _lease.IntentFingerprint ||
                 (found.Stage != CargoCaptureStage.Confirmed && found.Stage != CargoCaptureStage.NativeNotEntered)) return false;
+            if (found.Stage == CargoCaptureStage.Confirmed && (_selection == null ||
+                _selection.ReturnMapping.Stage != FishReturnMappingStage.MappingReady)) return false;
             _releaseAttempted = true;
             try
             {
@@ -261,7 +267,9 @@ namespace DaveCoop.Networking
                     IL2CPP.il2cpp_gchandle_free(reference.Handle);
                     reference.Freed = true;
                 }
-                _resources.Clear(); _references.Clear(); _released = true;
+                _resources.Clear(); _references.Clear();
+                _fish = null; _info = null; _body = null; _data = null; _pity = null;
+                _released = true;
                 Owners.Remove(_lease);
                 return true;
             }

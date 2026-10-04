@@ -43,3 +43,5 @@
 0.1.31增加[捕获产品归一化](EMPLOYEE_FISH_PRODUCTS.md)，同一选择桥缓存产品并调用既有LateSeal；捕获原品质与返航最终品质分开。夹具事实不授予实际source/actor/isolation能力；仍不自动ConfirmCapture。
 
 0.1.32[员工返航计划](EMPLOYEE_RETURN_PLAN.md)绑定捕获原产品指纹与独立转换政策/输出指纹；捕获rawGrade不被FinalGrade或兑换数量覆盖。进入入仓前固定计划，void返回不ConfirmStorage，不能拿新计划补未知或重新分配。
+
+0.1.33在释放原选择引用前需完成[返航映射](EMPLOYEE_RETURN_MAPPING.md)：固定原产品/query/ordinal与一次数量候选；mapping过程中同ledger闭合立即停止后续读，partial前缀保留unknown。确认捕获不自动造MappingReady，whole调用不提前free；17返航owner独立保留处理上下文，真实terminal/diversion proof仍需producer。

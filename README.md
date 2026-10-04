@@ -1,6 +1,6 @@
 # MultiDave
 
-当前插件源码0.1.32-dev、协议6；本轮实际Core/TCP256/256与Build警告视为错误通过（新增6项返航计划、4项提交夹具）。[员工逐项返航计划](development/docs/EMPLOYEE_RETURN_PLAN.md)固定独立转换指纹并沿既有ledger一次提交；typed入仓helper已编译，无GUI/network producer，真实品质/数量政策、分流与库存增量/保存未验。证据见[构建摘要](development/logs/employee-return-plan-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕鱼/返航、客机隔离/房主世界、双端与冷配置仍待完成。
+当前插件源码0.1.33-dev、协议6；实际Core/TCP267/267与最终Build警告视为错误通过，新增11项返航映射夹具。[员工返航映射与数量缓存](development/docs/EMPLOYEE_RETURN_MAPPING.md)固定原产品映射和一次兑换结果；typed查询/兑换已编译，独立17引用owner保留同ledger上下文，尚无GUI/network producer或真实品质/类别/入仓保存证明。证据见[构建摘要](development/logs/employee-return-mapping-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕鱼/返航、客机隔离/房主世界、双端与冷配置仍待完成。
 
 《潜水员戴夫》Windows Steam 版的联机 Mod 开发项目。
 

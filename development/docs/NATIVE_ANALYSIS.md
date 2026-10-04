@@ -147,3 +147,5 @@ GuestStateIsolated、NativeExecutionImplemented等能力保持false。
 0.1.31补一份AddFromLootBox精确Depth0私有报告，1方法112指令、1间接call、无截断/配额；完整方法/间接调用仍未证。原metadata实际3类14getter，确认TID编号与DR.Items接口支持范围。新源/测试为捕获产品归一化，不执行game；原报告/文本/地址仅.local，见[产品桥](EMPLOYEE_FISH_PRODUCTS.md)。
 
 0.1.32无新PE执行，仅新私有Cecil原语/直接字段绑定核对，13声明42代理＋6storage/save代理。利用已知六参形成实际typed Add helper，同ledger进入后一次调用；没有原生运行/转换策略/入仓或存档证明。原报告/IL/依赖仅.local，构建与Core范围见[EMPLOYEE_RETURN_PLAN](EMPLOYEE_RETURN_PLAN.md)。
+
+0.1.33仅新增一份exact count helper Depth0私有PE分析，1方法48指令7direct edges/0indirect/1known range，48text/757字符/0省略，无quota/truncation/invalid/overrun；完整method与公式内部语义未证。另私有Cecil4types/2lookupdecls/2pointerctors/5directInt32及4classinit。原地址/IL/指令不发布，摘要见[EMPLOYEE_RETURN_MAPPING](EMPLOYEE_RETURN_MAPPING.md)。

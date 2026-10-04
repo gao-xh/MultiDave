@@ -779,3 +779,14 @@
 - 本轮实际Core/TCP256/256，新增6返航计划+4提交夹具，4旧员工返航流程适配；只synthetic facts/backend，不native。Build警告视为错误通过，SHA256 `27D31C9BEC68F535BF8584729A234DE60CB370A25BC81C2918E40FECA5341DE9`；138执行前封存输入后相同。
 - 新EMPLOYEE_RETURN_PLAN/currentcore/实际构建摘要与接手/计划/Skill同步，旧.31产品246摘要保持。下一步冻结实际资源/分类/品质数量政策和生命周期证据，接仓库bucket增量/保存；可信员工actor/捕获分流、guest隔离/房主世界、双端正常闭环与冷配置仍必须完成。
 - 两名独立只读末审READY，正式Skill校验/复制hash匹配，SHA256 `A1A057A73ED035B3026CABA1ADF51C843BAABBDA72ABBE1889CAE68134438831`。另补精确Add调用窗口与独立整Dispatch in-flight释放围栏，不能同步回调推进SaveConfirmed后提前free。最终138输入字节相同，无新代码变化不重复测试；新鲜game进程0、安装DLL保持8F90042C…E5F5B，原binary/metadata及两个interop最终hash匹配。Cecil主私有脚本与Binding内联追加分列，不声称主脚本单独复现追加记录。
+
+## 2026-10-04 — 0.1.33 员工返航映射与一次数量缓存
+
+- 前轮945e1d7已推送并核远端；继续每人独立背包/容量/负重和房主长期进度的完整M3—M7。当前未部署/启动、未执行游戏业务或读取存档。
+- 新FishReturnProducts沿实际selection/normalization/sameledger，固定稀疏DropOrdinal与压缩ProductIndex、原lookup/ProductTID/rawGrade/count/type/FP/mode。预拒零尝试，entered后各returnedscalar先保存再source/ledger postguard；整批原子Ready，unknown不retry，Direct无helper、Exchange用原rawGrade/count一次。纯计划creation不Bind/授权，capture数据不覆写。
+- 新NativeEmployeeFishReturnMapping typed GetItems/GetIngredients/direct字段/实际Exchange，exactCurrentRequest+单调attempt mask，attempt先于guard/classstore/业务。17显式ref限额、256独立owner、精确类/查询ID窄profile；source13只有Ready且Map退栈/同ledgerConfirm才free并clear字段，17只有全同产品plan SaveConfirmed退栈后free；unknown跨Disconnect保留不retry，无GUI/network producer。
+- 实际离线API4types/2businessdecls/2IntPtrctors/5int代理/4classinit，inputhash匹配；新PE一次Depth0分析1方法48指令7direct edges/0indirect/1known range，48text/757字符/0省略无trunc/quota/invalid/overrun。helper内部又GetItems并公式rawGrade后乘count；完整公式/原映射资源等价和一般乘法安全未知。原报告/地址/IL/指令只.local。
+- 实际Core/TCP267/267：11新夹具覆盖mixed mode/duplicate IDs/sentinel、前后源丢失/同ledger同步Confirm、partial/no retry、thread/reentry/owned数据、pure plan、capacity拒后同缓存seal/Confirm/源消失。synthetic资源/facts不证明native政策/收益。
+- 独立末审发现17owner只保native依赖、原13free后可能丢bridge/ledger/缓存，已补强managed Backend上下文及exactowner核对。Native-only修不影响实际Core84源输入；141全插件输入重新执行前seal并最终Build，编译警告视为错误通过，旧seal/log保留，不把修后输入称为Core再次执行。
+- 最终DLL SHA256 `651D26DB75C4B098178DFE7C94D5CE99BED507C8FA2D9793D6F2ABDDDAE43003`；新增EMPLOYEE_RETURN_MAPPING、真实摘要/currentCore/计划/接手/log/Skill同步。后续实际模式分类/FinalGrade政策、员工actor/捕鱼分流、仓库bucket增量/save、guest隔离/房主海洋、真实双端正常闭环和GitHub冷配置继续必需。
+- 两名独立源码/窗口复核及最终文档证据审查READY；正式Skill校验、protected copy与hash匹配，SHA256 `EC70E10701A3B4E956153879948961BD797A7A1D2102819EFFAE42559F5D4D28`。最终141插件输入及84实际Core输入核对无变化；binary/metadata/两个interop/安装DLL最终hash保持。新鲜Get-Process枚举game进程0；CIM因权限拒绝未作为0证据，不终止进程。Skill、日志、计划与公开摘要收尾通过，原始指令仍只.local。

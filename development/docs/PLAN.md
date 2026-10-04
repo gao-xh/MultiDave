@@ -1,6 +1,6 @@
 # MultiDave 开发计划
 
-当前插件源码0.1.32-dev、协议6；本轮实际Core/TCP256/256与Build警告视为错误通过（新增6项返航计划、4项提交夹具）。[员工逐项返航计划](EMPLOYEE_RETURN_PLAN.md)固定独立转换指纹并沿既有ledger一次提交；typed入仓helper已编译，无GUI/network producer，真实品质/数量政策、分流与库存增量/保存未验。证据见[构建摘要](../logs/employee-return-plan-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕鱼/返航、客机隔离/房主世界、双端与冷配置仍待完成。
+当前插件源码0.1.33-dev、协议6；实际Core/TCP267/267与最终Build警告视为错误通过，新增11项返航映射夹具。[员工返航映射与数量缓存](EMPLOYEE_RETURN_MAPPING.md)固定原产品映射和一次兑换结果；typed查询/兑换已编译，独立17引用owner保留同ledger上下文，尚无GUI/network producer或真实品质/类别/入仓保存证明。证据见[构建摘要](../logs/employee-return-mapping-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕鱼/返航、客机隔离/房主世界、双端与冷配置仍待完成。
 
 目标：Windows Steam 版双人潜水合作 MVP，先做局域网房主/客户端。
 房主负责游戏世界和结算。服务器方案暂缓。
@@ -226,3 +226,5 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 0.1.31已固定捕获产品并提供同批LateSeal入口，详见[EMPLOYEE_FISH_PRODUCTS](EMPLOYEE_FISH_PRODUCTS.md)。下一步接真实host-owned员工actor与实际分流/共享进度/鱼终态凭证；返航另固定原品质兑换数量与FinalGrade计划。完整M3—M7继续，不把字段完成当玩法授权。
 
 0.1.32已沿原ReturnItem固定员工独立转换计划，并实现同ledger Enter前后的一次typed入仓原语；详见[EMPLOYEE_RETURN_PLAN](EMPLOYEE_RETURN_PLAN.md)。下一步冻结真实资源映射与一次原品质兑换/FinalGrade政策，再接实际仓库桶增量与保存。可信员工actor/捕鱼分流、guest隔离/房主世界、双实例正常返航与冷配置继续完整M3—M7。
+
+0.1.33已从原员工捕获产品冻结有序返航映射与一次rawGrade数量兑换候选，新增独立17引用owner及同ledger上下文保留；详见[EMPLOYEE_RETURN_MAPPING](EMPLOYEE_RETURN_MAPPING.md)。下一步固定真实分类/count-mode来源和FinalGrade政策，再接真实捕鱼分流、仓库增量/保存；客机隔离、房主世界采用、员工actor、双实例正常返航和冷配置继续完整M3—M7。

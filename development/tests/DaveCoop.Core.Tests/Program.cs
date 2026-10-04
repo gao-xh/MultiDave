@@ -8,6 +8,17 @@ internal static class Program
     {
         var tests = new (string Name, Action Run)[]
         {
+            ("fish return mapping preserves ordered inputs and explicit count modes", FishReturnProductTests.MixedCountModesKeepExactOrderedMappings),
+            ("fish return no-drop sentinels preserve compact product mode identity", FishReturnProductTests.NoDropSentinelsDoNotConsumeMappingModes),
+            ("fish return mode preflight rejects without consuming business", FishReturnProductTests.ModePreflightRejectsWithoutConsumingMapping),
+            ("fish return missing backend and unprepared products dispatch nothing", FishReturnProductTests.MissingBackendAndUnpreparedProductsDoNotStartMapping),
+            ("fish return business failures retain partial outputs without retry", FishReturnProductTests.BusinessFailuresRetainPartialMappingWithoutRetry),
+            ("fish return source guard loss preserves returned prefix and stops work", FishReturnProductTests.SourceGuardsPreserveReturnedEvidenceAndStopLaterWork),
+            ("fish return invalid resource metadata and exchange counts stay unknown", FishReturnProductTests.InvalidMetadataAndExchangeCountsStayUnknown),
+            ("fish return creator thread and reentry cannot repeat mapping", FishReturnProductTests.CreatorThreadAndReentryCannotDuplicateMapping),
+            ("fish return owned snapshots and modes freeze original mapping scalars", FishReturnProductTests.OwnedMappingSnapshotsAndModesKeepFirstScalars),
+            ("fish return candidate plans preserve raw capture and grant no receipt", FishReturnProductTests.MappedPlansKeepRawCaptureAndGrantNoReturnReceipt),
+            ("fish return capacity retry and resolved source preserve cached mapping", FishReturnProductTests.CapacityRetryAndResolvedSourceKeepTheCachedReturnMapping),
             ("cargo return bound materializer enters ledger and arbitrates once", CargoReturnMaterializerTests.BoundPlanDispatchEntersLedgerAndArbitratesOnce),
             ("cargo return materializer guard and add failures stay unknown", CargoReturnMaterializerTests.GuardAndAddFailuresRemainUnknownWithoutRetry),
             ("cargo return materializer creator thread and reentry cannot redispatch", CargoReturnMaterializerTests.CreatorThreadAndReentrantCallsCannotDispatchAgain),

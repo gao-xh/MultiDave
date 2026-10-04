@@ -1,6 +1,6 @@
 # MultiDave 接手记录
 
-当前插件源码0.1.32-dev、协议6；本轮实际Core/TCP256/256与Build警告视为错误通过（新增6项返航计划、4项提交夹具）。[员工逐项返航计划](EMPLOYEE_RETURN_PLAN.md)固定独立转换指纹并沿既有ledger一次提交；typed入仓helper已编译，无GUI/network producer，真实品质/数量政策、分流与库存增量/保存未验。证据见[构建摘要](../logs/employee-return-plan-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕鱼/返航、客机隔离/房主世界、双端与冷配置仍待完成。
+当前插件源码0.1.33-dev、协议6；实际Core/TCP267/267与最终Build警告视为错误通过，新增11项返航映射夹具。[员工返航映射与数量缓存](EMPLOYEE_RETURN_MAPPING.md)固定原产品映射和一次兑换结果；typed查询/兑换已编译，独立17引用owner保留同ledger上下文，尚无GUI/network producer或真实品质/类别/入仓保存证明。证据见[构建摘要](../logs/employee-return-mapping-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕鱼/返航、客机隔离/房主世界、双端与冷配置仍待完成。
 
 ## 已完成
 
@@ -342,3 +342,5 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 0.1.31接手先读[EMPLOYEE_FISH_PRODUCTS](EMPLOYEE_FISH_PRODUCTS.md)及其摘要：实际246测试/Build，10新夹具只执行CLR seam。Native helper仍无GUI/network producer。TID≠lookup合法，只有exact DR.Items；getter异常不重读，容量复核只cache。捕获Grade保持raw，返航政策另冻结；Capture Confirmed不等于返航完成，释放前须转移资源或冻结所需返航元数据。不要补true或伪造complete/held/no-write/receipt；安装与实机范围不扩大。
 
 0.1.32先读[EMPLOYEE_RETURN_PLAN](EMPLOYEE_RETURN_PLAN.md)及摘要：实际256测试/Build，6+4新夹具和4旧流程适配只CLR。所有employee返航阶段现在需要固定ReturnPlanFingerprint，不能沿旧无plan流程放行；host原袋无需员工plan/不重复Add。Native helper固定5已存在ref，仅Main/Branch，void不是delta/save，未知不retry，sameledgerPlan SaveConfirmed后才free。尚无转换/捕获/入仓producer，不补true；现安装/实机范围保持。
+
+0.1.33先读[EMPLOYEE_RETURN_MAPPING](EMPLOYEE_RETURN_MAPPING.md)与摘要：实际267测试/最终Build；11新mapping夹具只synthetic。Map必须产品完整后、捕获Confirm前；原source13free现在需要MappingReady且whole Map已退栈。17owner独立保留bridge/ledger/selection，全部同批同输出plan SaveConfirmed才free；unknown不retry。源码Native-only末审修后Core84输入相同不重跑，141最终Build输入freshseal。真实类别/品质/内部公式/ABI/游戏捕获入仓保存仍未验，不补权限。

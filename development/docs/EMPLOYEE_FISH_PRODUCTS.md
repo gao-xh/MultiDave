@@ -33,3 +33,5 @@ CargoProduct.Grade 表示捕获时的原槽品质，不能被返航 FinalGrade �
 没有部署或启动此版本，安装0.1.12、最近潜水0.1.11、默认发行包0.1.0保持。真实可信员工 actor、个人分流/负重/捕获凭证、逐项返航、客机隔离/房主世界、双游戏与 GitHub 冷配置继续完整 M3—M7。
 
 0.1.32另实现[独立员工返航计划与一次入仓原语](EMPLOYEE_RETURN_PLAN.md)。本页0.1.31产品构建摘要保持历史；当前返航新阶段要求固定计划，仍需真实转换、分流、delta/save与双游戏验证。
+
+0.1.33进一步实现[返航映射与数量缓存](EMPLOYEE_RETURN_MAPPING.md)，保留本页0.1.31历史产品验证。原Grade/Count/Weight/指纹不覆盖，固定映射先于Confirm/原引用释放；native转换/类别、FinalGrade与实际入仓保存仍未验证。
