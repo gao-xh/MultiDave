@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using DaveCoop.Rendering;
 using DaveCoop.Networking;
+using DaveCoop.Discovery;
 
 namespace DaveCoop
 {
@@ -16,7 +17,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.3-dev";
+        public const string Version = "0.1.4-dev";
 
         public override void Load()
         {
@@ -28,6 +29,11 @@ namespace DaveCoop
                 "Read player/camera state on the Unity thread; write bounded discovery logs. F9 captures a snapshot.");
             PlayerProbe.MaxSnapshots = Config.Bind("Discovery", "MaxSnapshots", 9000,
                 "Maximum snapshots per game launch, clamped to 1..18000 (two samples per second).");
+            WorldProbe.Logger = Log;
+            WorldProbe.Enabled = Config.Bind("Discovery", "EnableWorldProbe", false,
+                "F7 toggles read-only map selection, fish and item observations; no game-state writes.");
+            WorldProbe.MaxSnapshots = Config.Bind("Discovery", "MaxWorldSnapshots", 900,
+                "Maximum world snapshots per launch, clamped to 1..1800; also bounded to 32 MiB.");
             RemotePreview.Logger = Log;
             RemotePreview.Enabled = Config.Bind("Preview", "Enabled", true,
                 "Display a sprite-only delayed local replay actor for M2 testing. F10 toggles it.");
@@ -45,6 +51,7 @@ namespace DaveCoop
             AddComponent<PlayerProbe>();
             AddComponent<RemotePreview>();
             AddComponent<NetworkDriver>();
+            AddComponent<WorldProbe>();
             Log.LogInfo($"DAVECOOP_BOOTSTRAP_OK: {Name} {Version}; Unity {Application.unityVersion}");
         }
     }
@@ -99,7 +106,7 @@ namespace DaveCoop
                 return;
 
             GUI.Box(new Rect(12, 12, 640, 145),
-                $"DaveCoop Prototype {Plugin.Version}\nPlugin loaded | Scene: {_scene}\n{PlayerProbe.Status}\n{RemotePreview.Status}\n{NetworkDriver.Status}\nF8: panel | F9: snapshot | F10: replay | F11: room");
+                $"DaveCoop Prototype {Plugin.Version}\nPlugin loaded | Scene: {_scene}\n{PlayerProbe.Status}\n{RemotePreview.Status}\n{NetworkDriver.Status}\nF7: world probe | F8: panel | F9: snapshot | F10: replay | F11: room");
         }
     }
 }

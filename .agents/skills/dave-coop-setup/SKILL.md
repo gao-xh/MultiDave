@@ -29,7 +29,8 @@ description: Configure or continue development of the MultiDave prototype for Wi
 ## 继续开发
 
 读 `development/docs/HANDOFF.md`、`PLAN.md`；研究游戏接口时读 `GAME_API.md`，
-研究显示/协议/会话时读 `MULTIPLAYER.md`。源码在 `development/src/DaveCoop/`。
+研究显示/协议/会话时读 `MULTIPLAYER.md`，研究同一海洋、鱼与互动时读 `WORLD_SYNC.md`。
+源码在 `development/src/DaveCoop/`。
 
 - C# 修改后运行 `development/scripts/Build-Plugin.ps1`。
   纯 CLR 姿态、协议或会话修改后另运行 `development/scripts/Test-Core.ps1`。
@@ -42,6 +43,9 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - 源码开发版的 F11 打开房间面板。先按 MULTIPLAYER 验证 Local test 的真实 TCP
   收发与主线程显示，再验证 Host/Join 的两个游戏实例；默认发行包不包含这个新入口。
   对照 NETWORK/LAYOUT 标记记录成功或失败，布局指纹通过不等于统一地图/实体已完成。
+- 0.1.4-dev 新增 F7 世界只读探针，默认关闭，已编译但实机验证状态以 HANDOFF 为准。
+  正常退出后部署、验证新版本启动，再观察地图选择、鱼 HP/捕获和返航生命周期。
+  `development/scripts/Inspect-WorldApi.ps1` 可复现接口签名研究；元数据不能证明挂钩副作用。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

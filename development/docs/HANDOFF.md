@@ -6,7 +6,7 @@
 自定义插件加载、Unity Update 回调，以及 `DR_Start`、`DR_Logo`、`DR_Title` 场景读取。
 插件日志证据见 `../logs/bootstrap-verification.log`。
 
-开发在 `codex/player-discovery` 分支，当前源码为 `0.1.3-dev`，M1 历史证据来自 `0.1.1-dev`。
+开发在 `codex/player-discovery` 分支，当前源码为 `0.1.4-dev`，M1 历史证据来自 `0.1.1-dev`。
 加入只读玩家、输入、动画和摄像机探针，离线元数据检查工具及 JSONL 汇总工具。
 真实潜水 `A01_01_01` 已读到 `PlayerGroup(Clone)/DaveCharacter`，
 `InGameManager.playerCharacter` 与该实例一致，`CameraManager` 跟随其根 Transform。
@@ -20,7 +20,10 @@
 M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态中原生玩家数为 1，
 摄像机均绑定本地玩家，F10 停用/重建及返航清理有日志，无警告，基础验收通过。
 新增纯 CLR 姿态时间线、协议/握手/TCP 分帧与校验、会话、资源键、布局指纹及插值，35 项测试通过。
-0.1.3-dev 的 F11 连接入口、只读地图布局核对与远程角色主线程适配已编译，等待部署验证。
+0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
+启动证据见 `../logs/network-bootstrap-verification.json`。
+0.1.4-dev 新增默认关闭的 F7 世界只读探针，已编译，尚未部署或实机运行。
+地图/鱼/互动方案及可复现接口研究见 `WORLD_SYNC.md`、`scripts/Inspect-WorldApi.ps1`。
 细节见 `MULTIPLAYER.md`，最新测试证据见 `../logs/core-verification.json`。
 
 首次安装记录在忽略的 `artifacts/framework-install.json`；
@@ -39,16 +42,21 @@ M3 游戏适配实机验证和真实双游戏验收尚未完成。
 
 ## 下一步
 
-按 `PLAN.md`、`GAME_API.md` 和 `MULTIPLAYER.md` 继续。
+按 `PLAN.md`、`GAME_API.md`、`MULTIPLAYER.md` 和 `WORLD_SYNC.md` 继续。
 M2 历史验证构建 SHA256 为 `E2A7DEC29ACB894F72A2D8528C099E82AB867DDE00F82DC739707BAA8EBB5AB9`。
-新的 0.1.3-dev 已编译，SHA256 为 `1E2264723B799150033C55F0754E73DA9F33AFEF5C61FEE5A5030A7DECB8064D`。
-检测到游戏仍运行，已请用户保存退出；收到/观察到正常退出后才能部署。
-先验证新进程 DAVECOOP_NETWORK_READY，再按 MULTIPLAYER 的 F11 / Local test 执行潜水。
+用户保存退出后部署并启动 0.1.3-dev，SHA256 为 `1E2264723B799150033C55F0754E73DA9F33AFEF5C61FEE5A5030A7DECB8064D`。
+当前游戏运行这一版本，DAVECOOP_NETWORK_READY 已确认；已请用户按 F11 / Local test 执行潜水。
+新源码 0.1.4-dev 编译 SHA256 为 `587D4D5B4FA602783B5E7DDCC2FB6DF9657B3EE3AD1CACC6FD32799741481A05`。
+正常保存退出后再部署世界探针，先核对新进程加载，F7 开启观察入海/捕鱼/返航生命周期。
+不要把新探针的编译证据或旧版本启动证据当成它已运行。
 对照 NETWORK_STATE 的 Ready/角色帧/资源及 LAYOUT_READY 或 WARNING，修复实际问题。
 本机测试仅是单游戏中的两个 TCP 会话；不能标记 M3 双游戏或 M4 同一地图完成。
 之后做真实双游戏测试，并验证资源键、地图布局指纹在两机上的稳定性。
 Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可跨线程使用 Native Sprite 引用。
 后续游戏交互仍需研究真实控制流和原角色组件副作用。
+已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
+Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
+探针记录本机 ID 仅用于观察，后续网络实体使用房主分配的 RoomId/epoch/EntityId。
 
 ## 已遇到的问题
 

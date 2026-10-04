@@ -3,6 +3,8 @@ param(
     [string]$GamePath,
     [ValidatePattern('^[A-Za-z0-9_.-]+\.dll$')]
     [string]$AssemblyName = 'Assembly-CSharp.dll',
+    [ValidatePattern('^[A-Za-z0-9_.-]+\.json$')]
+    [string]$ReportName,
     [string[]]$TypeName = @('PlayerCharacter', 'BaseCharacter', 'InGameManager',
         'CameraManager', 'PerspectiveCameraManager', 'OrthographicCameraManager',
         'CharacterController2D', 'UserInput')
@@ -48,7 +50,8 @@ try {
     }
     $reportRoot = Join-Path $PSScriptRoot '..\.local\analysis'
     New-Item -ItemType Directory -Path $reportRoot -Force | Out-Null
-    $reportPath = [IO.Path]::GetFullPath((Join-Path $reportRoot ($AssemblyName + '.api.json')))
+    if (!$ReportName) { $ReportName = $AssemblyName + '.api.json' }
+    $reportPath = [IO.Path]::GetFullPath((Join-Path $reportRoot $ReportName))
     $report | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reportPath -Encoding utf8
     [pscustomobject]@{ ReportPath = $reportPath; TypeCount = @($types).Count } | ConvertTo-Json
 } finally {

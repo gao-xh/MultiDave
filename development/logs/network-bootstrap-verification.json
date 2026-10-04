@@ -1,0 +1,30 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-04T05:03:11.3647859Z",
+  "PluginVersion": "0.1.3-dev",
+  "InstalledPluginSHA256": "1E2264723B799150033C55F0754E73DA9F33AFEF5C61FEE5A5030A7DECB8064D",
+  "SteamBuild": "25315876",
+  "UnityVersion": "6000.0.52f1",
+  "ProcessStartUtc": "2026-10-04T04:57:33.2007933Z",
+  "CurrentProcessLogFreshAtObservation": true,
+  "BootstrapMarkersPresent": [
+    "DAVECOOP_BOOTSTRAP_OK",
+    "DAVECOOP_UPDATE_OK",
+    "DAVECOOP_PROBE_READY",
+    "DAVECOOP_PREVIEW_READY",
+    "DAVECOOP_NETWORK_READY"
+  ],
+  "ScenesAtObservation": [
+    "DR_Start",
+    "DR_Logo",
+    "DR_Title"
+  ],
+  "NetworkDriverLoaded": true,
+  "KnownFrameworkWarning": "Class::Init substitute warning remains",
+  "Scope": "Fresh game-process bootstrap only. No connection, remote rendering, layout agreement, fish synchronization or two-game acceptance inferred.",
+  "NativeConnectionVerified": false,
+  "NativeNetworkRenderingVerified": false,
+  "TwoGameNetworkingVerified": false,
+  "SameWorldVerified": false,
+  "CooperativeFishingVerified": false
+}

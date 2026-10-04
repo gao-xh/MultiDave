@@ -1,8 +1,10 @@
 # 潜水员戴夫联机原型
 
 当前进度：M1 已通过潜水、场景切换与返航读取验证，M2 回放基础验收通过。
-M3 传输/会话/资源键/布局与插值已通过 35 项测试，游戏连接适配已编译待实机验证。
-完整计划见 [PLAN](docs/PLAN.md)，实现与待验证范围见 [MULTIPLAYER](docs/MULTIPLAYER.md)。
+M3 核心有 35 项通过测试，0.1.3-dev 网络组件已实机加载，连接/显示与双游戏验收待完成。
+0.1.4-dev 默认关闭的世界只读探针已编译，待部署验证。
+完整计划见 [PLAN](docs/PLAN.md)，移动实现见 [MULTIPLAYER](docs/MULTIPLAYER.md)，
+地图、鱼与互动方案见 [WORLD_SYNC](docs/WORLD_SYNC.md)。
 尚未完成真实双游戏移动验收、同一地图生成、捕鱼同步或存档同步。
 
 ## 本机环境
@@ -12,7 +14,7 @@ M3 传输/会话/资源键/布局与插值已通过 35 项测试，游戏连接�
 - 检查时的 Steam Build ID：`25315876`
 - Unity：`6000.0.52f1`，Windows x64 IL2CPP
 - BepInEx：官方 `6.0.0-be.788+5b766a3`
-- 插件：`local.davecoop.prototype`，源码 `0.1.3-dev`，发布包 `0.1.0`
+- 插件：`local.davecoop.prototype`，源码 `0.1.4-dev`，当前实机 `0.1.3-dev`，发布包 `0.1.0`
 
 ## 编译与安装
 
@@ -38,7 +40,8 @@ M3 传输/会话/资源键/布局与插值已通过 35 项测试，游戏连接�
 
 ## 运行验证
 
-游戏左上角显示 `DaveCoop Prototype 0.1.3-dev`、加载状态、当前场景和发现的玩家数量。
+当前已部署游戏左上角显示 `DaveCoop Prototype 0.1.3-dev`、加载状态、当前场景和发现的玩家数量。
+新源码部署后版本为 0.1.4-dev，F7 可开启只读世界探针；探针尚无实机验收证据。
 按 F8 显示或隐藏面板，设置保存在
 `BepInEx/config/local.davecoop.prototype.cfg`。
 
