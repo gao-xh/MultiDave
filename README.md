@@ -1,5 +1,7 @@
 # MultiDave
 
+当前源码为 0.1.23-dev、协议 5，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 182/182 通过。[启动观察器](development/docs/SAVE_STARTUP_OBSERVATION.md)默认关闭，启用后在 Plugin.Load 安装自己的只读挂钩；[精确入口研究](development/docs/GUEST_STARTUP_API.md)确认本机框架由场景切换回调触发插件，不能据此证明早于所有个人读取。路径仅记录有界哈希，未重定向或启用冷档。范围见[当前摘要](development/logs/save-startup-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。完整客机隔离、房主世界采用、每人独立容量/捕获分流、返航入仓及真实双端/冷配置仍待完成。
+
 《潜水员戴夫》Windows Steam 版的联机 Mod 开发项目。
 
 **默认安装包为 0.1.0 加载原型，只验证插件加载、场景读取和状态面板。
@@ -53,7 +55,7 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 `distribution/` 是供自动安装使用的本项目插件包。
 本仓库不分发游戏、游戏接口程序集、存档或 BepInEx 运行库。
 
-`codex/player-discovery` 分支当前源码为 0.1.22-dev、协议 5；插件 Build 警告视为错误通过，未部署或启动。本轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重新运行这批测试。
+`codex/player-discovery` 分支0.1.22 历史源码为 0.1.22-dev、协议 5；插件 Build 警告视为错误通过，未部署或启动。0.1.22 该轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重新运行这批测试。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试；该进程已确认插件加载、Unity Update、网络入口及 4 条初始路线输入日志，仅主菜单启动通过。
 目标检查、潜水路线、场景切换与正常返航仍待实机，用户当前不方便试玩，手动验证已延后。最近完成潜水验证的是 0.1.11-dev，单游戏 TCP 鱼群显示与发射/挂钩/伤害只读观察已运行。
 用户确认偏移鱼群可见、捕获原鱼时对应副本也消失，关闭鱼群显示后恢复正常，操作和镜头正常。
@@ -118,4 +120,4 @@ Mod 不持有原生包装器、不调用或改写选图/加载/存档入口；Di
 
 0.1.22 补充[独立字典 comparer 候选](development/docs/GUEST_DICTIONARY_COMPARERS.md)与[精确接口](development/docs/GUEST_COMPARER_API.md)：对 int、string 和 int32 底型 InGameSaveType，只研究已核对 exact class 的 Generic/Object family，以及该 enum 的专用 Enum family；原 comparer 的指针、class、kind 和辅助引用纳入检查。食材缓存使用相同规则；原 null 可捕获但拒绝准备，不猜 Default、不共享或清空原 comparer。新 dictionary 显式 `(capacity, comparer)` 后才 Add；未知自定义、文化或 hash-salt 语义拒绝。
 
-普通 constructor 抛出时 helper 赋值尚未完成，`PartialConstructorAllocationRetentionVerified=false`，不能声称所有未知分配都已持有。[当前摘要](development/logs/guest-comparer-build-verification.json)的插件 Build 警告视为错误通过，Core 复用前轮 176 项结果。七步、21 explicit handles 和四 Data 检查未扩；原生 ABI、完整隔离、进入/静止、世界和背包权限仍 false，无 GUI/Network 自动入口。[冷档方案](development/docs/GUEST_COLD_PROFILE.md)仅研究首次加载、slot 与输出路径，尚未采用；完整双端与每人独立捕获、容量分流及逐产物返航目标保持。
+普通 constructor 抛出时 helper 赋值尚未完成，`PartialConstructorAllocationRetentionVerified=false`，不能声称所有未知分配都已持有。[0.1.22 历史摘要](development/logs/guest-comparer-build-verification.json)的插件 Build 警告视为错误通过，Core 复用前轮 176 项结果。七步、21 explicit handles 和四 Data 检查未扩；原生 ABI、完整隔离、进入/静止、世界和背包权限仍 false，无 GUI/Network 自动入口。[冷档方案](development/docs/GUEST_COLD_PROFILE.md)仅研究首次加载、slot 与输出路径，尚未采用；完整双端与每人独立捕获、容量分流及逐产物返航目标保持。

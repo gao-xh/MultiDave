@@ -661,3 +661,13 @@
 - Test-Core源码与选定adapter/脚本共61项逐文件git object一致，复用0.1.21真实176/176结果，本轮未重跑Core或执行nativehelper。Build警告视为错误通过，SHA256：`FED729C9C9ADEF297D9282D5C76D237C548AB7983115BFEF383BE60394328C50`；详情见guest-comparer-build-verification及core-verification。历史hash/安装0.1.12/潜水0.1.11/default0.1.0保留。
 - 日志、HANDOFF/PLAN及Skill同步，后续核实际首load路径隔离与全部输出/actor/cache/资源，然后房主地图采用、个人容量/产物分流、逐产物返航及真实双端/GitHub冷配置完整闭环；比较器与冷档候选不作完整目标完成证据。
 - 本轮 Skill 草稿正式校验通过并同步，两个新 Inspector 的 PowerShell 解析错误为 0；独立源码和发布记录审查无阻断。新鲜游戏进程检查为 0，已安装插件 SHA256 仍为 `8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，没有部署或启动新版本。
+
+## 2026-10-04 — 0.1.23 启动加载与路径来源观察
+
+- 前一goal turn为实际进展：0.1.22独立comparer源码已编译、提交75b6b42并核验远端；Core未改复用前轮176项结果。完整M3—M7保持active，每人独立袋/容量/负重及房主长期进度不变。本轮未部署/启动/native业务或读改存档。
+- 新默认关闭Startup/ObserveSaveStartup在Plugin.Load最早来源启动自然调用诊断，prefix/postfix/finalizer保持原参数、原结果和原异常；有界CLR trace记录nested配对、post/finalizer及丢失/线程/安装/停止缺口，不能给never-loaded或native authority。路径callback只存有界哈希，原native wrapper不入队；Plugin.Load线程不是Unity证明，第一次实际Update登记后才允许该线程direct字段读取候选。
+- 精确离线研究发现当前BepInEx IL2CPPChainloader在Internal_ActiveSceneChanged runtime-invoke detour中Preload→Execute→Plugin.Load后才原Invoke，这不证明早于所有Awake/.cctor/读档。Hook setup可能原生class初始化；工厂返回不代表load完成，SkipCloud字段名/静态边不证明全部云策略。临时档与路径重定向未实现/未开启，全部native/isolation/world/bag/firstload/entry/quiet仍false。
+- 本轮实际Test-Core 182/182通过，新增6组生产trace CLR夹具；测试只验证控制/配对/限额/证据降级，不执行游戏挂钩、路径或存档。Build警告视为错误通过，SHA256：`694D0DCB5E117977BE377ECB3465898208B4149634113DC6CB32B5379210FC75`；详情见save-startup-build-verification及core-verification。保留0.1.22历史Build/复用及installed0.1.12/dive0.1.11/default0.1.0。
+- 日志、PLAN/HANDOFF、相关文档及Skill更新；继续证明实际首次加载/完整来源输出、员工临时状态/actor/AI隔离、房主地图采用、个人容量与产物分流、逐项返航入仓、真实双端与冷配置闭环，不缩减原目标。
+- Skill 草稿正式校验通过，新 Inspector 的 PowerShell 解析错误为 0，两次独立只读源码末审无阻断。实际离线启动报告为 5 程序集/22 类型/45 声明/8 框架方法，36 个源码目标逐精确声明核对；原 PE 为 16 roots/176 records，81 no-unwind/1 partial 未补猜。新鲜进程检查 0，已安装 SHA256 仍为 `8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，本轮没有部署或启动。
+- 已将正式校验的 Skill 同步到仓库 .agents 并核对 SHA256 一致；当前与历史构建摘要分开，0.1.22 的复用测试仍保留为历史记录，本轮 182 项为真实新执行。

@@ -1,5 +1,7 @@
 # MultiDave 开发计划
 
+当前源码为 0.1.23-dev、协议 5，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 182/182 通过。[启动观察器](SAVE_STARTUP_OBSERVATION.md)默认关闭，启用后在 Plugin.Load 安装自己的只读挂钩；[精确入口研究](GUEST_STARTUP_API.md)确认本机框架由场景切换回调触发插件，不能据此证明早于所有个人读取。路径仅记录有界哈希，未重定向或启用冷档。范围见[当前摘要](../logs/save-startup-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。完整客机隔离、房主世界采用、每人独立容量/捕获分流、返航入仓及真实双端/冷配置仍待完成。
+
 目标：Windows Steam 版双人潜水合作 MVP，先做局域网房主/客户端。
 房主负责游戏世界和结算。服务器方案暂缓。
 首版采用用户提出的“房主＋员工、每人独立背包”规则，权责、个人容量/负重与捕获/返航关联详见[员工模式方案](CREW_MODE.md)。
@@ -22,7 +24,7 @@
 真实 `A01_01_01` 潜水已确认管理器玩家引用、位置、朝向、移动输入、动画与摄像机跟随。
 继续进入 `Boss_000` 后，旧玩家不再出现在当前采样中，新实例与管理器和摄像机正确绑定，
 跨场景读取无探针错误。完整旧日志后来还确认返航、大厅与主菜单，1886 条快照无探针错误。
-默认发行包保持 0.1.0，当前源码为 0.1.22-dev、协议 5，插件 Build 警告视为错误通过；未部署/启动。本轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重跑测试。
+默认发行包保持 0.1.0，0.1.22 历史源码为 0.1.22-dev、协议 5，插件 Build 警告视为错误通过；未部署/启动。0.1.22 该轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重跑测试。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试，加载/Update/网络入口及 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后；后续自主开发保持各项实机验收边界。
 最近完成潜水验证的是 0.1.11-dev。
@@ -120,7 +122,7 @@ prefix 固定当时房主身份，postfix 复用同一绑定；伤害 bool 只�
 F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房主主线程重新查原生目标/代次，通过只返回 DryRunValidated、OperationId=0。
 真实发射/QTE/召回/拾取缺少可信 actor/loadout、MapAuthorityReady/GuestStateIsolated/LocalActorArbitrated 与 native bridge，effects 仍 false；格式/门禁通过不等于攻击或捕获。
 下一步实测只读请求往返及失效，继续原生 owner/投射物/命中/入袋证据与客机隔离，再接入实际装备/距离/冷却和房主原生裁定。
-当前核心与构建范围见[独立比较器摘要](../logs/guest-comparer-build-verification.json)，0.1.20历史食材缓存见[食材缓存摘要](../logs/guest-ingredient-cache-build-verification.json)，0.1.15历史个人账本见[独立背包摘要](../logs/cargo-ledger-build-verification.json)，0.1.14历史候选传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，操作门禁见[0.1.12-dev摘要](../logs/fish-action-gate-build-verification.json)；
+当前核心与构建范围见[启动观察摘要](../logs/save-startup-build-verification.json)，0.1.22 历史比较器见[比较器摘要](../logs/guest-comparer-build-verification.json)，0.1.20历史食材缓存见[食材缓存摘要](../logs/guest-ingredient-cache-build-verification.json)，0.1.15历史个人账本见[独立背包摘要](../logs/cargo-ledger-build-verification.json)，0.1.14历史候选传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，操作门禁见[0.1.12-dev摘要](../logs/fish-action-gate-build-verification.json)；
 上述历史实机见 [0.1.11-dev 鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，均不作为 M4/M5 或真实双游戏完成证据。
 
 ## M6 — 返航、结算与进度
@@ -187,4 +189,4 @@ F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房
 
 [独立comparer源码合同](GUEST_DICTIONARY_COMPARERS.md)与[离线API](GUEST_COMPARER_API.md)只补有限字典准备：int/string/InGameSaveType(int32)的精确Generic/Object和该enum专用Enum采用同class独立对象，source pointer/class/kind与aux参与审计，Ingredients同规则。null原可Capture但Prepare拒，不猜Default/CreateComparer/getter、不共享或清空；custom/文化/hash-salt未知拒。显式(capacity,comparer)后才Add，普通constructor抛时assignment未发生，PartialConstructorAllocationRetentionVerified=false。
 
-本轮Core输入未改，复用0.1.21实际176/176，未重跑；[当前摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过。七步/21explicit handles/4Data stamps不扩，所有native ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。[冷档候选](GUEST_COLD_PROFILE.md)仅研究首load/slot/output，未采用。继续真实资源/actor/cache/output与边界、房主地图采用、每人独立袋/容量/负重的个人捕获和逐产物返航、实际双端与GitHub冷配置；完整M3—M7不因有限comparer候选缩减。
+0.1.22 该轮 Core 输入未改，复用0.1.21实际176/176，未重跑；[0.1.22 历史摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过。七步/21explicit handles/4Data stamps不扩，所有native ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。[冷档候选](GUEST_COLD_PROFILE.md)仅研究首load/slot/output，未采用。继续真实资源/actor/cache/output与边界、房主地图采用、每人独立袋/容量/负重的个人捕获和逐产物返航、实际双端与GitHub冷配置；完整M3—M7不因有限comparer候选缩减。

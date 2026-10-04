@@ -1,5 +1,7 @@
 # 客机原生根影子桥
 
+当前源码为 0.1.23-dev、协议 5，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 182/182 通过。[启动观察器](SAVE_STARTUP_OBSERVATION.md)默认关闭，启用后在 Plugin.Load 安装自己的只读挂钩；[精确入口研究](GUEST_STARTUP_API.md)确认本机框架由场景切换回调触发插件，不能据此证明早于所有个人读取。路径仅记录有界哈希，未重定向或启用冷档。范围见[当前摘要](../logs/save-startup-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。完整客机隔离、房主世界采用、每人独立容量/捕获分流、返航入仓及真实双端/冷配置仍待完成。
+
 0.1.18-dev 新增 [NativeGuestShadowBridge](../src/DaveCoop/Networking/NativeGuestShadowBridge.cs) 和纯 CLR 的 [GuestShadowTransaction](../src/DaveCoop/Core/Guest/GuestShadowTransaction.cs)。桥包含实际的原生序列化、强引用、直接根交换、回读及恢复代码；当前没有接入 Network、GUI 或游戏生命周期，未调用这些原生操作。接口研究及其静态证据见 [GUEST_ISOLATION](GUEST_ISOLATION.md)，已枚举输出的围栏范围见 [GUEST_OUTPUT_FENCE](GUEST_OUTPUT_FENCE.md)。
 
 当前生产桥的 `CanEnterBoundary()` 和 `HasQuiescentBoundary()` 始终返回 false。事务在安装围栏之前先核对实际进入边界，因此普通 `Install()` 会拒绝进入，保持零 patch、零原根捕获、零显式 GC handle。桥的安装围栏、捕获、准备和安装根入口自身也重新检查进入边界，不能通过直接调用这些 primitive 绕过事务。房间、加载标记或已知 writer 计数为零均不代替真实原生边界。
@@ -78,8 +80,8 @@ explicit strong handle上限从历史18增至21：再加IngameSaveDataManager si
 
 ## 0.1.22 comparer 准备与分配缺口
 
-当前0.1.22-dev/协议5补[有限独立comparer](GUEST_DICTIONARY_COMPARERS.md)，[元数据](GUEST_COMPARER_API.md)核对int/string/InGameSaveType(int32)的Generic/Object与该enum专用Enum七个精确候选。source comparer的pointer/class/kind与dictionary aux加入已知审计，Ingredients同规则；原null可Capture但Prepare拒，不调用Default/CreateComparer/业务getter，不共享或清空原对象，custom/文化/hash-salt未知拒绝。新comparer需同class且不同pointer，新dictionary显式(capacity,comparer)后才Add并回读；没有native实例声明不证明原生无全局状态或初始化不变式。
+历史0.1.22-dev/协议5补[有限独立comparer](GUEST_DICTIONARY_COMPARERS.md)，[元数据](GUEST_COMPARER_API.md)核对int/string/InGameSaveType(int32)的Generic/Object与该enum专用Enum七个精确候选。source comparer的pointer/class/kind与dictionary aux加入已知审计，Ingredients同规则；原null可Capture但Prepare拒，不调用Default/CreateComparer/业务getter，不共享或清空原对象，custom/文化/hash-salt未知拒绝。新comparer需同class且不同pointer，新dictionary显式(capacity,comparer)后才Add并回读；没有native实例声明不证明原生无全局状态或初始化不变式。
 
 已创建且返回的owned对象按helper引用持有，不扩根桥七步/21explicit handles/4Data stamps。普通dictionary constructor整体抛时assignment未发生，其内部分配无法据此确认归租约持有，PartialConstructorAllocationRetentionVerified=false；不能称所有未知allocation都Hold。围栏/引用的保留不能补这个原生证明缺口。
 
-[当前摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过；Core未改，复用0.1.21实际176/176，未重跑。所有native ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。[冷档候选](GUEST_COLD_PROFILE.md)只研究首load/slot/output而未采用。真实资源/actor/cache/output、自然进入/静止、房主地图采用、每人独立捕获/容量分流及逐产物返航、实际双端和冷配置仍是完整M3—M7必要工作。
+[0.1.22 历史摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过；0.1.22 该轮 Core 输入未改，复用0.1.21实际176/176，未重跑。所有native ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。[冷档候选](GUEST_COLD_PROFILE.md)只研究首load/slot/output而未采用。真实资源/actor/cache/output、自然进入/静止、房主地图采用、每人独立捕获/容量分流及逐产物返航、实际双端和冷配置仍是完整M3—M7必要工作。

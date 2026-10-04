@@ -1,5 +1,7 @@
 # 客机原生存档影子桥研究
 
+当前源码为 0.1.23-dev、协议 5，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 182/182 通过。[启动观察器](SAVE_STARTUP_OBSERVATION.md)默认关闭，启用后在 Plugin.Load 安装自己的只读挂钩；[精确入口研究](GUEST_STARTUP_API.md)确认本机框架由场景切换回调触发插件，不能据此证明早于所有个人读取。路径仅记录有界哈希，未重定向或启用冷档。范围见[当前摘要](../logs/save-startup-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。完整客机隔离、房主世界采用、每人独立容量/捕获分流、返航入仓及真实双端/冷配置仍待完成。
+
 员工的游戏应在临时状态上运行，长期进度与返航收益由房主保存。每人仍有独立背包：房主使用自己的原生 `LootBox`，员工的独立容量、重量与物料由房主 Mod 账本持有；不能先加到房主袋再复制。详见 [CREW_MODE](CREW_MODE.md)。
 
 本页给出实际原生影子桥的接口候选与验证合同。本轮仅离线读取互操作元数据、包装器 IL 和原 PE 的有界调用边；没有调用序列化、替换根、读取或写入存档、挂钩或启动游戏。签名可用于实现下一桥，尚不能授予 `GuestStateIsolated`、`WorldAuthority` 或捕获/结算权限。
@@ -138,7 +140,7 @@ entry/quiet/native/guest/world/bag权限仍false，未接自动入口、未部�
 
 ## 0.1.22 有限 comparer 与冷档研究
 
-当前源码0.1.22-dev/协议5，[当前摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过。Core输入本轮未改，复用0.1.21实际176/176而未重跑；未部署、启动或执行native。七步/21explicit handles/4Data stamps维持，所有ABI、完整graph/cache/isolation、entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。
+0.1.22历史源码0.1.22-dev/协议5，[0.1.22 历史摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过。0.1.22 该轮 Core 输入未改，复用0.1.21实际176/176而未重跑；未部署、启动或执行native。七步/21explicit handles/4Data stamps维持，所有ABI、完整graph/cache/isolation、entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。
 
 [独立comparer合同](GUEST_DICTIONARY_COMPARERS.md)和[API](GUEST_COMPARER_API.md)仅支持候选白名单：int/string/InGameSaveType(int32)精确Generic/Object，以及仅该enum的Enum。原comparer pointer/class/kind与aux参与审计；Ingredients同规则。null原可Capture但Prepare拒绝，不调用Default/CreateComparer/getter猜当前默认、不共享或清空；custom/文化/hash-salt未知拒绝。准备新表先显式(capacity,comparer)再Add并核对，不能凭没有已声明native实例字段证明行为只读或全图独立。普通constructor抛时assignment未完成，PartialConstructorAllocationRetentionVerified=false，不能保证其内部所有未知allocation已Hold。
 

@@ -17,10 +17,19 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.22-dev";
+        public const string Version = "0.1.23-dev";
 
         public override void Load()
         {
+            // This is a CLR Plugin.Load marker, not proof that a Unity/save
+            // callback had not already run before BepInEx loaded this plugin.
+            int startupLoadThread = Environment.CurrentManagedThreadId;
+            double startupLoadAt = (double)System.Diagnostics.Stopwatch.GetTimestamp() / System.Diagnostics.Stopwatch.Frequency;
+            ConfigEntry<bool> observeSaveStartup = Config.Bind("Startup", "ObserveSaveStartup", false,
+                "Observe natural save startup calls with bounded private hash-only diagnostics. Requires process restart; no save/path/cloud changes or guest isolation.");
+            if (observeSaveStartup.Value)
+                Diagnostics.SaveStartup = SaveStartupCapture.Start(Log, startupLoadThread, startupLoadAt);
+
             Diagnostics.Logger = Log;
             Diagnostics.ShowOverlay = Config.Bind("Diagnostics", "ShowOverlay", true,
                 "Show the development status panel. Press F8 to hide/show it.");
@@ -75,6 +84,7 @@ namespace DaveCoop
     {
         internal static ManualLogSource Logger;
         internal static ConfigEntry<bool> ShowOverlay;
+        internal static SaveStartupCapture SaveStartup;
         private string _scene = "starting";
         private float _nextSceneCheck;
         private bool _sceneProbeFailed;
@@ -84,6 +94,9 @@ namespace DaveCoop
 
         public void Update()
         {
+            // This actual Update is the first native-read thread candidate;
+            // Plugin.Load's managed thread must never stand in for it.
+            SaveStartup?.Update();
             if (!_firstFrameLogged)
             {
                 _firstFrameLogged = true;
@@ -112,6 +125,13 @@ namespace DaveCoop
                 _scene = "unavailable";
                 Logger.LogWarning($"Scene diagnostics disabled: {error.Message}");
             }
+        }
+
+        public void OnApplicationQuit()
+        {
+            // Dispose only this observer's Harmony owner. Keep its reference
+            // when cleanup is unverified; never claim all hooks were removed.
+            SaveStartup?.Dispose();
         }
 
         public void OnGUI()

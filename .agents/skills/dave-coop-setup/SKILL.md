@@ -212,6 +212,10 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - 三份known原图在serializer前闭合，三份prepared图在安装前再次strict核对；这是顺序已知图核对，不证明全图或静止。六种record声明只覆盖有限可独立构造子图；non-null SubHelperSpecData/live gearQueue、未证comparer/views/sync引用和重复mutable record alias须明确拒绝，不能分享/改空或拆alias代替；默认comparer也可能使准备拒绝，继续实际资源/设备/容器隔离。Exact class加object_new/IntPtr仅普通record候选，不用于Unity资产，全部native分配/ABI/隔离权限false。
 - 两组新增第七步CLR夹具覆盖未知恢复保留、晚到original读数和foreign/unknown/mixed/换单例/null拒绝，不运行helper。未部署/启动，用户试玩延后；每人独立袋/容量/负重、房主唯一长期进度规则保持，完整资源/actor/cache/output、房主世界、个人捕获/逐产物返航、真实双端及冷配置仍须完成。
 
-- 当前源码0.1.22-dev/协议5，Build警告视为错误通过；Core/Test/选定adapter输入逐文件与前commit一致，本轮复用0.1.21实际176/176，不重复运行，不当native测试。比较器继续先读GUEST_DICTIONARY_COMPARERS.md、GUEST_COMPARER_API.md及guest-comparer-build-verification.json。
+- 上一版源码0.1.22-dev/协议5，Build警告视为错误通过；Core/Test/选定adapter输入逐文件与前commit一致，本轮复用0.1.21实际176/176，不重复运行，不当native测试。比较器继续先读GUEST_DICTIONARY_COMPARERS.md、GUEST_COMPARER_API.md及guest-comparer-build-verification.json。
 - 三种key/int32 enum的七个精确Generic/Object/Enum闭型采用同class独立普通instance候选，在(capacity,freshComparer)后核对实际指针/class再Add；Ingredients也捕获comparer/aux。原null可capture但Prepare拒，未知custom/文化/salt/aux不猜默认、不共享/清空，不调用Default/CreateComparer。无declared fields不证明全部无状态、hash/equality或ABI；publicctor抛在assignment前的未知分配无法保证已Hold，PartialConstructorAllocationRetentionVerified仍false。
 - 更直接的冷启动员工临时档候选见GUEST_COLD_PROFILE.md及Inspect-GuestProfileApi.ps1；DefaultSaveFolder/instance path/SkipCloudPullForPreset需在实际首load前绑定所有manager、云/prefs/achievement输出，单换slot/目录不等于隔离。候选未应用，全部native/world/bag/entry/quiet权限false。完整M3—M7、每人独立袋/负重/捕获和逐产物返航、真实双端与冷配置继续要求；用户测试延后，不自动启动或部署。
+
+- 当前源码0.1.23-dev/协议5，Build警告视为错误通过，本轮实际Core/TCP 182/182（新增6组生产startup trace夹具）通过，不执行nativehook。继续首load/临时档先读development/docs/SAVE_STARTUP_OBSERVATION.md、GUEST_STARTUP_API.md与save-startup-build-verification.json。
+- Startup/ObserveSaveStartup默认false，须未来正常保存退出/部署后、启动前配置，不能F11/Join后补装当早覆盖。Plugin.Load marker只有CLR来源；第一次实际Diagnostics.Update登记Unity线程后才读native字段，早期callbacks仅标量和有界pathhash。不重定向路径、不调用原业务或保存、不改云；安装可能native初始化且安装前读取无法排除。己方owner卸除、异常/丢失/线程/配额明示；不以factory/postfix或初始化false推断never-loaded。
+- 本机loader IL在Internal_ActiveSceneChanged detour中Execute/Load plugins，然后原Invoke；这不证早于SaveUtil/GameBase/UserOption Awake/.cctor。完整首次load/路径/云/prefs/成就输出与隔离仍未证，native/world/bag/entry/quiet权限false。用户测试延后，不自动部署/启动；完整M3—M7、个人容量/捕获/逐产物返航、真实双端与GitHub冷配置继续要求。

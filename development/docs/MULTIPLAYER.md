@@ -1,6 +1,8 @@
 # 第二角色与传输层
 
-当前源码 `0.1.22-dev`、协议 5，插件 Build 警告视为错误通过；未部署/启动。本轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重跑测试。
+当前源码为 0.1.23-dev、协议 5，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 182/182 通过。[启动观察器](SAVE_STARTUP_OBSERVATION.md)默认关闭，启用后在 Plugin.Load 安装自己的只读挂钩；[精确入口研究](GUEST_STARTUP_API.md)确认本机框架由场景切换回调触发插件，不能据此证明早于所有个人读取。路径仅记录有界哈希，未重定向或启用冷档。范围见[当前摘要](../logs/save-startup-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。完整客机隔离、房主世界采用、每人独立容量/捕获分流、返航入仓及真实双端/冷配置仍待完成。
+
+0.1.22 历史源码 `0.1.22-dev`、协议 5，插件 Build 警告视为错误通过；未部署/启动。0.1.22 该轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重跑测试。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 `0.1.11-dev`。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，主菜单启动通过不扩展为玩法验收。
@@ -185,7 +187,7 @@ DAVECOOP_LAYOUT_READY / WARNING。真实验证至少覆盖本机显示、双机�
 dotnet run --project development/tests/DaveCoop.Core.Tests/DaveCoop.Core.Tests.csproj
 ```
 
-本机0.1.21实际已通过 176/176 项Core测试，该版插件Build警告视为错误通过；0.1.22 Core输入未改，复用此结果而未重跑，新插件Build警告视为错误通过。缓存用例不执行native helper。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
+本机0.1.21实际已通过 176/176 项Core测试，该版插件Build警告视为错误通过；0.1.22 0.1.22 该轮 Core 输入未改，复用此结果而未重跑，新插件Build警告视为错误通过。缓存用例不执行native helper。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
 JSON 数字结构往返、错误数据拒绝、拆包/截断、TCP 双端握手及双向快照、
 版本不匹配、并发发送、重复序号、连接关闭和读取取消；另覆盖场景握手与不一致超时、
 旧 epoch 清理、客机重载、身份/权限错误、时钟偏移、深拷贝与队列上限、
@@ -250,4 +252,4 @@ M4 下一步是本地来源/代次与跨机地址确认后的实际选择采用�
 
 [字典comparer](GUEST_DICTIONARY_COMPARERS.md)及[精确API](GUEST_COMPARER_API.md)只补native准备候选，协议保持5，未新增Network/GUI自动入口。int/string/InGameSaveType(int32)的Generic/Object与该enum专用Enum须exact class匹配、独立pointer；source pointer/class/kind与aux审计也用于Ingredients。null原可Capture但Prepare拒绝，不调用Default/CreateComparer/getter，不共享或清空；未知custom/文化/hash-salt拒绝。显式(capacity,comparer)构造后才Add，constructor抛时assignment未发生，PartialConstructorAllocationRetentionVerified=false。
 
-七步/21explicit handles/4Data stamps不扩，全部ABI/fullisolation/entry/quiet/native/guest/world/bag权限false。[当前摘要](../logs/guest-comparer-build-verification.json)的Build警告视为错误通过；Core输入未改，复用0.1.21实际176/176而未重跑。[冷档方案](GUEST_COLD_PROFILE.md)仅研究更直接首load/slot/output，尚未采用，不改变Ready或授权。资源/actor/cache/output、房主地图采用、每人独立袋/容量/负重下的个人捕获与逐产物返航、实际双端和冷配置仍按完整M3—M7验收。
+七步/21explicit handles/4Data stamps不扩，全部ABI/fullisolation/entry/quiet/native/guest/world/bag权限false。[0.1.22 历史摘要](../logs/guest-comparer-build-verification.json)的Build警告视为错误通过；0.1.22 该轮 Core 输入未改，复用0.1.21实际176/176而未重跑。[冷档方案](GUEST_COLD_PROFILE.md)仅研究更直接首load/slot/output，尚未采用，不改变Ready或授权。资源/actor/cache/output、房主地图采用、每人独立袋/容量/负重下的个人捕获与逐产物返航、实际双端和冷配置仍按完整M3—M7验收。

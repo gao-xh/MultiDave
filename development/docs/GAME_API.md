@@ -1,5 +1,7 @@
 # 玩家与摄像机发现
 
+当前源码为 0.1.23-dev、协议 5，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 182/182 通过。[启动观察器](SAVE_STARTUP_OBSERVATION.md)默认关闭，启用后在 Plugin.Load 安装自己的只读挂钩；[精确入口研究](GUEST_STARTUP_API.md)确认本机框架由场景切换回调触发插件，不能据此证明早于所有个人读取。路径仅记录有界哈希，未重定向或启用冷档。范围见[当前摘要](../logs/save-startup-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。完整客机隔离、房主世界采用、每人独立容量/捕获分流、返航入仓及真实双端/冷配置仍待完成。
+
 对应开发计划 M1。发布包仍为 0.1.0 加载原型；本页 M1 运行证据来自 0.1.1-dev。
 当前源码与后续阶段见 HANDOFF 和 MULTIPLAYER。
 
@@ -129,4 +131,4 @@ M2 先研究只复制显示组件/姿态的方式。直接克隆完整 `PlayerCh
 
 [有限comparer候选](GUEST_DICTIONARY_COMPARERS.md)只接受int/string/InGameSaveType(int32)精确Generic/Object与该enum专用Enum同class独立副本，source pointer/class/kind和aux纳入审计，Ingredients同规则。null原可Capture但Prepare拒，不调用Default/CreateComparer/getter、不share/清空，custom/文化/hash-salt未知拒。explicit(capacity,comparer)先于Add；普通constructor抛时assignment未发生，PartialConstructorAllocationRetentionVerified=false，不证明全部未知allocation已Hold。
 
-当前0.1.22-dev/协议5，[当前摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过；Core输入未改，复用0.1.21实际176/176，未重跑。七步/21explicit handles/4Data stamps不扩，ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。[冷档候选](GUEST_COLD_PROFILE.md)只研究首load/slot/output而未采用；剩余资源/actor/cache/output、房主地图、每人独立袋/容量/负重的真实捕获与逐产物返航、实际双端/冷配置及完整M3—M7继续必需。
+历史0.1.22-dev/协议5，[0.1.22 历史摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过；0.1.22 该轮 Core 输入未改，复用0.1.21实际176/176，未重跑。七步/21explicit handles/4Data stamps不扩，ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。[冷档候选](GUEST_COLD_PROFILE.md)只研究首load/slot/output而未采用；剩余资源/actor/cache/output、房主地图、每人独立袋/容量/负重的真实捕获与逐产物返航、实际双端/冷配置及完整M3—M7继续必需。

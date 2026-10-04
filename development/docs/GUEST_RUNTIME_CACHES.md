@@ -1,6 +1,8 @@
 # 客机运行缓存的类型与恢复边界
 
-五个 manager 根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。本页初版0.1.19为离线研究；当前0.1.22继续准备有限typed缓存，插件Build警告视为错误通过，见[comparer摘要](../logs/guest-comparer-build-verification.json)。Core输入本轮未改，复用[0.1.21实际176/176结果及该版构建](../logs/guest-ingame-cache-build-verification.json)，没有重跑测试。没有安装、切换、清空或恢复任何游戏缓存，没有调用 Init、Load、Build、克隆或存档。已有桥的真实进入和静止边界仍关闭，`GuestStateIsolated`、`RuntimeCachesIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority` 均不能因此开放。
+当前源码为 0.1.23-dev、协议 5，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 182/182 通过。[启动观察器](SAVE_STARTUP_OBSERVATION.md)默认关闭，启用后在 Plugin.Load 安装自己的只读挂钩；[精确入口研究](GUEST_STARTUP_API.md)确认本机框架由场景切换回调触发插件，不能据此证明早于所有个人读取。路径仅记录有界哈希，未重定向或启用冷档。范围见[当前摘要](../logs/save-startup-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。完整客机隔离、房主世界采用、每人独立容量/捕获分流、返航入仓及真实双端/冷配置仍待完成。
+
+五个 manager 根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。本页初版0.1.19为离线研究；历史0.1.22继续准备有限typed缓存，插件Build警告视为错误通过，见[comparer摘要](../logs/guest-comparer-build-verification.json)。0.1.22 该轮 Core 输入未改，复用[0.1.21实际176/176结果及该版构建](../logs/guest-ingame-cache-build-verification.json)，没有重跑测试。没有安装、切换、清空或恢复任何游戏缓存，没有调用 Init、Load、Build、克隆或存档。已有桥的真实进入和静止边界仍关闭，`GuestStateIsolated`、`RuntimeCachesIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority` 均不能因此开放。
 
 [Inspect-GuestRuntimeCacheApi.ps1](../scripts/Inspect-GuestRuntimeCacheApi.ps1) 用 Cecil 读取已生成的游戏、Il2Cppmscorlib 和 Interop.Runtime 元数据与包装器 IL。运行命令：
 
@@ -130,6 +132,6 @@ Mission、资源、旧UI/closures、独立actor和其它运行缓存/所有输�
 
 [独立comparer合同](GUEST_DICTIONARY_COMPARERS.md)及[API](GUEST_COMPARER_API.md)补int/string/InGameSaveType(int32)三key：只核exact Generic/Object与该enum专用Enum，同class独立对象，source pointer/class/kind、aux及原/新引用进入已知审计。Ingredients同样捕获comparer并核对，不把它当资源只读leaf；null原可Capture但Prepare拒绝。禁止以Default/CreateComparer/getter猜原状态、共享或清空；custom/文化/hash-salt未知拒绝，非空views/syncRoot不能顺带略掉。
 
-新dictionary显式(capacity,comparer)先于Add并核对构造后的绑定。普通constructor抛时assignment未发生，PartialConstructorAllocationRetentionVerified=false，不能保证全部未知allocation已持有。七步/21explicit handles/4Data stamps不扩，三known原图仍先于Serialize闭合、Prepare后strict复查；这不证明完整graph/资源、native ABI或实际进入/静止。[当前摘要](../logs/guest-comparer-build-verification.json)的Build警告视为错误通过，Core未改复用0.1.21实际176/176，未重跑。全部guest/world/bag权限false，无GUI/Network自动native入口。
+新dictionary显式(capacity,comparer)先于Add并核对构造后的绑定。普通constructor抛时assignment未发生，PartialConstructorAllocationRetentionVerified=false，不能保证全部未知allocation已持有。七步/21explicit handles/4Data stamps不扩，三known原图仍先于Serialize闭合、Prepare后strict复查；这不证明完整graph/资源、native ABI或实际进入/静止。[0.1.22 历史摘要](../logs/guest-comparer-build-verification.json)的Build警告视为错误通过，0.1.22 该轮 Core 输入未改，复用0.1.21实际176/176，未重跑。全部guest/world/bag权限false，无GUI/Network自动native入口。
 
 [冷档候选](GUEST_COLD_PROFILE.md)只研究首次load/slot/output，未采用，不能借空profile假定Mission/actor/旧引用/其余缓存已隔离。继续真实资源/actor/cache/output、房主地图采用、每人独立容量/负重下的个人捕获和逐产物返航、实际双端及冷配置；完整M3—M7目标保持。

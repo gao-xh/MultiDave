@@ -1,12 +1,14 @@
 # MultiDave 接手记录
 
+当前源码为 0.1.23-dev、协议 5，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 182/182 通过。[启动观察器](SAVE_STARTUP_OBSERVATION.md)默认关闭，启用后在 Plugin.Load 安装自己的只读挂钩；[精确入口研究](GUEST_STARTUP_API.md)确认本机框架由场景切换回调触发插件，不能据此证明早于所有个人读取。路径仅记录有界哈希，未重定向或启用冷档。范围见[当前摘要](../logs/save-startup-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。完整客机隔离、房主世界采用、每人独立容量/捕获分流、返航入仓及真实双端/冷配置仍待完成。
+
 ## 已完成
 
 已在 Windows Steam 版真实验证 BepInEx 788、207 个互操作程序集、
 自定义插件加载、Unity Update 回调，以及 `DR_Start`、`DR_Logo`、`DR_Title` 场景读取。
 插件日志证据见 `../logs/bootstrap-verification.log`。
 
-开发在 `codex/player-discovery` 分支，当前源码为 `0.1.22-dev`、协议 5，插件 Build 警告视为错误通过；未部署/启动。本轮 Core 输入未改，复用 0.1.21 实际 176/176 结果，没有重跑测试。
+开发在 `codex/player-discovery` 分支，0.1.22 历史源码为 `0.1.22-dev`、协议 5，插件 Build 警告视为错误通过；未部署/启动。0.1.22 该轮 Core 输入未改，复用 0.1.21 实际 176/176 结果，没有重跑测试。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 最近完成潜水验证的是 `0.1.11-dev`。
 
@@ -38,7 +40,7 @@ NativeGenerationBound/HostSelectionApplied/WorldAuthority/CargoAuthority始终fa
 旧 M1 会话完整日志最终为 1886 条快照，记录 Boss 返回潜水、返航大厅及主菜单，无探针错误。
 M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态中原生玩家数为 1，
 摄像机均绑定本地玩家，F10 停用/重建及返航清理有日志，无警告，基础验收通过。
-新增纯CLR姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询、鱼群缓冲、路线/IGP清单、操作门禁、个人Cargo账本和固定来源候选传输；当前范围见[comparer摘要](../logs/guest-comparer-build-verification.json)，插件Build警告视为错误通过；复用的0.1.21测试及该版构建见[游戏内缓存摘要](../logs/guest-ingame-cache-build-verification.json)。
+新增纯CLR姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询、鱼群缓冲、路线/IGP清单、操作门禁、个人Cargo账本和固定来源候选传输；0.1.22 历史范围见[comparer摘要](../logs/guest-comparer-build-verification.json)，插件Build警告视为错误通过；复用的0.1.21测试及该版构建见[游戏内缓存摘要](../logs/guest-ingame-cache-build-verification.json)。
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
 0.1.4-dev 引入默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，0.1.5-dev 加入一条鱼的 Sprite/Spine 显示验证入口。
@@ -208,7 +210,7 @@ Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可�
 已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
 Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
 探针记录本机 ID 仅用于观察；网络数值实体已使用房主分配的 RoomId/epoch/EntityId。
-当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.22-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
+当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.23-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
 当前候选测试先建Host/Join或Local test，再开启Observe loading coroutine and scene ownership并进行新自然入海。旧Observe map selection calls仅可选诊断，不能发送候选；可核对 MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE、MAP_SELECTION_HOOKS_STOPPED 的五处自然边界、线程、路线候选、空/截断/读取错误及自己的卸载。
 随后按目标检查范围在 F11 / Local test 开启 Transmit read-only fish observations 后进入潜水。
 开启单鱼预览取得选中身份，点 Check selected fish target，核对 FISH_ACTION_SENT / ADMISSION / DECISION / RECEIVED 的请求元数据、指纹及 DryRunValidated/op0。
@@ -301,6 +303,6 @@ Interaction、Ingredients、Ingame三份known baseline在Serialize前捕获并�
 
 先读[GUEST_DICTIONARY_COMPARERS](GUEST_DICTIONARY_COMPARERS.md)和[GUEST_COMPARER_API](GUEST_COMPARER_API.md)。int/string/InGameSaveType(int32)三key只接受已核exact Generic/Object，以及该enum的专用Enum；独立副本须同class、不同pointer。原comparer pointer/class/kind和aux参与source及已知图审计，Ingredients同规则。null原允许Capture但拒绝Prepare，不调用Default/CreateComparer/getter猜选择、不共享或清空；未知custom/文化/hash-salt类型拒绝。
 
-显式(capacity,comparer)构造在Add之前；普通constructor整体抛时assignment尚未完成，PartialConstructorAllocationRetentionVerified=false，不能保证所有未知分配已经Hold。七步/21explicit handles/4Data stamps未扩；全部ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动native入口。[当前摘要](../logs/guest-comparer-build-verification.json)的Build警告视为错误通过；Core输入未改，复用0.1.21实际176/176，未新跑。安装0.1.12、潜水0.1.11与default0.1.0不变。
+显式(capacity,comparer)构造在Add之前；普通constructor整体抛时assignment尚未完成，PartialConstructorAllocationRetentionVerified=false，不能保证所有未知分配已经Hold。七步/21explicit handles/4Data stamps未扩；全部ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动native入口。[0.1.22 历史摘要](../logs/guest-comparer-build-verification.json)的Build警告视为错误通过；0.1.22 该轮 Core 输入未改，复用0.1.21实际176/176，未新跑。安装0.1.12、潜水0.1.11与default0.1.0不变。
 
 [GUEST_COLD_PROFILE](GUEST_COLD_PROFILE.md)仅提出更直接的首次load、slot、输出路径研究，尚未采用，不能把新profile等同完整隔离。真实资源/actor/cache/output与进入/静止、房主地图采用、每人个人捕获/容量分流及逐产物返航、真实双端/冷配置和M3—M7仍须完成；手动试玩延后继续有效。
