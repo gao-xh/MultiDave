@@ -813,3 +813,14 @@
 - 实际Build警告视为错误通过，DLL SHA256 `00295B8B0E56F86C84B265F632F9388239878A0D46A830C2FF334FD53C602E34`。145源/项目/runner输入在Build前seal、后同；86实际Core输入与0.1.34一致，复用其269/269原执行与时间，本轮未重跑/无新测试。两名非作者只读源码及文档审查READY；原指令/字段偏移/地址/报告不发布。
 - HARPOON_VISUAL、RETURN_COUNT_POLICY、新构建摘要/currentCore/12入口状态/计划/接手/Skill同步；旧.34自然观察与.33/.32结算证据保留历史。Skill官方校验、protected copy及hash匹配，SHA256 `1F7B827F563815A5EE88BFDCA588973F19D567E779FCCD27702503539F1259B2`。最终145/86输入同，原game/metadata/两个interop/安装DLLhash保持，新鲜Get-Process进程0、不终止进程；安装.12/潜水.11/default.0保持。
 - 下一步实际加载前房主地图采用与guest隔离、可信员工actor/装备、命中与个人完整产物分流，再用真实Expedition/Return/Member上下文固定数量/最终品质政策及逐项仓库delta/save。真实双游戏正常返航、武器生存与GitHub冷配置仍必需；不将鱼叉显示、CLR测试或静态数量解析算作完整玩法。
+
+## 2026-10-04 — 0.1.36 当前房主候选消费者与实际加载边界
+
+- 前轮67db1db已推送并核remote；本轮继续完整M3—M7与每人独立袋，不部署、启动或执行游戏/存档业务。
+- MapChoiceController新TryCaptureRemoteChoices只接受同reference已绑定Guest/liveRoom，立即消费真实TCP邮箱，深复制route/scene/IGP；复制前后核room/gen/rev/fingerprint，partial新代次或retire/Close/头不符撤旧。true仍可Route=null或Retired，完整route不代表完整IGP或Ready；尚无自然原生加载调用方。Update/Loopback原行为保留，Guest本地stop不撤Host。非作者只读源码审查READY。
+- 新2真实TCP用例已在Program注册：即时刷新/owned mutation/同代次choice更新/host retire，逐页真实TCP换代首片撤旧/mailbox被取走/Clear-rebind/wrongpeer/Host/Close。source origin仍synthetic CLR，不证明native来源。实际Core/TCP271/271，UTC17:14:44.7607724→17:14:48.8999740；Build警告视为错误通过，UTC17:14:48.9021134→17:14:50.2710791。DLL SHA256 `7F793A2ACE1594CD04E9C7A5A4CF93423F4FA2B88DEAF3938C5651D81B711F63`。145执行前封存输入最终相同，86实际Core输入，本轮真实重跑而非复用旧269。
+- 新三PE私有报告共19roots/25methods/5085decoded/5082text，3partial+1Unavailable，无quota/root/textomit/trunc。两map组12methods1973instr与5methods2079instr，guest组8methods1033instr；Cecil另核1assembly/12types/7decl/269direct/Missing0。原始指令/地址/offset只.local，公开摘要仅自写结论/count/time/hash；CompleteMethod/ABI/runtime全未知。
+- 实际原入口确认cache写SaveData，路线须cache/roadmap/首尾/高度/schema一致，IGP可skip随机返回唯一匹配本地info；未收到选择需原MoveNext异步等帧，returnnull会假完成。manager factory早于exactoperation成功时冻结owner0且不补绑定，真实Unity顺序仍未证，不能声称host route生产必定成立。
+- LoadSavedData发起SaveSystem.Init，不是postload；InitAfterSaveSystem首次MoveNext位于自然缓存/任务/奖励初始化前，但现七根桥缺cache不能自然出生，实际接线仍待做。RestoreRoot需先证消费者退休，不能等卸fence/free前才查quiet；当前硬拒进入/静止条件与全部Native/Guest/HostSelection权限false保持。
+- 新MAP_ADOPTION_ENTRY/currentcore/本轮实际摘要/12入口状态、HANDOFF/PLAN/WORLD/GUEST_ENTRY及Skill同步；旧.35鱼叉显示和返航数量证据保历史。非作者文档/证据末审READY；Skill官方validator与protected copy/hash匹配，SHA256 `26FD8A6E8F1AF6A69BD42D0B453B851ED04F6C2A1859A0B08BA09FF42421961C`。本轮安装.12/最近潜水.11/default.0不变，不把退出或旧画面记正常返航。
+- 下一步实际guest初始化隔离边界、完整route采用与IGP等待/替换，再接可信员工actor/生存/装备、房主命中/每人完整产物分流与返航仓库delta/save。真实双游戏正常闭环和GitHub冷配置继续为完成条件；当前目标保持active，未把候选API或离线研究称为可玩联机。

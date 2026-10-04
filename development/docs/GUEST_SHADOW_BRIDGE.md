@@ -1,6 +1,6 @@
 # 客机原生根影子桥
 
-当前源码0.1.35-dev（协议6），编译通过。已接[远端鱼叉头显示](HARPOON_VISUAL.md)；Core输入未改，复用0.1.34的269/269，本轮未重跑。[返航数量来源](RETURN_COUNT_POLICY.md)查清自动委托和UI肉量转换。见[验证摘要](../logs/harpoon-visual-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立背包的真实分流、员工武器命中、客机隔离、房主世界、双端正常返航和冷配置仍待完成。
+当前源码0.1.36-dev（协议6），实际Core/TCP271/271及插件编译通过。新增[房主地图候选读取接口](MAP_ADOPTION_ENTRY.md)，即时刷新并返回独立副本；原游戏加载流程尚未接入。见[验证摘要](../logs/map-candidate-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；客机隔离、房主世界、每人独立背包的真实分流、员工命中、双端正常返航和冷配置仍待完成。
 
 0.1.18-dev 新增 [NativeGuestShadowBridge](../src/DaveCoop/Networking/NativeGuestShadowBridge.cs) 和纯 CLR 的 [GuestShadowTransaction](../src/DaveCoop/Core/Guest/GuestShadowTransaction.cs)。桥包含实际的原生序列化、强引用、直接根交换、回读及恢复代码；当前没有接入 Network、GUI 或游戏生命周期，未调用这些原生操作。接口研究及其静态证据见 [GUEST_ISOLATION](GUEST_ISOLATION.md)，已枚举输出的围栏范围见 [GUEST_OUTPUT_FENCE](GUEST_OUTPUT_FENCE.md)。
 

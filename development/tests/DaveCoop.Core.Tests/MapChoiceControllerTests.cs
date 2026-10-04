@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using DaveCoop.Core.Protocol;
 using DaveCoop.Core.Session;
+using DaveCoop.Core.Transport;
 using DaveCoop.Core.World;
 using DaveCoop.Networking;
 
@@ -143,6 +145,101 @@ internal static class MapChoiceControllerTests
                 "adapter trace implied native adoption");
     }
 
+    public static async Task TcpOwnedConsumerRefreshesAndCopiesCurrentChoices()
+    {
+        using var pair = await TcpPair.Open();
+        using var other = await TcpPair.Open();
+        var source = new MapChoiceController(); var received = new MapChoiceController(); Guid run = Guid.NewGuid();
+        source.BindRoom(pair.Host, 0); received.BindRoom(pair.Guest, 0);
+        source.ObserveOrigin(Frame(run, 1), pair.Host);
+        MapChoiceSnapshot first = null;
+        await Until(() => received.TryCaptureRemoteChoices(pair.Guest, out first) && first.Route != null && first.LastChoiceRevision == 1,
+            pair.Cancellation);
+        Assert(first.Generation == pair.Guest.Snapshot.MapChoiceGeneration && first.RouteFingerprint == pair.Guest.Snapshot.MapChoiceFingerprint &&
+            first.ObservationOnly && !first.HostSelectionApplied && pair.Guest.Snapshot.Phase == SessionPhase.WaitingForScene,
+            "callback consumption elevated readiness or returned a different live generation");
+        MapChoiceSnapshot original = null;
+        Assert(!received.TryCaptureRemoteChoices(pair.Host, out _) && !received.TryCaptureRemoteChoices(other.Guest, out _) &&
+            received.TryCaptureRemoteChoices(pair.Guest, out original), "host or another room became the bound guest consumer");
+        string fingerprint = original.RouteFingerprint;
+        first.Route.Scenes[0].SceneName = "caller changed scene";
+        first.Choices[0].SelectedPrefabName = "caller changed choice";
+        first.Choices[0] = null;
+        first.Generation = 99; first.Retired = true;
+        Assert(received.TryCaptureRemoteChoices(pair.Guest, out MapChoiceSnapshot copied) && copied.Generation == 1 && !copied.Retired &&
+            copied.Route.Scenes[0].SceneName == "dive-0" && copied.Choices[0].SelectedPrefabName == "IGP_A0" &&
+            !ReferenceEquals(copied.Route, original.Route) && !ReferenceEquals(copied.Route.Scenes[0], original.Route.Scenes[0]) &&
+            !ReferenceEquals(copied.Choices[0], original.Choices[0]), "consumer exposed controller-owned mutable route or choice objects");
+
+        var update = Frame(run, 1); update.Source.Choices[0].CallbackSequence = 2;
+        update.Source.Choices[0].Choice.SelectedPrefabName = "IGP_B";
+        source.ObserveOrigin(update, pair.Host);
+        // Wait only for the actual network session, never the controller Update.
+        await Until(() => pair.Guest.Snapshot.MapChoiceRevision == 2, pair.Cancellation);
+        Assert(received.TryCaptureRemoteChoices(pair.Guest, out MapChoiceSnapshot latest) && latest.LastChoiceRevision == 2 &&
+            latest.Choices[0].SelectedPrefabName == "IGP_B" && original.Choices[0].SelectedPrefabName == "IGP_A0" &&
+            latest.RouteFingerprint == fingerprint, "natural callback reused historical drain state or rewrote an earlier owned snapshot");
+        received.Retire(pair.Guest, 20, "guest local observer disabled");
+        Assert(received.TryCaptureRemoteChoices(pair.Guest, out latest) && latest.LastChoiceRevision == 2,
+            "guest local observer stop erased current host candidate evidence");
+        source.Retire(pair.Host, 20, "host origin stopped");
+        await Until(() => pair.Guest.Snapshot.MapChoiceFingerprint == null, pair.Cancellation);
+        Assert(received.TryCaptureRemoteChoices(pair.Guest, out MapChoiceSnapshot retired) && retired.Retired && retired.Route == null &&
+            retired.Choices.Length == 0 && retired.LastChoiceRevision == 2 && received.RemoteRouteSceneCount == 0 &&
+            !original.Retired && original.Route != null, "host retirement retained usable cached evidence or mutated historical snapshots");
+    }
+
+    public static async Task TcpOwnedConsumerRevokesPartialRoutesAndClearedRooms()
+    {
+        // The host sends real framed packets one slice at a time so the partial
+        // route interval is deterministic, rather than relying on TCP timing.
+        using var pair = await ManualMapPair.Open();
+        var received = new MapChoiceController(); received.BindRoom(pair.Guest, 0);
+        foreach (MapRouteSlice slice in MapChoiceFrames.SplitRoute(Route(), 1)) await pair.Send(slice);
+        MapChoiceSnapshot old = null;
+        await Until(() => received.TryCaptureRemoteChoices(pair.Guest, out old) && old.Route != null, pair.Cancellation);
+        Assert(old.Generation == 1 && old.Choices.Length == 0 && !old.HostSelectionApplied,
+            "complete route was treated as complete IGP inventory or adoption");
+
+        MapRouteSlice[] replacement = MapChoiceFrames.SplitRoute(Route(9), 2);
+        await pair.Send(replacement[0]);
+        await Until(() => pair.Guest.Snapshot.MapChoiceGeneration == 2, pair.Cancellation);
+        Assert(received.TryCaptureRemoteChoices(pair.Guest, out MapChoiceSnapshot pending) && pending.Generation == 2 && pending.Route == null &&
+            pending.Choices.Length == 0 && received.RemoteRouteSceneCount == 0 && old.Route.Scenes.Length == 3,
+            "first replacement slice exposed a previous usable route");
+        await pair.Send(replacement[1]);
+        await Until(() => received.TryCaptureRemoteChoices(pair.Guest, out pending) && pending.Route != null, pair.Cancellation);
+        Assert(pending.Generation == 2 && pending.Route.Scenes.Length == 9 && pending.Choices.Length == 0 && pending.LastChoiceRevision == 0,
+            "atomic route completion invented a received group or choice revision");
+
+        MapRouteSlice[] next = MapChoiceFrames.SplitRoute(Route(9), 3);
+        await pair.Send(next[0]);
+        await Until(() => pair.Guest.Snapshot.MapChoiceGeneration == 3, pair.Cancellation);
+        Assert(pair.Guest.TryTakeRemoteMapChoices(out MapChoiceSnapshot stolen) && stolen.Route == null,
+            "fixture did not consume the new pending mailbox before the callback");
+        Assert(!received.TryCaptureRemoteChoices(pair.Guest, out _) && received.RemoteGeneration == 0,
+            "missing latest mailbox allowed cached data with an old session header");
+        await pair.Send(next[1]);
+        await Until(() => received.TryCaptureRemoteChoices(pair.Guest, out pending) && pending.Route != null, pair.Cancellation);
+        Assert(pending.Generation == 3, "fresh completed candidate could not recover after stale cache invalidation");
+        received.Clear(30);
+        Assert(!received.TryCaptureRemoteChoices(pair.Guest, out _) && received.RemoteGeneration == 0, "Clear retained a live consumer room binding");
+        received.BindRoom(pair.Guest, 30);
+        Assert(!received.TryCaptureRemoteChoices(pair.Guest, out _), "rebind replayed an already consumed historical candidate");
+        foreach (MapRouteSlice slice in MapChoiceFrames.SplitRoute(Route(), 4)) await pair.Send(slice);
+        await Until(() => received.TryCaptureRemoteChoices(pair.Guest, out pending) && pending.Route != null, pair.Cancellation);
+        Assert(pending.Generation == 4 && pair.Guest.Snapshot.Phase == SessionPhase.WaitingForScene,
+            "fresh bound candidate elevated scene readiness");
+        pair.Guest.Dispose();
+        Assert(!received.TryCaptureRemoteChoices(pair.Guest, out _) && received.RemoteGeneration == 0 && pending.Generation == 4 && pending.Route != null,
+            "closed peer retained usable consumer state or destroyed a caller-owned historical copy");
+    }
+
+    private static async Task Until(Func<bool> condition, CancellationToken cancellation)
+    {
+        while (!condition()) await Task.Delay(5, cancellation);
+    }
+
     internal static MapOriginSourceFrame Frame(Guid run, long owner, int count = 3, int choices = 1)
     {
         MapRouteSelection route = Route(count);
@@ -212,6 +309,37 @@ internal static class MapChoiceControllerTests
         }
         private static PeerIdentity Identity(string name) => new PeerIdentity { ModVersion = "0.1.17-dev", SteamBuildId = "25315876", UnityVersion = "6000.0.52f1", Name = name };
         public void Dispose() { Host.Dispose(); Guest.Dispose(); _listener.Dispose(); _timeout.Dispose(); }
+    }
+
+    private sealed class ManualMapPair : IDisposable
+    {
+        private readonly CancellationTokenSource _timeout;
+        private readonly FramedConnection _host;
+        private readonly TcpClient _hostSocket;
+        public SessionPeer Guest { get; }
+        public string RoomId { get; }
+        public CancellationToken Cancellation => _timeout.Token;
+        private ManualMapPair(CancellationTokenSource timeout, FramedConnection host, TcpClient hostSocket, SessionPeer guest, string room)
+        { _timeout = timeout; _host = host; _hostSocket = hostSocket; Guest = guest; RoomId = room; }
+        public static async Task<ManualMapPair> Open()
+        {
+            var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            var listener = new TcpListener(IPAddress.Loopback, 0); listener.Start(1);
+            TcpClient socket = null; FramedConnection host = null; SessionPeer guest = null;
+            try
+            {
+                var identity = new PeerIdentity { ModVersion = "fixture-owned-map-consumer", SteamBuildId = "25315876", UnityVersion = "6000.0.52f1", Name = "Guest" };
+                Task<SessionPeer> joining = LanGuest.ConnectAsync("127.0.0.1", ((IPEndPoint)listener.LocalEndpoint).Port, identity, timeout.Token);
+                socket = await listener.AcceptTcpClientAsync(timeout.Token); socket.NoDelay = true;
+                host = new FramedConnection(socket.GetStream()); string room = Guid.NewGuid().ToString("N");
+                await Handshake.AcceptAsync(host, identity, room, timeout.Token); guest = await joining;
+                return new ManualMapPair(timeout, host, socket, guest, room);
+            }
+            catch { guest?.Dispose(); host?.Dispose(); socket?.Dispose(); timeout.Dispose(); throw; }
+            finally { listener.Stop(); }
+        }
+        public Task Send(MapRouteSlice slice) => _host.SendAsync(new WirePacket { Kind = PacketKind.MapRouteSlice, RoomId = RoomId, MapRoute = slice }, Cancellation);
+        public void Dispose() { Guest.Dispose(); _host.Dispose(); _hostSocket.Dispose(); _timeout.Dispose(); }
     }
 }
 

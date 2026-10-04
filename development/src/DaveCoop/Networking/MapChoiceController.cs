@@ -270,12 +270,61 @@ namespace DaveCoop.Networking
             if (receiver == null) return;
             SessionSnapshot receiving = receiver.Snapshot;
             if (receiving.Role != SessionRole.Guest || receiving.Phase == SessionPhase.Closed || receiving.RoomId != _roomId) return;
+            RefreshRemote(receiver);
+        }
+
+        // A natural loading callback can consume the current candidate without
+        // waiting for Update to drain diagnostic messages. The supplied peer is
+        // the room binding, not an interchangeable peer with matching headers.
+        // A true result may be assembling or retired. A complete Route does not
+        // establish that all IGPs arrived, native adoption, or Ready permission.
+        public bool TryCaptureRemoteChoices(SessionPeer main, out MapChoiceSnapshot choices)
+        {
+            choices = null;
+            if (!MatchesRoom(main, out SessionSnapshot receiving) || receiving.Role != SessionRole.Guest)
+            {
+                if (ReferenceEquals(main, _main)) _remote = null;
+                return false;
+            }
+            RefreshRemote(main);
+            SessionSnapshot before = main.Snapshot;
+            if (!MatchesRemote(main, before, _remote)) { _remote = null; return false; }
+            MapChoiceSnapshot owned = CopyRemote(_remote);
+            SessionSnapshot after = main.Snapshot;
+            if (!MatchesRemote(main, after, owned) || before.RoomId != after.RoomId ||
+                before.MapChoiceGeneration != after.MapChoiceGeneration || before.MapChoiceRevision != after.MapChoiceRevision ||
+                before.MapChoiceFingerprint != after.MapChoiceFingerprint)
+            { _remote = null; return false; }
+            choices = owned;
+            return true;
+        }
+
+        private void RefreshRemote(SessionPeer receiver)
+        {
             for (int i = 0; i < MaxReceivedPerUpdate && receiver.TryTakeRemoteMapChoices(out MapChoiceSnapshot evidence); i++)
             {
                 _remote = evidence; ReceivedSnapshots++;
                 Status = evidence.Retired ? "Host map candidate evidence retired; adoption not implemented." : evidence.Route == null ? "Host map candidate route assembling; adoption not implemented." : "Host map candidate evidence received; adoption not implemented.";
                 Trace("RECEIVED", new { evidence.Generation, evidence.RouteFingerprint, evidence.LastChoiceRevision, evidence.Retired, RouteComplete = evidence.Route != null, SceneCount = RemoteRouteSceneCount, ChoiceCount = RemoteChoiceCount });
             }
+        }
+
+        private bool MatchesRemote(SessionPeer main, SessionSnapshot state, MapChoiceSnapshot choices) =>
+            ReferenceEquals(main, _main) && _roomId != null && state.Role == SessionRole.Guest &&
+            state.Phase != SessionPhase.Closed && state.RoomId == _roomId && choices != null &&
+            choices.Generation == state.MapChoiceGeneration && choices.LastChoiceRevision == state.MapChoiceRevision &&
+            (choices.Retired ? null : choices.RouteFingerprint) == state.MapChoiceFingerprint;
+
+        private static MapChoiceSnapshot CopyRemote(MapChoiceSnapshot evidence)
+        {
+            var choices = new MapIgpChoice[evidence.Choices.Length];
+            for (int i = 0; i < choices.Length; i++) choices[i] = MapChoiceFrames.Copy(evidence.Choices[i]);
+            return new MapChoiceSnapshot
+            {
+                Generation = evidence.Generation, RouteFingerprint = evidence.RouteFingerprint,
+                Route = evidence.Route == null ? null : MapSelections.CopyRoute(evidence.Route),
+                Choices = choices, LastChoiceRevision = evidence.LastChoiceRevision, Retired = evidence.Retired
+            };
         }
         public void Retire(SessionPeer main, long floor, string reason) { AdvanceFloor(floor); SealCurrentOwner(); RetireSource(main, reason); }
         private void RetireSource(SessionPeer main, string reason)

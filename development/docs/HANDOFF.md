@@ -1,6 +1,6 @@
 # MultiDave 接手记录
 
-当前源码0.1.35-dev（协议6），编译通过。已接[远端鱼叉头显示](HARPOON_VISUAL.md)；Core输入未改，复用0.1.34的269/269，本轮未重跑。[返航数量来源](RETURN_COUNT_POLICY.md)查清自动委托和UI肉量转换。见[验证摘要](../logs/harpoon-visual-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立背包的真实分流、员工武器命中、客机隔离、房主世界、双端正常返航和冷配置仍待完成。
+当前源码0.1.36-dev（协议6），实际Core/TCP271/271及插件编译通过。新增[房主地图候选读取接口](MAP_ADOPTION_ENTRY.md)，即时刷新并返回独立副本；原游戏加载流程尚未接入。见[验证摘要](../logs/map-candidate-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；客机隔离、房主世界、每人独立背包的真实分流、员工命中、双端正常返航和冷配置仍待完成。
 
 ## 已完成
 
@@ -352,3 +352,7 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 优先读[鱼叉显示](HARPOON_VISUAL.md)、[数量来源](RETURN_COUNT_POLICY.md)和[本轮摘要](../logs/harpoon-visual-build-verification.json)。LocalHarpoonVisualCapture通过当前manager玩家、m_InstanceItemInven、handler与projectile直接关系采一枚原头，追加既有PlayerFrame；不要把显示当成原生员工武器。只有Local test偏移回放；真人Host/Guest用各自采样，但严格世界指纹/场景Ready条件仍在。
 
 自动delegate静态target已唯一解析为GetExchangeCount；UI鱼TotalCount已转换且可能累计。数量使用槽rawGrade，入仓另取FinalGrade；不能重复兑换UI数或用rawCount替代所有路径。完整UI闭型mapping/类别、员工政策及真实返航绑定仍待核。安装.12/潜水.11/default.0保持；本轮Build通过，Core269为旧实际结果复用，未运行游戏。
+
+## 0.1.36 接手增量
+
+先读[地图采用入口](MAP_ADOPTION_ENTRY.md)和[实际摘要](../logs/map-candidate-build-verification.json)。TryCaptureRemoteChoices 已有2新实际TCP用例，fresh绑定/owned copy/partial/retire/clear/close保持候选语义；还没有自然加载调用方。下一步接真实隔离初始化窗口及完整路线采用，IGP按控制器等待后替换原随机。注意 manager Start 工厂早于精确operation完成时冻结owner0的风险，以及恢复原根前必须先退休消费者。实际271/271与Build通过，本轮未部署/启动；.35鱼叉显示和数量研究保留历史。

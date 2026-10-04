@@ -92,3 +92,5 @@ Lobby 的三个 iterator 分别为 `_LobbyProcessRoutineNormal_d__18`、`_StartD
 entry 和 load/return 混入、身份变化、线程错误、读取错误、未配对、丢事件、配额或未知结束均撤销候选，不让旧 baseline 自动复活。可采用既有观察器的 process quota、context/queue 限额、sticky failure 和只卸自己 owner 模式；本页没有新增 hooks 或实现这份合同。
 
 这些记录最多证明“此自然边界上观察到哪些身份和阶段”，仍不是 CanEnterBoundary/HasQuiescentBoundary 的 true 证据。完成具体 Interaction detached 绑定后，还须证明缓存/旧引用归属、所有在途写入与异步工作生命周期及完整输出围栏，才能讨论真实进入和退出。加载前采用、GuestStateIsolated、世界与捕获/返航权限继续关闭。
+
+0.1.36新原指令研究见[MAP_ADOPTION_ENTRY](MAP_ADOPTION_ENTRY.md)。LoadSavedData是发起Init而非完成；InitAfterSaveSystem首次MoveNext是具体早期候选，但缺失cache的自然出生和全消费者隔离仍未接。真实恢复时必须先证消费者退休再RestoreRoot，不能只在卸围栏/释放资源前查quiet；当前硬拒边界与全部权限false保持。

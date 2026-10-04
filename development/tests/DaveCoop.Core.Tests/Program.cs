@@ -208,6 +208,8 @@ internal static class Program
             ("TCP map choice adapter natural generations and choice revisions", () => MapChoiceControllerTests.TcpNaturalGenerationsAndChoiceRevisions().GetAwaiter().GetResult()),
             ("TCP map choice adapter unavailable sample retirement and recovery", () => MapChoiceControllerTests.TcpUnavailableSamplesRetireAndRecover().GetAwaiter().GetResult()),
             ("TCP map choice adapter guest observer stop retains host evidence", () => MapChoiceControllerTests.TcpGuestObserverStopRetainsHostEvidence().GetAwaiter().GetResult()),
+            ("TCP map owned consumer refreshes and copies current choices", () => MapChoiceControllerTests.TcpOwnedConsumerRefreshesAndCopiesCurrentChoices().GetAwaiter().GetResult()),
+            ("TCP map owned consumer revokes partial routes and cleared rooms", () => MapChoiceControllerTests.TcpOwnedConsumerRevokesPartialRoutesAndClearedRooms().GetAwaiter().GetResult()),
             ("TCP origin map inventory removal and retired controller replay", () => OriginMapChoiceAdapterTests.TcpInventoryRemovalAndRetiredControllerReplay().GetAwaiter().GetResult()),
             ("TCP origin map run switch failure and old run tombstones", () => OriginMapChoiceAdapterTests.TcpRunSwitchFailureAndOldRunTombstones().GetAwaiter().GetResult()),
             ("TCP origin map scalar forgery atomic rejection", () => OriginMapChoiceAdapterTests.TcpScalarForgeryRejectedAtomically().GetAwaiter().GetResult()),

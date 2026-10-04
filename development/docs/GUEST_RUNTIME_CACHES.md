@@ -1,6 +1,6 @@
 # 客机运行缓存的类型与恢复边界
 
-当前源码0.1.35-dev（协议6），编译通过。已接[远端鱼叉头显示](HARPOON_VISUAL.md)；Core输入未改，复用0.1.34的269/269，本轮未重跑。[返航数量来源](RETURN_COUNT_POLICY.md)查清自动委托和UI肉量转换。见[验证摘要](../logs/harpoon-visual-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立背包的真实分流、员工武器命中、客机隔离、房主世界、双端正常返航和冷配置仍待完成。
+当前源码0.1.36-dev（协议6），实际Core/TCP271/271及插件编译通过。新增[房主地图候选读取接口](MAP_ADOPTION_ENTRY.md)，即时刷新并返回独立副本；原游戏加载流程尚未接入。见[验证摘要](../logs/map-candidate-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；客机隔离、房主世界、每人独立背包的真实分流、员工命中、双端正常返航和冷配置仍待完成。
 
 五个 manager 根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。本页初版0.1.19为离线研究；历史0.1.22继续准备有限typed缓存，插件Build警告视为错误通过，见[comparer摘要](../logs/guest-comparer-build-verification.json)。0.1.22 该轮 Core 输入未改，复用[0.1.21实际176/176结果及该版构建](../logs/guest-ingame-cache-build-verification.json)，没有重跑测试。没有安装、切换、清空或恢复任何游戏缓存，没有调用 Init、Load、Build、克隆或存档。已有桥的真实进入和静止边界仍关闭，`GuestStateIsolated`、`RuntimeCachesIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority` 均不能因此开放。
 
