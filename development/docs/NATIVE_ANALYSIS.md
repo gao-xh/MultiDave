@@ -141,3 +141,5 @@ GuestStateIsolated、NativeExecutionImplemented等能力保持false。
 ## 捕获选择与提交的最新研究
 
 插件保持0.1.29；本轮只执行新离线研究工具，不重复原226测试或插件Build。普通拾取按CarvableCount逐tier，死鱼身体为另一个tier1配方；主选择也会随机，追加只一次并改保底/dirty。原Add的成功返回在实际Add_Impl之后，槽前已经有负重效果，原容量并非整批预期重量检查。SuccessInteract的UnityEvent转发不提供已证actor归属，回收/尸体状态也非捕获凭证。按[员工选择与提交桥](FISH_YIELD_BRIDGE.md)实现明确合作批次规则；不再增加镜像Core Gate，先接实际成员、选择/分流producer与现账本。完整M3—M7和实机闭环继续必需。
+
+0.1.30补两组新精确私有报告：GetPickUpGrade一方法66指令，grade helper三方法148指令（其中IsInInvenType无containing range，不猜叶body）。它们改变下一桥的顺序：品质选择也计入已进入RNG/可能cache副作用；与主/Plus一起一次固定。完整方法、closed generic选择/cache、最终产品与native ABI仍未证明，原文本/地址不发布；构建与236项synthetic/Core验证见[EMPLOYEE_FISH_SELECTION](EMPLOYEE_FISH_SELECTION.md)。

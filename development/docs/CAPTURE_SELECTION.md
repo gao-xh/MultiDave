@@ -37,3 +37,5 @@
 0.1.29 的[货槽前后观察](LOOT_SLOT_OBSERVATION.md)补三处setter；仅自然更新候选，不提供跨调用槽身份、完整产物或个人背包增量凭证。
 
 后续原生执行按[员工选择与提交桥](FISH_YIELD_BRIDGE.md)补齐多tier/主随机、一次追加、进度及终态；槽观察不提供整批暂停或可信成员绑定。
+
+0.1.30已新增[员工一次性选择编排和typed backend](EMPLOYEE_FISH_SELECTION.md)，实际使用同ledger EnterSelection；raw IDs/参数/资源不等于已验证CargoProduct，尚不生成LateSeal或捕获receipt。10个新production-coordinator夹具加入总计236项真实Core/TCP执行，不执行native。

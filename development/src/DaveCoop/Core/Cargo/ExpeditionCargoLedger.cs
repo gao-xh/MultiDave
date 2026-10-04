@@ -57,6 +57,12 @@ namespace DaveCoop.Core.Cargo
         private long _operationHighWater;
         public long GlobalOperationHighWater => _operationHighWater;
 
+        // Exact-object query for a host-local backend's preparation. This does
+        // not grant native entry; SelectOnce must still use EnterSelection.
+        internal bool IsSelectionReserved(CargoSourceLease lease) =>
+            TrySourceLease(lease, out Capture capture, out _) &&
+            capture.Stage == CargoCaptureStage.Reserved && capture.Request == null;
+
         public ExpeditionCargoLedger(string expeditionId, CargoMemberSetup[] members)
         {
             _expedition = CargoValues.GuidKey(expeditionId);

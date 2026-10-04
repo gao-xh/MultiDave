@@ -254,13 +254,18 @@ description: Configure or continue development of the MultiDave prototype for Wi
   Inspect-NativeCalls可显式-IncludeInstructions，默认false；text2048/method8192/report，硬8192/16384、256单条/1048576字符；整条省略不改原decode/edges/coverage。原asm/地址/立即数仅.local；真实3模式13/464/58一致、weight18/1687含4leaf不补猜。
   最终grade含条件/clamp，重量和超重参数分工、GetExchangeCount转换仍不能猜；全native/isolation/world/cargo/receipt权限false。未部署/启动，不催延后测试；每人独立容量/负重、真实捕获/逐项返航、双端与GitHub冷配置继续完整M3—M7。
 
-- 当前源码0.1.29-dev/协议6，Build与实际Core/TCP226/226通过；扩展2个既有CLR来源栈夹具，没有新增测试计数。继续已有槽合并/品质观察先读development/docs/LOOT_SLOT_OBSERVATION.md及loot-slot-mutation-build-verification.json。
+- 历史源码0.1.29-dev/协议6，Build与实际Core/TCP226/226通过；扩展2个既有CLR来源栈夹具，没有新增测试计数。继续已有槽合并/品质观察先读development/docs/LOOT_SLOT_OBSERVATION.md及loot-slot-mutation-build-verification.json。
   ObserveLootCalls仍默认关闭，19精确声明含3个typed by-value ObscuredInt自然setter；仅观察，不主动调用原setter/解码。Before/After各32reads/sample、process65536不重置；prefix固定pointer/class，队列只不可变CLR候选与参数候选。
   Finalizer不读原生槽，复用After即使Unavailable，否则Before；原两个槽边界仍Before-only。RunId+CallId只标本次样本，没有持久槽编号/寿命/袋身份；raw结构/密钥/hidden不进Context/queue/log。
   数量参数是新总数，不是本次增量；FinalGrade更新不证明capture终局或完整yield。失败清当前样本/参数并撤链，旧queue带当前不健康；native ABI/来源操作绑定/receipt/个人分流权限全false。
   离线Cecil实查19声明不执行game；安装0.1.12/最近潜水0.1.11/默认0.1.0保持。未部署启动，不催延后试玩；真实员工袋分流/返航、隔离/房主世界、双端与GitHub冷配置继续完整M3—M7。
 
-- 捕获选择桥最新研究见development/docs/FISH_YIELD_BRIDGE.md及fish-yield-analysis-verification.json；Inspect-FishYieldApi.ps1仅离线metadata/wrapper分类，报告留.local，不调用业务或安装hook。
+- 0.1.29捕获选择桥研究见development/docs/FISH_YIELD_BRIDGE.md及fish-yield-analysis-verification.json；Inspect-FishYieldApi.ps1仅离线metadata/wrapper分类，报告留.local，不调用业务或安装hook。
   插件保持0.1.29；本轮124原验证输入未改，复用该版实际226测试/Build而未重跑。普通Pickup多tier与死鱼tier1是不同配方；主选择也有RNG，追加一次并写保底/dirty，禁止失败后重查/重Roll。
   SuccessInteract仅UnityEvent转发，不由actor参数存在推绑定；DestroySelf/尸体/隐藏不证明捕获终态。新员工合作批次不宣称保持单机交错随机顺序；必须固定成员、单次全选择、独立容量/分流、共享进度和真实receipt。
   现19观察不能提供held yield，原Add成功不能伪造、临时LootBox仍引用全局状态；原容量不是整批预期重量。保持native/个人袋/world/guest权限false，继续真实producer、实际双端正常返航与冷配置，不催延后测试。
+
+- 当前源码0.1.30-dev/协议6，实际Core/TCP236/236与Build警告视为错误通过；新增10项真实coordinator+ledger夹具，仍为synthetic backend，不执行native。继续员工选择先读development/docs/EMPLOYEE_FISH_SELECTION.md、FISH_YIELD_BRIDGE.md及employee-fish-selection-build-verification.json。
+  直接使用既有exact source lease/EnterSelection；品质随机先登记后一次选择，多tier主与一次Plus/保底固定，raw IDs/资源/参数不等于最终CargoProduct或receipt。最多7主预留8项，至少tier1，-1不补选；容量失败/异常/断线不重Roll、不clear unknown。
+  typed helper仅编译，无network/GUI生产调用。NativeEmployeeFishSelectionBridge.TryPrepare需实际健康active lifecycle owner和capture same tracker、existing profile/provider；业务必须Core Selecting窗口，业务尝试先单次标记，末代次复核。最多13显式reference/handle尝试与256未释放桥；只有同ledger Confirmed/NativeNotEntered才release，unknown free不retry。partial native allocation retention/ABI/field invariants未证。
+  不能把Body actor参数、显示pose、Room2、rawgrade/weight或fixture flags当可信员工/完整产物/权限。现缺host-owned actor空间/存活事实及complete grade/weight/product映射，随后接LateSeal、员工分流/共享进度/terminal receipt/逐项返航。全部真实native/guest/world/cargo能力未验；未部署启动，不催延后测试，安装0.1.12/潜水0.1.11/default0.1.0保持。完整M3—M7/真实双端正常返航/GitHub冷配置继续。

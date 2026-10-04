@@ -1,6 +1,6 @@
 # 开发约定
 
-当前插件源码保持0.1.29-dev、协议6；最近实际编译与Core/TCP226/226已通过。本轮仅新增离线接口工具和捕获选择研究，124个原验证输入未改，复用该版结果，没有重跑。[员工选择与提交桥](docs/FISH_YIELD_BRIDGE.md)明确多tier主随机、一次追加及保底写入，现仍无可信成员/完整产物分流producer。证据见[研究摘要](logs/fish-yield-analysis-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。实际个人容量/分流与返航、客机隔离/房主世界、双端和冷配置仍待完成。
+当前插件源码0.1.30-dev、协议6；本轮实际Core/TCP236/236与Build警告视为错误通过（新增10项选择编排夹具）。[员工一次性选择桥](docs/EMPLOYEE_FISH_SELECTION.md)已实现typed品质/主/追加选择与强资源保留，经既有来源租约进入，异常不重选；尚无网络/可信actor producer、完整产品或捕获提交。证据见[构建摘要](logs/employee-fish-selection-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；真实个人容量/入袋/返航、客机隔离/房主世界、双端和冷配置仍待完成。
 
 - M1 玩家发现与 M2 回放基础验收通过；0.1.22 历史源码为 0.1.22-dev、协议 5，插件 Build 警告视为错误通过，范围见 [comparer 摘要](logs/guest-comparer-build-verification.json)；0.1.22 该轮 Core 输入未改，复用 [0.1.21 实际 176/176 结果](logs/guest-ingame-cache-build-verification.json)，没有重跑测试。未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
 - 继续工作前阅读 `docs/HANDOFF.md`、`docs/PLAN.md` 和当前阶段的 `docs/GAME_API.md` / `docs/MULTIPLAYER.md` / `docs/WORLD_SYNC.md`；配置别人电脑时使用仓库根目录的配置 Skill。

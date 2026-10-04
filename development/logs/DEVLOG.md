@@ -747,3 +747,14 @@
 - FISH_YIELD_BRIDGE确定员工显式合作批次路线：固定真实成员/actor/source→一次完整有序选择→个人容量→单次分流与共享进度/终态→真实receipt→既有账本投影。明确不同于单机交错随机顺序；原房主自然路径保持。现账本已有租约/挂起，不增加镜像Gate；实际native producer、装备品质/最终grade/重量/terminal/任务与返航仍需接通。
 - 124个前轮源/项目/runner验证输入逐字节匹配原封存，插件DLL仍SHA256 `A99DF3C237FEC536F66DE878559840043D7E97ED9041B58CC09DAC2BE3225BE1`；复用0.1.29实际226测试/Build，不重跑、不计新执行。新的fish-yield-analysis摘要与currentcore/交接/计划/接口/Skill同步；旧0.1.29实际构建摘要保持。官方Skill校验通过并同步，SHA256 `667624099AB600DEC962567FA08360BEF87BD229544679A8D30ABC6B0DDA337E`。
 - 新鲜进程0，安装DLL仍`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，未部署或启动。原binary/metadata最终hash与四报告一致；所有真实成员/选择隔离/整批分流/receipt/guest/world权限false。实际双端、正常返航和GitHub冷配置仍待完成，完整目标继续active。
+
+## 2026-10-04 — 0.1.30 员工一次性品质与产物选择
+
+- 前轮研究已提交3e5b96d并核远端，属于实际进展；完整M3—M7继续active。每人独立袋/容量/负重、房主唯一长期进度保持。本轮未部署/启动、调用原游戏业务或读改存档。
+- 实际Core FishYieldSelection用同ExpeditionCargoLedger EnterSelection仲裁，之后一次Body品质随机、至少tier1有序主选择和一次Plus，固定-1无产物及原ID/参数；正项一次资源lookup/retention，不重选、不造CargoProduct或receipt。普通最多7主预留plus；deadbody另单tier配方，不自动放开现Gate/显示。
+- actual NativeEmployeeFishSelectionBridge已写typed GetPickUpGrade/GetFishDropItemID/RollPlusItem/GetItemV2，持exact employee lease/source/profile/provider；仅Core Selecting窗口可业务调用，所有attempt先标记。新OwnsActiveTracker/UsesLifecycle只读query核实际活动observer及same tracker，identity与资源检查末复核代次。窗口/keeper code编译未native执行，函数ABI不作已验。
+- 私有ordered资源/参数与最多13显式reference/handle尝试，shared resource指针可复用handle但不合并drop条目；owned map最多256桥，Disconnect/return不free未知。release只看同ledger Confirmed/NativeNotEntered，未知free不重试；原生内部/partial分配完整保留未证。已有profile初始化/_info.TID等式是保守兼容限制，不补provider getter/GetFishData。
+- 新Grade研究4方法214指令（两报告1/66与3/148，含一无unwind叶）；GetPickUpGrade非已证装备算法，本身加权随机，必须进入后一次固定。raw Grade加法/float重量与后续FinalGrade不可混；Plus保底/dirty已有房主进度副作用。private Cecil实际2程序集/10directproxies/4business/4lift/input前后hash一致，不运行game。
+- 本轮实际Core/TCP236/236，新增10个真实coordinator＋ledger夹具：顺序/同lease/partial business及guard异常/freshfacts/tier/哨兵/线程重入/重复resource与synthetic容量挂起；只CLR，不证明GC、资源或native权限。Build警告视为错误通过，SHA256 `36A362401478FC9C66BD5EE7F11B2C3D7D9475C3B5818007A7493AE88A9902AE`；130输入执行前封存、执行后相同。独立native/interface审查无阻断，发现生命周期健康围栏与注释过宽后已修正，再封存验证。
+- 新EMPLOYEE_FISH_SELECTION与构建摘要/currentcore/交接/计划/Skill同步；旧0.1.29研究与226构建保持。下一步正面接真实host-owned employee actor、完整product/品质/个人重量、LateSeal、单次分流/共享进度/终态receipt与逐项返航；host世界/guest隔离、武器生存、正常双端与GitHub冷配置仍待完整实现，未声称可合作捕鱼。
+- 两名独立只读末审最终READY；已把旧研究段标为0.1.29历史并纠正未证装备算法措辞，新0.1.30实际236不与历史复用混淆。正式Skill校验通过并同步，SHA256 `179CE534888A30AF254185BE0995C0190AAD5B9CDB1ABEF2502141E615A0078F`；纯文档修正后130验证输入仍相同，无需重复测试。新鲜游戏进程0；安装DLL保持8F90042C…E5F5B，原binary/metadata及两个interop最终hash与研究输入一致。

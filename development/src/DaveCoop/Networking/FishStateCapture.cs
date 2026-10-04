@@ -27,6 +27,7 @@ namespace DaveCoop.Networking
         private int _sceneHandle;
         public int BindableTargets { get; private set; }
         private readonly ObservedHostTargets _observedTargets = new ObservedHostTargets();
+        internal bool UsesLifecycle(FishLifecycleTracker tracker) => tracker != null && ReferenceEquals(Volatile.Read(ref _lifecycle), tracker);
 
         public WorldSnapshot Capture(Scene scene, long epoch, string sceneKey, double sampleTime, SpriteCatalog sprites, SpineCatalog spines, FishLifecycleTracker lifecycle)
         {

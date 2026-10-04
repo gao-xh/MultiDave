@@ -19,6 +19,7 @@ namespace DaveCoop.Networking
         public readonly FishLifecycleTracker Tracker = new FishLifecycleTracker();
         public bool Installed => _harmony != null && !_failed;
         public bool Healthy => Installed && Volatile.Read(ref _callbackErrors) == 0;
+        internal bool OwnsActiveTracker => Healthy && ReferenceEquals(Volatile.Read(ref _active), Tracker);
         public int CallbackErrors => Volatile.Read(ref _callbackErrors);
 
         public void Enable()

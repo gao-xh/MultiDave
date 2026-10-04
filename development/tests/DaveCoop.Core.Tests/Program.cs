@@ -8,6 +8,16 @@ internal static class Program
     {
         var tests = new (string Name, Action Run)[]
         {
+            ("fish yield grade main and plus are ordered once after ledger entry", FishYieldSelectionTests.GradeMainAndPlusAreOrderedOnceAfterLedgerEntry),
+            ("fish yield competing coordinators cannot reselect one lease", FishYieldSelectionTests.CompetingCoordinatorsOnOneLeaseCannotRunAnotherSelection),
+            ("fish yield partial business failures retain unknown results", FishYieldSelectionTests.PartialBusinessFailuresKeepUnknownResultsAndNeverRetry),
+            ("fish yield source guard failures stop later business", FishYieldSelectionTests.SourceGuardFailuresStopLaterCallsWithoutErasingEarlierResults),
+            ("fish yield missing stale and foreign facts dispatch nothing", FishYieldSelectionTests.MissingStaleAndForeignEntryFactsDispatchNothingUntilFresh),
+            ("fish yield dead body recipe uses one tier without pickup grade RNG", FishYieldSelectionTests.DeadBodyRecipeUsesOneTierAndDoesNotSelectPickupGrade),
+            ("fish yield tier bounds preserve first tier and plus budget", FishYieldSelectionTests.TierBoundsPreserveAtLeastOneMainAndPreflightThePlusSlot),
+            ("fish yield sentinel and unexpected results never lookup or reroll", FishYieldSelectionTests.ExplicitNoDropAndUnexpectedResultsNeverLookupOrReroll),
+            ("fish yield reentry and wrong thread dispatch no new business", FishYieldSelectionTests.ReentrantAndWrongThreadAttemptsCannotDispatchMoreBusiness),
+            ("fish yield capacity rejection keeps raw batch and duplicate entries", FishYieldSelectionTests.CapacityRejectionKeepsTheRawBatchAndDuplicateResourcesStayDistinct),
             ("loot slot scalar signed boundaries and immutable inputs", LootSlotSnapshotTests.SignedBoundaryVectorsRemainBitExact),
             ("loot slot scalar inactive fake value does not reject or repair", LootSlotSnapshotTests.InactiveFakeValueDoesNotRejectOrRepairTheSnapshot),
             ("loot slot scalar initialization and zero key remain unavailable", LootSlotSnapshotTests.MissingInitializationAndZeroKeyNeverInventAValue),
