@@ -67,6 +67,11 @@ namespace DaveCoop.Core.Session
         public long MapChoiceGeneration { get; internal set; }
         public long MapChoiceRevision { get; internal set; }
         public string MapChoiceFingerprint { get; internal set; }
+        public long CargoGeneration { get; internal set; }
+        public long CargoRevision { get; internal set; }
+        public string CargoExpeditionId { get; internal set; }
+        public bool CargoPending { get; internal set; }
+        public bool CargoInventoryCurrent { get; internal set; }
     }
 
     public sealed class SessionEvent

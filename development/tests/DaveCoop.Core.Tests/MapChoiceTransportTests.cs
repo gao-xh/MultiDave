@@ -15,7 +15,7 @@ internal static class MapChoiceTransportTests
 {
     internal static void WirePayloadAndProtocolFive()
     {
-        Assert(new PeerIdentity().ProtocolVersion == 5, "map choice channel did not advance the protocol");
+        Assert(new PeerIdentity().ProtocolVersion == 6, "cargo inventory channel did not advance the protocol");
         var pair = new Pair();
         MapRouteSelection route = Route(17);
         MapRouteSlice slice = MapChoiceFrames.SplitRoute(route, 1)[0];

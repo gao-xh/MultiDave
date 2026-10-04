@@ -56,7 +56,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   请用户确认标签下方的鱼可见及动画/转向正常，并核对捕获后移除、断线与返航清理、本地输入/镜头。
   组件启用、镜头内、网格顶点和标签分别是不同证据，仅有标签不能证明鱼网格可见。
   0.1.7-dev 用户确认鱼可见但会突然消失；0.1.8-dev 无旧异常但标签换鱼；0.1.9-dev 已获用户确认不再突然消失；单游戏显示不能证明客机地图/鱼群/AI 接管或合作捕获。
-  当前协议为 5，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
+  当前协议为 6，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
   `development/scripts/Inspect-FishRenderApi.ps1` 可复现游戏/Spine 显示与生命周期接口签名研究。
 - 0.1.6-dev 在房主开启鱼诊断且发布状态时安装自己的生命周期观察挂钩。
   核对 FISH_LIFECYCLE_READY 及 NETWORK_STATE 中 FishLifecycleHooks/Tracked/Transitions/CallbackErrors；
@@ -135,7 +135,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   未知原生结果不补奖/不重派发整批；跨崩溃共同事务未证，不能承诺恰好一次恢复。
   客机须隔离全部自动持久写入，并实现独立actor/装备/氧气/受伤/投射物；此模式目前为设计，未实现或实机验收。
 - 源码0.1.15-dev开始实现Core/Cargo个人容量/重量/预约和逐产物返航阶段，完整构建/测试结果见cargo-ledger-build-verification.json。
-  协议仍5；账本尚未接游戏潜水生命周期、网络袋清单、员工原生分流/入仓或持久共同事务。
+  0.1.15历史协议5；当时账本尚未接游戏潜水生命周期、网络袋清单、员工原生分流/入仓或持久共同事务。
   只接受房主核实的完整产物计划与新鲜member/op/source/产品指纹，未知随机产物不能猜或再次roll。
   房主重量取原生总值，不重复加产物；员工容量独立。断线保留已确认货物与未知屏障，不把Disconnect当新潜水。
   当前来源Room绑定尚无已验证迁移，新Room不能绕过去重；按真实源码合同复核事实，不把synthetic CLR标志当权限。
@@ -216,6 +216,13 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - 三种key/int32 enum的七个精确Generic/Object/Enum闭型采用同class独立普通instance候选，在(capacity,freshComparer)后核对实际指针/class再Add；Ingredients也捕获comparer/aux。原null可capture但Prepare拒，未知custom/文化/salt/aux不猜默认、不共享/清空，不调用Default/CreateComparer。无declared fields不证明全部无状态、hash/equality或ABI；publicctor抛在assignment前的未知分配无法保证已Hold，PartialConstructorAllocationRetentionVerified仍false。
 - 更直接的冷启动员工临时档候选见GUEST_COLD_PROFILE.md及Inspect-GuestProfileApi.ps1；DefaultSaveFolder/instance path/SkipCloudPullForPreset需在实际首load前绑定所有manager、云/prefs/achievement输出，单换slot/目录不等于隔离。候选未应用，全部native/world/bag/entry/quiet权限false。完整M3—M7、每人独立袋/负重/捕获和逐产物返航、真实双端与冷配置继续要求；用户测试延后，不自动启动或部署。
 
-- 当前源码0.1.23-dev/协议5，Build警告视为错误通过，本轮实际Core/TCP 182/182（新增6组生产startup trace夹具）通过，不执行nativehook。继续首load/临时档先读development/docs/SAVE_STARTUP_OBSERVATION.md、GUEST_STARTUP_API.md与save-startup-build-verification.json。
+- 历史源码0.1.23-dev/协议5，Build警告视为错误通过，本轮实际Core/TCP 182/182（新增6组生产startup trace夹具）通过，不执行nativehook。继续首load/临时档先读development/docs/SAVE_STARTUP_OBSERVATION.md、GUEST_STARTUP_API.md与save-startup-build-verification.json。
 - Startup/ObserveSaveStartup默认false，须未来正常保存退出/部署后、启动前配置，不能F11/Join后补装当早覆盖。Plugin.Load marker只有CLR来源；第一次实际Diagnostics.Update登记Unity线程后才读native字段，早期callbacks仅标量和有界pathhash。不重定向路径、不调用原业务或保存、不改云；安装可能native初始化且安装前读取无法排除。己方owner卸除、异常/丢失/线程/配额明示；不以factory/postfix或初始化false推断never-loaded。
 - 本机loader IL在Internal_ActiveSceneChanged detour中Execute/Load plugins，然后原Invoke；这不证早于SaveUtil/GameBase/UserOption Awake/.cctor。完整首次load/路径/云/prefs/成就输出与隔离仍未证，native/world/bag/entry/quiet权限false。用户测试延后，不自动部署/启动；完整M3—M7、个人容量/捕获/逐产物返航、真实双端与GitHub冷配置继续要求。
+
+- 当前源码0.1.24-dev/协议6，Build与实际Core/TCP 200/200通过；继续个人背包先读development/docs/CARGO_TRANSPORT.md与cargo-transport-build-verification.json。
+  两袋各自容量/重量/预约和确认产物仅只读账本投影；host inventory tracked-only，重量无新鲜原生证明，Returned也不能按空inventory归零。
+  新整体revision覆盖Connected/phase/未知，即使BagRevision不变；32products/64pages整批提交、control优先五路公平，begun batch完成后才nextlatest。
+  Disconnect保留host ledger和unknown屏障；newpeer/Room不自动迁移，重连及后续expedition接替仍待真实生命周期协议。
+  游戏没有verified producer attach，不创建fakeledger或GUI权限入口；tests仅synthetic CLR与回环TCP，不是原生捕获/容量/分流/返航或双游戏。
+  本轮未部署/启动，安装0.1.12/潜水0.1.11/default0.1.0保持；完整guest隔离、房主世界采用、独立actor/装备/氧气、个人袋与正常逐项入仓、M3—M7双端/冷配置继续推进。

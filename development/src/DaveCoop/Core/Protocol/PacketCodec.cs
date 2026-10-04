@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using DaveCoop.Core.World;
 using DaveCoop.Core.Actions;
+using DaveCoop.Core.Cargo;
 
 namespace DaveCoop.Core.Protocol
 {
@@ -62,7 +63,8 @@ namespace DaveCoop.Core.Protocol
                 (packet.Reason == null ? 0 : 1) + (packet.Frame == null ? 0 : 1) +
                 (packet.Scene == null ? 0 : 1) + (packet.Clock == null ? 0 : 1) + (packet.World == null ? 0 : 1) +
                 (packet.ActionRequest == null ? 0 : 1) + (packet.ActionResult == null ? 0 : 1) +
-                (packet.MapRoute == null ? 0 : 1) + (packet.MapChoice == null ? 0 : 1) + (packet.MapRetire == null ? 0 : 1);
+                (packet.MapRoute == null ? 0 : 1) + (packet.MapChoice == null ? 0 : 1) + (packet.MapRetire == null ? 0 : 1) +
+                (packet.CargoInventory == null ? 0 : 1);
             if (payloads != 1) throw new ProtocolException("Expected exactly one packet payload.");
             switch (packet.Kind)
             {
@@ -104,6 +106,12 @@ namespace DaveCoop.Core.Protocol
                     break;
                 case PacketKind.MapChoiceRetire:
                     RequireGuid(packet.RoomId); ValidateMapPayload(() => MapChoiceFrames.Validate(packet.MapRetire));
+                    break;
+                case PacketKind.CargoInventorySlice:
+                    RequireGuid(packet.RoomId); ValidateCargoPayload(() => CargoInventoryFrames.Validate(packet.CargoInventory));
+                    if (!Guid.TryParse(packet.RoomId, out Guid cargoRoom) ||
+                        packet.CargoInventory.SourceRoomId != cargoRoom.ToString("N"))
+                        throw new ProtocolException("Cargo inventory source room does not match its packet.");
                     break;
                 case PacketKind.SceneChange:
                 case PacketKind.SceneAck:
@@ -163,6 +171,12 @@ namespace DaveCoop.Core.Protocol
         {
             try { validate(); }
             catch (ArgumentException error) { throw new ProtocolException("Invalid map choice payload: " + error.Message); }
+        }
+
+        internal static void ValidateCargoPayload(Action validate)
+        {
+            try { validate(); }
+            catch (ArgumentException) { throw new ProtocolException("Invalid cargo inventory payload."); }
         }
 
         private static void ValidateIdentity(PeerIdentity identity)

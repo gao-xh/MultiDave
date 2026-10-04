@@ -1,6 +1,6 @@
 # MultiDave 开发计划
 
-当前源码为 0.1.23-dev、协议 5，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 182/182 通过。[启动观察器](SAVE_STARTUP_OBSERVATION.md)默认关闭，启用后在 Plugin.Load 安装自己的只读挂钩；[精确入口研究](GUEST_STARTUP_API.md)确认本机框架由场景切换回调触发插件，不能据此证明早于所有个人读取。路径仅记录有界哈希，未重定向或启用冷档。范围见[当前摘要](../logs/save-startup-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。完整客机隔离、房主世界采用、每人独立容量/捕获分流、返航入仓及真实双端/冷配置仍待完成。
+当前源码为 0.1.24-dev、协议 6，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 200/200 通过。[个人袋账本同步](CARGO_TRANSPORT.md)接入只读分页通道，分别保留每人的容量、重量记录和捕获物；账本重量不代表实时原生采样，房主清单非原袋全量。断线保留账本，新连接不自动继承旧成员。范围见[当前摘要](../logs/cargo-transport-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。真实成员/容量及完整产物分流、返航入仓、客机隔离、房主世界采用与双端/冷配置仍待完成。
 
 目标：Windows Steam 版双人潜水合作 MVP，先做局域网房主/客户端。
 房主负责游戏世界和结算。服务器方案暂缓。
@@ -190,3 +190,7 @@ F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房
 [独立comparer源码合同](GUEST_DICTIONARY_COMPARERS.md)与[离线API](GUEST_COMPARER_API.md)只补有限字典准备：int/string/InGameSaveType(int32)的精确Generic/Object和该enum专用Enum采用同class独立对象，source pointer/class/kind与aux参与审计，Ingredients同规则。null原可Capture但Prepare拒，不猜Default/CreateComparer/getter、不共享或清空；custom/文化/hash-salt未知拒。显式(capacity,comparer)后才Add，普通constructor抛时assignment未发生，PartialConstructorAllocationRetentionVerified=false。
 
 0.1.22 该轮 Core 输入未改，复用0.1.21实际176/176，未重跑；[0.1.22 历史摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过。七步/21explicit handles/4Data stamps不扩，所有native ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。[冷档候选](GUEST_COLD_PROFILE.md)仅研究首load/slot/output，未采用。继续真实资源/actor/cache/output与边界、房主地图采用、每人独立袋/容量/负重的个人捕获和逐产物返航、实际双端与GitHub冷配置；完整M3—M7不因有限comparer候选缩减。
+
+## 0.1.24 个人袋账本传输
+
+已编译并实际通过 200/200 项 Core/TCP 验证；新增 18 项分页、会话与真实生产适配器夹具。详见 [CARGO_TRANSPORT](CARGO_TRANSPORT.md) 和 [构建摘要](../logs/cargo-transport-build-verification.json)。协议 6 在房间内传两袋的只读账本，整批分页原子提交、五路公平发送及慢连接保留已开始批次；场景变化不清袋。Disconnected 保留确认与未知记录，新 Room/peer 不自动恢复旧成员；重量及 Returned 阶段均仅历史记录。没有游戏原生 producer 接入，没有虚构账本或 GUI 权限开关；实际容量、捕获归属、员工分流、逐项返航与隔离、世界、双端/冷配置继续必需。

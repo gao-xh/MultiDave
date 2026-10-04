@@ -42,6 +42,8 @@ namespace DaveCoop.Networking
         private float _nextMapObserverLog;
         private readonly FishActionController _fishActions = new FishActionController();
         private readonly MapChoiceController _mapChoices = new MapChoiceController();
+        private readonly CargoInventoryController _cargoInventory = new CargoInventoryController();
+        private float _nextCargoObservation;
         private LootObservationController _lootObserver;
         private MapOriginController _mapOrigins;
         private long _lastMapCopyDropped;
@@ -120,6 +122,11 @@ namespace DaveCoop.Networking
                 }
                 _mapChoices.ObserveOrigin(_mapOrigins.CaptureSourceFrame(), _peers.Main);
                 _mapChoices.Update(_peers.Main, _peers.Loopback);
+                if (Time.unscaledTime >= _nextCargoObservation)
+                {
+                    _nextCargoObservation = Time.unscaledTime + 0.25f;
+                    _cargoInventory.Update(_peers.Main, _peers.Loopback);
+                }
                 UpdateLocalScene();
                 state = _peers.Main.Snapshot;
                 if (state.Role != SessionRole.Host || !NetworkDriver.TransmitFishObservations.Value) _fishLifecycle.Dispose();
@@ -216,6 +223,13 @@ namespace DaveCoop.Networking
                         MapOriginReadErrors = _mapOrigins.ReadErrors, MapOriginUnexpectedThreads = _mapOrigins.UnexpectedThreads,
                         NativeMapGenerationVerified = false,
                         CargoGameplayEnabled = false, EmployeeBagDiversionEnabled = false, EmployeeStorageBridgeEnabled = false,
+                        CargoLedgerEvidenceAttached = _cargoInventory.HostLedgerAttached,
+                        CargoLedgerEvidenceRetained = _cargoInventory.HostLedgerRetained,
+                        CargoInventoryPublishedSnapshots = _cargoInventory.PublishedSnapshots,
+                        CargoInventoryReceivedSnapshots = _cargoInventory.ReceivedSnapshots,
+                        CargoInventoryRemoteRevision = _cargoInventory.RemoteRevision,
+                        CargoInventoryRemoteTrackedProducts = _cargoInventory.RemoteTrackedProducts,
+                        CargoInventoryObservationOnly = true, NativeBagInventoryComplete = false,
                         FishActionQueued = _fishActions.PendingCount, FishActionHighestRequestId = _fishActions.HighestRequestId,
                         FishActionReceived = _fishActions.ReceivedRequests, FishActionResults = _fishActions.ReceivedResults,
                         FishActionNativeLookupErrors = _fishActions.NativeLookupErrors,
@@ -679,6 +693,7 @@ namespace DaveCoop.Networking
             Task<Peers> finished = _pending; _pending = null;
             _peers = finished.GetAwaiter().GetResult();
             _fishActions.BindRoom(_peers.Main);
+            _cargoInventory.BindRoom(_peers.Main); _nextCargoObservation = 0;
             _mapChoices.BindRoom(_peers.Main, _mapSelectionHooks.ProcessAccepted, _mapOrigins.RunId, _mapOrigins.ActiveOwnerLife);
             RemotePreview.NetworkActive = true;
             _nextOwnerCheck = 0; _nextCapture = 0; _lastError = null;
@@ -721,6 +736,7 @@ namespace DaveCoop.Networking
             Task<Peers> pending = _pending; _pending = null;
             if (pending != null) _ = DisposePendingAsync(pending);
             _peers?.Dispose(); _peers = null;
+            _cargoInventory.Disconnect();
             _attempt?.Dispose(); _attempt = null;
             _scene = null; _layoutMessage = null; _local.Clear(); _catalog.Clear(); _display.Clear(); _displayEpoch = 0;
             _fish.ResetRoom(); _fishLifecycle.Dispose(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastPublishedWorldRevision = 0; _lastRemoteFishCount = 0; _worldWarning = null;

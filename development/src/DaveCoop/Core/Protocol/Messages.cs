@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using DaveCoop.Core.World;
 using DaveCoop.Core.Actions;
+using DaveCoop.Core.Cargo;
 
 namespace DaveCoop.Core.Protocol
 {
@@ -11,12 +12,13 @@ namespace DaveCoop.Core.Protocol
         SceneChange = 20, SceneAck = 21, SceneCommit = 22, SceneSuspend = 23, ScenePause = 24,
         Ping = 30, Pong = 31, Leave = 40, WorldSlice = 50,
         FishActionRequest = 60, FishActionResult = 61,
-        MapRouteSlice = 70, MapIgpChoice = 71, MapChoiceRetire = 72
+        MapRouteSlice = 70, MapIgpChoice = 71, MapChoiceRetire = 72,
+        CargoInventorySlice = 80
     }
 
     public sealed class PeerIdentity
     {
-        public int ProtocolVersion { get; set; } = 5;
+        public int ProtocolVersion { get; set; } = 6;
         public string ModVersion { get; set; }
         public string SteamBuildId { get; set; }
         public string UnityVersion { get; set; }
@@ -85,6 +87,7 @@ namespace DaveCoop.Core.Protocol
         public MapRouteSlice MapRoute { get; set; }
         public MapIgpChoice MapChoice { get; set; }
         public MapChoiceRetire MapRetire { get; set; }
+        public CargoInventorySlice CargoInventory { get; set; }
     }
 
     public sealed class ProtocolException : Exception

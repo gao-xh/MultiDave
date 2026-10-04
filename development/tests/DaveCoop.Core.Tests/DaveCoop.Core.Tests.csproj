@@ -10,5 +10,6 @@
     <Compile Include="..\..\src\DaveCoop\Networking\MapChoiceController.cs" Link="Networking\MapChoiceController.cs" />
     <Compile Include="..\..\src\DaveCoop\Networking\MapSelectionCallObservation.cs" Link="Networking\MapSelectionCallObservation.cs" />
     <Compile Include="..\..\src\DaveCoop\Networking\MapOriginSourceFrame.cs" Link="Networking\MapOriginSourceFrame.cs" />
+    <Compile Include="..\..\src\DaveCoop\Networking\CargoInventoryController.cs" Link="Networking\CargoInventoryController.cs" />
   </ItemGroup>
 </Project>

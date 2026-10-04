@@ -671,3 +671,15 @@
 - 日志、PLAN/HANDOFF、相关文档及Skill更新；继续证明实际首次加载/完整来源输出、员工临时状态/actor/AI隔离、房主地图采用、个人容量与产物分流、逐项返航入仓、真实双端与冷配置闭环，不缩减原目标。
 - Skill 草稿正式校验通过，新 Inspector 的 PowerShell 解析错误为 0，两次独立只读源码末审无阻断。实际离线启动报告为 5 程序集/22 类型/45 声明/8 框架方法，36 个源码目标逐精确声明核对；原 PE 为 16 roots/176 records，81 no-unwind/1 partial 未补猜。新鲜进程检查 0，已安装 SHA256 仍为 `8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，本轮没有部署或启动。
 - 已将正式校验的 Skill 同步到仓库 .agents 并核对 SHA256 一致；当前与历史构建摘要分开，0.1.22 的复用测试仍保留为历史记录，本轮 182 项为真实新执行。
+
+## 2026-10-04 — 0.1.24 每人独立袋的只读同步
+
+- 用户再次明确“每个人的”；继续每人独立背包/容量/负重，房主唯一长期进度，完整M3—M7 goal保持active。前轮0.1.23源码已提交46c249b并核验远端；本轮未部署/启动/native业务或读改存档。
+- 新CargoFrames/Assembler将真实账本投影为两成员tracked-only记录；来源Room、expedition/member、整体generation/revision与bagrevision分开，完整捕获产物深copy及指纹；32items/64pages/max2048，空1片。预约/未知/待返航数量明示；不猜重量，Returned保历史残余值。
+- 协议6新增CargoInventorySlice，host-only/guest-only、Room绑定、首片撤旧、全批原子commit；独立lane与action/frame/world/map公平，控制优先，已开始批次发完+一份nextlatest，普通scene不清账本。配额64expeditions不淘汰身份，高水位/phase/成员/返回身份与BagRevision/request不得回退。
+- 生产CargoInventoryController接NetworkController绑定/4Hz Update/Disconnect；内容变化才增加整体版本，getter与take后重新核对receive高水位，断线保留confirmed/unknown且拒新peer冒认。无游戏nativeproducer初始化/attach、fakeledger或权限UI，不开原生捕鱼/分流/入仓/存档权限。
+- 本轮实际Test-Core 200/200通过，新增18项schema/assembler/session/真实回环TCP及实际生产controller夹具；只用synthetic CLR能力事实，不执行game/native。Build警告视为错误通过，SHA256：`2BA5D4501D4054D91A30360098E70C5B7BEA8C3242D190EA6AEFDFD71F0E049E`。当前记录见cargo-transport-build-verification与core-verification；0.1.23/182/hash及旧实机范围保留。
+- 只读审查发现合法原账本可能留.1/.2扣除后的ReservedWeight浮点余量：投影Returned不要求精确0，保历史值，生产ledger返航fixture覆盖；缓存并发首片边界增加take后和getter新鲜复核。
+- PLAN/HANDOFF/相关文档与Skill同步；后续接真实潜水成员、独立容量/产物来源及员工分流，逐项返航入仓、guest完整隔离/actor/AI、房主世界采用、实际双端与GitHub冷配置，不缩减目标。
+- 首次Core 200通过但插件Build在CargoFrames嵌套SelectMany处报CS0656（interop引用环境缺NullableAttribute构造）；改显式foreach扁平化，不引入新依赖。Core源改变后重新执行两套检查，最终200/200和上述Build/hash均为修订后的真实结果。
+- Skill草稿正式validator通过并同步，SHA256为`1A39FDE2C1A96B5E3E262B18CC61EEC7ABD2288A325395903DB4C3723FD5A960`；Test-Core PowerShell解析零错误，两名独立代理只读源码复查无阻断。新鲜游戏进程检查0，安装DLL仍为`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，本轮没有部署/启动。

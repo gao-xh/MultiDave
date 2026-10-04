@@ -6,6 +6,7 @@ using DaveCoop.Core.Protocol;
 using DaveCoop.Core.Transport;
 using DaveCoop.Core.World;
 using DaveCoop.Core.Actions;
+using DaveCoop.Core.Cargo;
 
 namespace DaveCoop.Core.Session
 {
@@ -145,6 +146,25 @@ namespace DaveCoop.Core.Session
         public bool TryTakeRemoteMapChoices(out MapChoiceSnapshot choices)
         {
             lock (_gate) return _machine.TryTakeRemoteMapChoices(out choices);
+        }
+
+        public bool PublishCargoInventory(CargoInventorySnapshot snapshot)
+        {
+            lock (_gate)
+            {
+                try
+                {
+                    bool accepted = _machine.PublishCargoInventory(snapshot, Now);
+                    if (accepted) SignalWriter();
+                    return accepted;
+                }
+                catch (ProtocolException error) { Terminate(error.Message); throw; }
+            }
+        }
+
+        public bool TryTakeRemoteCargoInventory(out CargoInventorySnapshot snapshot)
+        {
+            lock (_gate) return _machine.TryTakeRemoteCargoInventory(out snapshot);
         }
 
         public bool PublishFishAction(FishActionRequest request)

@@ -1,6 +1,6 @@
 # 客机运行缓存的类型与恢复边界
 
-当前源码为 0.1.23-dev、协议 5，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 182/182 通过。[启动观察器](SAVE_STARTUP_OBSERVATION.md)默认关闭，启用后在 Plugin.Load 安装自己的只读挂钩；[精确入口研究](GUEST_STARTUP_API.md)确认本机框架由场景切换回调触发插件，不能据此证明早于所有个人读取。路径仅记录有界哈希，未重定向或启用冷档。范围见[当前摘要](../logs/save-startup-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。完整客机隔离、房主世界采用、每人独立容量/捕获分流、返航入仓及真实双端/冷配置仍待完成。
+当前源码为 0.1.24-dev、协议 6，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 200/200 通过。[个人袋账本同步](CARGO_TRANSPORT.md)接入只读分页通道，分别保留每人的容量、重量记录和捕获物；账本重量不代表实时原生采样，房主清单非原袋全量。断线保留账本，新连接不自动继承旧成员。范围见[当前摘要](../logs/cargo-transport-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。真实成员/容量及完整产物分流、返航入仓、客机隔离、房主世界采用与双端/冷配置仍待完成。
 
 五个 manager 根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。本页初版0.1.19为离线研究；历史0.1.22继续准备有限typed缓存，插件Build警告视为错误通过，见[comparer摘要](../logs/guest-comparer-build-verification.json)。0.1.22 该轮 Core 输入未改，复用[0.1.21实际176/176结果及该版构建](../logs/guest-ingame-cache-build-verification.json)，没有重跑测试。没有安装、切换、清空或恢复任何游戏缓存，没有调用 Init、Load、Build、克隆或存档。已有桥的真实进入和静止边界仍关闭，`GuestStateIsolated`、`RuntimeCachesIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority` 均不能因此开放。
 

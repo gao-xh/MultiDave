@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DaveCoop.Core.Protocol;
 using DaveCoop.Core.World;
 using DaveCoop.Core.Actions;
+using DaveCoop.Core.Cargo;
 
 namespace DaveCoop.Core.Session
 {
@@ -22,6 +23,12 @@ namespace DaveCoop.Core.Session
             public FishActionRequest Request;
             public string Fingerprint;
             public FishActionResult LastResult;
+        }
+        private sealed class CargoHeader
+        {
+            public CargoExpeditionPhase Phase;
+            public string ReturnId;
+            public CargoMemberSnapshot[] Members;
         }
         private readonly SessionRole _role;
         private readonly HandshakeResult _identity;
@@ -77,6 +84,17 @@ namespace DaveCoop.Core.Session
         private string _receivedMapFingerprint;
         private bool _receivedMapRetired;
         private bool _receivedMapRouteComplete;
+        private CargoInventorySlice[] _outgoingCargo, _pendingCargo;
+        private int _nextCargoSlice;
+        private long _cargoGeneration, _cargoRevision;
+        private string _cargoExpedition, _cargoFingerprint;
+        private CargoHeader _publishedCargoHeader;
+        private readonly HashSet<string> _cargoExpeditions = new HashSet<string>(StringComparer.Ordinal);
+        private CargoInventoryAssembler _cargoAssembler;
+        private CargoInventorySnapshot _incomingCargo;
+        private long _receivedCargoGeneration, _receivedCargoRevision;
+        private string _receivedCargoExpedition;
+        private bool _receivedCargoCurrent;
 
         public SessionMachine(SessionRole role, HandshakeResult identity, double now, SessionOptions options = null)
         {
@@ -87,6 +105,7 @@ namespace DaveCoop.Core.Session
             PacketCodec.RequireRoom(new WirePacket { RoomId = identity.RoomId }, identity.RoomId);
             _identity = new HandshakeResult { RoomId = identity.RoomId, LocalPlayerId = identity.LocalPlayerId, RemotePlayerId = identity.RemotePlayerId };
             _role = role; _options = (options ?? new SessionOptions()).CopyValidated();
+            _cargoAssembler = new CargoInventoryAssembler(_identity.RoomId);
             CheckTime(now); _lastReceive = now; _nextPing = now;
             ChangePhase(SessionPhase.WaitingForScene, "Connected; waiting for local scene.");
         }
@@ -99,7 +118,12 @@ namespace DaveCoop.Core.Session
             RemoteClockOffsetSeconds = _offset, RoundTripSeconds = _rtt,
             MapChoiceGeneration = _role == SessionRole.Host ? _mapGeneration : _receivedMapGeneration,
             MapChoiceRevision = _role == SessionRole.Host ? _mapRevision : _receivedMapRevision,
-            MapChoiceFingerprint = _role == SessionRole.Host ? (_publishedMapRoute == null ? null : _mapFingerprint) : _receivedMapFingerprint
+            MapChoiceFingerprint = _role == SessionRole.Host ? (_publishedMapRoute == null ? null : _mapFingerprint) : _receivedMapFingerprint,
+            CargoGeneration = _role == SessionRole.Host ? _cargoGeneration : _receivedCargoGeneration,
+            CargoRevision = _role == SessionRole.Host ? _cargoRevision : _receivedCargoRevision,
+            CargoExpeditionId = _role == SessionRole.Host ? _cargoExpedition : _receivedCargoExpedition,
+            CargoPending = _role == SessionRole.Host ? _outgoingCargo != null || _pendingCargo != null : _cargoAssembler.Pending,
+            CargoInventoryCurrent = _role == SessionRole.Host ? _cargoExpedition != null : _receivedCargoCurrent
         };
 
         public void SetLocalScene(SceneDescriptor scene, double now)
@@ -248,6 +272,10 @@ namespace DaveCoop.Core.Session
                     PacketCodec.ValidateMapPayload(() => _mapAssembler.Retire(packet.MapRetire));
                     RefreshReceivedMapChoices();
                     break;
+                case PacketKind.CargoInventorySlice:
+                    RequireRole(SessionRole.Guest);
+                    ReceiveCargoInventory(packet.CargoInventory);
+                    break;
                 case PacketKind.Leave:
                     Close("Peer left: " + packet.Reason);
                     break;
@@ -276,9 +304,9 @@ namespace DaveCoop.Core.Session
             if (_controls.Count > 0) { packet = _controls.Dequeue(); return true; }
             // Controls/heartbeats precede gameplay. Each populated gameplay
             // lane receives a turn; action FIFO cannot overwrite older intent.
-            for (int offset = 0; offset < 4; offset++)
+            for (int offset = 0; offset < 5; offset++)
             {
-                int lane = (_nextGameplayLane + offset) % 4;
+                int lane = (_nextGameplayLane + offset) % 5;
                 if (lane == 0 && _outgoingActions.Count > 0)
                     packet = _outgoingActions.Dequeue();
                 else if (lane == 1 && _outgoingFrame != null)
@@ -290,8 +318,14 @@ namespace DaveCoop.Core.Session
                 }
                 else if (lane == 3 && _outgoingMap.Count > 0)
                     packet = _outgoingMap.Dequeue();
+                else if (lane == 4 && _outgoingCargo != null)
+                {
+                    packet = new WirePacket { Kind = PacketKind.CargoInventorySlice, RoomId = _identity.RoomId, CargoInventory = _outgoingCargo[_nextCargoSlice++] };
+                    if (_nextCargoSlice == _outgoingCargo.Length)
+                    { _outgoingCargo = _pendingCargo; _pendingCargo = null; _nextCargoSlice = 0; }
+                }
                 else continue;
-                _nextGameplayLane = (lane + 1) % 4; return true;
+                _nextGameplayLane = (lane + 1) % 5; return true;
             }
             packet = null; return false;
         }
@@ -475,6 +509,117 @@ namespace DaveCoop.Core.Session
             _receivedMapRetired = false; _receivedMapRouteComplete = false;
         }
 
+        // Independent of scene/Ready: this is an owned ledger observation,
+        // not a capture receipt, source fact, native bag or saving authority.
+        public bool PublishCargoInventory(CargoInventorySnapshot snapshot, double now)
+        {
+            CheckTime(now); RequireRole(SessionRole.Host);
+            if (_phase == SessionPhase.Closed) return false;
+            CargoInventorySnapshot owned = CargoCopy(() => CargoInventoryFrames.Copy(snapshot));
+            if (owned.SourceRoomId != Guid.Parse(_identity.RoomId).ToString("N"))
+                throw new ProtocolException("Local cargo inventory belongs to a different source room.");
+            string fingerprint = CargoCopy(() => CargoInventoryFrames.Fingerprint(owned));
+            if (owned.Generation < _cargoGeneration || owned.Generation == _cargoGeneration && owned.Revision < _cargoRevision) return false;
+            if (owned.Generation == _cargoGeneration && owned.Revision == _cargoRevision)
+            {
+                if (fingerprint != _cargoFingerprint) throw new ProtocolException("Local cargo revision conflicts with its prior snapshot.");
+                return false;
+            }
+            if (owned.Revision <= _cargoRevision) throw new ProtocolException("Cargo room revision must advance across generations.");
+            if (owned.Generation == _cargoGeneration)
+            {
+                if (owned.ExpeditionId != _cargoExpedition) throw new ProtocolException("Cargo generation cannot change expedition identity.");
+                ValidateCargoContinuity(owned);
+            }
+            else
+            {
+                if (_cargoExpeditions.Contains(owned.ExpeditionId)) throw new ProtocolException("A retired cargo expedition cannot be replayed as a new generation.");
+                if (_cargoExpeditions.Count >= CargoInventoryFrames.MaxExpeditions)
+                    throw new ProtocolException("Cargo expedition identity quota exhausted.");
+            }
+            CargoInventorySlice[] slices = CargoCopy(() => CargoInventoryFrames.Split(owned));
+            var nextHeader = new CargoHeader { Phase = owned.Phase, ReturnId = owned.ReturnId,
+                Members = new[] { CargoInventoryFrames.CopyMember(owned.Members[0], true), CargoInventoryFrames.CopyMember(owned.Members[1], true) } };
+            // Encode all pages before publishing high water or replacing a
+            // batch. Caller mutation and invalid later pages cannot leak out.
+            foreach (CargoInventorySlice slice in slices)
+            {
+                var packet = new WirePacket { Kind = PacketKind.CargoInventorySlice, RoomId = _identity.RoomId, CargoInventory = slice, Sequence = 1 };
+                PacketCodec.Encode(packet);
+            }
+            if (_outgoingCargo != null && _nextCargoSlice > 0) _pendingCargo = slices;
+            else { _outgoingCargo = slices; _nextCargoSlice = 0; }
+            _cargoExpeditions.Add(owned.ExpeditionId);
+            _cargoGeneration = owned.Generation; _cargoRevision = owned.Revision;
+            _cargoExpedition = owned.ExpeditionId; _cargoFingerprint = fingerprint;
+            _publishedCargoHeader = nextHeader;
+            return true;
+        }
+
+        private void ValidateCargoContinuity(CargoInventorySnapshot next)
+        {
+            CargoHeader previous = _publishedCargoHeader;
+            if (previous == null || previous.ReturnId != null && previous.ReturnId != next.ReturnId ||
+                previous.Phase == CargoExpeditionPhase.Returned && next.Phase != CargoExpeditionPhase.Returned ||
+                previous.Phase == CargoExpeditionPhase.Aborted && next.Phase != CargoExpeditionPhase.Aborted ||
+                previous.Phase == CargoExpeditionPhase.Returning && next.Phase == CargoExpeditionPhase.Active)
+                throw new ProtocolException("Cargo expedition phase or frozen return identity regressed.");
+            for (int i = 0; i < previous.Members.Length; i++)
+            {
+                CargoMemberSnapshot prior = previous.Members[i], current = next.Members[i];
+                if (prior.MemberId != current.MemberId || prior.BagMode != current.BagMode ||
+                    current.BagRevision < prior.BagRevision || current.HighestRequestId < prior.HighestRequestId)
+                    throw new ProtocolException("Cargo member identity or request/bag revision regressed.");
+            }
+        }
+
+        public bool TryTakeRemoteCargoInventory(out CargoInventorySnapshot snapshot)
+        {
+            RequireRole(SessionRole.Guest);
+            snapshot = _incomingCargo; _incomingCargo = null;
+            return snapshot != null;
+        }
+
+        private void ReceiveCargoInventory(CargoInventorySlice slice)
+        {
+            CargoInventorySnapshot completed;
+            bool accepted;
+            try { accepted = _cargoAssembler.Add(slice, out completed); }
+            catch (ArgumentException)
+            {
+                _incomingCargo = null; _receivedCargoCurrent = false;
+                throw new ProtocolException("Cargo inventory assembly failed; its view is unavailable.");
+            }
+            if (_receivedCargoGeneration != _cargoAssembler.HighestGeneration || _receivedCargoRevision != _cargoAssembler.HighestRevision)
+            {
+                _incomingCargo = null; _receivedCargoCurrent = false;
+                _receivedCargoGeneration = _cargoAssembler.HighestGeneration;
+                _receivedCargoRevision = _cargoAssembler.HighestRevision;
+                _receivedCargoExpedition = slice.ExpeditionId;
+            }
+            if (accepted)
+            {
+                _incomingCargo = CargoCopy(() => CargoInventoryFrames.Copy(completed));
+                _receivedCargoCurrent = true;
+            }
+        }
+
+        private static T CargoCopy<T>(Func<T> copy)
+        {
+            try { return copy(); }
+            catch (ArgumentException) { throw new ProtocolException("Invalid cargo inventory data."); }
+        }
+
+        private void ClearCargoInventory()
+        {
+            _outgoingCargo = null; _pendingCargo = null; _nextCargoSlice = 0;
+            _cargoGeneration = 0; _cargoRevision = 0; _cargoExpedition = null; _cargoFingerprint = null;
+            _publishedCargoHeader = null;
+            _cargoExpeditions.Clear(); _cargoAssembler = new CargoInventoryAssembler(_identity.RoomId);
+            _incomingCargo = null; _receivedCargoGeneration = 0; _receivedCargoRevision = 0;
+            _receivedCargoExpedition = null; _receivedCargoCurrent = false;
+        }
+
         private void ReceiveFishActionResult(FishActionResult result)
         {
             if (result.PlayerId != _identity.LocalPlayerId) throw new ProtocolException("Fish action result player identity spoofing.");
@@ -552,7 +697,7 @@ namespace DaveCoop.Core.Session
         public void Close(string reason)
         {
             if (_phase == SessionPhase.Closed) return;
-            _controls.Clear(); ClearFrames(); ClearMapChoices(); _proposal = null; _localScene = null;
+            _controls.Clear(); ClearFrames(); ClearMapChoices(); ClearCargoInventory(); _proposal = null; _localScene = null;
             ChangePhase(SessionPhase.Closed, reason ?? "Connection closed.");
         }
 

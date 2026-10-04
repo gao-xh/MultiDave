@@ -1,6 +1,6 @@
 # MultiDave 接手记录
 
-当前源码为 0.1.23-dev、协议 5，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 182/182 通过。[启动观察器](SAVE_STARTUP_OBSERVATION.md)默认关闭，启用后在 Plugin.Load 安装自己的只读挂钩；[精确入口研究](GUEST_STARTUP_API.md)确认本机框架由场景切换回调触发插件，不能据此证明早于所有个人读取。路径仅记录有界哈希，未重定向或启用冷档。范围见[当前摘要](../logs/save-startup-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。完整客机隔离、房主世界采用、每人独立容量/捕获分流、返航入仓及真实双端/冷配置仍待完成。
+当前源码为 0.1.24-dev、协议 6，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 200/200 通过。[个人袋账本同步](CARGO_TRANSPORT.md)接入只读分页通道，分别保留每人的容量、重量记录和捕获物；账本重量不代表实时原生采样，房主清单非原袋全量。断线保留账本，新连接不自动继承旧成员。范围见[当前摘要](../logs/cargo-transport-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。真实成员/容量及完整产物分流、返航入仓、客机隔离、房主世界采用与双端/冷配置仍待完成。
 
 ## 已完成
 
@@ -44,7 +44,7 @@ M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态�
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
 0.1.4-dev 引入默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，0.1.5-dev 加入一条鱼的 Sprite/Spine 显示验证入口。
-当前源码协议版本为 5，拒绝旧协议 4；WorldSlice 保持每块最多 16 个实体，保留 FishActionRequest/FishActionResult 独立通道，新增 MapRouteSlice/MapIgpChoice/MapChoiceRetire。
+当前源码协议版本为 6，拒绝旧协议 5；WorldSlice 保持每块最多 16 个实体，保留 FishActionRequest/FishActionResult 独立通道，保留 MapRouteSlice/MapIgpChoice/MapChoiceRetire，并新增 CargoInventorySlice。
 F11 的 Transmit read-only fish observations / Preview one received fish 均默认关闭。
 0.1.11-dev 另增默认关闭的 Display received fish roster / Observe host harpoon and fish interactions；
 本机显示及房主交互观察仍依赖 Transmit read-only fish observations。
@@ -210,7 +210,7 @@ Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可�
 已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
 Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
 探针记录本机 ID 仅用于观察；网络数值实体已使用房主分配的 RoomId/epoch/EntityId。
-当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.23-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
+当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.24-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
 当前候选测试先建Host/Join或Local test，再开启Observe loading coroutine and scene ownership并进行新自然入海。旧Observe map selection calls仅可选诊断，不能发送候选；可核对 MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE、MAP_SELECTION_HOOKS_STOPPED 的五处自然边界、线程、路线候选、空/截断/读取错误及自己的卸载。
 随后按目标检查范围在 F11 / Local test 开启 Transmit read-only fish observations 后进入潜水。
 开启单鱼预览取得选中身份，点 Check selected fish target，核对 FISH_ACTION_SENT / ADMISSION / DECISION / RECEIVED 的请求元数据、指纹及 DryRunValidated/op0。
@@ -306,3 +306,7 @@ Interaction、Ingredients、Ingame三份known baseline在Serialize前捕获并�
 显式(capacity,comparer)构造在Add之前；普通constructor整体抛时assignment尚未完成，PartialConstructorAllocationRetentionVerified=false，不能保证所有未知分配已经Hold。七步/21explicit handles/4Data stamps未扩；全部ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动native入口。[0.1.22 历史摘要](../logs/guest-comparer-build-verification.json)的Build警告视为错误通过；0.1.22 该轮 Core 输入未改，复用0.1.21实际176/176，未新跑。安装0.1.12、潜水0.1.11与default0.1.0不变。
 
 [GUEST_COLD_PROFILE](GUEST_COLD_PROFILE.md)仅提出更直接的首次load、slot、输出路径研究，尚未采用，不能把新profile等同完整隔离。真实资源/actor/cache/output与进入/静止、房主地图采用、每人个人捕获/容量分流及逐产物返航、真实双端/冷配置和M3—M7仍须完成；手动试玩延后继续有效。
+
+## 0.1.24 个人袋账本传输
+
+已编译并实际通过 200/200 项 Core/TCP 验证；新增 18 项分页、会话与真实生产适配器夹具。详见 [CARGO_TRANSPORT](CARGO_TRANSPORT.md) 和 [构建摘要](../logs/cargo-transport-build-verification.json)。协议 6 在房间内传两袋的只读账本，整批分页原子提交、五路公平发送及慢连接保留已开始批次；场景变化不清袋。Disconnected 保留确认与未知记录，新 Room/peer 不自动恢复旧成员；重量及 Returned 阶段均仅历史记录。没有游戏原生 producer 接入，没有虚构账本或 GUI 权限开关；实际容量、捕获归属、员工分流、逐项返航与隔离、世界、双端/冷配置继续必需。
