@@ -591,3 +591,27 @@
 - 新增ORIGIN_MAP_TRANSPORT/GUEST_ISOLATION，更新README/AGENTS/PLAN/HANDOFF/MULTIPLAYER/WORLD_SYNC/GAME_API/CREW_MODE/NATIVE_ANALYSIS和Skill；Skill校验通过。
   当前摘要core-verification及origin-map-transport-build-verification，离线摘要guest-shadow-analysis-verification；0.1.16历史148/hash保持不变，原日志/报告留.local。
   下一步实现有输出围栏的客机shadow准备/安装/核对/恢复及运行缓存切换，继续真实地图采用、个人捕获/入仓桥；用户方便后再验证真实来源链与双游戏闭环。
+
+## 2026-10-04 — 0.1.18 实际原生根桥与已枚举输出围栏
+
+- 前一goal turn为具体进展：0.1.17固定来源候选发送已提交并远端核验。继续完整M3至M7目标，不把CLR或准备代码当完整联机；每人独立背包、容量、负重规则保持。
+  本轮源码升0.1.18-dev、协议5，未部署/启动/调用游戏或读改存档，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持原证据范围，手动验证按用户要求延后。
+- 新NativeGuestShadowBridge实现实际typed四Data native Serialize/Deserialize、temp Interaction(false)、五个direct根的身份/readback/单次安装与恢复，不调用公共SetLoadedData/Load/Sync。
+  强保留SaveSystem、四manager、五original及五detached，最多15 explicit IntPtr gchandles，read_target核对；仅free自己的句柄，不触wrapper私有句柄。
+  只有首次实际fence attempt才CAS强保留整个backend，pre拒绝不占global slot；unknown restore保留backend与handles，无自动finalizer把保存放开。
+- 四manager IsNewData及原Data版本/时间/dirty/corrupt直接标量核对变化就拒绝，不强行清回旧dirty位。这不证明private树/缓存/旧协程从未修改。
+  每根8Mi、lease16Mi UTF16代码单元，JSON仅局部内存不日志/协议，native返回后才查长度，不能约束native初始分配；constructor string ver不是JSON克隆。
+- Core/Guest/GuestShadowTransaction固定backend lease/thread/来源，fence-before-clone、step前后fresh核对，逐root逆序readback补偿，Foreign/Unknown不盲写。
+  false/throw可能已进入写入，精确Original回读可解决结果但不抹fault；restore/unpatch/free未知不再派发，quiescence或fence不可靠保留引用。
+  生产CanEnterBoundary与HasQuiescentBoundary当前恒false；前置拒绝在InstallFence之前，startup primitive自身也fresh拒绝。没有Network/GUI或Plugin自动实例化/调用，不运行root swap或锁用户正常保存。
+- 新GuestOutputFence/TargetManifest为194 exact声明：130declared排22open-base和2service-interface，纳88个四closedBase展开。strict owner/static/params/return，source清单与fresh离线报告194逐项相等。
+  活动prefix设计跳writer原方法，boolfalse；8TryLoad typedout置null，Injected输入ref不变；Steamasync=0、stream=UInt64.MaxValue，Toolbox Save/Delete Failed=2/1，default0是成功不能用。
+  failure值预建CLR而非调用native struct ctor；只卸自己的owner，unknown/其它线程/partial安装失败保持阻断并失健康。
+  194不代表全部writer/唯一native地址/已安装detour；sharedgeneric、ref/struct ABI、在途输出、具体service实现及System.IO其它路径仍未知，没有安装或观测真实阻断。
+- 新Inspect-GuestOutputApi.ps1实际Cecil离线执行5生成程序集+runtime IL：130declared/88closed展开/MissingNames=[]；GC handle IntPtr/strong false语义与同commit官方源码核对。
+  原PE旧静态边仅引用旧hash，不冒充本轮重验原文件；原报告、IL和binary只留.local。两个新研究/实现doc说明完整cache/Interaction/writer/quiescence仍必须完成。
+- Test-Core167/167通过，新增7组actual生产事务＋instrumented synthetic backend：fence前零操作边界拒绝、partial/throw补偿、unknown不retry、foreign/manager变更、fence/quiescence保留、thread/lease/reentrant和cleanup一次。
+  不执行native bridge/hooks/Unity，不能作为实际克隆/写入/保存隔离或双游戏验证。最终Build警告视为错误通过，SHA256：`E3757E62DAC6DAB4AE715DE5A1D01D6A65E578EB92493C72567BB8724ED4EBF0`。
+- 新guest-shadow-build-verification和更新core摘要，0.1.17历史160/hash保留；同步README/开发README/AGENTS/PLAN/HANDOFF/MULTIPLAYER/WORLD_SYNC/CREW_MODE/GAME_API/NATIVE_ANALYSIS/GUEST_ISOLATION与配置Skill。
+  Skill正式草稿校验通过并同步；新PowerShell工具解析错误0。最终独立只读评审未发现本轮阻断，确认进入拒绝在原生调用/patch之前；新鲜进程检查0，已安装DLL的SHA256仍为`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`。
+  下一步实现可信原生pre-generation/退出静止边界、Interaction/运行缓存切换及完整输出覆盖，随后受控实机原生准备/恢复；继续实际房主地图采用、个人捕获/入仓、双端完整闭环与冷配置发行。全部native权限false，goal仍active。

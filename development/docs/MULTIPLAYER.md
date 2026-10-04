@@ -1,6 +1,6 @@
 # 第二角色与传输层
 
-当前源码 `0.1.17-dev`、协议 5，Build 警告视为错误通过、Test-Core 160/160 通过；本轮未部署/启动。
+当前源码 `0.1.18-dev`、协议 5，Build 警告视为错误通过、Test-Core 167/167 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 `0.1.11-dev`。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，主菜单启动通过不扩展为玩法验收。
@@ -13,7 +13,7 @@ M2 在 0.1.2-dev 的真实潜水中通过基础验收。M3 会话/资源键/布�
 0.1.7-dev 用户确认预览鱼可见但会突然消失；日志定位到角色临时部件销毁触发自动断开。
 0.1.8-dev 已修复该失败路径但仍自动换鱼。0.1.9-dev 锁定目标，用户确认不再突然消失；动画、Disconnect/返航及两游戏验收待完成。
 启动证据见 `../logs/network-bootstrap-verification.json`，海洋同步、探针和一条鱼显示诊断见 [WORLD_SYNC](WORLD_SYNC.md)。
-当前边界见[固定来源候选构建摘要](../logs/origin-map-transport-build-verification.json)，0.1.14历史传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，已安装0.1.12-dev见[操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史0.1.11-dev潜水边界见[鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
+当前边界见[原生影子桥构建摘要](../logs/guest-shadow-build-verification.json)，0.1.14历史传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，已安装0.1.12-dev见[操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史0.1.11-dev潜水边界见[鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
 
 ## M2 显示对象
 
@@ -185,7 +185,7 @@ DAVECOOP_LAYOUT_READY / WARNING。真实验证至少覆盖本机显示、双机�
 dotnet run --project development/tests/DaveCoop.Core.Tests/DaveCoop.Core.Tests.csproj
 ```
 
-本机当前已通过 160/160 项测试。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
+本机当前已通过 167/167 项测试。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
 JSON 数字结构往返、错误数据拒绝、拆包/截断、TCP 双端握手及双向快照、
 版本不匹配、并发发送、重复序号、连接关闭和读取取消；另覆盖场景握手与不一致超时、
 旧 epoch 清理、客机重载、身份/权限错误、时钟偏移、深拷贝与队列上限、
@@ -233,3 +233,11 @@ M4 下一步是本地来源/代次与跨机地址确认后的实际选择采用�
 当前行为见[固定来源候选传输](ORIGIN_MAP_TRANSPORT.md)和[0.1.17 构建摘要](../logs/origin-map-transport-build-verification.json)。0.1.14 的 callbackFloor/cache 来源与 0.1.16 的“仅日志”是历史范围，当前发送流程按新文档执行。
 
 客机的原生 Serialize/Deserialize、双 Data/Interaction 根及直接恢复候选已离线定位，见[客机影子桥研究](GUEST_ISOLATION.md)。SaveData(string ver) 不是 JSON 构造器，SetLoadedData/Load 不是纯交换；旧协程、缓存、可变子树及全部持久输出仍需隔离与恢复验证。尚未执行原生克隆/根替换或证明 GuestStateIsolated。每人的独立容量和负重规则保持不变。
+
+## 0.1.18 原生根桥与输出围栏源码
+
+0.1.18新增实际typed原生影子桥、单次事务及已枚举输出围栏源码。四类Data原生JSON round trip、五根直接交换/回读/恢复和15个独立强handle已编译；7组新增事务夹具以合成backend验证partial/unknown补偿、fence/refs保留和一次清理，总167/167通过。
+
+当前生产进入与静止边界恒false，事务在围栏安装前拒绝；startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。全部GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority保持false，未部署或启动。
+
+实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。

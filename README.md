@@ -53,7 +53,7 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 `distribution/` 是供自动安装使用的本项目插件包。
 本仓库不分发游戏、游戏接口程序集、存档或 BepInEx 运行库。
 
-`codex/player-discovery` 分支当前源码为 0.1.17-dev、协议 5；Build 警告视为错误通过，Test-Core 160/160 通过，本轮仅构建，未部署或启动。
+`codex/player-discovery` 分支当前源码为 0.1.18-dev、协议 5；Build 警告视为错误通过，Test-Core 167/167 通过，本轮仅构建，未部署或启动。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试；该进程已确认插件加载、Unity Update、网络入口及 4 条初始路线输入日志，仅主菜单启动通过。
 目标检查、潜水路线、场景切换与正常返航仍待实机，用户当前不方便试玩，手动验证已延后。最近完成潜水验证的是 0.1.11-dev，单游戏 TCP 鱼群显示与发射/挂钩/伤害只读观察已运行。
 用户确认偏移鱼群可见、捕获原鱼时对应副本也消失，关闭鱼群显示后恢复正常，操作和镜头正常。
@@ -105,3 +105,5 @@ Mod 不持有原生包装器、不调用或改写选图/加载/存档入口；Di
 移到 `plugins` 目录之外。
 
 0.1.17 已接固定来源清单到候选发送，旧地图调用观察只作诊断；每人的独立容量和负重保持不变。当前范围见[固定来源候选传输](development/docs/ORIGIN_MAP_TRANSPORT.md)和[160项构建摘要](development/logs/origin-map-transport-build-verification.json)。客机克隆/根恢复接口见[影子桥研究](development/docs/GUEST_ISOLATION.md)，实际地图采用、员工捕获/入仓及客机隔离仍待完成。0.1.14旧适配与0.1.16仅日志均为历史行为。
+
+0.1.18新增客机原生状态复制/五根恢复和已枚举输出围栏源码，167项测试通过，见[根桥](development/docs/GUEST_SHADOW_BRIDGE.md)与[当前摘要](development/logs/guest-shadow-build-verification.json)。真实进入边界尚未接通，源码会在安装围栏前拒绝进入；没有自动调用、部署或试玩验证，不开放员工或存档隔离权限。

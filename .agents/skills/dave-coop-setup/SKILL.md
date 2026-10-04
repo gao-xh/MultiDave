@@ -167,9 +167,9 @@ description: Configure or continue development of the MultiDave prototype for Wi
   0.1.16历史Build和148项测试通过，新增6组synthetic registry夹具；未部署/启动或执行nativecallbacks。
   当前安装保持0.1.12、最近潜水0.1.11，用户试玩延后时不催测；正常保存退出后再部署验证typedreturn/Scene值/__state/加载嵌套/birth/owncleanup及画面。
   此原型不自动进入默认发行包；完整采用、guest持久/AI隔离、个人背包分流与正常返航仍待接通。
-- 当前源码0.1.17-dev、协议5、Build警告视为错误通过、Test-Core160/160通过；范围见development/docs/ORIGIN_MAP_TRANSPORT.md及origin-map-transport-build-verification.json。
+- 上一版源码0.1.17-dev、协议5、Build警告视为错误通过、Test-Core160/160通过；范围见development/docs/ORIGIN_MAP_TRANSPORT.md及origin-map-transport-build-verification.json。
   候选只从TryCaptureSource当前owned清单发布，诊断drain不消耗来源；旧Observe关闭/丢失只影响诊断，Guest停本地origin保留Host收到的候选。
-  用户方便时正常保存退出后才部署，确认0.1.17新进程；先建Host/Join或Local test，再启用Observe loading coroutine and scene ownership并新自然入海。
+  用户方便时正常保存退出后才部署，确认实际待部署版本的新进程；先建Host/Join或Local test，再启用Observe loading coroutine and scene ownership并新自然入海。
   4参BindRoom记录实际Run/owner floor；建房前entry、退休Run/owner/controller不能补旧来源。清单删除/替换退休wire代次后重发，每帧8条，超schema128整帧拒绝；64Run围栏跨Clear保留、controller历史256不淘汰。
   网络摘要核对MapChoiceOriginRunId、MapChoiceOriginOwnerLife、MapChoiceOriginPending、MapChoiceLegacySuppressed与MAP_CHOICE撤销，待发0不表示全IGP完成。新增6组Core快照和6组actualTCP测试均用synthetic标量，不运行NativeHooks/Capture/Unity/provider。
   未部署/启动；NativeGenerationBound/HostSelectionApplied/GuestStateIsolated/WorldAuthority/CargoAuthority仍false；实际采用、员工捕获/入仓及双游戏待完成。安装0.1.12/潜水0.1.11/默认包0.1.0仍为原证据范围。
@@ -177,6 +177,13 @@ description: Configure or continue development of the MultiDave prototype for Wi
   Serialize<T>/Deserialize<T>是实际native clone候选，SaveData(string ver)不是JSON构造器，SetLoadedData/Load有副作用不能作纯恢复。
   双Data/Interaction直接字段交换仍需detached子树、旧协程/缓存及全部输出围栏验证，Photo/UserOption也需明确隔离。178签名候选/static边不是所有writer覆盖或GuestStateIsolated证明。
   Prepare/Activate/Validate/Restore代码与实机待完成，未知恢复不放开写入；每人独立袋/容量/负重规则保持，房主原袋不重复Add，员工逐产物入仓另证。
+- 当前源码0.1.18-dev、协议5、Build警告视为错误通过、167/167测试通过；见development/docs/GUEST_SHADOW_BRIDGE.md、GUEST_OUTPUT_FENCE.md及guest-shadow-build-verification.json。
+  actual typed bridge具备4Data native roundtrip、5direct根/回读/一次恢复及15 explicit IntPtr强handles；temp Interaction(false)未Sync，不证明private子树/cache/旧引用隔离。
+  Native CanEnterBoundary/HasQuiescentBoundary恒false，Core在InstallFence前拒绝且primitive自身fresh核对；没有Network/GUI入口，不为了试玩改true/加入开关/伪造几个callerbool，也不从Room或loaded/writer0授native权限。
+  frozen output manifest194严格declared/static/params/return匹配；8closed typedout失败置null/false，Injected输入ref不乱改。Steam流invalidMaxValue/异步0、Toolbox Save/Delete失败2/1，不能default伪报成功。
+  sharedgeneric/typedABI/在途输出/具体service实现及全writer仍未证；检查自己owner并且失败保持阻断，不Patch任意System.IO全局。新脚本Inspect-GuestOutputApi.ps1只读取Cecil元数据/框架IL，报告仅.local，不运行native或读存档。
+  7组新事务测试合成backend不执行native bridge/fence；RootShadowInstalled也不升级GuestStateIsolated。原根/manager、强handle及真实静止边界确认前不卸围栏/free；未知恢复/free不重复，尚未有实际原生恢复验证。
+  未部署/启动，用户手动验证继续延后；安装0.1.12/潜水0.1.11/默认包0.1.0保持原范围。新source初次调用须先可信native边界/cache与全输出隔离，不能锁住正常保存冒充诊断。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

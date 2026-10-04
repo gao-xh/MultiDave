@@ -1,13 +1,13 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T09:57:57.802116+00:00",
-  "PluginVersion": "0.1.17-dev",
+  "RecordedUtc": "2026-10-04T10:24:33.159226+00:00",
+  "PluginVersion": "0.1.18-dev",
   "VerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1"
   ],
-  "CoreTestsPassed": 160,
-  "CoreTestsTotal": 160,
+  "CoreTestsPassed": 167,
+  "CoreTestsTotal": 167,
   "TestNames": [
     "timeline boundaries and interpolation",
     "timeline capacity, ordering and reset",
@@ -119,6 +119,13 @@
     "TCP origin map eight choice budget and copied inventory",
     "TCP origin map pending route room floor and new entry",
     "TCP origin map run quota preserves tombstones",
+    "guest shadow fence before clone and no isolation grant",
+    "guest shadow partial install compensation per root",
+    "guest shadow unknown restore is never redispatched",
+    "guest shadow foreign roots and manager replacement retain fence",
+    "guest shadow quiescence and fence loss retain references",
+    "guest shadow thread lease and reentrancy guards",
+    "guest shadow cleanup failures never release early",
     "cargo independent capacities, reservations and native weight",
     "cargo operation provenance and atomic product ownership",
     "cargo source fence, replay, cancellation and quota",
@@ -171,7 +178,7 @@
     "TCP fish action protocol three rejection"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "B14381625A27B82396D6C474B4B6DACB0DA8DB12ACB7D6CCF07AD79C7C22E1C3",
+  "CompiledPluginSHA256": "E3757E62DAC6DAB4AE715DE5A1D01D6A65E578EB92493C72567BB8724ED4EBF0",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
@@ -180,7 +187,7 @@
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Pure CLR protocol/session/world/action and production map-choice adapter fixtures with real loopback TCP, plus caller-serialized in-memory per-member cargo evidence. Eight cargo fixtures use synthetic host-local facts and verified-yield plans; they exercise independent capacity/reservations, provenance/product fingerprints, source and request replay fences, room migration rejection, late receipts after disconnect, host native total weight, per-product return leases, partial success, unknown outcomes and bounded deep copies. No native execution, actual employee diversion, game expedition binding, guest save isolation, real storage/save transactions, normal return or two-game gameplay is verified. Six additional production MapOriginRegistry fixtures supply synthetic local scalar evidence for fixed iterator scopes, unknown-scope masking, exact bootstrap/late completion, pointer/version/handle fences, pending births and actual-unload tombstones, repeated caches, failed operations, thread/read/LIFO/quota revocation. They do not execute native hooks, native capture or the Unity controller, and do not verify actual callback ABI, native ownership, adoption or game cleanup. Version 0.1.17 adds six production registry current-source snapshot fixtures and six production map-choice origin adapter fixtures over actual loopback TCP; the prior four adapter fixtures now use the fixed-source contract. They cover owned/latest inventories independent of diagnostic drains, pending exact scene completion, room entry floors, run and controller tombstones, inventory removal/replacement generations, copied input, eight-choice budgets and atomic rejection. Facts are synthetic CLR scalars; native hooks, capture, Unity provider, actual native map ownership/adoption and guest shadow installation are not executed or verified.",
+  "Scope": "Pure CLR protocol/session/world/action and production map-choice adapter fixtures with real loopback TCP, plus caller-serialized in-memory per-member cargo evidence. Eight cargo fixtures use synthetic host-local facts and verified-yield plans; they exercise independent capacity/reservations, provenance/product fingerprints, source and request replay fences, room migration rejection, late receipts after disconnect, host native total weight, per-product return leases, partial success, unknown outcomes and bounded deep copies. No native execution, actual employee diversion, game expedition binding, guest save isolation, real storage/save transactions, normal return or two-game gameplay is verified. Six additional production MapOriginRegistry fixtures supply synthetic local scalar evidence for fixed iterator scopes, unknown-scope masking, exact bootstrap/late completion, pointer/version/handle fences, pending births and actual-unload tombstones, repeated caches, failed operations, thread/read/LIFO/quota revocation. They do not execute native hooks, native capture or the Unity controller, and do not verify actual callback ABI, native ownership, adoption or game cleanup. Version 0.1.17 adds six production registry current-source snapshot fixtures and six production map-choice origin adapter fixtures over actual loopback TCP; the prior four adapter fixtures now use the fixed-source contract. They cover owned/latest inventories independent of diagnostic drains, pending exact scene completion, room entry floors, run and controller tombstones, inventory removal/replacement generations, copied input, eight-choice budgets and atomic rejection. Facts are synthetic CLR scalars; native hooks, capture, Unity provider, actual native map ownership/adoption and guest shadow installation are not executed or verified. Version 0.1.18 adds seven production GuestShadowTransaction fixtures using an instrumented synthetic backend. They cover fence-before-clone and fresh boundaries, per-root partial/throw compensation, unknown restore no redispatch, foreign root/manager rejection, quiescence/fence retention, thread/source/reentrancy and one-shot cleanup. The production native backend and output hooks are compiled but never executed. Its entry and quiescence boundaries remain false; no root swap, JSON round trip, writer blocking, deep clone, game cleanup or guest isolation is verified.",
   "ProtocolVersion": 5,
   "MapChoiceTcpTransferVerified": true,
   "ProductionMapChoiceAdapterFixtureVerified": true,
@@ -200,5 +207,10 @@
   "NativeOriginProviderExecutedInFixtures": false,
   "GuestStateIsolated": false,
   "DeployedThisTurn": false,
-  "GameLaunchedThisTurn": false
+  "GameLaunchedThisTurn": false,
+  "GuestShadowTransactionFixtureVerified": true,
+  "GuestShadowTransactionTestsPassed": 7,
+  "NativeShadowBridgeExecuted": false,
+  "NativeOutputFenceInstalled": false,
+  "NativeCloneAbiVerified": false
 }

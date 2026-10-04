@@ -115,3 +115,11 @@ var playerShadow = DR.Save.SaveDataBase.Deserialize<DR.Save.SavePlayerData>(
 4. 恢复时仍保持输出围栏，停用员工世界对象并排除在途操作；确认当前 manager/root 正是本 lease 安装的 shadow，再按原引用恢复所有根、脏标记和缓存。原指针恢复并不能证明嵌套原数据从未被旧引用修改。发生未知替换、恢复不完整或仍有 guest callback 时，不能卸载围栏后恢复普通存档写入；应进入需要重启的失败状态。
 
 员工断线不清房主潜水账本，客机 shadow 也不回写为自己的进度。两袋结算由房主真实产物/捕获/返航证据驱动：房主原袋不重复 Add，员工未入仓条目由新的原生 bridge 逐项确认一次。shadow 安装、bool 保存返回或副本消失不能作为捕获/入仓 receipt；未知结果不重放。完整采用、个人袋分流和双游戏验证仍待完成。
+
+## 0.1.18 原生根桥与输出围栏源码
+
+0.1.18新增实际typed原生影子桥、单次事务及已枚举输出围栏源码。四类Data原生JSON round trip、五根直接交换/回读/恢复和15个独立强handle已编译；7组新增事务夹具以合成backend验证partial/unknown补偿、fence/refs保留和一次清理，总167/167通过。
+
+当前生产进入与静止边界恒false，事务在围栏安装前拒绝；startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。全部GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority保持false，未部署或启动。
+
+实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。
