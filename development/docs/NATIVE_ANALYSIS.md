@@ -137,3 +137,7 @@ GuestStateIsolated、NativeExecutionImplemented等能力保持false。
 ## 0.1.25 捕获分流关键根
 
 本轮离线重查16精确选择器/18重载根/145方法记录，54条缺可用containing unwind；无方法配额触顶、根遗漏或指令截断。自然拾取包含普通与追加掉落，追加路径触及保底随机计数，Add_Impl还包含重量/槽位/任务等副作用。关键根未提供已证明的捕获协程来源。原报告仅存.local/analysis/capture-bag-diversion-critical-calls.json；静态边与共享别名不证明数据流/完整运行顺序。精确声明另由Inspect-CaptureLineageApi离线核对7types/16hooks/5fields/owner5层。生产时机限制及观察语义见[CAPTURE_LINEAGE](CAPTURE_LINEAGE.md)，本轮不执行游戏/native/save。
+
+## 捕获选择与提交的最新研究
+
+插件保持0.1.29；本轮只执行新离线研究工具，不重复原226测试或插件Build。普通拾取按CarvableCount逐tier，死鱼身体为另一个tier1配方；主选择也会随机，追加只一次并改保底/dirty。原Add的成功返回在实际Add_Impl之后，槽前已经有负重效果，原容量并非整批预期重量检查。SuccessInteract的UnityEvent转发不提供已证actor归属，回收/尸体状态也非捕获凭证。按[员工选择与提交桥](FISH_YIELD_BRIDGE.md)实现明确合作批次规则；不再增加镜像Core Gate，先接实际成员、选择/分流producer与现账本。完整M3—M7和实机闭环继续必需。

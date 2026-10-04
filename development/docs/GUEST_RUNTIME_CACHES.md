@@ -1,6 +1,6 @@
 # 客机运行缓存的类型与恢复边界
 
-当前源码为0.1.29-dev、协议6，插件构建警告视为错误通过；本轮实际Core/TCP226/226通过（扩展2个既有来源栈夹具）。[货槽观察](LOOT_SLOT_OBSERVATION.md)新增总数量/品质/最终品质三个自然setter的前后候选采样，仍默认关闭，不调用setter或原生解码，不产生捕获/背包增量凭证。范围见[当前摘要](../logs/loot-slot-mutation-build-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。个人容量/分流与返航、客机隔离/房主世界、双端和冷配置仍待完成。
+当前插件源码保持0.1.29-dev、协议6；最近实际编译与Core/TCP226/226已通过。本轮仅新增离线接口工具和捕获选择研究，124个原验证输入未改，复用该版结果，没有重跑。[员工选择与提交桥](FISH_YIELD_BRIDGE.md)明确多tier主随机、一次追加及保底写入，现仍无可信成员/完整产物分流producer。证据见[研究摘要](../logs/fish-yield-analysis-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。实际个人容量/分流与返航、客机隔离/房主世界、双端和冷配置仍待完成。
 
 五个 manager 根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。本页初版0.1.19为离线研究；历史0.1.22继续准备有限typed缓存，插件Build警告视为错误通过，见[comparer摘要](../logs/guest-comparer-build-verification.json)。0.1.22 该轮 Core 输入未改，复用[0.1.21实际176/176结果及该版构建](../logs/guest-ingame-cache-build-verification.json)，没有重跑测试。没有安装、切换、清空或恢复任何游戏缓存，没有调用 Init、Load、Build、克隆或存档。已有桥的真实进入和静止边界仍关闭，`GuestStateIsolated`、`RuntimeCachesIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority` 均不能因此开放。
 

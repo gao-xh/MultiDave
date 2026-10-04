@@ -259,3 +259,8 @@ description: Configure or continue development of the MultiDave prototype for Wi
   Finalizer不读原生槽，复用After即使Unavailable，否则Before；原两个槽边界仍Before-only。RunId+CallId只标本次样本，没有持久槽编号/寿命/袋身份；raw结构/密钥/hidden不进Context/queue/log。
   数量参数是新总数，不是本次增量；FinalGrade更新不证明capture终局或完整yield。失败清当前样本/参数并撤链，旧queue带当前不健康；native ABI/来源操作绑定/receipt/个人分流权限全false。
   离线Cecil实查19声明不执行game；安装0.1.12/最近潜水0.1.11/默认0.1.0保持。未部署启动，不催延后试玩；真实员工袋分流/返航、隔离/房主世界、双端与GitHub冷配置继续完整M3—M7。
+
+- 捕获选择桥最新研究见development/docs/FISH_YIELD_BRIDGE.md及fish-yield-analysis-verification.json；Inspect-FishYieldApi.ps1仅离线metadata/wrapper分类，报告留.local，不调用业务或安装hook。
+  插件保持0.1.29；本轮124原验证输入未改，复用该版实际226测试/Build而未重跑。普通Pickup多tier与死鱼tier1是不同配方；主选择也有RNG，追加一次并写保底/dirty，禁止失败后重查/重Roll。
+  SuccessInteract仅UnityEvent转发，不由actor参数存在推绑定；DestroySelf/尸体/隐藏不证明捕获终态。新员工合作批次不宣称保持单机交错随机顺序；必须固定成员、单次全选择、独立容量/分流、共享进度和真实receipt。
+  现19观察不能提供held yield，原Add成功不能伪造、临时LootBox仍引用全局状态；原容量不是整批预期重量。保持native/个人袋/world/guest权限false，继续真实producer、实际双端正常返航与冷配置，不催延后测试。

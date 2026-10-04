@@ -735,3 +735,15 @@
 - 新Cecil实际一次成功：8types/19精确声明/5directfields/owner继承5层、missing0，三setterByReference=false，AST错误0，互操作输入SHA256 `F41167D67D226866B22EB76A239B796B0D1E40F57177E62FBAAFC2284471626E`。原报告只留.local，不执行game code。两名独立只读审查核对实际上游、回调/数据生命期、失效及文档，未见阻断。
 - 本轮实际Core/TCP226/226通过，扩展两个既有来源栈夹具覆盖17–19固定父链、未知来源遮蔽、postfix保留scope及finalizer LIFO；新增测试数为0，不执行native观察。Build警告视为错误通过，SHA256 `A99DF3C237FEC536F66DE878559840043D7E97ED9041B58CC09DAC2BE3225BE1`；124源/项目/runner输入在执行前封存、执行后相同。没有重复既已通过的测试。
 - 更新LOOT_SLOT_OBSERVATION、currentcore及新的loot-slot-mutation摘要、交接/计划与相关Skill；旧0.1.28实际226及0.1.27复用222证据保持。官方Skill校验通过并同步，SHA256 `CB1A9F5056B53620E9C0E15FA0B075969C068D4EC1B7B697C9A85A74619E9CF1`。新鲜进程0，安装DLL仍`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`；原生参数ABI/真实槽观察、完整捕获产物与个人容量分流、逐项入仓、guest隔离/房主世界、正常双端闭环与GitHub冷配置仍待完成。
+
+## 2026-10-04 — 员工整批产物的选择与提交研究
+
+- 前轮0.1.29已提交e95d8c2并远端核验。本轮继续完整M3—M7与每人独立袋/容量/负重；插件源码保持0.1.29，新增离线研究工具与可实施流程，不把更多事后观察当成整批分流桥。
+- 四组新的精确选择器离线报告实际成功：普通主/追加7方法655指令、映射/保底8方法580指令、上游入口4方法212指令、容量添加2方法106指令；共21方法记录1553指令。无方法配额触顶、根遗漏、非法指令、越界或指令/文本截断。仅已知unwind范围，不证明完整函数/间接目标/ABI，原报告与文本/地址只留.local；没有调用游戏业务或读改存档。
+- 新证据：SuccessPickupFish是至少tier1的循环，按CarvableCount处理后才追加一次；LootDeadFishBody另为tier1配方。主GetFishDropItemByTier本身可抽随机，提交不能重查ID；Plus原Roll会经SetCounter/SetFishDropPityPending更新保底、创建缺项/置dirty，不能当纯getter或重Roll。资源lookup/品质与最终重量仍不能由候选猜完整产品。
+- Add/Ignore只在实际Add_Impl正常结束后返回true；槽前刷新负重阈值/玩家效果，槽后才写实际袋重量并触及其他进度。原容量是当前超重与接口重量>0检查，不是统一整批预期重量。临时LootBox仍引用全局Save/Player；不能跳原写入伪true、先入房主袋再复制，或借Ignore开放员工无限容量。
+- 上游SuccessInteract只见UnityEvent转发，撤回“显式actor参数即可同步绑定拾取”的未证建议；OnSuccessPickUp另取交互体/品质。DestroySelf的静态虚槽候选与尸体状态不是captured终态，私下字段误认已纠正，公开摘要不含该错误。活动死鱼可仍有实体身份，但Gate及显示暂不支持尸体拾取，需要真实阶段/显示/空间/adapter一起接入，未放松现有权限。
+- 新Inspect-FishYieldApi实际一次成功，AST错误0：17types/27businessdecl/42directproxies/3singletoncontexts/13interfaceproperties/4liftvalues/1byref/missing0，互操作输入前后hash一致F41167D67D226866B22EB76A239B796B0D1E40F57177E62FBAAFC2284471626E。脚本SHA256 `93CF568D38273C6D346089E5ACD8A1D4608CA5CF6F2FBF142298634739FA13ED`；另两代理独立只读核工具及执行文档，无阻断，措辞精确调整已完成。
+- FISH_YIELD_BRIDGE确定员工显式合作批次路线：固定真实成员/actor/source→一次完整有序选择→个人容量→单次分流与共享进度/终态→真实receipt→既有账本投影。明确不同于单机交错随机顺序；原房主自然路径保持。现账本已有租约/挂起，不增加镜像Gate；实际native producer、装备品质/最终grade/重量/terminal/任务与返航仍需接通。
+- 124个前轮源/项目/runner验证输入逐字节匹配原封存，插件DLL仍SHA256 `A99DF3C237FEC536F66DE878559840043D7E97ED9041B58CC09DAC2BE3225BE1`；复用0.1.29实际226测试/Build，不重跑、不计新执行。新的fish-yield-analysis摘要与currentcore/交接/计划/接口/Skill同步；旧0.1.29实际构建摘要保持。官方Skill校验通过并同步，SHA256 `667624099AB600DEC962567FA08360BEF87BD229544679A8D30ABC6B0DDA337E`。
+- 新鲜进程0，安装DLL仍`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，未部署或启动。原binary/metadata最终hash与四报告一致；所有真实成员/选择隔离/整批分流/receipt/guest/world权限false。实际双端、正常返航和GitHub冷配置仍待完成，完整目标继续active。

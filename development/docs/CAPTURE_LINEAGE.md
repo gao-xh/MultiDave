@@ -62,3 +62,5 @@ Parent 是被观察方法之间的同步包含关系，不是原生直接 caller
 0.1.28 另增加[受限货槽候选](LOOT_SLOT_OBSERVATION.md)，不调用原生解码或把Before的FinalGrade候选当捕获终局/入仓凭证。
 
 0.1.29 的[货槽前后观察](LOOT_SLOT_OBSERVATION.md)补三处setter；仅自然更新候选，不提供跨调用槽身份、完整产物或个人背包增量凭证。
+
+后续原生执行按[员工选择与提交桥](FISH_YIELD_BRIDGE.md)补齐多tier/主随机、一次追加、进度及终态；槽观察不提供整批暂停或可信成员绑定。
