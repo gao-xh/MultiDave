@@ -6,7 +6,7 @@
 自定义插件加载、Unity Update 回调，以及 `DR_Start`、`DR_Logo`、`DR_Title` 场景读取。
 插件日志证据见 `../logs/bootstrap-verification.log`。
 
-开发在 `codex/player-discovery` 分支，当前源码为 `0.1.9-dev`，M1 历史证据来自 `0.1.1-dev`。
+开发在 `codex/player-discovery` 分支，当前源码为 `0.1.10-dev`，最新实机为 `0.1.9-dev`，M1 历史证据来自 `0.1.1-dev`。
 加入只读玩家、输入、动画和摄像机探针，离线元数据检查工具及 JSONL 汇总工具。
 真实潜水 `A01_01_01` 已读到 `PlayerGroup(Clone)/DaveCharacter`，
 `InGameManager.playerCharacter` 与该实例一致，`CameraManager` 跟随其根 Transform。
@@ -19,7 +19,7 @@
 旧 M1 会话完整日志最终为 1886 条快照，记录 Boss 返回潜水、返航大厅及主菜单，无探针错误。
 M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态中原生玩家数为 1，
 摄像机均绑定本地玩家，F10 停用/重建及返航清理有日志，无警告，基础验收通过。
-新增纯 CLR 姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次，62 项测试通过。
+新增纯 CLR 姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询，68 项测试通过。
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
 0.1.4-dev 引入默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，0.1.5-dev 加入一条鱼的 Sprite/Spine 显示验证入口。
@@ -58,6 +58,12 @@ F11 的 Transmit read-only fish observations / Preview one received fish 均默�
 框架校验、发布包校验、插件备份与安装，机器日志写入 `.local/logs/*.jsonl`。
 源码入口为 `src/DaveCoop/Plugin.cs`，编译脚本可使用现有 SDK 5 的 Roslyn
 和游戏目录中 BepInEx 自带的 .NET 6 库，无需另行下载完整 SDK。
+
+0.1.10-dev 已编译本地反向目标查询 HostEntityRegistry.TryResolve(epoch,id) 和 Unity 线程 TryResolveNativeFish。
+查询复核当前实例/指针、种类、场景和启用代次；失活/回收后的旧绑定不提供可操作原生引用。
+同 epoch 清理保留递增计数，断房间才 ResetRoom；这些只建立目标身份，不构成攻击/捕获授权。
+新增 6 项核心用例，68/68 通过；未部署/执行新原生适配。构建摘要见 ../logs/host-target-build-verification.json。
+当前编译 SHA256：`5BF9494E3E6C7782C9A3F4B077C7C1075EEC6CF92892B39B76734A993232204D`。M5 可复现签名研究见 scripts/Inspect-FishInteractionApi.ps1 与 WORLD_SYNC。
 
 ## 尚未完成
 

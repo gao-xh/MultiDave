@@ -3,8 +3,9 @@
 对应 PLAN 的 M4、M5 和 M6。这里区分设计、已确认的接口签名和待实机验证的行为。
 已验证第二角色本地回放；0.1.5-dev 在真实潜水中运行只读鱼探针、经本机 TCP 传输实际鱼清单并执行单鱼显示组件。
 0.1.7-dev 用户确认鱼可见但镜头内突然消失，日志记录角色部件销毁导致自动断开。
-0.1.8-dev 没有旧异常，但用户确认标签换鱼及继续消失。0.1.9-dev 锁定身份并部署；用户确认稳定性通过，断开/返航及两游戏验收待完成，核心共 62 项通过。
+0.1.8-dev 没有旧异常，但用户确认标签换鱼及继续消失。0.1.9-dev 锁定身份并部署；用户确认稳定性通过，断开/返航及两游戏验收待完成，核心共 68 项通过。
 这些证据不证明两个游戏拥有同一地图、同一条鱼或共同捕获结果。
+源码 0.1.10-dev 另已编译房主目标反向查询，尚未部署该适配；实际稳定性证据仍来自 0.1.9-dev。
 
 ## 世界由房主裁定
 
@@ -149,7 +150,7 @@ Core/World 的 HostEntityRegistry 将本机对象 token 映射为房主分配的
 尚未开始的批次可替换。出站世界清单与玩家移动轮流发送，控制消息优先；入站只保留最新完整快照。
 禁止客机发布世界、禁止旧本地快照被改标为新 epoch，场景暂停/重载/关闭时清理缓存。
 
-核心总计 62/62 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
+核心总计 68/68 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
 修订更替/空清单、权限/epoch、容量/公平性、真实 TCP 数值清单/HP 更新/移除及旧协议拒绝。
 测试为 CLR 夹具；没有在两份游戏中调用捕鱼或物品 API。
 
@@ -241,6 +242,20 @@ HostEntityRegistry 发现代次变化便分配新 EntityId，同种、同指针�
 这些标记仍须结合后续帧、实际操作和返航日志验证恢复。
 
 ## 鱼叉同步入口仍待实现
+
+0.1.10-dev 增加本地 HostEntityTarget / HostEntityRegistry.TryResolve(epoch,id)，返回只读 token、种类、TID 和代次。
+绑定替换、解绑、清理和新 epoch 撤销旧反向记录；同 epoch 清理不复用编号，断房间才重置身份表。
+FishStateCapture.TryResolveNativeFish 仅在 Unity 线程使用，重新核对当前包装器指针、实例编号、TID、场景及活跃生命周期代次。
+NETWORK_STATE 的 HostFishBindableTargets 准备验证原生查询覆盖，但该构建尚未部署。
+这只证明目标身份：操作还要核对会话权限、鱼状态、装备/距离/冷却和唯一请求，不缓存查询值作为后续授权。
+
+可复现元数据研究：`scripts/Inspect-FishInteractionApi.ps1`。确认鱼自身覆写 HookedByProjectile(ProjectileInfo) 和 WinFromProjectileinFight，
+不能只观察 CatchableObject 基类便认定覆盖鱼。HarpoonProjectile.Fire(Vector3) / CollisionDetection(GameObject,Vector2) 与 HookedObject
+提供投射物和实际鱼目标候选；Damageable.TakeDamage(AttackData) 与 Damager.DoDamage(Damageable) 返回 bool。
+Damager.GetAttackData 是 ref-return 属性，首轮宜观察原参数/字段，不把它当普通返回方法挂钩。
+
+捕获收益至少分为 FishAISystem.SuccessPickupFish、LootBox.Add、SaveDataCaughtFishRouter.AddCaughtFish 和 IngredientsStorage.AddFromLootBox。
+QTE 胜利、捕获、入袋、图鉴与返航入仓须分别验证，不能由单个标记推断整个结算；这些写入入口尚未调用。
 
 用户本次观察第二个戴夫没有发射鱼叉。当前角色帧只包含显示姿态与部件，协议没有发射事件或独立投射物状态。
 后续需给每次发射分配会话/epoch/投射物 ID，同步鱼叉飞行、命中、QTE 绑定及回收，

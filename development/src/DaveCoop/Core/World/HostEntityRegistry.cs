@@ -9,6 +9,7 @@ namespace DaveCoop.Core.World
     {
         private sealed class Binding { public long Id; public EntityKind Kind; public int Tid; public long Generation; }
         private readonly Dictionary<long, Binding> _bindings = new Dictionary<long, Binding>();
+        private readonly Dictionary<long, HostEntityTarget> _targets = new Dictionary<long, HostEntityTarget>();
         private long _nextId;
         public long Epoch { get; private set; }
         public int Count => _bindings.Count;
@@ -17,7 +18,7 @@ namespace DaveCoop.Core.World
         {
             if (epoch < 1 || epoch < Epoch) throw new ArgumentException("Entity epoch must advance.");
             if (epoch == Epoch) return;
-            Epoch = epoch; _nextId = 0; _bindings.Clear();
+            Epoch = epoch; _nextId = 0; Clear();
         }
 
         public long Bind(long localToken, EntityKind kind, int dataTid, long generation = 0)
@@ -27,11 +28,28 @@ namespace DaveCoop.Core.World
             if (_bindings.TryGetValue(localToken, out Binding found) && found.Kind == kind && found.Tid == dataTid && found.Generation == generation) return found.Id;
             if (found == null && _bindings.Count == WorldFrames.MaxEntities) throw new InvalidOperationException("Host entity registry capacity exceeded.");
             if (_nextId == long.MaxValue) throw new InvalidOperationException("Host entity identity exhausted.");
-            long id = ++_nextId; _bindings[localToken] = new Binding { Id = id, Kind = kind, Tid = dataTid, Generation = generation }; return id;
+            long id = ++_nextId;
+            if (found != null) _targets.Remove(found.Id);
+            _bindings[localToken] = new Binding { Id = id, Kind = kind, Tid = dataTid, Generation = generation };
+            _targets.Add(id, new HostEntityTarget(Epoch, id, localToken, kind, dataTid, generation));
+            return id;
         }
 
-        public bool Unbind(long localToken) => _bindings.Remove(localToken);
+        // Only current-epoch identities resolve. Invalid or retired requests
+        // fail without exposing a previous target through the out parameter.
+        public bool TryResolve(long epoch, long entityId, out HostEntityTarget target)
+        {
+            target = default;
+            if (epoch < 1 || epoch != Epoch || entityId < 1) return false;
+            return _targets.TryGetValue(entityId, out target);
+        }
+
+        public bool Unbind(long localToken)
+        {
+            if (!_bindings.TryGetValue(localToken, out Binding found)) return false;
+            _bindings.Remove(localToken); _targets.Remove(found.Id); return true;
+        }
         // Clearing within an epoch does not permit entity ID reuse.
-        public void Clear() { _bindings.Clear(); }
+        public void Clear() { _bindings.Clear(); _targets.Clear(); }
     }
 }

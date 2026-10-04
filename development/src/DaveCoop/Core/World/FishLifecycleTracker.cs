@@ -17,6 +17,16 @@ namespace DaveCoop.Core.World
         public int Count { get { lock (_gate) return _entries.Count; } }
         public long Transitions { get { lock (_gate) return _transitions; } }
 
+        public bool TryGetActiveGeneration(long pointer, out long generation)
+        {
+            generation = 0;
+            lock (_gate)
+            {
+                if (!_entries.TryGetValue(pointer, out Entry entry) || !entry.Active || entry.Destroyed) return false;
+                generation = entry.Generation; return true;
+            }
+        }
+
         public long ObserveActive(long pointer)
         {
             if (pointer == 0) throw new ArgumentException("Missing local fish pointer.");

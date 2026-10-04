@@ -1,0 +1,16 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-04T06:36:42.224946+00:00",
+  "PluginVersion": "0.1.10-dev",
+  "CompiledPluginSHA256": "5BF9494E3E6C7782C9A3F4B077C7C1075EEC6CF92892B39B76734A993232204D",
+  "WarningAsErrorCompilationPassed": true,
+  "CoreTestsPassed": 68,
+  "CoreTestsTotal": 68,
+  "LocalOnlyInverseLookupVerified": true,
+  "NativeFishTargetAdapterCompiled": true,
+  "NativeFishTargetAdapterExecuted": false,
+  "Deployed": false,
+  "PreviewCatchable": false,
+  "HostDamageCaptureImplemented": false,
+  "Scope": "Prepare the host target lookup needed for operation requests. CLR inverse lookup rejects retired IDs and wrong epochs; native Unity-thread adapter checks pointer, instance identity, kind/TID, scene and active lifecycle generation. HostFishBindableTargets will report readable native bindings. No attack, damage, pickup, reward or save methods are invoked. Existing installed/native-tested version remains 0.1.9-dev."
+}

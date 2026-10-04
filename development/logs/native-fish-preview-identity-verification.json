@@ -1,13 +1,13 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T06:30:37.668375+00:00",
+  "RecordedUtc": "2026-10-04T06:37:52.282334+00:00",
   "PluginVersion": "0.1.9-dev",
   "ProtocolVersion": 3,
   "InstalledPluginSHA256": "1F2D0C3B8B42B9439BAE1ADB6339238DA792D98A7DC50FC055317908B9811D86",
   "ProcessStartUtc": "2026-10-04T06:26:47.5727664Z",
   "BootstrapAndUpdateVerified": true,
   "CurrentProcessLogFresh": true,
-  "SessionFinalized": false,
+  "SessionFinalized": true,
   "ReadyStateRecords": 48,
   "ReceivedWorldSummaryRecords": 48,
   "Scenes": [
@@ -70,5 +70,9 @@
   "TwoGameInstancesVerified": false,
   "SharedWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Live single-game TCP evidence: exact 0.1.9-dev startup/Update and native fish display. Target stays bound when distance/camera changes; recorded initial and explicit manual choices, camera exits/reentries, own unpatch and disconnect. User explicitly reports no more disappearance. Animation/turning and normal return acceptance are separate and remain unconfirmed. Preview is display-only; full shared fish world and host hit/capture are not implemented."
+  "Scope": "Archived single-game TCP evidence: exact 0.1.9-dev startup/Update and native fish display. Target stays bound when distance/camera changes; recorded initial and explicit manual choices, camera exits/reentries, own unpatch and disconnect. User explicitly reports no more disappearance. Animation/turning and normal return acceptance are separate and remain unconfirmed. Preview is display-only; full shared fish world and host hit/capture are not implemented.",
+  "SessionEndedAtArchive": true,
+  "ExitReasonConfirmed": false,
+  "RawLogArchive": "ignored .local/verification/fish-preview-0.1.9",
+  "StatisticsFromFinalArchivedLog": true
 }

@@ -310,6 +310,26 @@
   另有 IGP 的 ISaveableInstanceData/StoreUsedInstacneID 边界，尚未改写选择或存档。
   后续继续完整鱼群注册/房主反向绑定、真实命中事件及加载前路线清单，再接入客机接管与 M5/M6；默认包仍为 0.1.0。
 
+## 2026-10-03 — M5 房主目标身份与原生查询准备
+
+- 0.1.9-dev 的身份稳定性修复及真实用户反馈已公开推送 ac6bd73。
+  后续核对游戏进程已退出，归档原始会话到忽略的 .local/verification/fish-preview-0.1.9。
+  没有正常返航场景或明确退出方式反馈，维持返航未验证；不把进程结束当成保存成功。
+- 新增只读值类型 HostEntityTarget 与 HostEntityRegistry 的 epoch/EntityId 反向查询。
+  替换、Unbind、Clear、新 epoch 同步撤销旧反向条目；同 epoch Clear 保留递增编号，目标快照不充当永久许可。
+  新增 FishLifecycleTracker.TryGetActiveGeneration：未观察/失活/销毁/清理后查询失败，不创建新对象代次。
+- FishStateCapture 保存原生包装器，Unity 线程 TryResolveNativeFish 重新核对指针、实例编号、TID、场景和活跃代次。
+  查询不做攻击/伤害/捕获/收益写入；真实操作还需要请求权限、距离/装备/状态规则和结果去重。
+  清理保留房内 ID 单调性，断房间 ResetRoom；NETWORK_STATE 新增 HostFishBindableTargets，准备原生身份查询实测。
+- 新增 5 项反向查询测试及 1 项生命周期查询用例；Test-Core 68/68 通过，Build-Plugin 警告视为错误通过。
+  源码 0.1.10-dev SHA256：`5BF9494E3E6C7782C9A3F4B077C7C1075EEC6CF92892B39B76734A993232204D`。
+  该新构建未部署/运行；最新实机证据仍是 0.1.9-dev，默认包仍为 0.1.0。
+- M5 离线研究确认鱼自身覆写 HookedByProjectile/WinFromProjectileinFight，鱼叉 Fire/CollisionDetection、
+  Damageable.TakeDamage、Damager.DoDamage、LootBox.Add、图鉴和返航入仓是分别观察的候选。
+  GetAttackData 是 ref-return 属性，不能当普通返回方法挂钩；攻击/收益原始控制流与副作用仍未验证。
+  新增 Inspect-FishInteractionApi.ps1，报告只保留忽略目录；后续先只读观察真实射击至入袋，再接入房主请求裁定。
+- 更新 README、核心/构建证据、接手/计划/世界文档和 Skill；继续完整鱼群/地图接管、命中请求与房主捕获/返航闭环。
+
 ## 后续日志格式
 
 每次追加：日期、目标、关键改动、验证命令及实际结果、遗留问题、下一步。

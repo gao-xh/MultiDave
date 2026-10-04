@@ -126,7 +126,7 @@ namespace DaveCoop.Networking
                         state.RoundTripSeconds, LocalPlayer = _local.PlayerId, LocalParts = _local.PartCount,
                         UnkeyedLocalParts = _local.UnkeyedVisibleParts, SkippedDestroyedLocalParts = _local.SkippedDestroyedParts, RemoteVisibleParts = _display.VisibleParts,
                         RemoteUnknownAssets = _display.UnknownAssets, RemoteHistoryCount = _display.HistoryCount,
-                        ObservedHostFish = _fish.ObservedFish, _fish.UninitializedFish,
+                        ObservedHostFish = _fish.ObservedFish, HostFishBindableTargets = _fish.BindableTargets, _fish.UninitializedFish,
                         _fish.UnresolvedVisuals, _fish.FirstVisualError, RemoteWorldRevision = _lastRemoteWorldRevision, RemoteFishCount = _lastRemoteFishCount,
                         FishPreviewEntity = _fishPreview.SelectedEntity, FishPreviewVisible = _fishPreview.Visible, FishPreviewUnknownResource = _fishPreview.UnknownResource,
                         FishPreviewInView = _fishPreview.InView, FishPreviewMeshVertices = _fishPreview.MeshVertices,
@@ -393,7 +393,7 @@ namespace DaveCoop.Networking
             _peers?.Dispose(); _peers = null;
             _attempt?.Dispose(); _attempt = null;
             _scene = null; _layoutMessage = null; _local.Clear(); _catalog.Clear(); _display.Clear(); _displayEpoch = 0;
-            _fish.Clear(); _fishLifecycle.Dispose(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0; _worldWarning = null;
+            _fish.ResetRoom(); _fishLifecycle.Dispose(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0; _worldWarning = null;
             _fishPreview.Clear("Disconnected"); _spines.Clear(); _fishPreviewWarning = null;
             RemotePreview.NetworkActive = false;
             NetworkDriver.Status = "Network: offline (F11)"; _message = "Disconnected.";

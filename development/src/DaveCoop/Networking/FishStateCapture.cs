@@ -14,14 +14,17 @@ namespace DaveCoop.Networking
     // Lifecycle generations fence pool reuse even between successive polls.
     internal sealed class FishStateCapture
     {
-        private sealed class LocalBinding { public long Pointer; public int Tid; }
-        private sealed class Candidate { public long Token; public long Pointer; public EntityState State; }
+        private sealed class LocalBinding { public long Pointer; public int Tid; public FishAISystem Fish; }
+        private sealed class Candidate { public long Token; public long Pointer; public FishAISystem Fish; public EntityState State; }
         private HostEntityRegistry _registry = new HostEntityRegistry();
         private readonly Dictionary<long, LocalBinding> _bindings = new Dictionary<long, LocalBinding>();
         public int ObservedFish { get; private set; }
         public int UninitializedFish { get; private set; }
         public int UnresolvedVisuals { get; private set; }
         public string FirstVisualError { get; private set; }
+        private FishLifecycleTracker _lifecycle;
+        private int _sceneHandle;
+        public int BindableTargets { get; private set; }
 
         public WorldSnapshot Capture(Scene scene, long epoch, string sceneKey, double sampleTime, SpriteCatalog sprites, SpineCatalog spines, FishLifecycleTracker lifecycle)
         {
@@ -54,7 +57,7 @@ namespace DaveCoop.Networking
                 if (state.Visual == null) UnresolvedVisuals++;
                 WorldFrames.ValidateEntity(state);
                 if (token == 0 || !seen.Add(token)) throw new InvalidOperationException("Ambiguous local fish identity.");
-                candidates.Add(new Candidate { Token = token, Pointer = pointer, State = state });
+                candidates.Add(new Candidate { Token = token, Pointer = pointer, Fish = fish, State = state });
             }
             var gone = new List<long>();
             foreach (long token in _bindings.Keys) if (!seen.Contains(token)) gone.Add(token);
@@ -62,6 +65,7 @@ namespace DaveCoop.Networking
             var livePointers = new HashSet<long>();
             foreach (Candidate candidate in candidates) livePointers.Add(candidate.Pointer);
             lifecycle.Retain(livePointers);
+            _lifecycle = lifecycle; _sceneHandle = scene.handle;
             // Validate the complete observation and prune gone bindings before
             // allocating IDs; a failed read cannot accumulate partial new bindings.
             var states = new List<EntityState>(candidates.Count);
@@ -71,16 +75,36 @@ namespace DaveCoop.Networking
                     (previous.Pointer != candidate.Pointer || previous.Tid != candidate.State.DataTid)) _registry.Unbind(candidate.Token);
                 long generation = lifecycle.ObserveActive(candidate.Pointer);
                 candidate.State.Id = _registry.Bind(candidate.Token, EntityKind.Fish, candidate.State.DataTid, generation);
-                _bindings[candidate.Token] = new LocalBinding { Pointer = candidate.Pointer, Tid = candidate.State.DataTid };
+                _bindings[candidate.Token] = new LocalBinding { Pointer = candidate.Pointer, Tid = candidate.State.DataTid, Fish = candidate.Fish };
                 states.Add(candidate.State);
             }
             states.Sort((a, b) => a.Id.CompareTo(b.Id)); ObservedFish = states.Count;
+            BindableTargets = 0;
+            foreach (EntityState state in states) if (TryResolveNativeFish(epoch, state.Id, out _)) BindableTargets++;
             return new WorldSnapshot { SceneEpoch = epoch, SceneKey = sceneKey, SampleTime = sampleTime, Entities = states.ToArray() };
+        }
+
+        // Unity-thread lookup only. Identity is checked again against current
+        // native ownership and lifecycle, including changes between snapshots.
+        // This is not attack/capture authorization; those operation rules follow.
+        public bool TryResolveNativeFish(long epoch, long entityId, out FishAISystem fish)
+        {
+            fish = null;
+            if (_lifecycle == null || !_registry.TryResolve(epoch, entityId, out HostEntityTarget target) || target.Kind != EntityKind.Fish ||
+                !_bindings.TryGetValue(target.LocalToken, out LocalBinding local) || local.Tid != target.DataTid ||
+                !_lifecycle.TryGetActiveGeneration(local.Pointer, out long generation) || generation != target.Generation) return false;
+            FishAISystem native = local.Fish;
+            if (native == null || !native.isActiveAndEnabled || native.Pointer.ToInt64() != local.Pointer ||
+                native.GetInstanceID() != target.LocalToken || native.FishDataTID != target.DataTid || native.gameObject.scene.handle != _sceneHandle) return false;
+            fish = native; return true;
         }
 
         public void Clear()
         {
-            _registry = new HostEntityRegistry(); _bindings.Clear(); ObservedFish = 0; UninitializedFish = 0; UnresolvedVisuals = 0; FirstVisualError = null;
+            _registry.Clear(); _bindings.Clear(); _lifecycle = null; _sceneHandle = 0;
+            ObservedFish = 0; BindableTargets = 0; UninitializedFish = 0; UnresolvedVisuals = 0; FirstVisualError = null;
         }
+
+        public void ResetRoom() { Clear(); _registry = new HostEntityRegistry(); }
     }
 }

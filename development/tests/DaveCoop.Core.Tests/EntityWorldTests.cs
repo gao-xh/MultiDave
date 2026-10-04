@@ -198,7 +198,7 @@ internal static class EntityWorldTests
     };
 
     private static PeerIdentity Identity(string name) => new PeerIdentity
-    { ModVersion = "0.1.9-dev", SteamBuildId = "25315876", UnityVersion = "6000.0.52f1", Name = name };
+    { ModVersion = "0.1.10-dev", SteamBuildId = "25315876", UnityVersion = "6000.0.52f1", Name = name };
     private static async Task Until(Func<bool> condition, CancellationToken cancellation)
     {
         while (!condition()) await Task.Delay(5, cancellation);

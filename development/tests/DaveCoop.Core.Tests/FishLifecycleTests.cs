@@ -68,6 +68,25 @@ internal static class FishLifecycleTests
             "callback ledger was not thread safe or generations collided");
     }
 
+    internal static void ActiveGenerationLookup()
+    {
+        var tracker = new FishLifecycleTracker();
+        Assert(!tracker.TryGetActiveGeneration(0, out long generation) && generation == 0 && tracker.Count == 0,
+            "target lookup allocated an unknown fish or leaked a generation");
+        long original = tracker.ObserveActive(17);
+        Assert(tracker.TryGetActiveGeneration(17, out generation) && generation == original, "active target lost its observed generation");
+        tracker.Signal(17, FishLifecycleSignal.Disable);
+        Assert(!tracker.TryGetActiveGeneration(17, out generation) && generation == 0, "disabled fish remained an active command target");
+        tracker.Signal(17, FishLifecycleSignal.Enable);
+        Assert(tracker.TryGetActiveGeneration(17, out generation) && generation > original, "pool reenable did not fence the old target");
+        tracker.Signal(17, FishLifecycleSignal.Destroy);
+        Assert(!tracker.TryGetActiveGeneration(17, out generation) && generation == 0, "destroyed fish remained an active command target");
+        tracker.ObserveActive(17); tracker.Retain(new HashSet<long>());
+        Assert(!tracker.TryGetActiveGeneration(17, out generation) && generation == 0 && tracker.Count == 0, "pruned fish remained resolvable");
+        tracker.ObserveActive(17); tracker.Clear();
+        Assert(!tracker.TryGetActiveGeneration(17, out generation) && generation == 0, "cleared lifecycle leaked an active target");
+    }
+
     private static void Throws<T>(Action run) where T : Exception
     {
         try { run(); } catch (T) { return; } throw new Exception("Expected " + typeof(T).Name);

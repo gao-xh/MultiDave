@@ -43,7 +43,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - 源码开发版的 F11 打开房间面板。先按 MULTIPLAYER 验证 Local test 的真实 TCP
   收发与主线程显示，再验证 Host/Join 的两个游戏实例；默认发行包不包含这个新入口。
   对照 NETWORK/LAYOUT 标记记录成功或失败，布局指纹通过不等于统一地图/实体已完成。
-- 源码 0.1.9-dev 含 F7 世界只读探针，默认关闭；0.1.5-dev 已在单游戏潜水读取并传输实际鱼清单。
+- 源码 0.1.10-dev 含 F7 世界只读探针，默认关闭；0.1.5-dev 已在单游戏潜水读取并传输实际鱼清单。
   新构建与历史会话的实机验证范围以 HANDOFF 为准，画面和正常断开/返航仍须确认。
   正常退出后部署、验证新版本启动，再观察地图选择、鱼 HP/捕获和返航生命周期。
   `development/scripts/Inspect-WorldApi.ps1` 可复现接口签名研究；元数据不能证明挂钩副作用。
@@ -70,6 +70,9 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - 0.1.9-dev 保留已选活鱼身份，不因镜头/距离/临时显示缺失换鱼。F11 的 Select nearest preview fish 可手动重选。
   核对 FISH_PREVIEW_SELECTION 的更换原因与 FISH_PREVIEW_TRANSITION 的即时隐藏状态；NETWORK_STATE 有 Status/SnapshotAge。
   标签鱼仅有显示组件，不能命中/捕获；不得把预览碰撞当成合作捕鱼。M5 需网络目标绑定及房主原生裁定。
+- 0.1.10-dev 已编译房主反向目标查询，原生执行待验证。目标快照不代表攻击许可；操作前重查 epoch/编号和原生代次。
+  部署后核对 NETWORK_STATE 的 HostFishBindableTargets；此数值不能证明命中/捕获或收益裁定完成。
+  `development/scripts/Inspect-FishInteractionApi.ps1` 可复现鱼叉、伤害和收益入口签名，方法仍未调用。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 
