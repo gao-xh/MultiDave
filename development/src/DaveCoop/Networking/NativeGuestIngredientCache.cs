@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using DaveCoop.Core.Guest;
+using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using IngredientDictionary = Il2CppSystem.Collections.Generic.Dictionary<int, IngredientsData>;
@@ -30,6 +31,7 @@ namespace DaveCoop.Networking
         private IngredientsData _pendingData;
         private DR.IngredientsEntity _pendingEntity;
         private Il2CppStructArray<int> _pendingCounts;
+        private Il2CppObjectBase _pendingComparer;
         private bool _busy, _readingCurrent, _failed, _prepared, _prepareAttempted, _installAttempted, _restoreAttempted;
         private bool _storageInstallEntered, _storageRestoreEntered;
         private long _faultSerial, _operationSerial;
@@ -45,6 +47,7 @@ namespace DaveCoop.Networking
         public bool LoadedWriteDispatched => false;
         public bool KnownReferencesDisjoint { get; private set; }
         public bool NativeCloneAbiVerified => false;
+        public bool PartialConstructorAllocationRetentionVerified => false;
         public bool EntityReadonlyVerified => false;
         public bool ResourceGraphIsolated => false;
         public bool SourceBaselineVerified => false;
@@ -100,15 +103,19 @@ namespace DaveCoop.Networking
                 var audit = new GuestReferenceAudit();
                 Snapshot current = reader.Graph(_originalStorage, value => Audit(audit.AddOriginal(Pointer(value)), audit));
                 RequireUnchanged(_original, current);
+                NativeGuestDictionaryComparer.RequireCloneable(current.Comparer);
                 foreach (DataStamp row in current.Rows.Values)
                     if (row.Counts == null) return Reject("An ingredient count array is absent; initialization is not permitted.");
                 Audit(audit.BeginDetached(), audit);
 
-                // Assign each temporary wrapper before the post-call guard.
-                // A partial graph remains strongly held by this backend-owned
-                // helper; a failed native constructor/Add is never retried.
-                reader.Step(() => _detachedStorage = new IngredientDictionary(current.Rows.Count));
+                // Returned wrappers are assigned before the post-call guard;
+                // a throwing public constructor can still hide its allocation.
+                var comparer = NativeGuestDictionaryComparer.Copy<int>(current.Comparer, reader.CheckWindow, value => _pendingComparer = value);
+                if (reader.Read(() => OptionalPointer(_pendingComparer)) != reader.Read(() => OptionalPointer(comparer)))
+                    Fail("The fresh ingredient comparer is not retained by its helper.");
+                reader.Step(() => _detachedStorage = new IngredientDictionary(current.Rows.Count, comparer));
                 reader.Step(() => _keep(_detachedStorage));
+                reader.VerifyComparer(_detachedStorage, current.Comparer, comparer);
                 foreach (KeyValuePair<int, DataStamp> entry in current.Rows)
                 {
                     DataStamp row = entry.Value;
@@ -131,6 +138,7 @@ namespace DaveCoop.Networking
                 }
                 _preparedSnapshot = reader.Graph(_detachedStorage, value => Audit(audit.AddDetached(Pointer(value)), audit));
                 RequireValues(_original, _preparedSnapshot);
+                NativeGuestDictionaryComparer.RequireSameSemantics(_original.Comparer, _preparedSnapshot.Comparer);
                 if (!audit.KnownReferencesDisjoint) return Reject("Known ingredient references are not disjoint.");
                 _prepared = true;
                 if (!Validate(reader, active: false)) return false;
@@ -138,6 +146,8 @@ namespace DaveCoop.Networking
                 Reason = "Declared ingredient cache and Entity fields were prepared; full isolation remains unverified.";
                 return !_failed;
             }
+            catch (CacheFailure error) { return Reject(error.Message); }
+            catch (NativeGuestDictionaryComparer.Failure error) { return Reject(error.Message); }
             catch (Exception) { return Reject("Ingredient preparation failed or its native outcome is unknown."); }
             finally { _busy = false; }
         }
@@ -149,6 +159,8 @@ namespace DaveCoop.Networking
         {
             if (!Begin(window, allowFailed: false)) return false;
             try { return Validate(OperationReader(window), active); }
+            catch (CacheFailure error) { return Reject(error.Message); }
+            catch (NativeGuestDictionaryComparer.Failure error) { return Reject(error.Message); }
             catch (Exception) { return Reject("Known ingredient graph could not be read or changed."); }
             finally { _busy = false; }
         }
@@ -164,6 +176,7 @@ namespace DaveCoop.Networking
             RequireUnchanged(_original, original);
             Audit(audit.BeginDetached(), audit);
             Snapshot detached = reader.Graph(_detachedStorage, value => Audit(audit.AddDetached(Pointer(value)), audit));
+            NativeGuestDictionaryComparer.RequireSameSemantics(_original.Comparer, detached.Comparer);
             if (!active) { RequireUnchanged(_preparedSnapshot, detached); RequireValues(original, detached); }
             if (Current(reader) != state) return Reject("Ingredient fields changed during validation.");
             if (_failed || !audit.KnownReferencesDisjoint) return Reject("Known ingredient reference audit failed.");
@@ -316,6 +329,7 @@ namespace DaveCoop.Networking
         private sealed class Snapshot
         {
             public string Values, Identity;
+            public NativeGuestDictionaryComparer.Stamp Comparer;
             public SortedDictionary<int, DataStamp> Rows = new SortedDictionary<int, DataStamp>();
         }
         private sealed class DataStamp
@@ -380,6 +394,21 @@ namespace DaveCoop.Networking
             }
             public T Read<T>(Func<T> read) { Check(); T value = read(); Check(); return value; }
             public void Step(Action action) { Check(); action(); Check(); }
+            public void CheckWindow() => Check();
+            public void VerifyComparer(IngredientDictionary dictionary, NativeGuestDictionaryComparer.Stamp source,
+                Il2CppSystem.Collections.Generic.IEqualityComparer<int> expected)
+            {
+                var actual = NativeGuestDictionaryComparer.Capture(Read(() => dictionary._comparer), Check);
+                var supplied = NativeGuestDictionaryComparer.Capture(expected, Check);
+                NativeGuestDictionaryComparer.RequireSameIdentity(supplied, actual);
+                NativeGuestDictionaryComparer.RequireSameSemantics(source, actual);
+            }
+            private void DictionaryAuxiliaryEmpty(IngredientDictionary dictionary)
+            {
+                if (Read(() => dictionary._keys) != null || Read(() => dictionary._values) != null || Read(() => dictionary._syncRoot) != null)
+                    Fail("Missing proof for an ingredient dictionary view or synchronization reference.");
+                _identity.Append("no-dictionary-view-or-sync;");
+            }
             private T Slot<T>(Func<T> read)
             {
                 if (_storageReads >= MaxStorageReads) Fail("Ingredient storage read budget exceeded.");
@@ -406,7 +435,16 @@ namespace DaveCoop.Networking
                 _audit = audit; _identity.Clear();
                 var result = new Snapshot();
                 if (dictionary == null) { result.Values = "absent"; result.Identity = "0;"; return result; }
+                IntPtr expectedClass = Read(() => Il2CppClassPointerStore<IngredientDictionary>.NativeClassPtr);
+                if (expectedClass == IntPtr.Zero || Read(() => IL2CPP.il2cpp_object_get_class(new IntPtr(Pointer(dictionary)))) != expectedClass ||
+                    expectedClass != Read(() => Il2CppClassPointerStore<IngredientDictionary>.NativeClassPtr))
+                    Fail("Missing proof for an exact ingredient dictionary class.");
+                _identity.Append(Number(expectedClass.ToInt64()));
                 Reference(dictionary);
+                DictionaryAuxiliaryEmpty(dictionary);
+                result.Comparer = NativeGuestDictionaryComparer.Capture(Read(() => dictionary._comparer), Check);
+                if (result.Comparer.Reference != null) Reference(result.Comparer.Reference);
+                _identity.Append(Number((int)result.Comparer.ClassKind)).Append(Number(result.Comparer.NativeClass.ToInt64())).Append(Number(result.Comparer.Pointer)).Append(Number(result.Comparer.DefaultComparerPointer));
                 int count = Read(() => dictionary._count), free = Read(() => dictionary._freeCount), version = Read(() => dictionary._version);
                 int freeList = Read(() => dictionary._freeList);
                 var entries = Read(() => dictionary._entries); var buckets = Read(() => dictionary._buckets);
@@ -444,6 +482,8 @@ namespace DaveCoop.Networking
                 if (count != Read(() => dictionary._count) || free != Read(() => dictionary._freeCount) || version != Read(() => dictionary._version) ||
                     freeList != Read(() => dictionary._freeList) || OptionalPointer(entries) != OptionalPointer(Read(() => dictionary._entries)) ||
                     OptionalPointer(buckets) != OptionalPointer(Read(() => dictionary._buckets))) Fail("Ingredient dictionary changed during capture.");
+                DictionaryAuxiliaryEmpty(dictionary);
+                NativeGuestDictionaryComparer.RequireSameIdentity(result.Comparer, NativeGuestDictionaryComparer.Capture(Read(() => dictionary._comparer), Check));
                 var values = new StringBuilder();
                 foreach (KeyValuePair<int, DataStamp> entry in result.Rows) values.Append(Number(entry.Key)).Append(Encode(entry.Value));
                 result.Values = values.ToString(); result.Identity = _identity.ToString(); return result;

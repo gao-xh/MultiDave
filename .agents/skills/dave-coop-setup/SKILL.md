@@ -208,6 +208,10 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - 第六cache OwnedMixed仅表示每field已证original/detached组合，单个Save根不得接受；foreign/unknown不覆盖，进入后未知不重新派发。原loaded保真，不强制true；null原storage可捕获但准备拒绝。SingletonNoMono真实字段为_s_Instance_k__BackingField；不要调用Storage.Init/Load/Reset/Entity.Parent重建或补实例。
 - Entity Parent/static目录、旧UI/closures、Mission/Ingame/LootBox、全输出及native静止/ABI仍未证；typed副本/174 CLR测试不授GuestStateIsolated或个人捕鱼/入仓权限。用户测试继续延后，不自动部署/启动；完成房主世界、每人独立容量/捕获分流、逐产物返航与真实双端/冷配置后才算完整目标。
 
-- 当前源码0.1.21-dev、协议5，Build警告视为错误通过、176/176核心测试通过；继续临时状态隔离先读development/docs/GUEST_INGAME_CACHE.md、GUEST_INGAME_API.md及guest-ingame-cache-build-verification.json。第七IngameCache是单字段步骤，不能接受OwnedMixed；七步逆序补偿、最多21显式strong handles，四Data标量仍4份。
+- 上一版源码0.1.21-dev、协议5，Build警告视为错误通过、176/176核心测试通过；继续临时状态隔离先读development/docs/GUEST_INGAME_CACHE.md、GUEST_INGAME_API.md及guest-ingame-cache-build-verification.json。第七IngameCache是单字段步骤，不能接受OwnedMixed；七步逆序补偿、最多21显式strong handles，四Data标量仍4份。
 - 三份known原图在serializer前闭合，三份prepared图在安装前再次strict核对；这是顺序已知图核对，不证明全图或静止。六种record声明只覆盖有限可独立构造子图；non-null SubHelperSpecData/live gearQueue、未证comparer/views/sync引用和重复mutable record alias须明确拒绝，不能分享/改空或拆alias代替；默认comparer也可能使准备拒绝，继续实际资源/设备/容器隔离。Exact class加object_new/IntPtr仅普通record候选，不用于Unity资产，全部native分配/ABI/隔离权限false。
 - 两组新增第七步CLR夹具覆盖未知恢复保留、晚到original读数和foreign/unknown/mixed/换单例/null拒绝，不运行helper。未部署/启动，用户试玩延后；每人独立袋/容量/负重、房主唯一长期进度规则保持，完整资源/actor/cache/output、房主世界、个人捕获/逐产物返航、真实双端及冷配置仍须完成。
+
+- 当前源码0.1.22-dev/协议5，Build警告视为错误通过；Core/Test/选定adapter输入逐文件与前commit一致，本轮复用0.1.21实际176/176，不重复运行，不当native测试。比较器继续先读GUEST_DICTIONARY_COMPARERS.md、GUEST_COMPARER_API.md及guest-comparer-build-verification.json。
+- 三种key/int32 enum的七个精确Generic/Object/Enum闭型采用同class独立普通instance候选，在(capacity,freshComparer)后核对实际指针/class再Add；Ingredients也捕获comparer/aux。原null可capture但Prepare拒，未知custom/文化/salt/aux不猜默认、不共享/清空，不调用Default/CreateComparer。无declared fields不证明全部无状态、hash/equality或ABI；publicctor抛在assignment前的未知分配无法保证已Hold，PartialConstructorAllocationRetentionVerified仍false。
+- 更直接的冷启动员工临时档候选见GUEST_COLD_PROFILE.md及Inspect-GuestProfileApi.ps1；DefaultSaveFolder/instance path/SkipCloudPullForPreset需在实际首load前绑定所有manager、云/prefs/achievement输出，单换slot/目录不等于隔离。候选未应用，全部native/world/bag/entry/quiet权限false。完整M3—M7、每人独立袋/负重/捕获和逐产物返航、真实双端与冷配置继续要求；用户测试延后，不自动启动或部署。

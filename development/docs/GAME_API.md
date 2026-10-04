@@ -121,4 +121,12 @@ M2 先研究只复制显示组件/姿态的方式。直接克隆完整 `PlayerCh
 
 [Inspect-GuestIngameApi.ps1](../scripts/Inspect-GuestIngameApi.ps1)已离线实际输出5程序集/89类型/6保存记录/34container声明/181direct child edges/8明确frontier/11closed contexts，MissingTypes=[]，hashfresh；不执行native/save。准确singleton、六record/slot/Data字段、Obscured真CLRstruct与ValueType wrapper区分、TryCast的assignable边界和exactclass/object_new候选见[GUEST_INGAME_API](GUEST_INGAME_API.md)。非空助手ScriptableObject资源或live设备队列未覆盖时拒绝，不清空/共享原指针替代。
 
-[GUEST_INGAME_CACHE](GUEST_INGAME_CACHE.md)接第七singlefield源码合同；Interaction/Ingredients/Ingame三known原图先于Serialize捕获闭合，准备全部完成再strict核对，逆序7→6→Save5；21explicit handles/4Data stamps，第七不接受Mixed。当前0.1.21-dev/协议5、176项Core通过，插件Build警告视为错误通过，见[本轮摘要](../logs/guest-ingame-cache-build-verification.json)。类型/分配/字段ABI均未实测，entry/quiet/native/guest/world/bag权限false，未部署/启动；完整缓存/资源/actor/输出、实际地图与个人捕获/返航、双端和冷配置仍待完成。
+[GUEST_INGAME_CACHE](GUEST_INGAME_CACHE.md)接第七singlefield源码合同；Interaction/Ingredients/Ingame三known原图先于Serialize捕获闭合，准备全部完成再strict核对，逆序7→6→Save5；21explicit handles/4Data stamps，第七不接受Mixed。0.1.21-dev/协议5的176项Core通过，插件Build警告视为错误通过，见[该版摘要](../logs/guest-ingame-cache-build-verification.json)。类型/分配/字段ABI均未实测，entry/quiet/native/guest/world/bag权限false，未部署/启动；完整缓存/资源/actor/输出、实际地图与个人捕获/返航、双端和冷配置仍待完成。
+
+## 0.1.22 comparer 接口与原生候选
+
+[Inspect-GuestComparerApi.ps1](../scripts/Inspect-GuestComparerApi.ps1)已实际离线读取3程序集/27类型/7继承family/19metadata contexts/8dictionary实例constructor，MissingTypes=[]、输入hashfresh，未运行native/save。19contexts仅参数替换，不授Enum<string/int>原生支持；InGameSaveType底型int32已核。Generic/Object/Enum→EqualityComparer→Il2CppSystem.Object没有已声明native实例代理，但框架Il2CppObjectBase含CLR wrapper/GC字段，不能复制其privatehandle或据此称全继承无状态。精确签名及Default/CreateComparer的RuntimeInvoke边界见[GUEST_COMPARER_API](GUEST_COMPARER_API.md)。
+
+[有限comparer候选](GUEST_DICTIONARY_COMPARERS.md)只接受int/string/InGameSaveType(int32)精确Generic/Object与该enum专用Enum同class独立副本，source pointer/class/kind和aux纳入审计，Ingredients同规则。null原可Capture但Prepare拒，不调用Default/CreateComparer/getter、不share/清空，custom/文化/hash-salt未知拒。explicit(capacity,comparer)先于Add；普通constructor抛时assignment未发生，PartialConstructorAllocationRetentionVerified=false，不证明全部未知allocation已Hold。
+
+当前0.1.22-dev/协议5，[当前摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过；Core输入未改，复用0.1.21实际176/176，未重跑。七步/21explicit handles/4Data stamps不扩，ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。[冷档候选](GUEST_COLD_PROFILE.md)只研究首load/slot/output而未采用；剩余资源/actor/cache/output、房主地图、每人独立袋/容量/负重的真实捕获与逐产物返航、实际双端/冷配置及完整M3—M7继续必需。

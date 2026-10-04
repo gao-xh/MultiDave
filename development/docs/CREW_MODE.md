@@ -2,7 +2,7 @@
 
 这是按用户提出的“房主掌主动权，第二人充当员工”确定的首版玩法方案。
 房主带队潜水，员工提供捕鱼和搬运协作，长期进度归房主。
-当前源码为0.1.21-dev、协议5，176项Core测试通过，插件Build警告视为错误通过；本文件区分玩法约定、CLR基础和待接游戏行为。
+当前源码为0.1.22-dev、协议5，插件Build警告视为错误通过；Core输入本轮未改，复用0.1.21实际176/176结果，没有重跑测试。本文件区分玩法约定、CLR基础和待接游戏行为。
 现有地图选择仅是候选，未实现地图采用、员工原生操作、独立工作背包或返航结算。
 
 ## 首版规则
@@ -198,3 +198,9 @@ Unity线程内即时复制参数及袋重量/容量直接字段，只排队CLR�
 0.1.21 增加第七[Ingame缓存](GUEST_INGAME_CACHE.md)，[API](GUEST_INGAME_API.md)核对六类记录及mutable子图。非空SubHelperSpecData和live gearQueue未支持时拒绝，不分享、不改空。三known原图在Serialize前闭合，准备后strict复查；七步按7→6→Save5恢复，21explicit handles/4Data stamps，第七singlefield无Mixed。176项Core仅控制证据，[本轮摘要](../logs/guest-ingame-cache-build-verification.json)的插件构建警告视为错误通过，native候选未执行。
 
 临时缓存副本不提供员工装备、工具、背包或捕获权限；entry/quiet/native/guest/world/bag仍false。每人的独立容量、重量与负重不变，房主原袋不补Add、员工未入仓产物须逐项真实确认。完整资源/actor/其它缓存/输出、房主地图采用、个人捕获与正常返航、实际双端/冷配置和M3—M7仍待完成。
+
+## 0.1.22 comparer 源码不代替员工玩法
+
+[独立字典comparer](GUEST_DICTIONARY_COMPARERS.md)与[接口](GUEST_COMPARER_API.md)仅补缓存准备。int/string/InGameSaveType(int32)三key的精确Generic/Object与该enum专用Enum候选同class独立复制；source pointer/class/kind及aux审计、null原Capture后Prepare拒绝同样约束Ingredients。不调用Default/CreateComparer/getter，不共享、清空或改成其它语义；custom/文化/hash-salt未知拒。新表显式(capacity,comparer)后才Add；constructor抛时assignment未发生，PartialConstructorAllocationRetentionVerified=false，不表示全部未知allocation已持有。
+
+七步/21explicit handles/4Data stamps不扩，全ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无Network/GUI自动native调用。[当前摘要](../logs/guest-comparer-build-verification.json)的Build警告视为错误通过；Core未改，复用0.1.21实际176/176，未重跑。[冷档候选](GUEST_COLD_PROFILE.md)仅研究首load、slot和输出，未采用。每人独立袋/容量/重量/负重、房主唯一长期收益、房主原袋不补Add及员工逐产物返航保持；资源/actor/cache/output、房主地图、个人真实捕获、双端/冷配置和M3—M7仍待验收。

@@ -651,3 +651,13 @@
 - 首次Build暴露SubHelperSpecData基类所在Sirenix.Serialization编译引用缺失（CS0012），按实际interop补入Build脚本及项目Private=false引用后通过；不复制/发布该程序集。没有修改已通过Core源码或重跑无关测试。
 - 更新日志/当前摘要、接手文档和Skill；正式validator使用现有PyYAML缓存与Python -X utf8通过，Skill同步后SHA一致。独立只读末审无新增阻断，确认第七singlefield、三份closure、faultserial、aux/alias/frontier拒绝及key/child关联；仍不证明native构造或完整图。
 - 新鲜进程检查0，安装DLL仍为`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`。保留历史0.1.20/174/hash，用户试玩继续延后。继续实际资源/设备/actor/cache/output与自然进入/静止边界，然后房主地图采用、个人产物/容量分流、逐产物返航、真实双端与GitHub冷配置完整闭环；有限子图源码不是完整联机验收，完整goal保持active。
+
+## 2026-10-04 — 0.1.22 独立比较器与冷启动临时档入口
+
+- 前一goal turn为实际进展：0.1.21七步typed缓存源码已提交a8bbefc并核验远端，176项Core/Build通过；本轮完整目标保持active，独立两袋/容量/负重与房主长期进度不变，未部署/启动或调用游戏/存档。
+- 新shared comparer接Ingredients与Ingame四种dict：三key、七精确闭型同class独立object_new/IntPtr候选，显式(capacity,comparer)先于Add并回读实际comparer；原/新指针/class/kind和已知静态来源进早期基线/审计。未知custom和未支持aux拒绝，source null准确捕获但Prepare拒，不从Default/CreateComparer重选或清null。metadata声明无instance字段不证hidden state/native hash/equality。
+- 普通native dictionary ctor抛时assignment/Hold尚未发生，已明确PartialConstructorAllocationRetentionVerified=false；未把暂存成功wrapper当所有未知分配持有证明。进入/静止与所有native/guest/world/cargo权限仍false，七步和21explicit handles未扩，不接GUI/Network。
+- Comparer Inspector实际离线3程序集/27类型/7继承families/19声明contexts/8dictctors，无missing与输入hash变化。Enum<string/int>仅metadata替换，Enum候选仅InGameSaveType(int32)；不复制框架private GC字段。新增冷档Inspector/doc核对DefaultSaveFolder/direct instance path/SkipCloudPullForPreset和首次load/云路径；只改slot/目录不能保护原档，候选未采用。
+- Test-Core源码与选定adapter/脚本共61项逐文件git object一致，复用0.1.21真实176/176结果，本轮未重跑Core或执行nativehelper。Build警告视为错误通过，SHA256：`FED729C9C9ADEF297D9282D5C76D237C548AB7983115BFEF383BE60394328C50`；详情见guest-comparer-build-verification及core-verification。历史hash/安装0.1.12/潜水0.1.11/default0.1.0保留。
+- 日志、HANDOFF/PLAN及Skill同步，后续核实际首load路径隔离与全部输出/actor/cache/资源，然后房主地图采用、个人容量/产物分流、逐产物返航及真实双端/GitHub冷配置完整闭环；比较器与冷档候选不作完整目标完成证据。
+- 本轮 Skill 草稿正式校验通过并同步，两个新 Inspector 的 PowerShell 解析错误为 0；独立源码和发布记录审查无阻断。新鲜游戏进程检查为 0，已安装插件 SHA256 仍为 `8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，没有部署或启动新版本。

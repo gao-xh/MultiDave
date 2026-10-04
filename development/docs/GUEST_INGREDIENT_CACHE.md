@@ -4,6 +4,8 @@
 
 原接口及资源继承链见 [GUEST_INGREDIENT_API](GUEST_INGREDIENT_API.md)；五根桥、输出围栏与其它尚未隔离缓存见 [GUEST_SHADOW_BRIDGE](GUEST_SHADOW_BRIDGE.md)、[GUEST_OUTPUT_FENCE](GUEST_OUTPUT_FENCE.md)、[GUEST_RUNTIME_CACHES](GUEST_RUNTIME_CACHES.md)。独立个人袋与房主持久收益规则继续按 [CREW_MODE](CREW_MODE.md)，本缓存不提供捕获、分流、入仓或任务权限。
 
+0.1.22 按 [GUEST_DICTIONARY_COMPARERS](GUEST_DICTIONARY_COMPARERS.md)增加实际 dictionary class 与有限 int comparer 捕获：原/新 comparer、已知 static default 指针进入早期基线，独立同 class comparer 显式传入 `(capacity, freshComparer)`，核对实际 `_comparer` 身份后才 Add。原 null 可捕获但 Prepare 拒绝，未知 comparer 不猜默认；`_keys/_values/_syncRoot` 前后必须为 null。该实现仍未执行 native hash/equality 或构造验证。
+
 ## 接口与来源绑定
 
 同程序集内部的实际合同为：
@@ -66,7 +68,7 @@ Entry 为 native ValueType wrapper，`Il2CppReferenceArray<Entry>` 的 runtime `
 
 每个 dictionary storage 最大 4096、每行 counts 最大 16、每侧 reference observations 最大 4096（重复计数）、一个 Reader storage visits 最大 65536（含 bucket/free/tail/counts）。一个 resource string 最大 512 UTF16 单元、复制字符串累计最大 512 Ki 单元。引用计数不替代扫描工作预算；visits 不是 native boxes/handles 的精确数，读回后的限额不限制底层初始包装或构造分配。超限拒绝，不截断后报告完整。
 
-Dictionary `_comparer/_keys/_values/_syncRoot`、未知派生字段、static 资源及 UI/任务/协程的旧条目引用未被完整审计；known graph 不等于完整 mutable graph。generic closed metadata、typed entry boxing/数组布局、日期字段与实际 native setter/constructor ABI 都待实机。
+Dictionary comparer 的有限指针/class/kind 与已知 default 来源、三个辅助引用的 null 条件已加入源码核对，但 comparer 的 native 行为、未知派生字段、static 资源及 UI/任务/协程的旧条目引用未被完整审计；known graph 不等于完整 mutable graph。generic closed metadata、typed entry boxing/数组布局、日期字段与实际 native setter/constructor ABI 都待实机。成功返回的 comparer 与子 wrapper 在 post-check 前保留；普通 constructor 可在 caller assignment/Hold 前抛异常，尚未返回的未知分配不能保证被持有，`PartialConstructorAllocationRetentionVerified=false`。
 
 ## 两字段安装、恢复与验证
 

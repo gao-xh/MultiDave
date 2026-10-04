@@ -68,10 +68,18 @@ AllSaveRoots只查五根，cache读guard只查lease/thread/refs/managers/scalars
 
 ## 0.1.21 七步与三份早期原图
 
-当前0.1.21-dev/协议5新增[NativeGuestIngameCache合同](GUEST_INGAME_CACHE.md)，声明见[GUEST_INGAME_API](GUEST_INGAME_API.md)。固定顺序是五个Save manager根→第六IngredientsCache→第七IngameCache；恢复按7→6→Save5。第七只有ingameSaveDatas一个字段，必须Original/Detached/Foreign/Unknown，不允许OwnedMixed；这个状态仍只用于第六组合步骤。
+0.1.21-dev/协议5新增[NativeGuestIngameCache合同](GUEST_INGAME_CACHE.md)，声明见[GUEST_INGAME_API](GUEST_INGAME_API.md)。固定顺序是五个Save manager根→第六IngredientsCache→第七IngameCache；恢复按7→6→Save5。第七只有ingameSaveDatas一个字段，必须Original/Detached/Foreign/Unknown，不允许OwnedMixed；这个状态仍只用于第六组合步骤。
 
 Capture在任何Serialize之前冻结Interaction、Ingredients、Ingame三份known baseline，全部捕获结束再核对三份原图，防止后续捕获使早期基线失效。Prepare三项全部完成后再strict核对，不能只依赖各helper刚准备完时的局部成功。它们是顺序已知图检查，仍不证明原生全局静止或完整图。
 
 explicit strong handle上限从历史18增至21：再加IngameSaveDataManager singleton、原ingameSaveDatas与新dictionary；原null不Keep(null)，准备拒绝。四Data scalar stamps保持四份。轻量cache guard不递归自己的完整图；最终七根读回、三份原known图确认、真实静止及输出围栏条件共同约束卸fence/free，未知结果保留整个backend/handles/围栏且不重复派发。
 
-六record采用已覆盖字段/集合的有限schema；非空SubHelperSpecData和live gearQueue拒绝，不清空、不分享替代。ordinary record的exact native class与object_new+IntPtr包装仅候选，class store初始化也非纯CLR；原生分配/写入/ABI未执行。[本轮摘要](../logs/guest-ingame-cache-build-verification.json)记录176项Core已通过、插件Build警告视为错误通过，无nativehelper/完整隔离证据。CanEnterBoundary/HasQuiescentBoundary及native/guest/world/bag权限保持false，没有Network/GUI自动调用。
+六record采用已覆盖字段/集合的有限schema；非空SubHelperSpecData和live gearQueue拒绝，不清空、不分享替代。ordinary record的exact native class与object_new+IntPtr包装仅候选，class store初始化也非纯CLR；原生分配/写入/ABI未执行。[该版摘要](../logs/guest-ingame-cache-build-verification.json)记录176项Core已通过、插件Build警告视为错误通过，无nativehelper/完整隔离证据。CanEnterBoundary/HasQuiescentBoundary及native/guest/world/bag权限保持false，没有Network/GUI自动调用。
+
+## 0.1.22 comparer 准备与分配缺口
+
+当前0.1.22-dev/协议5补[有限独立comparer](GUEST_DICTIONARY_COMPARERS.md)，[元数据](GUEST_COMPARER_API.md)核对int/string/InGameSaveType(int32)的Generic/Object与该enum专用Enum七个精确候选。source comparer的pointer/class/kind与dictionary aux加入已知审计，Ingredients同规则；原null可Capture但Prepare拒，不调用Default/CreateComparer/业务getter，不共享或清空原对象，custom/文化/hash-salt未知拒绝。新comparer需同class且不同pointer，新dictionary显式(capacity,comparer)后才Add并回读；没有native实例声明不证明原生无全局状态或初始化不变式。
+
+已创建且返回的owned对象按helper引用持有，不扩根桥七步/21explicit handles/4Data stamps。普通dictionary constructor整体抛时assignment未发生，其内部分配无法据此确认归租约持有，PartialConstructorAllocationRetentionVerified=false；不能称所有未知allocation都Hold。围栏/引用的保留不能补这个原生证明缺口。
+
+[当前摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过；Core未改，复用0.1.21实际176/176，未重跑。所有native ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。[冷档候选](GUEST_COLD_PROFILE.md)只研究首load/slot/output而未采用。真实资源/actor/cache/output、自然进入/静止、房主地图采用、每人独立捕获/容量分流及逐产物返航、实际双端和冷配置仍是完整M3—M7必要工作。

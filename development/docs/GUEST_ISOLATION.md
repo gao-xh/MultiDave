@@ -130,8 +130,16 @@ var playerShadow = DR.Save.SaveDataBase.Deserialize<DR.Save.SavePlayerData>(
 
 ## 0.1.21 第七临时缓存候选
 
-当前源码0.1.21-dev/协议5，176项Core测试通过、插件Build警告视为错误通过，见[本轮摘要](../logs/guest-ingame-cache-build-verification.json)。[Ingame精确接口](GUEST_INGAME_API.md)与[typed缓存](GUEST_INGAME_CACHE.md)增加第七单字段步骤；六kind schema仅支持已覆盖子图，不是六种完整deep clone。non-null助手ScriptableObject资源和live设备队列明确拒绝，不能用共享指针或空状态代替。
+0.1.21版源码/协议5的176项Core测试通过、插件Build警告视为错误通过，见[该版摘要](../logs/guest-ingame-cache-build-verification.json)。[Ingame精确接口](GUEST_INGAME_API.md)与[typed缓存](GUEST_INGAME_CACHE.md)增加第七单字段步骤；六kind schema仅支持已覆盖子图，不是六种完整deep clone。non-null助手ScriptableObject资源和live设备队列明确拒绝，不能用共享指针或空状态代替。
 
 三known原图（Interaction/Ingredients/Ingame）在Serialize之前捕获并闭合核对，Prepare全部完成后严格重查。五Save根、两个cache的最终安装/确认共七步，恢复7→6→Save5；第七singlefield拒OwnedMixed，显式handles上限21、四Data scalar stamps仍4。普通record exactclass/object_new+IntPtr候选未运行；完整原树、资源、旧引用/actor/其它cache/输出与真实静止未证明。
 
 entry/quiet/native/guest/world/bag权限仍false，未接自动入口、未部署或启动。当前安装0.1.12/最近潜水0.1.11/default0.1.0及用户试玩延后保持；每人独立容量/重量/负重、房主地图采用、个人真实捕获/返航和完整M3—M7/双端/冷配置验收仍必需。
+
+## 0.1.22 有限 comparer 与冷档研究
+
+当前源码0.1.22-dev/协议5，[当前摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过。Core输入本轮未改，复用0.1.21实际176/176而未重跑；未部署、启动或执行native。七步/21explicit handles/4Data stamps维持，所有ABI、完整graph/cache/isolation、entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。
+
+[独立comparer合同](GUEST_DICTIONARY_COMPARERS.md)和[API](GUEST_COMPARER_API.md)仅支持候选白名单：int/string/InGameSaveType(int32)精确Generic/Object，以及仅该enum的Enum。原comparer pointer/class/kind与aux参与审计；Ingredients同规则。null原可Capture但Prepare拒绝，不调用Default/CreateComparer/getter猜当前默认、不共享或清空；custom/文化/hash-salt未知拒绝。准备新表先显式(capacity,comparer)再Add并核对，不能凭没有已声明native实例字段证明行为只读或全图独立。普通constructor抛时assignment未完成，PartialConstructorAllocationRetentionVerified=false，不能保证其内部所有未知allocation已Hold。
+
+[GUEST_COLD_PROFILE](GUEST_COLD_PROFILE.md)只提出更直接的首次加载路径、slot与输出研究，尚未采用，不意味着临时目录已隔离缓存、原资源、actor或全持久输出。实际边界与其余资源/actor/cache/output、房主地图采用、每人独立袋/容量/负重的个人捕获和逐产物返航、实际双端及GitHub冷配置验收仍按完整M3—M7推进。

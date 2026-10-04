@@ -61,13 +61,13 @@ Capture 必须发生在第一项 Serialize/Deserialize 之前。它冻结已知�
 
 字典读取 `_count/_freeCount/_freeList/_version/_entries/_buckets` 与 Entry 的 `hashCode/next/key/value`；不使用业务 Count、indexer 或枚举方法。读取全部 buckets 和 entries capacity，包括 free/unused/tail；残留引用、重复 key、超界/不一致 shape 拒绝。Identity 包含每存储槽 key 与 child pointer 的关联，不能只用排序后的逻辑值掩盖原 key/对象调换。List 读取 `_size/_version/_items`，全部 capacity slots 也扫描；活动外 mutable 引用拒绝。
 
-Dictionary `_comparer/_keys/_values/_syncRoot` 及 List `_syncRoot` 只支持确证为 null，读取前后复核。非空 comparer/view/sync 引用无法按本 schema 独立复制，明确 MissingProof 拒绝；不默认把自定义 comparer 改成默认 comparer。实际普通 Dictionary constructor 若生成非空默认 comparer，新侧同样拒绝；这可能限制常见原缓存及准备候选，默认 comparer 的性质和独立复制策略仍需后续证据，不能为通过校验把它清空。Queue 的 `_syncRoot` 也前后复核。
+0.1.21 的 Dictionary `_comparer/_keys/_values/_syncRoot` 只支持确证为 null，普通容量构造生成的非空 comparer 也会拒绝。0.1.22 按 [GUEST_DICTIONARY_COMPARERS](GUEST_DICTIONARY_COMPARERS.md)捕获有限精确 class 候选，准备独立同类 comparer，并在 `(capacity, freshComparer)` 构造后、Add 前核对实际 comparer；原/新 pointer、class、kind 和已知 static default 指针进入基线与引用审计。原 null 可准确捕获和确认，但 Prepare 拒绝，不猜测默认语义。未知/custom comparer 及 `_keys/_values/_syncRoot` 非空仍拒绝，不共享、替换或清空。List 与 Queue 的 `_syncRoot` 也前后复核为 null。该源码尚未证明原生 comparer 构造、相等、哈希或完整资源隔离。
 
 每个容器实际 storage 最多 1024；一个 Reader 累计最多 65536 次 storage visits，跨其全部原/新图读取计数，包含 buckets/free/tail。每侧 `GuestReferenceAudit` 最多 4096 次 reference observations（重复计数）；temporary wrapper 强保留也最多 4096。单字符串最多 512 UTF16 单元，Reader 累计字符串内容最多 512 Ki 单元。超限拒绝，不截断后报告完整；引用额度不替代实际扫描工作额度。
 
 Dictionary.Entry 是 native ValueType wrapper，数组 `WrapElement` 可 `il2cpp_value_box`；只读捕获/核对也可能分配临时 native box、wrapper 与框架强句柄。storage visits 不是精确 box、GC handle 或 native 分配数。临时 Entry box 不作为持久 mutable graph 节点；真实记录、容器及非空数组审计。确证长度为零的数组不含 mutable 元素，允许空数组跨侧共享。
 
-backend 的 `keep` 最多额外保留 singleton、非 null 原 dictionary、新 dictionary 三个 explicit 强 handles；root 桥统一控制总预算。新 root 在 post-check 前存 helper 字段，未挂入 root 的新 child/container 在 post-check 前存 temporary wrappers。失败/未知时继续保留整个 helper 和 backend 引用；这三个 explicit handles 不包含框架自动 handles 或临时 boxes。
+backend 的 `keep` 最多额外保留 singleton、非 null 原 dictionary、新 dictionary 三个 explicit 强 handles；root 桥统一控制总预算。成功返回的新 root 在 post-check 前存 helper 字段，成功返回且未挂入 root 的新 child/container/comparer 在 post-check 前存 temporary wrappers。失败/未知时继续保留已取得的 helper 和 backend 引用；这三个 explicit handles 不包含框架自动 handles 或临时 boxes。普通 native constructor 可在 caller assignment/Hold 前抛异常，尚未返回的分配不能据此宣称已保留，`PartialConstructorAllocationRetentionVerified=false`。
 
 ## 单字段 readback、安装与补偿
 

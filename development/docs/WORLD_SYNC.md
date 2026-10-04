@@ -5,7 +5,7 @@
 0.1.7-dev 用户确认鱼可见但镜头内突然消失，日志记录角色部件销毁导致自动断开。
 0.1.8-dev 没有旧异常，但用户确认标签换鱼及继续消失。0.1.9-dev 锁定身份并部署，用户确认不再突然消失。
 这些证据不证明两个游戏拥有同一地图、同一条鱼或共同捕获结果。
-当前源码为 0.1.21-dev、协议 5，Test-Core 176/176 通过，插件 Build 警告视为错误通过；未部署/启动。
+当前源码为 0.1.22-dev、协议 5，插件 Build 警告视为错误通过；未部署/启动。本轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重跑测试。
 默认发行包保持 0.1.0，源码能力不自动进入玩家安装包。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试；加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 0.1.11-dev。
@@ -13,7 +13,7 @@ Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜
 新版单游戏 TCP 偏移鱼群可见与原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
 Fire/Hook/Damage 成对观察已运行；动画、完整捕获链、路线完整读取和正常返航仍待验收。
 最近单鱼视觉稳定性证据来自 0.1.9-dev。
-当前范围及构建结果见 [游戏内缓存摘要](../logs/guest-ingame-cache-build-verification.json)，0.1.14历史传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，已安装0.1.12-dev见[操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史潜水见[0.1.11-dev鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，真实双游戏及真正合作捕获尚未完成。
+当前范围见 [comparer摘要](../logs/guest-comparer-build-verification.json)，插件Build警告视为错误通过；复用的0.1.21测试及该版构建见[游戏内缓存摘要](../logs/guest-ingame-cache-build-verification.json)，0.1.14历史传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，已安装0.1.12-dev见[操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史潜水见[0.1.11-dev鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，真实双游戏及真正合作捕获尚未完成。
 
 ## 世界由房主裁定
 
@@ -432,6 +432,12 @@ cacheSelectedScenePath与IGP.Init还含持久缓存/实例保存目标，地图�
 
 0.1.20 已将[独立食材缓存准备/恢复](GUEST_INGREDIENT_CACHE.md)接入第六步源码，174项测试仅覆盖CLR控制及此前范围；[当前摘要](../logs/guest-ingredient-cache-build-verification.json)不证明原生运行。每人独立容量/负重及房主唯一长期收益规则保持；完整资源、缓存、真实地图、捕鱼分流、返航和双游戏仍待验收。
 
-0.1.21 新增第七[游戏内临时缓存](GUEST_INGAME_CACHE.md)，六record的[精确API](GUEST_INGAME_API.md)只支持已覆盖子图，非空助手资源/live设备队列明确拒绝。三known baseline在Serialize前捕获闭合，准备后strict重查；逆序7→6→五Save根，上限21explicit handles/4Data stamps，第七单field不得Mixed。ordinary record exactclass/object_new候选未执行，176项Core测试不证明统一海洋或native隔离；[本轮摘要](../logs/guest-ingame-cache-build-verification.json)的插件Build警告视为错误通过。
+0.1.21 新增第七[游戏内临时缓存](GUEST_INGAME_CACHE.md)，六record的[精确API](GUEST_INGAME_API.md)只支持已覆盖子图，非空助手资源/live设备队列明确拒绝。三known baseline在Serialize前捕获闭合，准备后strict重查；逆序7→6→五Save根，上限21explicit handles/4Data stamps，第七单field不得Mixed。ordinary record exactclass/object_new候选未执行，176项Core测试不证明统一海洋或native隔离；[该版摘要](../logs/guest-ingame-cache-build-verification.json)的插件Build警告视为错误通过。
+
+## 0.1.22 comparer 候选仍不授权统一世界
+
+[独立comparer合同](GUEST_DICTIONARY_COMPARERS.md)与[精确API](GUEST_COMPARER_API.md)覆盖三key int/string/InGameSaveType(int32)的已核Generic/Object及该enum专用Enum同class独立候选。原pointer/class/kind和aux纳入审计，Ingredients同规则；null原可Capture但Prepare拒，不调用Default/CreateComparer/getter猜选择、不共享或清空，custom/文化/hash-salt未知拒绝。新表显式(capacity,comparer)先于Add；constructor抛时assignment未发生，PartialConstructorAllocationRetentionVerified=false。
+
+七步/21explicit handles/4Data stamps未扩，全部ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动native入口。[当前摘要](../logs/guest-comparer-build-verification.json)的Build警告视为错误通过；Core输入未改，复用0.1.21实际176/176，未新跑。[冷档候选](GUEST_COLD_PROFILE.md)只研究首load/slot/output而未采用。继续资源/actor/cache/output与实际边界、房主加载前地图采用、每人独立袋/容量/负重下的真实捕获及逐产物返航、实际双端和冷配置，完整M3—M7不变。
 
 当前entry/quiet/native/guest/world/bag权限均false。M4仍需真实房主选择采用与客机生成/AI/资源/actor/余下cache和输出隔离；M5/M6仍需按个人袋容量分流、完整真实捕获产物及正常返航一次入仓。每人独立容量/负重和完整M3—M7、真实双端与冷配置验收继续保留。

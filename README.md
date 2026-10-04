@@ -53,7 +53,7 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 `distribution/` 是供自动安装使用的本项目插件包。
 本仓库不分发游戏、游戏接口程序集、存档或 BepInEx 运行库。
 
-`codex/player-discovery` 分支当前源码为 0.1.21-dev、协议 5；Test-Core 176/176 通过，插件 Build 警告视为错误通过，未部署或启动。
+`codex/player-discovery` 分支当前源码为 0.1.22-dev、协议 5；插件 Build 警告视为错误通过，未部署或启动。本轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重新运行这批测试。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试；该进程已确认插件加载、Unity Update、网络入口及 4 条初始路线输入日志，仅主菜单启动通过。
 目标检查、潜水路线、场景切换与正常返航仍待实机，用户当前不方便试玩，手动验证已延后。最近完成潜水验证的是 0.1.11-dev，单游戏 TCP 鱼群显示与发射/挂钩/伤害只读观察已运行。
 用户确认偏移鱼群可见、捕获原鱼时对应副本也消失，关闭鱼群显示后恢复正常，操作和镜头正常。
@@ -114,4 +114,8 @@ Mod 不持有原生包装器、不调用或改写选图/加载/存档入口；Di
 
 0.1.21 新增[游戏内临时保存缓存](development/docs/GUEST_INGAME_CACHE.md)第七步，接口见[精确 API](development/docs/GUEST_INGAME_API.md)。六种记录具有有限字段复制合同；非空助手资源和正在使用的设备队列明确拒绝，不能清空或共享原状态代替复制。三份已知原图在 Serialize 前捕获并再次核对，准备结束再严格复查；恢复顺序为游戏内缓存→食材缓存→五个保存根。显式强 handle 上限为21，四份 Data 标量检查保留。
 
-176项测试通过仅证明CLR控制和此前TCP范围；[本轮记录](development/logs/guest-ingame-cache-build-verification.json)的插件构建警告视为错误通过。原生类型/分配和七步切换未执行，进入/静止及客机、世界、背包权限均false。每人独立容量和负重保持；完整M3—M7仍需资源/角色/余下缓存/全输出隔离、房主地图采用、个人捕获与返航、真实双端及冷配置验收。
+176项测试通过仅证明CLR控制和此前TCP范围；[该版记录](development/logs/guest-ingame-cache-build-verification.json)的插件构建警告视为错误通过。原生类型/分配和七步切换未执行，进入/静止及客机、世界、背包权限均false。每人独立容量和负重保持；完整M3—M7仍需资源/角色/余下缓存/全输出隔离、房主地图采用、个人捕获与返航、真实双端及冷配置验收。
+
+0.1.22 补充[独立字典 comparer 候选](development/docs/GUEST_DICTIONARY_COMPARERS.md)与[精确接口](development/docs/GUEST_COMPARER_API.md)：对 int、string 和 int32 底型 InGameSaveType，只研究已核对 exact class 的 Generic/Object family，以及该 enum 的专用 Enum family；原 comparer 的指针、class、kind 和辅助引用纳入检查。食材缓存使用相同规则；原 null 可捕获但拒绝准备，不猜 Default、不共享或清空原 comparer。新 dictionary 显式 `(capacity, comparer)` 后才 Add；未知自定义、文化或 hash-salt 语义拒绝。
+
+普通 constructor 抛出时 helper 赋值尚未完成，`PartialConstructorAllocationRetentionVerified=false`，不能声称所有未知分配都已持有。[当前摘要](development/logs/guest-comparer-build-verification.json)的插件 Build 警告视为错误通过，Core 复用前轮 176 项结果。七步、21 explicit handles 和四 Data 检查未扩；原生 ABI、完整隔离、进入/静止、世界和背包权限仍 false，无 GUI/Network 自动入口。[冷档方案](development/docs/GUEST_COLD_PROFILE.md)仅研究首次加载、slot 与输出路径，尚未采用；完整双端与每人独立捕获、容量分流及逐产物返航目标保持。

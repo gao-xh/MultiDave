@@ -1,7 +1,7 @@
 # 潜水员戴夫联机原型
 
 当前进度：M1 已通过潜水、场景切换与返航读取验证，M2 回放基础验收通过。
-当前源码为 0.1.21-dev、协议 5，Test-Core 176/176 通过，插件 Build 警告视为错误通过；未部署或启动新版本。
+当前源码为 0.1.22-dev、协议 5，插件 Build 警告视为错误通过；未部署或启动新版本。本轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重跑测试。
 当前安装仍为 0.1.12-dev，仅主菜单加载/Update/网络入口及初始路线输入通过；最近完成潜水验证的是 0.1.11-dev。
 用户目前不方便试玩，Probe、自然地图回调、路线/场景切换及正常返航验证延后。
 0.1.5/0.1.6-dev 已在真实潜水确认鱼探针、本机 TCP 收发、显示组件及生命周期回调运行。
@@ -11,7 +11,7 @@
 完整计划见 [PLAN](docs/PLAN.md)，移动实现见 [MULTIPLAYER](docs/MULTIPLAYER.md)，
 地图、鱼与互动方案见 [WORLD_SYNC](docs/WORLD_SYNC.md)。
 尚未完成真实双游戏移动验收、同一地图生成、捕鱼同步或存档同步。
-当前验证范围与构建结果见 [游戏内缓存摘要](logs/guest-ingame-cache-build-verification.json)；
+当前范围见 [comparer 摘要](logs/guest-comparer-build-verification.json)，插件 Build 警告视为错误通过；0.1.21 的构建与 176 项测试证据见 [游戏内缓存摘要](logs/guest-ingame-cache-build-verification.json)；
 0.1.13 历史观察构建见 [地图选择调用摘要](logs/map-selection-call-build-verification.json)。
 
 ## 本机环境
@@ -21,7 +21,7 @@
 - 检查时的 Steam Build ID：`25315876`
 - Unity：`6000.0.52f1`，Windows x64 IL2CPP
 - BepInEx：官方 `6.0.0-be.788+5b766a3`
-- 插件：`local.davecoop.prototype`，源码 `0.1.21-dev`，安装/最近启动 `0.1.12-dev`，最近潜水 `0.1.11-dev`，发布包 `0.1.0`
+- 插件：`local.davecoop.prototype`，源码 `0.1.22-dev`，安装/最近启动 `0.1.12-dev`，最近潜水 `0.1.11-dev`，发布包 `0.1.0`
 
 ## 编译与安装
 
@@ -47,7 +47,7 @@
 
 ## 运行验证
 
-当前已安装游戏显示 `DaveCoop Prototype 0.1.12-dev`；0.1.21-dev 尚未部署或启动，不能沿用旧进程日志验证新版本。
+当前已安装游戏显示 `DaveCoop Prototype 0.1.12-dev`；0.1.22-dev 尚未部署或启动，不能沿用旧进程日志验证新版本。
 F7 世界探针已有真实潜水读取证据；生命周期回调在 0.1.6-dev 实际触发，池复用与卸载恢复仍待验证。
 按 F8 显示或隐藏面板，设置保存在
 `BepInEx/config/local.davecoop.prototype.cfg`。
@@ -108,4 +108,10 @@ Test-Core直接编译实际Core登记器、MapChoiceController与DTO，仅替代
 
 0.1.21 将[游戏内临时缓存](docs/GUEST_INGAME_CACHE.md)接入第七步，声明与类型检查候选见[GUEST_INGAME_API](docs/GUEST_INGAME_API.md)。三份已知原图均先于Serialize捕获并闭合核对，准备结束再严格复查；恢复按7→6→五Save根。显式handle上限21、DataStamps仍4，第七步单字段不允许OwnedMixed。
 
-六种记录仅支持已覆盖子图；非空SubHelperSpecData或live gearQueue拒绝，不能分享或改空替代。普通record exact class检查及object_new+IntPtr包装仍未执行，进入/静止和全部客机/世界/袋权限false。[本轮摘要](logs/guest-ingame-cache-build-verification.json)记录176项Core测试通过、插件Build警告视为错误通过；测试不执行native helper。每人独立容量/负重、剩余M3—M7及真实双端/冷配置要求保持。
+六种记录仅支持已覆盖子图；非空SubHelperSpecData或live gearQueue拒绝，不能分享或改空替代。普通record exact class检查及object_new+IntPtr包装仍未执行，进入/静止和全部客机/世界/袋权限false。[该版摘要](logs/guest-ingame-cache-build-verification.json)记录176项Core测试通过、插件Build警告视为错误通过；测试不执行native helper。每人独立容量/负重、剩余M3—M7及真实双端/冷配置要求保持。
+
+## 0.1.22 字典 comparer 准备
+
+[独立 comparer 合同](docs/GUEST_DICTIONARY_COMPARERS.md)与[离线精确 API](docs/GUEST_COMPARER_API.md)增加有限候选：int/string/InGameSaveType(int32) 的 Generic/Object，以及仅该 enum 的 Enum family，均需原/新 exact class 相同且不同 pointer。源 comparer 的 pointer/class/kind 与 dictionary aux 纳入已知图审计，Ingredients 使用同规则；原 null 可 capture 但 Prepare 拒绝，不调用 Default/CreateComparer/业务 getter，不共享或清空。custom、文化/hash-salt 未证明类型拒绝。新表先显式 `(capacity, comparer)` 构造，再 Add 并回读。
+
+普通构造整体抛出时 assignment 尚未发生，`PartialConstructorAllocationRetentionVerified=false`；不能把先保留 comparer 描述成所有 constructor 内未知分配已持有。本轮 Core 输入未改，复用 0.1.21 实际 176/176，不重跑；[当前摘要](logs/guest-comparer-build-verification.json)的插件 Build 警告视为错误通过。七步/21 explicit handles/4 Data stamps 保持，全部 native ABI、完整隔离、进入/静止及 guest/world/bag 权限 false，无自动 Network/GUI 调用。[冷档候选](docs/GUEST_COLD_PROFILE.md)只研究更早首次 load、slot 和输出，不表示已采用；余下资源/actor/cache/output、房主地图、个人捕获与逐产物返航、双端/冷配置验收继续必需。

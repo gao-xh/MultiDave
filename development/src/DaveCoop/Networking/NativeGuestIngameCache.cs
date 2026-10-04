@@ -42,6 +42,7 @@ namespace DaveCoop.Networking
         public bool KnownReferencesDisjoint { get; private set; }
         public bool NativeAllocationAbiVerified => false;
         public bool NativeCloneAbiVerified => false;
+        public bool PartialConstructorAllocationRetentionVerified => false;
         public bool ResourceGraphIsolated => false;
         public bool SourceBaselineVerified => false;
         public bool CompleteGraphVerified => false;
@@ -89,11 +90,14 @@ namespace DaveCoop.Networking
                 var audit = new GuestReferenceAudit();
                 Snapshot original = reader.Graph(_originalStorage, value => Audit(audit.AddOriginal(Pointer(value)), audit));
                 RequireUnchanged(_original, original);
+                RequireCloneableComparers(original);
                 // Graph rejects every unsupported resource/live device before
                 // any explicit preparation allocation, including nonempty input.
                 Audit(audit.BeginDetached(), audit);
-                reader.Step(() => _detachedStorage = new IngameCacheDictionary(original.Rows.Count));
+                var comparer = NativeGuestDictionaryComparer.Copy<InGameSaveType>(original.Comparer, reader.CheckWindow, value => Hold(value));
+                reader.Step(() => _detachedStorage = new IngameCacheDictionary(original.Rows.Count, comparer));
                 reader.Step(() => _keep(_detachedStorage));
+                reader.VerifyComparer(_detachedStorage, original.Comparer, comparer);
                 foreach (KeyValuePair<InGameSaveType, Record> row in original.Rows)
                 {
                     InGameSaveData data = CloneRecord(reader, row.Key, row.Value);
@@ -101,6 +105,7 @@ namespace DaveCoop.Networking
                 }
                 _preparedSnapshot = reader.Graph(_detachedStorage, value => Audit(audit.AddDetached(Pointer(value)), audit));
                 RequireValues(_original, _preparedSnapshot);
+                RequireComparerSemantics(_original, _preparedSnapshot);
                 if (!audit.KnownReferencesDisjoint) return Reject("Known ingame references are not disjoint.");
                 _prepared = true;
                 if (!Validate(reader, false)) return false;
@@ -108,6 +113,7 @@ namespace DaveCoop.Networking
                 return !_failed;
             }
             catch (CacheFailure error) { return Reject(error.Message); }
+            catch (NativeGuestDictionaryComparer.Failure error) { return Reject(error.Message); }
             catch (Exception) { return Reject("Ingame preparation failed, is unsupported or has an unknown native outcome."); }
             finally { _busy = false; }
         }
@@ -119,6 +125,7 @@ namespace DaveCoop.Networking
             if (!Begin(window, false)) return false;
             try { return Validate(OperationReader(window), active); }
             catch (CacheFailure error) { return Reject(error.Message); }
+            catch (NativeGuestDictionaryComparer.Failure error) { return Reject(error.Message); }
             catch (Exception) { return Reject("Known ingame graph changed or could not be read."); }
             finally { _busy = false; }
         }
@@ -133,6 +140,7 @@ namespace DaveCoop.Networking
             RequireUnchanged(_original, original);
             Audit(audit.BeginDetached(), audit);
             Snapshot detached = reader.Graph(_detachedStorage, value => Audit(audit.AddDetached(Pointer(value)), audit));
+            RequireComparerSemantics(_original, detached);
             if (!active) { RequireUnchanged(_preparedSnapshot, detached); RequireValues(original, detached); }
             if (Current(reader) != state || _failed || !audit.KnownReferencesDisjoint) return Reject("Ingame binding or reference audit failed.");
             KnownReferencesDisjoint = true; return true;
@@ -237,6 +245,33 @@ namespace DaveCoop.Networking
         { if (!string.Equals(before.Values, now.Values, StringComparison.Ordinal)) Fail("Known ingame values differ."); }
         private static void RequireUnchanged(Snapshot before, Snapshot now)
         { RequireValues(before, now); if (!string.Equals(before.Identity, now.Identity, StringComparison.Ordinal)) Fail("Known ingame references or versions changed."); }
+        private static void RequireCloneableComparers(Snapshot snapshot)
+        {
+            NativeGuestDictionaryComparer.RequireCloneable(snapshot.Comparer);
+            foreach (Record row in snapshot.Rows.Values)
+            {
+                if (row.Puzzles != null) NativeGuestDictionaryComparer.RequireCloneable(row.PuzzleComparer);
+                if (row.Objects != null) NativeGuestDictionaryComparer.RequireCloneable(row.ObjectComparer);
+            }
+        }
+        private static void RequireComparerSemantics(Snapshot before, Snapshot after)
+        {
+            NativeGuestDictionaryComparer.RequireSameSemantics(before.Comparer, after.Comparer);
+            foreach (var item in after.Rows)
+            {
+                Record original;
+                if (item.Value.Puzzles != null)
+                {
+                    if (!before.Rows.TryGetValue(item.Key, out original)) Fail("An active puzzle comparer has no captured source semantics.");
+                    NativeGuestDictionaryComparer.RequireSameSemantics(original.PuzzleComparer, item.Value.PuzzleComparer);
+                }
+                if (item.Value.Objects != null)
+                {
+                    if (!before.Rows.TryGetValue(item.Key, out original)) Fail("An active object comparer has no captured source semantics.");
+                    NativeGuestDictionaryComparer.RequireSameSemantics(original.ObjectComparer, item.Value.ObjectComparer);
+                }
+            }
+        }
 
         private T Hold<T>(T value) where T : Il2CppObjectBase
         {
@@ -319,7 +354,9 @@ namespace DaveCoop.Networking
                     Il2CppSystem.Collections.Generic.Dictionary<string, bool> solved = null;
                     if (value.Puzzles != null)
                     {
-                        r.Step(() => solved = Hold(new Il2CppSystem.Collections.Generic.Dictionary<string, bool>(value.Puzzles.Count)));
+                        var puzzleComparer = NativeGuestDictionaryComparer.Copy<string>(value.PuzzleComparer, r.CheckWindow, item => Hold(item));
+                        r.Step(() => solved = Hold(new Il2CppSystem.Collections.Generic.Dictionary<string, bool>(value.Puzzles.Count, puzzleComparer)));
+                        r.VerifyComparer(solved, value.PuzzleComparer, puzzleComparer);
                         foreach (var item in value.Puzzles) r.Step(() => solved.Add(item.Key, item.Value));
                     }
                     r.Step(() => puzzle._keyToSolves = solved); return puzzle;
@@ -328,7 +365,9 @@ namespace DaveCoop.Networking
                     Il2CppSystem.Collections.Generic.Dictionary<string, InGameObjectSaveData.Data> saved = null;
                     if (value.Objects != null)
                     {
-                        r.Step(() => saved = Hold(new Il2CppSystem.Collections.Generic.Dictionary<string, InGameObjectSaveData.Data>(value.Objects.Count)));
+                        var objectComparer = NativeGuestDictionaryComparer.Copy<string>(value.ObjectComparer, r.CheckWindow, item => Hold(item));
+                        r.Step(() => saved = Hold(new Il2CppSystem.Collections.Generic.Dictionary<string, InGameObjectSaveData.Data>(value.Objects.Count, objectComparer)));
+                        r.VerifyComparer(saved, value.ObjectComparer, objectComparer);
                         foreach (var item in value.Objects)
                         {
                             var data = Allocate(r, ptr => new InGameObjectSaveData.Data(ptr));
@@ -342,11 +381,12 @@ namespace DaveCoop.Networking
         }
 
         private sealed class Snapshot
-        { public string Values, Identity; public SortedDictionary<InGameSaveType, Record> Rows; }
+        { public string Values, Identity; public NativeGuestDictionaryComparer.Stamp Comparer; public SortedDictionary<InGameSaveType, Record> Rows; }
         private sealed class Record
         {
             public float Health; public int Ammo; public int[] Ints; public SlotRecord[] Slots; public DeviceRecord[] Devices;
             public SortedDictionary<string, bool> Puzzles; public SortedDictionary<string, ObjectRecord> Objects;
+            public NativeGuestDictionaryComparer.Stamp PuzzleComparer, ObjectComparer;
         }
         private sealed class SlotRecord { public int Count; public float Remain, Last, Unfocused; public bool Available; public QueueRecord Queue; }
         private sealed class QueueRecord { public int Capacity, Head, Tail, Version; }
@@ -371,6 +411,15 @@ namespace DaveCoop.Networking
             }
             public T Read<T>(Func<T> read) { Check(); T value = read(); Check(); return value; }
             public void Step(Action action) { Check(); action(); Check(); }
+            public void CheckWindow() => Check();
+            public void VerifyComparer<TKey, TValue>(Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue> dictionary,
+                NativeGuestDictionaryComparer.Stamp source, Il2CppSystem.Collections.Generic.IEqualityComparer<TKey> expected)
+            {
+                var actual = NativeGuestDictionaryComparer.Capture(Read(() => dictionary._comparer), Check);
+                var supplied = NativeGuestDictionaryComparer.Capture(expected, Check);
+                NativeGuestDictionaryComparer.RequireSameIdentity(supplied, actual);
+                NativeGuestDictionaryComparer.RequireSameSemantics(source, actual);
+            }
             private T Visit<T>(Func<T> read) { if (_visits >= MaxStorageReads) Fail("Ingame storage read budget exceeded."); _visits++; return Read(read); }
             public void Exact<T>(Il2CppObjectBase value) where T : Il2CppObjectBase
             {
@@ -401,10 +450,11 @@ namespace DaveCoop.Networking
             {
                 _audit = audit; _identity.Clear(); _records.Clear();
                 if (dictionary == null) return new Snapshot { Values = "absent", Identity = "0;", Rows = new SortedDictionary<InGameSaveType, Record>() };
-                var rows = Dictionary(dictionary, Comparer<InGameSaveType>.Default, (key, value) => ReadRecord(key, value));
+                NativeGuestDictionaryComparer.Stamp comparer;
+                var rows = Dictionary(dictionary, Comparer<InGameSaveType>.Default, (key, value) => ReadRecord(key, value), out comparer);
                 var values = new StringBuilder();
                 foreach (var item in rows) values.Append(N((int)item.Key)).Append(Encode(item.Key, item.Value));
-                return new Snapshot { Rows = rows, Values = values.ToString(), Identity = _identity.ToString() };
+                return new Snapshot { Rows = rows, Comparer = comparer, Values = values.ToString(), Identity = _identity.ToString() };
             }
             private Record ReadRecord(InGameSaveType key, InGameSaveData value)
             {
@@ -426,20 +476,24 @@ namespace DaveCoop.Networking
                         record.Devices = ReferenceList(Read(() => installed._currentInstalledDevices_k__BackingField), Device); break;
                     case InGameSaveType.PuzzleState:
                         Exact<PuzzleStateSaveData>(value); var puzzle = Read(() => new PuzzleStateSaveData(new IntPtr(Pointer(value))));
-                        record.Puzzles = Dictionary(Read(() => puzzle._keyToSolves), StringComparer.Ordinal, (name, solved) => solved); break;
+                        record.Puzzles = Dictionary(Read(() => puzzle._keyToSolves), StringComparer.Ordinal, (name, solved) => solved, out record.PuzzleComparer); break;
                     case InGameSaveType.InGameObject:
                         Exact<InGameObjectSaveData>(value); var objects = Read(() => new InGameObjectSaveData(new IntPtr(Pointer(value))));
-                        record.Objects = Dictionary(Read(() => objects._keyToDatas), StringComparer.Ordinal, (name, data) => Object(data)); break;
+                        record.Objects = Dictionary(Read(() => objects._keyToDatas), StringComparer.Ordinal, (name, data) => Object(data), out record.ObjectComparer); break;
                     default: Fail("Missing proof for an unknown ingame enum kind."); break;
                 }
                 return record;
             }
             private SortedDictionary<TKey, TImage> Dictionary<TKey, TValue, TImage>(Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue> dictionary,
-                IComparer<TKey> comparer, Func<TKey, TValue, TImage> capture)
+                IComparer<TKey> comparer, Func<TKey, TValue, TImage> capture, out NativeGuestDictionaryComparer.Stamp comparerStamp)
             {
+                comparerStamp = null;
                 if (dictionary == null) return null;
                 Exact<Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue>>(dictionary); Reference(dictionary);
                 DictionaryAuxiliaryEmpty(dictionary);
+                comparerStamp = NativeGuestDictionaryComparer.Capture(Read(() => dictionary._comparer), Check);
+                if (comparerStamp.Reference != null) Reference(comparerStamp.Reference);
+                _identity.Append(N((int)comparerStamp.ClassKind)).Append(N(comparerStamp.NativeClass.ToInt64())).Append(N(comparerStamp.Pointer)).Append(N(comparerStamp.DefaultComparerPointer));
                 int count = Read(() => dictionary._count), free = Read(() => dictionary._freeCount), version = Read(() => dictionary._version), freeList = Read(() => dictionary._freeList);
                 var entries = Read(() => dictionary._entries); var buckets = Read(() => dictionary._buckets);
                 int length = entries == null ? 0 : Read(() => entries.Length), bucketLength = buckets == null ? 0 : Read(() => buckets.Length);
@@ -472,14 +526,14 @@ namespace DaveCoop.Networking
                 if (count != Read(() => dictionary._count) || free != Read(() => dictionary._freeCount) || version != Read(() => dictionary._version) || freeList != Read(() => dictionary._freeList) ||
                     OptionalPointer(entries) != OptionalPointer(Read(() => dictionary._entries)) || OptionalPointer(buckets) != OptionalPointer(Read(() => dictionary._buckets))) Fail("Ingame dictionary changed during capture.");
                 DictionaryAuxiliaryEmpty(dictionary);
+                NativeGuestDictionaryComparer.RequireSameIdentity(comparerStamp, NativeGuestDictionaryComparer.Capture(Read(() => dictionary._comparer), Check));
                 return result;
             }
             private void DictionaryAuxiliaryEmpty<TKey, TValue>(Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue> dictionary)
             {
-                if (Read(() => dictionary._comparer) != null || Read(() => dictionary._keys) != null ||
-                    Read(() => dictionary._values) != null || Read(() => dictionary._syncRoot) != null)
-                    Fail("Missing proof for an ingame dictionary comparer, view or synchronization reference.");
-                _identity.Append("no-dictionary-aux;");
+                if (Read(() => dictionary._keys) != null || Read(() => dictionary._values) != null || Read(() => dictionary._syncRoot) != null)
+                    Fail("Missing proof for an ingame dictionary view or synchronization reference.");
+                _identity.Append("no-dictionary-view-or-sync;");
             }
             private int[] IntList(Il2CppSystem.Collections.Generic.List<int> list)
             {
