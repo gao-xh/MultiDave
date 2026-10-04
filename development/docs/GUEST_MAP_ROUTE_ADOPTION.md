@@ -173,3 +173,5 @@ Build/Restore/cache 三个未见入口假设为 Manager 首 Move 中必经的采
 [验证摘要](../logs/map-route-adoption-build-verification.json)。
 离线签名和静态调用边、CLR/TCP 通过及编译通过都不替代 native hook、构造/字段 ABI、
 初始场景、IGP、同一海洋或完整隔离/收益验收。
+
+后续0.1.39默认关闭的实际scene-operation/controller来源与IGP Init消费者见[GUEST_IGP_ADOPTION](GUEST_IGP_ADOPTION.md)，实际292/292和Build见新摘要。本文件早期编号/结果保留历史，不将新验证回填旧记录；全部原生权限仍未完成。

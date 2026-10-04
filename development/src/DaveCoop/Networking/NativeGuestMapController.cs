@@ -24,6 +24,8 @@ namespace DaveCoop.Networking
         private static NativeGuestMapController _active;
         private readonly NativeGuestInitializationController _source;
         private readonly ManualLogSource _logger;
+        private readonly NativeGuestSceneController _scenes;
+        private readonly NativeGuestIgpController _igps;
         private readonly List<Entry> _entries = new List<Entry>();
         private readonly List<IntPtr> _handles = new List<IntPtr>();
         private readonly List<Il2CppObjectBase> _references = new List<Il2CppObjectBase>();
@@ -38,6 +40,11 @@ namespace DaveCoop.Networking
         public string Status { get; private set; } = "Awaiting a natural diving entry and host route.";
         public int SourceHandleCount => _handles.Count;
         public bool InitialSceneProfileVerified => false;
+        internal NativeGuestSceneController SceneSources => _scenes;
+        internal int SceneUnityThreadId => _source.ConfirmedUnityThreadId;
+        internal bool SceneFailed => _source.Failed;
+        internal long SuppliedIgpChoices => _igps.AppliedChoices;
+        internal string IgpStatus => _igps.Status;
 
         private sealed class SceneStamp
         {
@@ -69,12 +76,13 @@ namespace DaveCoop.Networking
             public NativeGuestMapRoute Route;
             public MapChoiceSnapshot Choice;
         }
-        private sealed class MoveCall { public Entry Entry, Previous; public bool Approved, Finished; }
+        private sealed class MoveCall { public Entry Entry, Previous; public long SceneScope; public bool Approved, Finished; }
         private sealed class ResetCall { public Entry Entry; public SceneLoader Loader; public bool Finished; }
         private sealed class LoadCall { public Entry Entry; public bool Finished; }
 
         public NativeGuestMapController(NativeGuestInitializationController source, ManualLogSource logger)
-        { _source = source ?? throw new ArgumentNullException(nameof(source)); _logger = logger; }
+        { _source = source ?? throw new ArgumentNullException(nameof(source)); _logger = logger;
+            _scenes = new NativeGuestSceneController(this); _igps = new NativeGuestIgpController(this, logger); }
 
         public void Install()
         {
@@ -98,6 +106,8 @@ namespace DaveCoop.Networking
                     postfix: Hook(target.Postfix, Priority.Last), finalizer: Hook(target.Finalizer, Priority.Last));
             if (!targets.All(target => Harmony.GetPatchInfo(target.Method)?.Owners.Contains(Owner) == true))
                 throw new InvalidOperationException("Experimental map consumer patches are incomplete.");
+            _scenes.Install();
+            _igps.Install();
         }
 
         public bool BindTransport(SessionPeer peer, MapChoiceController maps)
@@ -121,7 +131,8 @@ namespace DaveCoop.Networking
                 var entry = new Entry { Loader = loader, LoaderPointer = Pointer(loader), LoaderUnityPointer = loader.m_CachedPtr };
                 if (entry.LoaderPointer == 0 || entry.LoaderUnityPointer == IntPtr.Zero || !SourceCurrent())
                     throw Block("The original entry loader is unavailable.");
-                _entries.Add(entry); Keep(loader); _insideEntry = entry; return entry;
+                _entries.Add(entry); Keep(loader); _insideEntry = entry;
+                _scenes.BeginEntry(entry, loader); return entry;
             }
             finally { _bindingBusy = false; }
         }
@@ -160,6 +171,7 @@ namespace DaveCoop.Networking
                 if (!ranOriginal || entry.FactoryReturned || ReferenceEquals(result, null) || !ReferenceEquals(_insideEntry, entry) || !SourceCurrent() || !LoaderCurrent(entry))
                     throw Block("The original change factory did not return one fixed iterator.");
                 entry.Returned = result; Keep(result); entry.FactoryReturned = true;
+                _scenes.RegisterInitialIterator(entry, result);
             }
             finally { _bindingBusy = false; }
         }
@@ -176,7 +188,7 @@ namespace DaveCoop.Networking
             {
                 long pointer = Pointer(iterator);
                 Entry entry = Unique(pointer, false);
-                if (entry == null) return true;
+                if (entry == null) { _scenes.EnterUnknownScope(out call.SceneScope); return true; }
                 call.Entry = entry;
                 // StartCoroutine may synchronously invoke its first MoveNext
                 // before the original GoToInGameEntry body returns.
@@ -202,7 +214,8 @@ namespace DaveCoop.Networking
                 }
                 if (!Current(entry)) throw Block("The host route or temporary source expired before original scene loading.");
                 if (call.Previous != null) throw Block("A second bound diving iterator nested inside an original move.");
-                _insideMove = entry; call.Approved = true; return true;
+                _insideMove = entry; call.Approved = true;
+                _scenes.EnterInitialMove(entry, iterator, entry.Stamp.Name, out call.SceneScope); return true;
             }
             finally { _bindingBusy = false; }
         }
@@ -345,6 +358,7 @@ namespace DaveCoop.Networking
                 if (!entry.Route.TryPrepare() || !entry.Route.TryInstall() || !entry.Route.ValidateInstalled() || !Current(entry) || !ContextCurrent(entry))
                     throw Block("The six temporary route roots could not be installed before original resource loading.");
                 InstalledRoutes++;
+                _scenes.BindInstalled(entry, entry.Context, entry.Route, entry.Choice);
                 Trace("INSTALLED", entry.LayerProven ?
                     "Host route fields and a catalog-matched initial layer bound before loading; IGPs and full world isolation remain unverified." :
                     "Host route fields installed before loading; original unclassified bootstrap parameters preserved and full initial-scene profile remains unverified.");
@@ -413,6 +427,28 @@ namespace DaveCoop.Networking
             choice.Generation == entry.Choice.Generation && choice.RouteFingerprint == entry.Choice.RouteFingerprint;
         private bool SourceCurrent() => !_source.Failed && _source.ConfirmedUnityThreadId > 0 &&
             Environment.CurrentManagedThreadId == _source.ConfirmedUnityThreadId && _source.MapSourceCurrent(_peer) && !_source.Failed;
+        internal bool SceneEntryCurrent(object identity, bool installed)
+        {
+            var entry = identity as Entry;
+            return entry != null && _entries.Contains(entry) && SourceCurrent() && LoaderCurrent(entry) &&
+                (!installed || (entry.Route != null && entry.Route.Installed && !entry.Route.Failed && Current(entry) && ContextCurrent(entry))) &&
+                !entry.Retired && !_source.Failed;
+        }
+        internal bool TryCaptureSceneChoices(object identity, out MapChoiceSnapshot choice)
+        {
+            choice = null; var entry = identity as Entry;
+            return entry != null && SceneEntryCurrent(entry, true) && CaptureChoice(out choice) &&
+                choice.Generation == entry.Choice.Generation && choice.RouteFingerprint == entry.Choice.RouteFingerprint && SceneEntryCurrent(entry, true);
+        }
+        internal void SceneSourceFailure(string reason) => _source.Fail(reason);
+        internal bool ValidateSceneEntry(object identity) => SceneEntryCurrent(identity, true) &&
+            ((Entry)identity).Route.ValidateInstalled() && SceneEntryCurrent(identity, true);
+        internal NativeCatalog SceneCatalog(object identity)
+        {
+            var entry = identity as Entry;
+            if (entry == null || !_entries.Contains(entry) || entry.Retired) return null;
+            return entry.Catalog; // Owned managed reference only; no native getter is invoked here.
+        }
         private bool LoaderCurrent(Entry entry) => !entry.Retired && Pointer(entry.Loader) == entry.LoaderPointer &&
             entry.Loader.m_CachedPtr == entry.LoaderUnityPointer && entry.LoaderUnityPointer != IntPtr.Zero &&
             (entry.Iterator == null || (Pointer(entry.Iterator) == entry.IteratorPointer && Pointer(entry.Iterator.__4__this) == entry.LoaderPointer)) && !entry.Retired && !_source.Failed;
@@ -572,6 +608,7 @@ namespace DaveCoop.Networking
         {
             if (_active != null && __state != null)
             { if (__exception != null && __state.Entry != null) _active._source.Fail("Original loading move exception: " + __exception.GetType().Name);
+                _active._scenes.ExitUnknownScope(__state.SceneScope);
                 _active._insideMove = __state.Previous; }
             return __exception;
         }
@@ -614,7 +651,8 @@ namespace DaveCoop.Networking
             if (_active == null || !_active._source.AcceptCallbackThread() || _active._source.ConfirmedUnityThreadId == 0) return;
             long pointer = Pointer(__instance);
             foreach (Entry entry in _active._entries)
-                if (entry.ResetReturned && !entry.Retired && Pointer(entry.Context) == pointer) entry.Retired = true;
+                if (entry.ResetReturned && !entry.Retired && Pointer(entry.Context) == pointer)
+                { entry.Retired = true; _active._scenes.RetireEntry(entry); }
         }
     }
 

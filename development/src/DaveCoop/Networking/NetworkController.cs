@@ -231,6 +231,8 @@ namespace DaveCoop.Networking
                         MapChoiceRemoteChoices = _mapChoices.RemoteChoiceCount, HostMapSelectionApplied = false,
                         ExperimentalGuestInstalledRoutes = NativeGuestInitializationController.Current?.MapController.InstalledRoutes ?? 0,
                         ExperimentalGuestMapStatus = NativeGuestInitializationController.Current?.MapController.Status,
+                        ExperimentalGuestSuppliedIgpChoices = NativeGuestInitializationController.Current?.MapController.SuppliedIgpChoices ?? 0,
+                        ExperimentalGuestIgpStatus = NativeGuestInitializationController.Current?.MapController.IgpStatus,
                         MapChoiceOriginRunId = _mapChoices.SourceOriginRunId,
                         MapChoiceOriginOwnerLife = _mapChoices.SourceOriginOwnerLife,
                         MapChoiceOriginPending = _mapChoices.PendingOriginChoices,

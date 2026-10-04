@@ -47,6 +47,36 @@ namespace DaveCoop.Core.World
         public bool CrossMachineAddressVerified => false;
     }
 
+    // A copied, immutable local chain. Capturing it does not prove that the
+    // caller supplied native observations or grant permission to adopt a world.
+    public sealed class MapOriginControllerSource
+    {
+        public long ControllerLife { get; }
+        public long ControllerPointer { get; }
+        public long OwnerLife { get; }
+        public long OperationLife { get; }
+        public long OperationPointer { get; }
+        public int OperationVersion { get; }
+        public long SceneLife { get; }
+        public int SceneHandle { get; }
+        public string SceneName { get; }
+        public string LoadKey { get; }
+        public bool ObservationOnly => true;
+        public bool NativeGenerationBound => false;
+        public bool HostSelectionApplied => false;
+        public bool NativePermission => false;
+        public bool CrossMachineAddressVerified => false;
+
+        internal MapOriginControllerSource(long controllerLife, long controllerPointer, long ownerLife,
+            long operationLife, long operationPointer, int operationVersion, long sceneLife,
+            int sceneHandle, string sceneName, string loadKey)
+        {
+            ControllerLife = controllerLife; ControllerPointer = controllerPointer; OwnerLife = ownerLife;
+            OperationLife = operationLife; OperationPointer = operationPointer; OperationVersion = operationVersion;
+            SceneLife = sceneLife; SceneHandle = sceneHandle; SceneName = sceneName; LoadKey = loadKey;
+        }
+    }
+
     // Caller supplies values frozen at the natural callback. Native wrappers,
     // singleton lookups, scene-name ownership guesses and network state are absent.
     // Tombstones remain for this instance; a quota never evicts a replay fence.
@@ -115,8 +145,8 @@ namespace DaveCoop.Core.World
                 lock (_gate)
                 {
                     if (Guard() != MapOriginStatus.Accepted || _scopes.Count == 0) return 0;
-                    long life = _scopes[_scopes.Count - 1].OwnerLife;
-                    return Active(life) ? life : 0;
+                    Scope scope = _scopes[_scopes.Count - 1];
+                    return Active(scope.OwnerLife) && ScopeIteratorLive(scope) ? scope.OwnerLife : 0;
                 }
             }
         }
@@ -262,7 +292,7 @@ namespace DaveCoop.Core.World
                 if (status != MapOriginStatus.Accepted) return status;
                 long owner = 0, fixedIterator = 0;
                 if (_iterators.TryGetValue(iteratorLife, out Iterator item) && item.Pointer == pointer &&
-                    !item.Retired)
+                    !item.Retired && ControllerIteratorLive(item))
                 { fixedIterator = item.Life; if (Active(item.OwnerLife)) owner = item.OwnerLife; }
                 return PushScope(owner, out scopeToken, fixedIterator);
             }
@@ -397,18 +427,56 @@ namespace DaveCoop.Core.World
                     if (previous.SceneHandle != sceneHandle || previous.SceneName != sceneName)
                         return Fail(MapOriginStatus.Conflict, "Controller birth cannot change.");
                     return previous.OwnerLife != 0 ? MapOriginStatus.Duplicate :
-                        previous.BirthBoundary == 0 ? MapOriginStatus.Unbound : MapOriginStatus.Pending;
+                        previous.EligibleOperations.Length == 0 ? MapOriginStatus.Unbound : MapOriginStatus.Pending;
                 }
                 if (_retiredSceneHandles.Contains(sceneHandle)) return MapOriginStatus.Retired;
                 if (_controllers.Count == MaxControllers) return Fail(MapOriginStatus.LimitExceeded, "Controller quota.");
                 if (!Next(out controllerLife)) return MapOriginStatus.LimitExceeded;
+                // Freeze only the operations already observed at first birth.
+                // A repeated Start/Init never grows this set with later loads.
+                var eligible = new List<long>();
+                foreach (Operation operation in _operations.Values)
+                    if (!operation.Retired && operation.OwnerLife == _activeOwnerLife && Active(operation.OwnerLife))
+                        eligible.Add(operation.Life);
+                eligible.Sort();
                 var item = new Controller { Life = controllerLife, Pointer = pointer, SceneHandle = sceneHandle,
-                    SceneName = sceneName, BirthBoundary = _activeOwnerLife };
+                    SceneName = sceneName, BirthBoundary = _activeOwnerLife, EligibleOperations = eligible.ToArray() };
                 _controllers.Add(controllerLife, item); _controllerPointers.Add(pointer, item);
                 BindController(item);
                 if (item.Retired) return MapOriginStatus.Retired;
                 return item.OwnerLife != 0 ? MapOriginStatus.Accepted :
-                    item.BirthBoundary == 0 ? MapOriginStatus.Unbound : MapOriginStatus.Pending;
+                    item.EligibleOperations.Length == 0 ? MapOriginStatus.Unbound : MapOriginStatus.Pending;
+            }
+        }
+
+        // The actual controller Init factory may return before its scene load
+        // completes. Only this dedicated association can later acquire that
+        // controller's once-proven owner; a generic owner-zero iterator cannot.
+        public MapOriginStatus RegisterControllerIterator(long controllerLife, long controllerPointer,
+            long iteratorPointer, out long iteratorLife)
+        {
+            lock (_gate)
+            {
+                iteratorLife = 0; MapOriginStatus status = Guard(); if (status != MapOriginStatus.Accepted) return status;
+                if (!_controllers.TryGetValue(controllerLife, out Controller controller)) return MapOriginStatus.Unbound;
+                if (controller.Pointer != controllerPointer || iteratorPointer == 0)
+                    return Fail(MapOriginStatus.Conflict, "Controller iterator identity differs from birth.");
+                if (controller.Retired || (controller.BirthBoundary != 0 && !Active(controller.BirthBoundary))) return MapOriginStatus.Retired;
+                if (controller.IteratorLife != 0)
+                {
+                    Iterator previous = _iterators[controller.IteratorLife]; iteratorLife = previous.Life;
+                    if (previous.Pointer != iteratorPointer) return Fail(MapOriginStatus.Conflict, "Controller returned another iterator.");
+                    return previous.Retired ? MapOriginStatus.Retired : MapOriginStatus.Duplicate;
+                }
+                if (_iteratorPointers.ContainsKey(iteratorPointer))
+                    return Fail(MapOriginStatus.Conflict, "Controller iterator pointer was already registered.");
+                if (_iterators.Count == MaxIterators) return Fail(MapOriginStatus.LimitExceeded, "Iterator quota.");
+                if (!Next(out iteratorLife)) return MapOriginStatus.LimitExceeded;
+                var item = new Iterator { Life = iteratorLife, Pointer = iteratorPointer,
+                    OwnerLife = controller.OwnerLife, ControllerLife = controllerLife };
+                _iterators.Add(iteratorLife, item); _iteratorPointers.Add(iteratorPointer, item); controller.IteratorLife = iteratorLife;
+                return controller.OwnerLife != 0 ? MapOriginStatus.Accepted :
+                    controller.EligibleOperations.Length == 0 ? MapOriginStatus.Unbound : MapOriginStatus.Pending;
             }
         }
 
@@ -503,6 +571,27 @@ namespace DaveCoop.Core.World
                 !_controllerPointers.TryGetValue(pointer, out Controller item)) return false; life = item.Life; return true; }
         }
 
+        public bool TryGetControllerSource(long controllerLife, out MapOriginControllerSource source)
+        {
+            lock (_gate)
+            {
+                source = null;
+                if (Guard() != MapOriginStatus.Accepted || !_controllers.TryGetValue(controllerLife, out Controller controller) ||
+                    !ControllerHasSource(controller)) return false;
+                Operation operation = _operations[controller.OperationLife];
+                source = new MapOriginControllerSource(controller.Life, controller.Pointer, controller.OwnerLife,
+                    operation.Life, operation.Pointer, operation.Version, controller.SceneLife, controller.SceneHandle,
+                    controller.SceneName, operation.LoadKey);
+                return true;
+            }
+        }
+
+        public bool IsControllerRetired(long controllerLife)
+        {
+            lock (_gate) return Guard() != MapOriginStatus.Accepted ||
+                !_controllers.TryGetValue(controllerLife, out Controller item) || item.Retired;
+        }
+
         public bool TryGetManagerLife(long pointer, out long life)
         {
             lock (_gate) { life = 0; if (Guard() != MapOriginStatus.Accepted ||
@@ -573,7 +662,7 @@ namespace DaveCoop.Core.World
                 MapOriginStatus status = Guard(); if (status != MapOriginStatus.Accepted) return status;
                 if (!_controllers.TryGetValue(controllerLife, out Controller item)) return MapOriginStatus.Unbound;
                 if (item.Retired) return MapOriginStatus.Duplicate;
-                item.Retired = true; RemoveSelections(selection => selection.ControllerLife == controllerLife);
+                RetireControllerLocked(item); RemoveSelections(selection => selection.ControllerLife == controllerLife);
                 return MapOriginStatus.Accepted;
             }
         }
@@ -597,7 +686,7 @@ namespace DaveCoop.Core.World
                 foreach (Manager manager in _managers.Values)
                     if (manager.SceneHandle == sceneHandle) RetireManagerLocked(manager, true);
                 foreach (Controller controller in _controllers.Values)
-                    if (controller.SceneHandle == sceneHandle) controller.Retired = true;
+                    if (controller.SceneHandle == sceneHandle) RetireControllerLocked(controller);
                 RemoveSelections(selection => _controllers[selection.ControllerLife].SceneHandle == sceneHandle);
                 return MapOriginStatus.Accepted;
             }
@@ -642,7 +731,7 @@ namespace DaveCoop.Core.World
         {
             if (_fault == null) _fault = reason;
             foreach (Owner owner in _owners.Values) RetireOwnerLocked(owner.Life);
-            foreach (Controller controller in _controllers.Values) controller.Retired = true;
+            foreach (Controller controller in _controllers.Values) RetireControllerLocked(controller);
             foreach (Manager manager in _managers.Values) RetireManagerLocked(manager, false);
             _pending.Clear(); _ready.Clear(); _scopes.Clear(); _activeOwnerLife = 0;
             return status;
@@ -669,8 +758,19 @@ namespace DaveCoop.Core.World
         private Owner ScopeOwner(long scopeToken)
         {
             if (_scopes.Count == 0 || scopeToken == 0 || _scopes[_scopes.Count - 1].Token != scopeToken) return null;
-            long ownerLife = _scopes[_scopes.Count - 1].OwnerLife;
-            return Active(ownerLife) ? _owners[ownerLife] : null;
+            Scope scope = _scopes[_scopes.Count - 1];
+            return Active(scope.OwnerLife) && ScopeIteratorLive(scope) ? _owners[scope.OwnerLife] : null;
+        }
+
+        private bool ScopeIteratorLive(Scope scope) => scope.IteratorLife == 0 ||
+            (_iterators.TryGetValue(scope.IteratorLife, out Iterator iterator) && !iterator.Retired && ControllerIteratorLive(iterator));
+
+        private bool ControllerIteratorLive(Iterator iterator)
+        {
+            if (iterator.ControllerLife == 0) return true;
+            if (!_controllers.TryGetValue(iterator.ControllerLife, out Controller controller) || controller.Retired ||
+                controller.IteratorLife != iterator.Life || controller.OwnerLife != iterator.OwnerLife) return false;
+            return controller.OwnerLife == 0 ? controller.BirthBoundary == 0 || Active(controller.BirthBoundary) : ControllerHasSource(controller);
         }
 
         private Manager ScopeManager(long scopeToken)
@@ -693,7 +793,7 @@ namespace DaveCoop.Core.World
             foreach (Scene scene in _scenes.Values)
                 if (scene.OwnerLife == ownerLife) { scene.Retired = true; _retiredSceneHandles.Add(scene.Handle); }
             foreach (Controller controller in _controllers.Values)
-                if (controller.BirthBoundary == ownerLife || controller.OwnerLife == ownerLife) controller.Retired = true;
+                if (controller.BirthBoundary == ownerLife || controller.OwnerLife == ownerLife) RetireControllerLocked(controller);
             RemoveSelections(selection => _controllers[selection.ControllerLife].Retired);
             if (_activeOwnerLife == ownerLife) _activeOwnerLife = 0;
         }
@@ -748,18 +848,42 @@ namespace DaveCoop.Core.World
         {
             if (controller.Retired || controller.OwnerLife != 0 || !_scenes.TryGetValue(controller.SceneHandle, out Scene scene)) return;
             // BirthBoundary is an exclusion fence, never an ownership fallback.
-            if (scene.Retired || !Active(scene.OwnerLife) || controller.BirthBoundary == 0 || controller.BirthBoundary != scene.OwnerLife)
-            { controller.Retired = true; return; }
+            if (scene.Retired || !Active(scene.OwnerLife) || controller.BirthBoundary == 0 || controller.BirthBoundary != scene.OwnerLife ||
+                !Contains(controller.EligibleOperations, scene.OperationLife))
+            { RetireControllerLocked(controller); return; }
             controller.OwnerLife = scene.OwnerLife; controller.SceneLife = scene.Life; controller.OperationLife = scene.OperationLife;
+            if (controller.IteratorLife != 0)
+            {
+                Iterator iterator = _iterators[controller.IteratorLife];
+                if (iterator.Retired || iterator.ControllerLife != controller.Life || iterator.OwnerLife != 0)
+                { Fail(MapOriginStatus.Conflict, "Pending controller iterator cannot be rebound."); return; }
+                iterator.OwnerLife = scene.OwnerLife;
+            }
+        }
+
+        private void RetireControllerLocked(Controller controller)
+        {
+            controller.Retired = true;
+            if (controller.IteratorLife != 0) _iterators[controller.IteratorLife].Retired = true;
+        }
+
+        private bool ControllerHasSource(Controller controller)
+        {
+            return !controller.Retired && controller.OwnerLife == _activeOwnerLife && Active(controller.OwnerLife) &&
+                controller.BirthBoundary == controller.OwnerLife && controller.SceneLife != 0 && controller.OperationLife != 0 &&
+                Contains(controller.EligibleOperations, controller.OperationLife) &&
+                _scenes.TryGetValue(controller.SceneHandle, out Scene scene) && !scene.Retired &&
+                scene.Life == controller.SceneLife && scene.OwnerLife == controller.OwnerLife && scene.OperationLife == controller.OperationLife &&
+                _operations.TryGetValue(controller.OperationLife, out Operation operation) && !operation.Retired &&
+                operation.OwnerLife == controller.OwnerLife && operation.SceneLife == controller.SceneLife && operation.SceneHandle == controller.SceneHandle;
         }
 
         private MapOriginStatus Resolve(Selection selection, out MapOriginChoiceEvidence evidence)
         {
             evidence = null; Controller controller = _controllers[selection.ControllerLife];
             if (controller.Retired || !Active(controller.BirthBoundary)) return MapOriginStatus.Retired;
-            if (controller.OwnerLife == 0) return MapOriginStatus.Pending;
-            if (!Active(controller.OwnerLife) || !_scenes.TryGetValue(controller.SceneHandle, out Scene scene) || scene.Retired)
-                return MapOriginStatus.Retired;
+            if (controller.OwnerLife == 0) return controller.EligibleOperations.Length == 0 ? MapOriginStatus.Unbound : MapOriginStatus.Pending;
+            if (!ControllerHasSource(controller)) return MapOriginStatus.Retired;
             Owner owner = _owners[controller.OwnerLife]; if (owner.Route == null) return MapOriginStatus.Pending;
             MapRouteScene selectedScene = null;
             foreach (MapRouteScene candidate in owner.Route.Scenes)
@@ -842,7 +966,7 @@ namespace DaveCoop.Core.World
         };
 
         private sealed class Owner { public long Life, Pointer, ContextPointer; public bool Retired; public string Fingerprint; public MapRouteSelection Route; }
-        private sealed class Iterator { public long Life, Pointer, OwnerLife, ManagerLife; public bool Retired; }
+        private sealed class Iterator { public long Life, Pointer, OwnerLife, ManagerLife, ControllerLife; public bool Retired; }
         private sealed class Manager
         {
             public long Life, Pointer, BoundaryOwnerLife, OwnerLife, OperationLife, SceneLife, IteratorLife, ContextPointer;
@@ -853,8 +977,9 @@ namespace DaveCoop.Core.World
         private sealed class Scene { public long Life, OwnerLife, OperationLife; public int Handle; public bool Retired; }
         private sealed class Controller
         {
-            public long Life, Pointer, BirthBoundary, OwnerLife, SceneLife, OperationLife, LastSequence;
+            public long Life, Pointer, BirthBoundary, OwnerLife, SceneLife, OperationLife, LastSequence, IteratorLife;
             public int SceneHandle; public string SceneName; public bool Retired; public MapGroupSelection LastChoice;
+            public long[] EligibleOperations;
         }
         private sealed class Scope { public long Token, OwnerLife, IteratorLife; }
         private sealed class Selection { public long ControllerLife, Sequence; public MapGroupSelection Choice; }

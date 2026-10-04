@@ -82,3 +82,5 @@ F11 显示候选和来源观察器状态；网络摘要另记录当前 origin Ru
 本轮 Core 快照测试覆盖复制、最新选择、同指纹新 owner、pending exact completion、退休及错误线程等边界；适配器测试编译实际 `MapChoiceController` 和实际 DTO，使用合成 CLR 来源帧、logger 桩与实际本机 TCP。它们没有运行原生 hooks、Unity、地图加载或两个游戏，不能证明 native callback、ABI、地址及采用成功。构建、测试数量与 hash 以本轮开发日志和验证摘要为准。
 
 下一步仍需核对真实自然入海的原生链和跨机 controller 地址，再实现加载前采用与客机临时进度/生成和 AI 隔离；随后才能接房主原生裁定及个人袋/返航桥。详见 [世界同步](WORLD_SYNC.md)、[房主与员工模式](CREW_MODE.md)和[当前交接](HANDOFF.md)。
+
+后续0.1.39默认关闭的实际scene-operation/controller来源与IGP Init消费者见[GUEST_IGP_ADOPTION](GUEST_IGP_ADOPTION.md)，实际292/292和Build见新摘要。本文件早期编号/结果保留历史，不将新验证回填旧记录；全部原生权限仍未完成。

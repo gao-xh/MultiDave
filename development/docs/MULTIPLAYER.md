@@ -1,6 +1,6 @@
 # 第二角色与传输层
 
-当前源码0.1.38-dev（协议7），本轮实际Core/TCP285/285及插件Build警告视为错误通过，执行前后输入封存一致。新增默认关闭的[客机路线加载前采用](GUEST_MAP_ROUTE_ADOPTION.md)：固定自然入海/Reset/原load来源，在资源加载前安装六个路线根；补齐native路线输入及精确pending-manager来源。见[本轮验证记录](../logs/map-route-adoption-build-verification.json)。未部署/启动或运行native；安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。完整IGP采用/客机隔离/房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.39-dev（协议7），本轮实际Core/TCP292/292及插件Build警告视为错误通过，执行前后封存输入一致。新增默认关闭的[房主IGP选择采用](GUEST_IGP_ADOPTION.md)：实际加载operation/Scene/controller出生与固定原Init协程绑定，选择未到保原状态等待，唯一匹配本地info并让原游戏继续生成。见[本轮验证记录](../logs/guest-igp-adoption-build-verification.json)。未部署/启动或执行native，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。完整初始场景/IGP资源时序、生成与AI/持久状态隔离、每人独立袋分流/容量/负重、员工命中及双端正常返航/冷配置仍待完成。
 
 0.1.22 历史源码 `0.1.22-dev`、协议 5，插件 Build 警告视为错误通过；未部署/启动。0.1.22 该轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重跑测试。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。

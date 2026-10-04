@@ -856,3 +856,21 @@
 - 下一步接实际IGP.Init固定来源与未收到选择时异步等待、唯一local info，再完成生成与AI隔离、可信员工actor/装备/生存/投射物、房主原生命中、每人完整产物/前置容量/重量/负重分流及员工逐项返航仓库delta/save。完整真实双端正常闭环和GitHub冷配置仍待实现，goal保持active。
 
 - 末次非作者源码及文档/证据/Skill审查READY；修正4处旧当前协议措辞并复验Skill。最终只有文档/记录变化，149份已编译输入仍相同，不重复运行Core/Build；公开提交只含47份自写源码、测试、文档/Skill与sanitized摘要，原生/双端验收未完成。
+
+## 2026-10-04 — 0.1.39-dev：原IGP选择采用与实际场景来源
+
+- 上轮状态核对发现controller出生只冻结owner、未冻结preexisting ops，改变本轮接入顺序；本轮先补真实来源，再接固定原Init等待与唯一localinfo，不缩减完整M3—M7。
+- Guest Scene source12声明，既有Map9加IGP5共26注册/24不同声明；真实原factory/typediterator范围绑定Addressables原五参typed结果、op/version/status/Scene，completed op保留并在controller使用前后fresh重查。初始自然加载与ordinary换层/additive核actualcatalog、helper实际allocation road身份及loaded-native-manager scene。
+- Core controller birth冻结出生前operation集合，重复不扩，later同owner/handle不可认领；专用controller原factory iterator可等待精确completion，generic owner0不升级。Host自然capture已接专用iterator、exacttypedactor与pending映射/resume Poll，来源快照只观察、不授权限。
+- 原Init0/1/2无choice/source保持state/current等帧；原GetRandom仅一回返回唯一匹配localinfo，不主动调用随机/条件/Saveable。staticDone不漏waiting birth，但未开始future层和unknownbootstrap不构成等待；当前loaded scene必须actualsource与host显式groups相符。completed实际IsInitDone/CurrInfo/CurrSet复核，旧已退休entry不当新entry等待。
+- 本地helperlist/array结构/version/actor/info原指针及key冻结；addressable key-only、原选择后Prefab空→live一次先标attempt再hold，active验证不重扫/重Roll，nonaddr须livePrefab name。每helper5明确handles/256 retained owners，8192每次steps。Scene来源64process ops、256iterators/controller、832refs、8192每Execute reads，无逐帧永久累计cap。
+- 两位非作者逐段审查，实际修复unknown factory mask/parent0或非Move重新认owner、expired与failed回普通body、bootstrap key别名、空token提前Done或future层等待死锁、oldentry退休过滤、完成op丢nativefresh校验、GC分配postguard留存和normalPrefab填入误拒。最后源码差量READY；nativeABI/真实控制流/跨机地址/完整资源/AI/隔离仍未证。
+- 实际Test-Core编译加测试UTC `2026-10-04T19:36:59.0729018Z`→`2026-10-04T19:37:05.2937318Z`：292/292，7新controllerbirth/iterator/source/lifecycle/thread/quota夹具与原285全执行；完整stdout的PASS顺序逐一匹配Program。实际Core88源码/93验证输入，插件107源码/112验证输入；153联合源/项目/执行及两个私有验证器前封存并保自写bytes，Core/Build后同hash；显式编译引用和所选PowerShell/dotnet/csc另封存，不称完整OS/SDK传递依赖。
+- Build警告视为错误UTC `2026-10-04T19:37:07.0724571Z`→`2026-10-04T19:37:10.0487019Z`通过；插件SHA256 `E320D347AB95C46BCC11511C6849FE0D39F3045CC2270C7F230E655DFBD38A23`，测试DLLSHA256 `6DC8F7905B7A209397774964B34A2B41357250A8A45561F0FC471C04570CC7C2`。首次统一292/292与Build通过后，末审发现HostRetire或新generation尚未锁存Failed时，IGP三个入口可能误放行；补VerifyGenerationWindow后重新完整封存并执行最终统一验证。首次成功输入与输出保留，最终摘要只引用修后版本；没有失败被记成通过，.38/.37旧摘要保持。新证据见guest-igp-adoption-build-verification.json及currentcore。
+- freshCecil私有report实际5types/28properties（22direct）/21selectedmethods，UTC19:06:40.1855668→19:06:41.8273413Z，输入F411前后相同；公开只自写说明/count/UTC/hash，原metadata/wrapperIL/地址不提交。
+- 用户询问主客距离远的显示：当前只读鱼来源限房主当前场景，镜头外节点隐藏保身份；同层两端独立镜头是首版方案，还须房主维护两人附近区域，自由跨层需扩多场景模拟，未作为已实现。
+- 未部署/启动、运行native或读写存档；安装.12/最近潜水.11/default.0保持，不催延后测试。所有Native/GuestStateIsolated/HostSelectionApplied通用权限/World/Cargo仍false；Addressables返回前无eligibleop出生明确拒绝而非覆盖声明。后续继续完整生成/AI/持久隔离、可信员工actor/equip/O2/HP/projectile、房主命中和每人独立完整产物/前置容量/重量/负重分流、逐项返航warehouse delta/save、真实双端正常闭环/GitHub冷配置和测试发行，goal保持active。
+
+- 配置Skill draft与protected目标SHA256一致，官方quick_validate两处通过：`FB069B5D79E2F9993AF37897F82C98B1DDB8C1EAAD09098CB4C80C81BAF938A2`。旧.38/.37摘要与HEAD归一换行内容一致，153最终编译输入仍同，文档收尾不再重跑Core或Build。已将自然返航清理后普通无所属加载可能被已安装来源拒绝的已知限制写入新文档；完整返航仍需接线和实机验证。
+
+- 非作者源码审查、公开文档/证据/Skill审查及发布边界审查均READY；修正7项新Registry夹具与整套既有TCP的范围措辞。待公开32份文件仅自写源码、测试、项目、文档/Skill与数量/时间/hash摘要，不含游戏二进制、原metadata/IL/地址或机器日志；最终编译输入未改。

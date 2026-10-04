@@ -1,6 +1,6 @@
 # MultiDave 开发计划
 
-当前源码0.1.38-dev（协议7），本轮实际Core/TCP285/285及插件Build警告视为错误通过，执行前后输入封存一致。新增默认关闭的[客机路线加载前采用](GUEST_MAP_ROUTE_ADOPTION.md)：固定自然入海/Reset/原load来源，在资源加载前安装六个路线根；补齐native路线输入及精确pending-manager来源。见[本轮验证记录](../logs/map-route-adoption-build-verification.json)。未部署/启动或运行native；安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。完整IGP采用/客机隔离/房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.39-dev（协议7），本轮实际Core/TCP292/292及插件Build警告视为错误通过，执行前后封存输入一致。新增默认关闭的[房主IGP选择采用](GUEST_IGP_ADOPTION.md)：实际加载operation/Scene/controller出生与固定原Init协程绑定，选择未到保原状态等待，唯一匹配本地info并让原游戏继续生成。见[本轮验证记录](../logs/guest-igp-adoption-build-verification.json)。未部署/启动或执行native，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。完整初始场景/IGP资源时序、生成与AI/持久状态隔离、每人独立袋分流/容量/负重、员工命中及双端正常返航/冷配置仍待完成。
 
 目标：Windows Steam 版双人潜水合作 MVP，先做局域网房主/客户端。
 房主负责游戏世界和结算。服务器方案暂缓。
@@ -256,3 +256,7 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 实际285/285（4新schema/TCP、6新manager来源夹具）及插件Build通过，输入执行前后相同；完整stdout/UTC/PASS清单已记录，全部只是CLR/回环TCP与编译。新增9处原生消费者未执行，完整初始scene/IGP/native ABI/GuestStateIsolated/WorldAuthority/CargoAuthority/HostSelectionApplied仍false；当前安装.12/潜水.11/default.0保持。详见[GUEST_MAP_ROUTE_ADOPTION](GUEST_MAP_ROUTE_ADOPTION.md)和[实际摘要](../logs/map-route-adoption-build-verification.json)。
 
 继续实际IGP控制器固定来源与原Init.Move异步等待/唯一匹配本地info，再接生成/AI隔离、可信员工actor/装备/氧气/受伤/投射物、房主命中、每人完整产物与前置容量分流/独立重量/负重以及逐产物返航仓库delta/save。真实双端正常返航保存及GitHub冷配置仍为完成条件，不缩减M3—M7。
+
+## 0.1.39-dev 场景来源与原IGP消费者
+
+见[GUEST_IGP_ADOPTION](GUEST_IGP_ADOPTION.md)。Scene来源12声明，加既有Map9/IGP5共26注册，CoLoad工厂/Move重叠2声明。固定原iterator与Addressables原typed结果、实际op/version/Scene关联；controller出生冻结preexisting ops，专用controller iterator可精确latebind，generic owner0不可升级。Host自然producer也已接该专用factory/typedactor与pending映射。未知范围遮父、expired源不回普通flow，原Init0/1/2等待不变state/current，原随机入口只供唯一local info；未开始future layers不当当前等待。Addressables返回前出生而无eligible op、完整bootstrap/资源/跨机地址/生成AI仍未验。实际292/292 CLR/TCP及Build通过，153联合输入前封存且Core/Build后同hash，详见本轮摘要；未部署或启动游戏，所有通用游戏/世界/货袋权限false。继续完整M3—M7、每人独立袋与负重、原生员工命中、逐项返航保存、真实双端和GitHub冷配置。

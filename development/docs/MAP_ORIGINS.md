@@ -85,3 +85,5 @@ HarmonySupport 将 copied wrapper 交给 HarmonyManipulator，支持正常尾部
 - 明确普通海域、换层、返航再次入海、restore/custom 与 DLC 的支持范围，再证明全部实际 controller inventory 与跨机匹配；随后才实现采用和 guest 持久副作用隔离。
 
 构建、测试数量及产物哈希以本轮验证摘要和 [HANDOFF](HANDOFF.md) 为准；CLR 夹具与框架源核对不替代上述实机验证。离线工具范围见 [NATIVE_ANALYSIS](NATIVE_ANALYSIS.md)，地图候选传输和采用前置条件见 [WORLD_SYNC](WORLD_SYNC.md)，潜水账本边界见 [CREW_MODE](CREW_MODE.md)。
+
+后续0.1.39默认关闭的实际scene-operation/controller来源与IGP Init消费者见[GUEST_IGP_ADOPTION](GUEST_IGP_ADOPTION.md)，实际292/292和Build见新摘要。本文件早期编号/结果保留历史，不将新验证回填旧记录；全部原生权限仍未完成。

@@ -75,7 +75,7 @@ namespace DaveCoop.Networking
         {
             public MapOriginMethod Method;
             public long ScopeToken, ParentScope, OwnerLife, IteratorLife, ControllerLife, ManagerLife, ContextPointer;
-            public long FactoryOwner;
+            public long FactoryOwner, ControllerPointer;
             public string ControllerAddress, SceneName, LoadKey;
             public int SceneHandle;
             public bool OwnScope, Log;
@@ -184,10 +184,15 @@ namespace DaveCoop.Networking
                         PollOperationsLocked();
                     }
                 }
-                // The controller token only revokes evidence on failure. It
-                // never supplies an owner to this permanently bound iterator.
+                // A dedicated original controller factory can acquire only
+                // its birth's exact preexisting operation owner. Generic
+                // owner-zero iterators remain permanently unbound.
                 if (call.Method == MapOriginMethod.ControllerMoveNext &&
-                    _iteratorControllers.TryGetValue(life, out long controller)) prefix.ControllerLife = controller;
+                    _iteratorControllers.TryGetValue(life, out long controller))
+                {
+                    prefix.ControllerLife = controller;
+                    if (!_registry.IsControllerRetired(controller)) PollOperationsLocked();
+                }
                 MapOriginStatus status = _registry.EnterMoveNext(pointer, life, out long scope);
                 Push(prefix, scope); prefix.OwnerLife = _registry.CurrentOwnerLife;
                 prefix.Log = !_loggedMoveIterators.Contains(pointer);
@@ -223,7 +228,8 @@ namespace DaveCoop.Networking
                     if (sceneOwner == 0) observation.UnavailableReason = "Birth scene lacks an exact completed operation owner; iterator remains unbound.";
                     if (call.Method == MapOriginMethod.ControllerFactory)
                     {
-                        MapOriginStatus birthStatus = _registry.RegisterControllerBirth(Pointer(call.Instance), prefix.SceneHandle, prefix.SceneName, out long controller);
+                        prefix.ControllerPointer = Pointer(call.Instance);
+                        MapOriginStatus birthStatus = _registry.RegisterControllerBirth(prefix.ControllerPointer, prefix.SceneHandle, prefix.SceneName, out long controller);
                         prefix.ControllerLife = controller;
                         if (controller != 0 && (birthStatus == MapOriginStatus.Accepted || birthStatus == MapOriginStatus.Pending || birthStatus == MapOriginStatus.Duplicate))
                         {
@@ -324,11 +330,21 @@ namespace DaveCoop.Networking
                     MapOriginStatus iteratorStatus;
                     if (call.Method == MapOriginMethod.ManagerFactory)
                         iteratorStatus = CaptureManagerIterator(call, prefix, out iterator);
+                    else if (call.Method == MapOriginMethod.ControllerFactory && prefix.ControllerLife != 0)
+                    {
+                        IntPtr expected = ReadManager(() => Il2CppClassPointerStore<IGPSetController._Init_d__16>.NativeClassPtr);
+                        if (expected == IntPtr.Zero || ReadManager(() => IL2CPP.il2cpp_object_get_class(call.Iterator.Pointer)) != expected)
+                            throw new InvalidOperationException("Original controller factory returned an unsupported iterator.");
+                        var typed = ReadManager(() => new IGPSetController._Init_d__16(call.Iterator.Pointer));
+                        if (ReadManager(() => Pointer(typed.__4__this)) != prefix.ControllerPointer)
+                            throw new InvalidOperationException("Original controller iterator actor differs from birth.");
+                        iteratorStatus = _registry.RegisterControllerIterator(prefix.ControllerLife, prefix.ControllerPointer, Pointer(call.Iterator), out iterator);
+                    }
                     else iteratorStatus = _registry.RegisterIterator(Pointer(call.Iterator), prefix.FactoryOwner, out iterator);
                     observation.Status = iteratorStatus.ToString();
                     prefix.IteratorLife = iterator;
                     if (call.Method == MapOriginMethod.ControllerFactory && iterator != 0 && prefix.ControllerLife != 0 &&
-                        (iteratorStatus == MapOriginStatus.Accepted || iteratorStatus == MapOriginStatus.Unbound || iteratorStatus == MapOriginStatus.Duplicate) &&
+                        (iteratorStatus == MapOriginStatus.Accepted || iteratorStatus == MapOriginStatus.Pending || iteratorStatus == MapOriginStatus.Unbound || iteratorStatus == MapOriginStatus.Duplicate) &&
                         _liveControllerBirths.TryGetValue(prefix.ControllerLife, out ControllerBirth birth) &&
                         birth.OwnerBoundary != 0 && birth.OwnerBoundary == _registry.ActiveOwnerLife)
                     {

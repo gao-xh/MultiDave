@@ -65,6 +65,15 @@ namespace DaveCoop.Networking
         public bool WorldAuthority => false;
         public bool CargoAuthority => false;
         internal bool OwnsLayerList(long pointer) => pointer != 0 && pointer == _ownedLayerListPointer;
+        internal bool OwnsRoadmapRecord(int sceneId, long pointer)
+        {
+            if (!_prepared || _failed || pointer == 0) return false;
+            for (int index = 0; index < _chain.Length; index++)
+                if (_chain[index].SceneId == sceneId && !ReferenceEquals(_roads[index], null))
+                    foreach (Reference owned in _references)
+                        if (ReferenceEquals(owned.Wrapper, _roads[index])) return owned.Pointer.ToInt64() == pointer;
+            return false; // Captured allocation identity only; no native reads or permission.
+        }
 
         public NativeGuestMapRoute(NativeGuestMapLease source, MapRouteSelection route)
         {
