@@ -91,10 +91,13 @@ internal static class FishVisualTests
         Assert(buffer.EntityId == 3 && buffer.Count == 1, "dead selected fish retained its display/history");
         source.Revision = 3; source.SampleTime = 3;
         buffer.Push(source, 12, Vector3.Zero, entity => false);
-        Assert(buffer.EntityId == 0 && buffer.Count == 0, "viewport with no eligible fish kept an offscreen selection");
+        Assert(buffer.EntityId == 3 && buffer.Count == 2, "camera eligibility released a live selected fish or reset its history");
+        source.Revision = 4; source.SampleTime = 4; source.Entities[2].Captured = true;
+        buffer.Push(source, 13, Vector3.Zero, entity => false);
+        Assert(buffer.EntityId == 0 && buffer.Count == 0, "captured selection survived without an eligible replacement");
     }
 
-    internal static void PreviewSelectionHysteresis()
+    internal static void PreviewSelectionIdentityRetention()
     {
         var buffer = new FishPreviewBuffer(); WorldSnapshot source = Snapshot(1, 1);
         source.Entities = new[] { Entity(1), Entity(2) };
@@ -105,7 +108,104 @@ internal static class FishVisualTests
         Assert(buffer.EntityId == 1 && buffer.Count == 2, "nearby fish alternation caused selection flicker");
         source.Revision = 3; source.SampleTime = 3; source.Entities[0].Root = PoseAt(20); source.Entities[1].Root = PoseAt(1);
         buffer.Push(source, 12, Vector3.Zero);
-        Assert(buffer.EntityId == 2 && buffer.Count == 1, "far fish did not yield to a much nearer candidate");
+        Assert(buffer.EntityId == 1 && buffer.Count == 3, "a nearer fish replaced the selected identity or reset its history");
+        Assert(buffer.LastSelectionReason == "retained", "identity retention was not diagnosed");
+    }
+
+    internal static void PreviewTemporaryVisualsRetainIdentity()
+    {
+        var buffer = new FishPreviewBuffer(); WorldSnapshot source = Snapshot(1, 1);
+        source.Entities = new[] { Entity(1), Entity(2) };
+        source.Entities[0].Root = PoseAt(1); source.Entities[1].Root = PoseAt(2);
+        buffer.Push(source, 10, Vector3.Zero);
+        Assert(buffer.LastSelectionReason == "initial-selection", "initial nearest selection was not diagnosed");
+        source.Revision = 2; source.SampleTime = 2; source.Entities[0].Visual.Visible = false;
+        source.Entities[0].Root = PoseAt(10); source.Entities[1].Root = PoseAt(1);
+        buffer.Push(source, 11, Vector3.Zero, entity => entity.Id == 2);
+        Assert(buffer.EntityId == 1 && buffer.Count == 2, "temporary source invisibility switched to a different fish");
+        Assert(buffer.Sample(11, 0, out _, out EntityState invisible, out _) && !invisible.Visual.Visible,
+            "temporary visibility state did not remain part of the selected identity's history");
+        source.Revision = 3; source.SampleTime = 3; source.Entities[0].Visual = null;
+        buffer.Push(source, 12, Vector3.Zero, entity => false);
+        Assert(buffer.EntityId == 1 && buffer.Count == 3 && buffer.LastSelectionReason == "retained",
+            "missing display metadata or camera rejection released the live selected identity");
+        Assert(buffer.Sample(12, 0, out _, out EntityState missing, out _) && missing.Visual == null,
+            "missing display metadata did not update the retained entity state");
+        source.Revision = 4; source.SampleTime = 4; source.Entities[0].Visual = Visual();
+        buffer.Push(source, 13, Vector3.Zero);
+        Assert(buffer.EntityId == 1 && buffer.Count == 4 && buffer.Sample(13, 0, out _, out EntityState restored, out _) && restored.Visual.Visible,
+            "display recovery selected another fish or lost the existing history");
+    }
+
+    internal static void PreviewManualReselectionPreservesReplayFence()
+    {
+        var buffer = new FishPreviewBuffer(); WorldSnapshot source = Snapshot(1, 1); source.SceneEpoch = 2;
+        source.Entities = new[] { Entity(1), Entity(2) };
+        source.Entities[0].Root = PoseAt(1); source.Entities[1].Root = PoseAt(3);
+        buffer.Push(source, 10, Vector3.Zero);
+        source.Revision = 2; source.SampleTime = 2; source.Entities[0].Root = PoseAt(100); source.Entities[1].Root = PoseAt(1);
+        buffer.Push(source, 11, Vector3.Zero); buffer.RequestReselect();
+        Assert(buffer.EntityId == 1 && buffer.Count == 2, "manual reselection destroyed the current display before a fresh world arrived");
+        Assert(!buffer.Push(source, 12, Vector3.Zero), "manual reselection accepted the previously applied revision");
+        Assert(!buffer.Push(Snapshot(999, 8), 12.1, Vector3.Zero), "manual reselection accepted a retired epoch");
+        var replay = Snapshot(1, 1); replay.SceneEpoch = 2;
+        Assert(!buffer.Push(replay, 12.2, Vector3.Zero), "manual reselection accepted an older revision");
+        Assert(buffer.EntityId == 1 && buffer.Count == 2, "replayed world mutated a pending manual reselection");
+        source.Revision = 3; source.SampleTime = 3;
+        buffer.Push(source, 13, Vector3.Zero);
+        Assert(buffer.EntityId == 2 && buffer.Count == 1 && buffer.LastSelectionReason == "manual-nearest",
+            "manual reselection did not pick the fresh nearest eligible fish or retained old identity history");
+        Assert(buffer.Sample(13, 0, out EntityState selected, out _, out _) && selected.Id == 2,
+            "old selected fish leaked into the manually selected fish's first frame");
+    }
+
+    internal static void PreviewTerminalSelectionReasons()
+    {
+        var buffer = new FishPreviewBuffer(); WorldSnapshot source = Snapshot(1, 1);
+        source.Entities = new[] { Entity(1), Entity(2), Entity(3), Entity(4) };
+        for (int i = 0; i < source.Entities.Length; i++) source.Entities[i].Root = PoseAt(i + 1);
+        buffer.Push(source, 10, Vector3.Zero);
+        source.Revision = 2; source.SampleTime = 2; source.Entities[0].Dead = true;
+        buffer.Push(source, 11, Vector3.Zero);
+        Assert(buffer.EntityId == 2 && buffer.Count == 1 && buffer.LastSelectionReason == "selected-dead",
+            "death did not release the selected fish and diagnose its replacement");
+        source.Revision = 3; source.SampleTime = 3; source.Entities[1].Captured = true;
+        buffer.Push(source, 12, Vector3.Zero);
+        Assert(buffer.EntityId == 3 && buffer.Count == 1 && buffer.LastSelectionReason == "selected-captured",
+            "capture did not release the selected fish and diagnose its replacement");
+        source.Revision = 4; source.SampleTime = 4;
+        source.Entities = new[] { source.Entities[0], source.Entities[1], source.Entities[3] };
+        buffer.Push(source, 13, Vector3.Zero);
+        Assert(buffer.EntityId == 4 && buffer.Count == 1 && buffer.LastSelectionReason == "selected-removed",
+            "complete-roster removal did not release the selected fish and diagnose its replacement");
+        var unavailable = new FishPreviewBuffer(); WorldSnapshot hidden = Snapshot(1, 1); hidden.Entities[0].Visual.Visible = false;
+        unavailable.Push(hidden, 10, Vector3.Zero);
+        Assert(unavailable.EntityId == 0 && unavailable.Count == 0 && unavailable.LastSelectionReason == "no-visible-candidate",
+            "an initially invisible fish became selected or lacked a no-candidate diagnosis");
+    }
+
+    internal static void PreviewSamplingReasonsAndRecovery()
+    {
+        var buffer = new FishPreviewBuffer();
+        Assert(!buffer.Sample(0, 0.1, out _, out _, out _) && buffer.LastSampleStatus == "EmptyHistory",
+            "empty preview sampling lacked its own diagnosis");
+        buffer.Push(Snapshot(1, 1), 10);
+        Assert(buffer.Sample(10, 0.1, out _, out _, out _) && buffer.LastSampleStatus == "Ready" && buffer.SampleAge(10) == 0,
+            "first selected frame was unavailable or had an incorrect arrival age");
+        Assert(!buffer.Sample(9.9, 0.1, out _, out _, out _) && buffer.LastSampleStatus == "BeforeArrival",
+            "sampling before arrival lacked its own diagnosis");
+        Assert(buffer.Sample(11, 0.1, out _, out _, out _) && buffer.LastSampleStatus == "Ready" && buffer.SampleAge(11) == 1,
+            "the exact one-second freshness boundary was rejected");
+        Assert(!buffer.Sample(11.001, 0.1, out _, out _, out _) && buffer.LastSampleStatus == "Stale",
+            "a stale selected fish lacked its own diagnosis");
+        Assert(!buffer.Sample(double.NaN, 0.1, out _, out _, out _) && buffer.LastSampleStatus == "InvalidClock",
+            "non-finite sampling clock lacked its own diagnosis");
+        Assert(!buffer.Sample(11, -0.1, out _, out _, out _) && buffer.LastSampleStatus == "InvalidClock",
+            "invalid interpolation delay lacked its own diagnosis");
+        buffer.Push(Snapshot(2, 1.2), 11.2);
+        Assert(buffer.EntityId == 1 && buffer.Count == 2 && buffer.Sample(11.3, 0.1, out _, out _, out _) &&
+            buffer.LastSampleStatus == "Ready" && Math.Abs(buffer.SampleAge(11.3) - 0.1) < 0.0001,
+            "fresh world did not recover the same identity after a stale display");
     }
 
     internal static void PreviewInvalidViewer()

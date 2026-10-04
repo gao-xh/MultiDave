@@ -43,17 +43,18 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - 源码开发版的 F11 打开房间面板。先按 MULTIPLAYER 验证 Local test 的真实 TCP
   收发与主线程显示，再验证 Host/Join 的两个游戏实例；默认发行包不包含这个新入口。
   对照 NETWORK/LAYOUT 标记记录成功或失败，布局指纹通过不等于统一地图/实体已完成。
-- 源码 0.1.8-dev 含 F7 世界只读探针，默认关闭；0.1.5-dev 已在单游戏潜水读取并传输实际鱼清单。
+- 源码 0.1.9-dev 含 F7 世界只读探针，默认关闭；0.1.5-dev 已在单游戏潜水读取并传输实际鱼清单。
   新构建与历史会话的实机验证范围以 HANDOFF 为准，画面和正常断开/返航仍须确认。
   正常退出后部署、验证新版本启动，再观察地图选择、鱼 HP/捕获和返航生命周期。
   `development/scripts/Inspect-WorldApi.ps1` 可复现接口签名研究；元数据不能证明挂钩副作用。
+  `development/scripts/Inspect-MapEntryApi.ps1` 读取路线、IGP 选择与实例保存边界；Init 返回枚举器不等于加载完成。
 - 同版源码的 F11 可开启 Transmit read-only fish observations 和 Preview one received fish，
   均默认关闭。正常退出后部署并验证新进程版本，再在 Local test 潜水核对 WORLD_RECEIVED，
   以及 NETWORK_STATE 的 FishPreviewEntity/Visible/InView/MeshVertices/UnknownResource、UnresolvedVisuals/FirstVisualError。
   0.1.7-dev 优先选择镜头内近鱼，并加蓝色十字和 MultiDave Fish Preview 标签。
   请用户确认标签下方的鱼可见及动画/转向正常，并核对捕获后移除、断线与返航清理、本地输入/镜头。
   组件启用、镜头内、网格顶点和标签分别是不同证据，仅有标签不能证明鱼网格可见。
-  0.1.7-dev 用户确认鱼可见但会突然消失；0.1.8-dev 的稳定性实测仍待确认；单游戏显示不能证明客机地图/鱼群/AI 接管或合作捕获。
+  0.1.7-dev 用户确认鱼可见但会突然消失；0.1.8-dev 无旧异常但标签换鱼；0.1.9-dev 已获用户确认不再突然消失；单游戏显示不能证明客机地图/鱼群/AI 接管或合作捕获。
   协议为 3，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
   `development/scripts/Inspect-FishRenderApi.ps1` 可复现游戏/Spine 显示与生命周期接口签名研究。
 - 0.1.6-dev 在房主开启鱼诊断且发布状态时安装自己的生命周期观察挂钩。
@@ -66,6 +67,9 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - 0.1.8-dev 修复角色临时显示部件销毁导致自动断开：跳过过期槽位，下一次 Update 刷新列表。
   射击/装备变化时核对 NETWORK_PARTS_STALE 和后续 NETWORK_PARTS_CHANGED、鱼清单持续更新；
   核心测试不验证 Unity 销毁对象恢复，必须结合实机和用户反馈，不把旧异常会话当成修复通过。
+- 0.1.9-dev 保留已选活鱼身份，不因镜头/距离/临时显示缺失换鱼。F11 的 Select nearest preview fish 可手动重选。
+  核对 FISH_PREVIEW_SELECTION 的更换原因与 FISH_PREVIEW_TRANSITION 的即时隐藏状态；NETWORK_STATE 有 Status/SnapshotAge。
+  标签鱼仅有显示组件，不能命中/捕获；不得把预览碰撞当成合作捕鱼。M5 需网络目标绑定及房主原生裁定。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

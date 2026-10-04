@@ -1,13 +1,13 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T06:18:02.967052+00:00",
-  "PluginVersion": "0.1.8-dev",
+  "RecordedUtc": "2026-10-04T06:28:33.743261+00:00",
+  "PluginVersion": "0.1.9-dev",
   "VerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1"
   ],
-  "CoreTestsPassed": 58,
-  "CoreTestsTotal": 58,
+  "CoreTestsPassed": 62,
+  "CoreTestsTotal": 62,
   "TestNames": [
     "timeline boundaries and interpolation",
     "timeline capacity, ordering and reset",
@@ -65,11 +65,15 @@
     "fish lifecycle clear preserves generations",
     "fish lifecycle concurrent callback ownership",
     "fish preview viewport and nearest eligible fish",
-    "fish preview selection hysteresis",
-    "fish preview invalid viewer rejection"
+    "fish preview identity retention across distance and viewport",
+    "fish preview invalid viewer rejection",
+    "fish preview temporary visual loss preserves identity",
+    "fish preview manual reselection preserves replay fence",
+    "fish preview death, capture and roster removal reasons",
+    "fish preview sample diagnosis and stale recovery"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "7950EF93D20CF6E9912C14390D8649CB1C501ADB73A61495DEF9899777C875B5",
+  "CompiledPluginSHA256": "1F2D0C3B8B42B9439BAE1ADB6339238DA792D98A7DC50FC055317908B9811D86",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
@@ -78,6 +82,6 @@
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Pure CLR fixtures: math, protocol/transport/session, resource keys, layout/motion, host IDs and atomic world transfer, fish visual descriptors/buffering, slow producer commits and lifecycle generation fencing. Actual game-runtime evidence is recorded separately. Native lifecycle hook activation/coverage and two-game world/interaction acceptance remain pending. Preview selection also covers viewport eligibility, nearest fish, selection hysteresis and invalid viewer position. Native destroyed-part recovery requires the separate game-runtime test and is not covered by these CLR fixtures.",
+  "Scope": "Pure CLR fixtures: math, protocol/transport/session, resource keys, layout/motion, host IDs and atomic world transfer, visual descriptors, slow producer commits and lifecycle generation fencing. Preview identity survives camera/distance and temporary visual loss; manual reselection retains replay fences; terminal roster updates and sampling hide reasons are covered. Native render stability, destroyed-part recovery, actual hit/capture and two-game world acceptance need separate game evidence.",
   "ProtocolVersion": 3
 }

@@ -87,7 +87,7 @@ namespace DaveCoop.Networking
                 if (state.Phase != SessionPhase.Ready || state.SceneEpoch != _worldEpoch)
                 {
                     _fish.Clear(); _fishLifecycle.ClearObserved(); _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0;
-                    _fishPreview.Clear(); _spines.Clear();
+                    _fishPreview.Clear("ScenePausedOrChanged"); _spines.Clear();
                     _worldEpoch = state.Phase == SessionPhase.Ready ? state.SceneEpoch : 0;
                 }
                 if (state.Phase != SessionPhase.Ready || state.SceneEpoch != _displayEpoch)
@@ -130,6 +130,7 @@ namespace DaveCoop.Networking
                         _fish.UnresolvedVisuals, _fish.FirstVisualError, RemoteWorldRevision = _lastRemoteWorldRevision, RemoteFishCount = _lastRemoteFishCount,
                         FishPreviewEntity = _fishPreview.SelectedEntity, FishPreviewVisible = _fishPreview.Visible, FishPreviewUnknownResource = _fishPreview.UnknownResource,
                         FishPreviewInView = _fishPreview.InView, FishPreviewMeshVertices = _fishPreview.MeshVertices,
+                        FishPreviewStatus = _fishPreview.DisplayStatus, FishPreviewSnapshotAge = _fishPreview.SnapshotAge,
                         FishLifecycleHooks = _fishLifecycle.Installed, FishLifecycleTracked = _fishLifecycle.Tracker.Count,
                         FishLifecycleTransitions = _fishLifecycle.Tracker.Transitions, FishLifecycleCallbackErrors = _fishLifecycle.CallbackErrors
                     }));
@@ -178,10 +179,11 @@ namespace DaveCoop.Networking
                     {
                         string message = error.GetType().Name + ": " + error.Message;
                         if (message != _fishPreviewWarning) NetworkDriver.Logger.LogWarning("DAVECOOP_FISH_PREVIEW_WARNING: " + message);
-                        _fishPreviewWarning = message; _fishPreview.Clear();
+                        _fishPreviewWarning = message; _fishPreview.Clear("Exception");
                     }
                 }
-                else _fishPreview.Clear();
+                else _fishPreview.Clear("PreviewDisabled");
+                _fishPreview.Trace();
             }
             catch (Exception error) { Fail(error); }
         }
@@ -281,7 +283,7 @@ namespace DaveCoop.Networking
                 }
             }
             if (NetworkDriver.ShowPanel == null || !NetworkDriver.ShowPanel.Value) return;
-            GUI.Box(new Rect(12, 170, 640, 315), "MultiDave LAN movement test — F11");
+            GUI.Box(new Rect(12, 170, 640, 350), "MultiDave LAN movement test — F11");
             GUI.Label(new Rect(24, 194, 616, 28), "Movement display only. Fish, items and results are not synchronized.");
             bool idle = _pending == null && _peers == null;
             bool originalEnabled = GUI.enabled;
@@ -305,7 +307,9 @@ namespace DaveCoop.Networking
             if (observe != NetworkDriver.TransmitFishObservations.Value) NetworkDriver.TransmitFishObservations.Value = observe;
             bool preview = GUI.Toggle(new Rect(24, 367, 612, 25), NetworkDriver.ShowFishPreview.Value, "Preview one received fish (display only)");
             if (preview != NetworkDriver.ShowFishPreview.Value) NetworkDriver.ShowFishPreview.Value = preview;
-            GUI.Label(new Rect(24, 399, 612, 65), _message);
+            if (GUI.Button(new Rect(24, 399, 220, 26), "Select nearest preview fish")) _fishPreview.RequestReselect();
+            GUI.Label(new Rect(256, 399, 380, 26), "Preview fish cannot be caught yet.");
+            GUI.Label(new Rect(24, 433, 612, 65), _message);
         }
 
         private void Start(string mode)
@@ -390,7 +394,7 @@ namespace DaveCoop.Networking
             _attempt?.Dispose(); _attempt = null;
             _scene = null; _layoutMessage = null; _local.Clear(); _catalog.Clear(); _display.Clear(); _displayEpoch = 0;
             _fish.Clear(); _fishLifecycle.Dispose(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0; _worldWarning = null;
-            _fishPreview.Clear(); _spines.Clear(); _fishPreviewWarning = null;
+            _fishPreview.Clear("Disconnected"); _spines.Clear(); _fishPreviewWarning = null;
             RemotePreview.NetworkActive = false;
             NetworkDriver.Status = "Network: offline (F11)"; _message = "Disconnected.";
             if (hadSession) NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_DISCONNECTED: peers disposed; own avatar/fish display cleared; local replay restored.");

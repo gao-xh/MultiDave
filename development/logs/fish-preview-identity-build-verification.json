@@ -1,0 +1,17 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-04T06:28:33.743261+00:00",
+  "PluginVersion": "0.1.9-dev",
+  "CompiledPluginSHA256": "1F2D0C3B8B42B9439BAE1ADB6339238DA792D98A7DC50FC055317908B9811D86",
+  "WarningAsErrorCompilationPassed": true,
+  "CoreTestsPassed": 62,
+  "CoreTestsTotal": 62,
+  "NativeIdentityStabilityVerified": true,
+  "UserStabilityAccepted": true,
+  "DisconnectAndReturnVerified": false,
+  "PreviewCatchable": false,
+  "Scope": "Lock selected live entity independently of viewport, distance and temporary visual availability. Choose replacement only after authoritative roster removal/death/capture or explicit manual nearest request. Record bounded immediate selection/display transitions. Build and 62 CLR tests passed; native identity stability now has log evidence and user acceptance; animation/return remain pending. This display does not implement hit/capture.",
+  "NativeStartupVerified": true,
+  "ProcessStartUtc": "2026-10-04T06:26:47.5727664Z",
+  "NativeVerification": "native-fish-preview-identity-verification.json"
+}

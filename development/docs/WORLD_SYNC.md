@@ -3,7 +3,7 @@
 对应 PLAN 的 M4、M5 和 M6。这里区分设计、已确认的接口签名和待实机验证的行为。
 已验证第二角色本地回放；0.1.5-dev 在真实潜水中运行只读鱼探针、经本机 TCP 传输实际鱼清单并执行单鱼显示组件。
 0.1.7-dev 用户确认鱼可见但镜头内突然消失，日志记录角色部件销毁导致自动断开。
-0.1.8-dev 已修复该失败路径并部署；稳定性、断开/返航及两游戏验收待完成，核心共 58 项通过。
+0.1.8-dev 没有旧异常，但用户确认标签换鱼及继续消失。0.1.9-dev 锁定身份并部署；用户确认稳定性通过，断开/返航及两游戏验收待完成，核心共 62 项通过。
 这些证据不证明两个游戏拥有同一地图、同一条鱼或共同捕获结果。
 
 ## 世界由房主裁定
@@ -101,6 +101,23 @@ Steam Build 25315876 / Unity 6000.0.52f1，读取 BepInEx 生成的互操作元�
 可复现签名研究：`development/scripts/Inspect-WorldApi.ps1`。
 报告保存到忽略的 `.local/analysis/world-api.json`，不发布游戏程序集或完整机器记录。
 
+## 地图加载前入口研究
+
+四份历史世界日志共 173 条快照、0 个探针错误，DynamicIngameNodeLoader 在这些采样中均为零；
+实际观察到的是添加场景中的 IGPSetController。相同 `A03_01_02` 入场在不同会话使用不同 IGP，
+并分别添加 `B03_02_02`、`B06_02_02`，因此路线清单必须覆盖整个 A/B/C 场景及对象组选择。
+
+SceneContext 的 `BuildMapLayerData`、`LoadSceneMapCacheFromSave`、`cacheSelectedScenePath`，
+以及 `GetSelectedMapLayerCached` / SceneMapLayerDataCache 的 SceneID、SceneName、LayerChar、连接字符串、
+高度和加载状态，是路线观察候选。`IGPSetController.GetRandomIGPSetInfo()` 返回 IGPSetInfo，
+而 `DynamicIngameNodeLoader.GetSelectedAddressableName(bool, out int)` 返回 void，地址在实例字段中。
+Init/LoadPrefab 返回 IEnumerator，观察工厂返回不等于异步加载完成；应结合初始化和实例加载状态。
+
+IGP 还有 `saveDatatype`、`ISaveableInstanceData` 及 `StoreUsedInstacneID(string)` 路径。
+客机进度隔离不能只覆盖 IngameSaveDataManager。尚未改写这些选择或保存入口；
+下一步先观察真实调用顺序，验证稳定路线/组标识，再接入加载前房主选择清单与确认。
+可运行 `scripts/Inspect-MapEntryApi.ps1` 复现元数据签名；签名不能证明原始控制流或存档副作用。
+
 ## 只读探针（0.1.4-dev 引入，0.1.5-dev 已实机读取）
 
 F7 切换 Discovery.EnableWorldProbe，默认关闭。开启后每 2 秒在 Unity 主线程读取
@@ -132,7 +149,7 @@ Core/World 的 HostEntityRegistry 将本机对象 token 映射为房主分配的
 尚未开始的批次可替换。出站世界清单与玩家移动轮流发送，控制消息优先；入站只保留最新完整快照。
 禁止客机发布世界、禁止旧本地快照被改标为新 epoch，场景暂停/重载/关闭时清理缓存。
 
-核心总计 58/58 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
+核心总计 62/62 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
 修订更替/空清单、权限/epoch、容量/公平性、真实 TCP 数值清单/HP 更新/移除及旧协议拒绝。
 测试为 CLR 夹具；没有在两份游戏中调用捕鱼或物品 API。
 
@@ -172,7 +189,10 @@ Spine 显示创建自己的 SkeletonAnimation，关闭自动更新并按收到�
 0.1.5-dev 原生初始化与资源解析已执行，59 条状态记录组件启用、未知资源为零；0.1.6-dev 用户仍未能辨认预览。
 0.1.7-dev 用户确认带标签鱼可见，但稳定性失败；44 条清单概要、42 条镜头内状态和两次自动断开见 `../logs/native-fish-preview-verification.json`。
 0.1.8-dev 修复本地角色临时显示部件销毁导致会话断开的路径，实机射击恢复、动画/转向及正常清理待确认。
-0.1.7-dev 在接收时筛选镜头内、最近且存活可见的鱼，保留近似距离下的旧选择以避免抖动；已死亡或超出保留范围的选择释放。0.1.8-dev 对已选鱼使用 -0.05..1.05 视口边界，新鱼仍要求 0.05..0.95，以减少边缘切换。
+0.1.7/0.1.8-dev 每批重新比较距离，实机编号 11→18→3→15→18→20；用户确认标签跳鱼。
+0.1.9-dev 仅初选/合法替换/手动重选时选镜头内最近鱼；已选 ID 仍存活且在清单内时保留，即使更远、镜头外、暂时不可见或显示描述缺失。
+镜头只决定显示，不决定身份释放；死亡/捕获/清单移除仍按房主状态换到合格替代鱼，F11 可按 Select nearest preview fish 主动重选。
+清单当前只表示活动观察集合，缺席可能是停用而非永久销毁，不能据此宣称完整客机世界生命周期已接管。
 本机副本仍偏移 3 个单位，镜头资格按偏移后位置判断，并加蓝色十字与 MultiDave Fish Preview 标签。
 日志增加 FishPreviewInView 和 FishPreviewMeshVertices，以区分组件启用、镜头内和实际生成骨骼网格；标签/网格与动画都需实测确认。
 本次探针鱼的 Sprite 部件为零、Mesh 部件最多一个，Sprite 鱼路径尚无独立实机覆盖。
@@ -191,6 +211,10 @@ Spine 显示创建自己的 SkeletonAnimation，关闭自动更新并按收到�
 
 两个诊断选项均默认关闭。该测试保留原生鱼群，仅验证收到的数据能显示，
 不能作为 M4 的客机世界接管或 M5 合作捕鱼验收。
+
+0.1.9-dev 新增 FISH_PREVIEW_SELECTION，带原/新 EntityId、epoch/revision 和更换原因；
+FISH_PREVIEW_TRANSITION 记录 Visible/OutsideCamera/SourceInvisible/MissingVisual/Stale/未知资源等即时状态，每控制器最多 2048 条。
+NETWORK_STATE 同时给出 FishPreviewStatus/SnapshotAge；两秒概要无法排除短暂隐藏，实测以即时状态和玩家反馈核对。
 
 ## 0.1.6-dev 对象池生命周期观察
 

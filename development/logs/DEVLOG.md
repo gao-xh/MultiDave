@@ -283,6 +283,33 @@
 - 更新公开摘要、README、计划/接手/世界/网络文档及配置 Skill，保留旧失败证据。
   默认发行包仍为 0.1.0。下一步实机复核恢复、实际池重用与正常清理，继续地图/鱼群接管及房主互动裁定。
 
+## 2026-10-03 — 锁定预览鱼身份并记录即时隐藏原因
+
+- 前个目标 turn 已完成 0.1.8-dev 修复、编译、58 项核心测试、部署、Skill/记录及公开推送 5089f0d，属于具体进展。
+  本次重新核对当前源码、进程和日志，继续推进原目标；未把单鱼预览当成完整 M4/M5。
+- 0.1.8-dev 在 A03_01_02 真实潜水，用户报告仍会消失，鱼和标签一起消失，标签又会到另一条鱼身上。
+  最终归档 17 条 Ready 概要均显示鱼可见/镜头内/资源正常，编号 11→18→3→15→18→20，支持自动近鱼重选导致目标跳变。
+  没有旧 Local avatar part was destroyed 异常，也没有 NETWORK_PARTS_STALE，不能据此确认该恢复路径已实际执行。
+  用户另指出标签鱼抓不了：当前只有自己的显示组件，没有命中/捕获通道，已说明 M5 缺失并记录，未启用原生奖励副本。
+- FishPreviewBuffer 现在保留当前活鱼身份；距离更近、镜头资格变化、短暂 Visual 不可见/null 不重选。
+  初选、合法移除/死亡/捕获或 RequestReselect 才按镜头内最近候选选择；手动重选保留 epoch/revision 重放屏障。
+  Sample 提供 Stale/BeforeArrival/EmptyHistory/InvalidClock/Ready 原因，不改变一秒失联隐藏界限。
+- RemoteFishPreview 新增有界即时 FISH_PREVIEW_SELECTION / TRANSITION，与两秒概要分开。
+  NetworkController 记录 Status/SnapshotAge、明确场景/停用/异常/断开清理原因，F11 增加手动重选按钮。
+  选中鱼源不可见时仍按源状态隐藏，但身份不跳；完整状态观察集合不是永久销毁事件，完整世界接管仍需完善生命周期语义。
+- 两个只读子任务分别评审选择/世界接管及地图加载签名；测试子任务只改两份测试文件。
+  新增 4 项身份/暂时显示/重选重放/采样诊断用例并更新旧预期；Test-Core 62/62 通过，Build-Plugin 警告视为错误通过。
+  0.1.9-dev SHA256：`1F2D0C3B8B42B9439BAE1ADB6339238DA792D98A7DC50FC055317908B9811D86`。
+- 确认游戏已退出，归档 0.1.8 原始日志到忽略的 .local/verification/fish-preview-0.1.8，备份/部署 0.1.9-dev 并启动。
+  实际 Steam 重启后的进程启动于 2026-10-04T06:26:47Z；加载与后续 Update/潜水验证分别核对。
+  更新真实失败摘要、核心证据、计划/接手/Skill；0.1.9-dev 即时日志确认初选保持、出镜/重入及显式手动重选，用户明确反馈“不再消失”。
+  本轮身份稳定性通过；有自己的卸载/Disconnect 标记，动画和正常返航仍未确认。
+  原生证据见 native-fish-preview-identity-verification.json，预览仍不可捕获。
+- 地图研究确认：现有四份日志 173 条世界快照、Dynamic 节点均为 0；相同 A03 入场会选择不同 IGP 及 B 场景。
+  SceneContext 路线缓存及 IGP 随机返回是下一步观察入口；Init/LoadPrefab 返回 IEnumerator，工厂 postfix 不等于加载完成。
+  另有 IGP 的 ISaveableInstanceData/StoreUsedInstacneID 边界，尚未改写选择或存档。
+  后续继续完整鱼群注册/房主反向绑定、真实命中事件及加载前路线清单，再接入客机接管与 M5/M6；默认包仍为 0.1.0。
+
 ## 后续日志格式
 
 每次追加：日期、目标、关键改动、验证命令及实际结果、遗留问题、下一步。

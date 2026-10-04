@@ -10,11 +10,13 @@
   "NativeRecoveredDestroyedPartsVerified": false,
   "UserStabilityAccepted": false,
   "DisconnectAndReturnVerified": false,
-  "Scope": "Compilation and existing CLR suites passed. The actual destroyed local renderer failure was observed in 0.1.7-dev; the native repair and stability acceptance remain pending in 0.1.8-dev.",
+  "Scope": "Compilation and existing CLR suites passed. The actual destroyed local renderer failure was observed in 0.1.7-dev; the native repair and stability acceptance remain pending in 0.1.8-dev. Later 0.1.8-dev dive had no old exception, but did not exercise the stale-part marker. User still reported disappearance and target switching; separate stability summary preserves that failure.",
   "NativeStartupVerified": true,
   "InstalledPluginSHA256": "7950EF93D20CF6E9912C14390D8649CB1C501ADB73A61495DEF9899777C875B5",
   "ProcessStartUtc": "2026-10-04T06:16:09.6178891Z",
   "CurrentProcessLogFresh": true,
   "FrameworkClassInitWarningPresent": true,
-  "NativeDiveRecoveryVerified": false
+  "NativeDiveRecoveryVerified": false,
+  "ActualDiveObserved": true,
+  "NativeDestroyedPartRecoveryExercised": false
 }

@@ -64,8 +64,12 @@ internal static class Program
             ("fish lifecycle clear preserves generations", FishLifecycleTests.ClearPreservesGeneration),
             ("fish lifecycle concurrent callback ownership", FishLifecycleTests.ConcurrentCallbacks),
             ("fish preview viewport and nearest eligible fish", FishVisualTests.PreviewViewportAndNearestSelection),
-            ("fish preview selection hysteresis", FishVisualTests.PreviewSelectionHysteresis),
-            ("fish preview invalid viewer rejection", FishVisualTests.PreviewInvalidViewer)
+            ("fish preview identity retention across distance and viewport", FishVisualTests.PreviewSelectionIdentityRetention),
+            ("fish preview invalid viewer rejection", FishVisualTests.PreviewInvalidViewer),
+            ("fish preview temporary visual loss preserves identity", FishVisualTests.PreviewTemporaryVisualsRetainIdentity),
+            ("fish preview manual reselection preserves replay fence", FishVisualTests.PreviewManualReselectionPreservesReplayFence),
+            ("fish preview death, capture and roster removal reasons", FishVisualTests.PreviewTerminalSelectionReasons),
+            ("fish preview sample diagnosis and stale recovery", FishVisualTests.PreviewSamplingReasonsAndRecovery)
         };
         int failures = 0;
         foreach (var test in tests)

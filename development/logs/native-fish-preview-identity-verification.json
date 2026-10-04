@@ -1,0 +1,74 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-04T06:30:37.668375+00:00",
+  "PluginVersion": "0.1.9-dev",
+  "ProtocolVersion": 3,
+  "InstalledPluginSHA256": "1F2D0C3B8B42B9439BAE1ADB6339238DA792D98A7DC50FC055317908B9811D86",
+  "ProcessStartUtc": "2026-10-04T06:26:47.5727664Z",
+  "BootstrapAndUpdateVerified": true,
+  "CurrentProcessLogFresh": true,
+  "SessionFinalized": false,
+  "ReadyStateRecords": 48,
+  "ReceivedWorldSummaryRecords": 48,
+  "Scenes": [
+    "A03_01_02"
+  ],
+  "SelectionEvents": [
+    {
+      "PreviousEntity": 0,
+      "SelectedEntity": 11,
+      "Reason": "initial-selection",
+      "SceneEpoch": 1,
+      "SceneKey": "A03_01_02",
+      "Revision": 2
+    },
+    {
+      "PreviousEntity": 0,
+      "SelectedEntity": 15,
+      "Reason": "initial-selection",
+      "SceneEpoch": 1,
+      "SceneKey": "A03_01_02",
+      "Revision": 1
+    },
+    {
+      "PreviousEntity": 15,
+      "SelectedEntity": 1,
+      "Reason": "manual-nearest",
+      "SceneEpoch": 1,
+      "SceneKey": "A03_01_02",
+      "Revision": 4
+    },
+    {
+      "PreviousEntity": 1,
+      "SelectedEntity": 6,
+      "Reason": "manual-nearest",
+      "SceneEpoch": 1,
+      "SceneKey": "A03_01_02",
+      "Revision": 6
+    }
+  ],
+  "AutomaticDistanceReselections": 0,
+  "DisplayTransitionCounts": {
+    "Cleared": 2,
+    "Disconnected": 1,
+    "NoSelection": 3,
+    "OutsideCamera": 3,
+    "ScenePausedOrChanged": 3,
+    "Visible": 7
+  },
+  "MeshVerticesMax": 27,
+  "LifecycleCallbackErrorsMax": 0,
+  "PluginWarnings": 0,
+  "OwnHookRemovalMarkers": 1,
+  "DisconnectMarkers": 1,
+  "UserReport": "No longer disappears.",
+  "UserStabilityAccepted": true,
+  "NativeIdentityStabilityVerified": true,
+  "AnimationAndTurningAccepted": false,
+  "NormalReturnVerified": false,
+  "PreviewCatchable": false,
+  "TwoGameInstancesVerified": false,
+  "SharedWorldVerified": false,
+  "CooperativeFishingVerified": false,
+  "Scope": "Live single-game TCP evidence: exact 0.1.9-dev startup/Update and native fish display. Target stays bound when distance/camera changes; recorded initial and explicit manual choices, camera exits/reentries, own unpatch and disconnect. User explicitly reports no more disappearance. Animation/turning and normal return acceptance are separate and remain unconfirmed. Preview is display-only; full shared fish world and host hit/capture are not implemented."
+}

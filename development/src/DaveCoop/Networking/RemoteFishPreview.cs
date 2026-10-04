@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using DaveCoop.Core.World;
 using DaveCoop.Rendering;
 using Spine;
@@ -31,43 +32,61 @@ namespace DaveCoop.Networking
         public bool InView { get; private set; }
         public int MeshVertices { get; private set; }
         private Vector3 _displayPosition;
+        private string _lastTrace;
+        private int _traceCount;
+        public string DisplayStatus { get; private set; } = "Cleared";
+        public string SelectionReason => _motion.LastSelectionReason;
+        public double SnapshotAge { get; private set; }
+
+        public void RequestReselect() => _motion.RequestReselect();
 
         public void Receive(WorldSnapshot snapshot, double now, LocalAvatarCapture local, bool loopback)
         {
             if (!local.IsAvailable) return;
             Camera camera = Camera.main; Vector3 position = local.Player.transform.position;
             var viewer = new System.Numerics.Vector3(position.x, position.y, position.z);
+            long previous = _motion.EntityId;
             _motion.Push(snapshot, now, viewer, entity =>
             {
                 if (camera == null) return System.Numerics.Vector3.DistanceSquared(entity.Root.Position, viewer) <= 400;
                 var root = entity.Root.Position;
                 Vector3 point = new Vector3(root.X + (loopback ? 3 : 0), root.Y, root.Z);
                 Vector3 viewport = camera.WorldToViewportPoint(point);
-                float min = entity.Id == _motion.EntityId ? -0.05f : 0.05f;
-                float max = entity.Id == _motion.EntityId ? 1.05f : 0.95f;
                 return (camera.cullingMask & (1 << entity.Visual.Layer)) != 0 && viewport.z > 0 &&
-                    viewport.x >= min && viewport.x <= max && viewport.y >= min && viewport.y <= max;
+                    viewport.x >= 0.05f && viewport.x <= 0.95f && viewport.y >= 0.05f && viewport.y <= 0.95f;
             });
+            if (previous != _motion.EntityId && _traceCount < 2048)
+            {
+                _traceCount++;
+                NetworkDriver.Logger.LogInfo("DAVECOOP_FISH_PREVIEW_SELECTION: " + JsonSerializer.Serialize(new
+                {
+                    PreviousEntity = previous, SelectedEntity = _motion.EntityId, Reason = _motion.LastSelectionReason,
+                    snapshot.SceneEpoch, snapshot.SceneKey, snapshot.Revision
+                }));
+            }
         }
 
         public void Render(double now, double delay, LocalAvatarCapture local, SpriteCatalog sprites, SpineCatalog spines, bool loopback)
         {
             Visible = false; UnknownResource = false; InView = false; MeshVertices = 0;
-            if (_motion.EntityId == 0) { DestroyNodes(); return; }
-            if (!local.IsAvailable || !_motion.Sample(now, delay, out EntityState from, out EntityState to, out float alpha)) { Hide(); return; }
+            SnapshotAge = _motion.SampleAge(now);
+            if (_motion.EntityId == 0) { DisplayStatus = "NoSelection"; DestroyNodes(); return; }
+            if (!local.IsAvailable) { Hide("LocalUnavailable"); return; }
+            if (!_motion.Sample(now, delay, out EntityState from, out EntityState to, out float alpha)) { Hide(_motion.LastSampleStatus); return; }
             bool teleport = System.Numerics.Vector3.DistanceSquared(from.Root.Position, to.Root.Position) > 144;
             EntityState discrete = alpha >= 1 || teleport ? to : from; FishVisual visual = discrete.Visual;
-            if (visual == null || !visual.Visible) { Hide(); return; }
+            if (visual == null) { Hide("MissingVisual"); return; }
+            if (!visual.Visible) { Hide("SourceInvisible"); return; }
             Sprite sprite = null; SkeletonDataAsset skeleton = null;
             if (visual.Kind == FishVisualKind.Sprite)
             {
                 if (!sprites.TryResolve(visual.AssetKey, out sprite)) sprites.ScanLoadedSprites(Time.unscaledTime);
-                if (!sprites.TryResolve(visual.AssetKey, out sprite)) { UnknownResource = true; Hide(); return; }
+                if (!sprites.TryResolve(visual.AssetKey, out sprite)) { UnknownResource = true; Hide("UnknownSprite"); return; }
             }
             else
             {
                 if (!spines.TryResolve(visual.AssetKey, out skeleton)) spines.Scan(Time.unscaledTime);
-                if (!spines.TryResolve(visual.AssetKey, out skeleton)) { UnknownResource = true; Hide(); return; }
+                if (!spines.TryResolve(visual.AssetKey, out skeleton)) { UnknownResource = true; Hide("UnknownSkeleton"); return; }
             }
             if (_root == null || _entityId != discrete.Id || _assetKey != visual.AssetKey || _kind != visual.Kind || _sceneHandle != local.SceneHandle)
             {
@@ -97,7 +116,7 @@ namespace DaveCoop.Networking
                 {
                     if (visual.Skin != null)
                     {
-                        if (data.Data.FindSkin(visual.Skin) == null) { UnknownResource = true; Hide(); return; }
+                        if (data.Data.FindSkin(visual.Skin) == null) { UnknownResource = true; Hide("MissingSkin"); return; }
                         data.SetSkin(visual.Skin);
                     }
                     else data.SetSkin((Skin)null);
@@ -107,7 +126,7 @@ namespace DaveCoop.Networking
                 data.R = color.r; data.G = color.g; data.B = color.b; data.A = color.a;
                 if (visual.Animation != null)
                 {
-                    if (data.Data.FindAnimation(visual.Animation) == null) { UnknownResource = true; Hide(); return; }
+                    if (data.Data.FindAnimation(visual.Animation) == null) { UnknownResource = true; Hide("MissingAnimation"); return; }
                     if (_animation != visual.Animation || _loop != visual.Loop)
                     {
                         TrackEntry started = _skeleton.AnimationState.SetAnimation(0, visual.Animation, visual.Loop);
@@ -136,6 +155,23 @@ namespace DaveCoop.Networking
                 MeshFilter filter = _model.GetComponent<MeshFilter>();
                 if (filter != null && filter.sharedMesh != null) MeshVertices = filter.sharedMesh.vertexCount;
             }
+            DisplayStatus = InView ? "Visible" : "OutsideCamera";
+        }
+
+        // State transitions are recorded immediately, instead of relying on the
+        // two-second aggregate that misses short hides. Bounded per controller.
+        public void Trace()
+        {
+            string signature = SelectedEntity + ":" + DisplayStatus + ":" + Visible + ":" + InView;
+            if (signature == _lastTrace) return;
+            _lastTrace = signature;
+            if (_traceCount >= 2048) return;
+            _traceCount++;
+            NetworkDriver.Logger.LogInfo("DAVECOOP_FISH_PREVIEW_TRANSITION: " + JsonSerializer.Serialize(new
+            {
+                SelectedEntity, DisplayStatus, Visible, InView, UnknownResource, MeshVertices, SnapshotAge,
+                Position = new[] { _displayPosition.x, _displayPosition.y, _displayPosition.z }
+            }));
         }
 
         public void DrawMarker()
@@ -155,12 +191,16 @@ namespace DaveCoop.Networking
             finally { GUI.color = previous; }
         }
 
-        private void Hide() { if (_root != null) _root.SetActive(false); }
+        private void Hide(string reason) { DisplayStatus = reason; if (_root != null) _root.SetActive(false); }
         private void DestroyNodes()
         {
             if (_root != null) UnityObject.Destroy(_root);
             _root = null; _model = null; _sprite = null; _skeleton = null; _renderer = null; _assetKey = null; _skin = null; _animation = null;
         }
-        public void Clear() { DestroyNodes(); _motion.Clear(); Visible = false; UnknownResource = false; InView = false; MeshVertices = 0; }
+        public void Clear(string reason = "Cleared")
+        {
+            DestroyNodes(); _motion.Clear(); Visible = false; UnknownResource = false; InView = false; MeshVertices = 0;
+            DisplayStatus = reason; SnapshotAge = 0; Trace();
+        }
     }
 }
