@@ -3,9 +3,9 @@
   "SourceLog": "discovery-20261004-032129-425.jsonl",
   "PluginVersion": "0.1.1-dev",
   "StartedUtc": "2026-10-04T03:21:29.4256174Z",
-  "LastSnapshotUtc": "2026-10-04T03:28:33.3970325Z",
+  "LastSnapshotUtc": "2026-10-04T03:35:05.1060945Z",
   "CurrentProcessSession": true,
-  "SnapshotCount": 823,
+  "SnapshotCount": 1604,
   "ParseFailures": 0,
   "IncompleteTail": false,
   "ProbeErrors": [],
@@ -54,9 +54,46 @@
       "Utc": "2026-10-04T03:22:59.8213324Z",
       "Scene": "A01_01_01",
       "Handle": -129416
+    },
+    {
+      "Utc": "2026-10-04T03:32:46.1637478Z",
+      "Scene": "Empty",
+      "Handle": -329126
+    },
+    {
+      "Utc": "2026-10-04T03:32:47.4022876Z",
+      "Scene": "Boss_000",
+      "Handle": -329150
     }
   ],
   "Players": [
+    {
+      "Id": -354326,
+      "GameObjectId": -354322,
+      "Name": "DaveCharacter",
+      "Path": "PlayerGroup(Clone)/DaveCharacter",
+      "Scenes": [
+        "Boss_000"
+      ],
+      "FirstSeenUtc": "2026-10-04T03:32:49.923377Z",
+      "LastSeenUtc": "2026-10-04T03:35:05.1060945Z",
+      "Samples": 271,
+      "ManagerBoundSamples": 271,
+      "PositionSamples": 271,
+      "LookSamples": 271,
+      "NonzeroInputSamples": 206,
+      "AnimatorSamples": 271,
+      "CameraFollowSamples": 271,
+      "LastPosition": [
+        28.772655,
+        -11.202713,
+        0
+      ],
+      "LastLook": [
+        -0.037718892,
+        0.9992884
+      ]
+    },
     {
       "Id": -253818,
       "GameObjectId": -253814,
@@ -66,18 +103,18 @@
         "A01_01_01"
       ],
       "FirstSeenUtc": "2026-10-04T03:23:03.3535693Z",
-      "LastSeenUtc": "2026-10-04T03:28:33.3970325Z",
-      "Samples": 657,
-      "ManagerBoundSamples": 657,
-      "PositionSamples": 657,
-      "LookSamples": 657,
-      "NonzeroInputSamples": 401,
-      "AnimatorSamples": 657,
-      "CameraFollowSamples": 657,
+      "LastSeenUtc": "2026-10-04T03:32:45.6479996Z",
+      "Samples": 1160,
+      "ManagerBoundSamples": 1160,
+      "PositionSamples": 1160,
+      "LookSamples": 1160,
+      "NonzeroInputSamples": 682,
+      "AnimatorSamples": 1160,
+      "CameraFollowSamples": 1160,
       "LastPosition": [
-        -42.779972,
-        -13.427731,
-        -0.05
+        -36.337673,
+        -87.40359,
+        0
       ],
       "LastLook": [
         1,
@@ -87,11 +124,12 @@
   ],
   "ManagerBoundPlayerObserved": true,
   "CameraFollowObserved": true,
-  "RecordedUtc": "2026-10-04T03:28:33.5412400Z",
+  "RecordedUtc": "2026-10-04T03:35:05.6144445Z",
   "TestedSteamBuildId": "25315876",
   "TestedUnityVersion": "6000.0.52f1",
   "CompiledPluginSHA256": "190292CA79C6DE5AF8765A7A77A1F28975C82FE6A444BD2B669C9A5EB89D3FC8",
   "ManagedHelperRegistrationWarnings": false,
+  "CrossScenePlayerReplacementVerified": true,
   "ReturnLifecycleVerified": false,
   "Scope": "Read-only discovery on one local Windows game process; no multiplayer or second actor."
 }

@@ -30,6 +30,10 @@
 朝向曾读到 `(1, 0)`、`(-1, 0)` 和斜向，翻面伴随 Transform 旋转变化。
 这些结果只覆盖本次基础潜水实例，其他场景和模式仍需实测。
 
+同一次运行又进入 `Boss_000`：玩家组件和 GameObject 实例 ID 更换，旧实例在该场景
+采样中消失，新玩家继续被 `InGameManager` 和 `CameraManager` 正确绑定，未出现读取错误。
+该证据覆盖玩家探针的场景切换和实例替换。
+
 ## 运行探针
 
 `src/DaveCoop/Discovery/PlayerProbe.cs` 在 Unity `Update` 主线程运行：
