@@ -2,7 +2,7 @@ using System;
 
 namespace DaveCoop.Core.Guest
 {
-    public enum GuestShadowRoot { GameData = 1, PlayerData = 2, PlayerInteraction = 3, PhotoData = 4, UserOption = 5, IngredientsCache = 6 }
+    public enum GuestShadowRoot { GameData = 1, PlayerData = 2, PlayerInteraction = 3, PhotoData = 4, UserOption = 5, IngredientsCache = 6, IngameCache = 7 }
     // OwnedMixed applies only to the composite IngredientsCache step: every
     // field is proven original or detached, but the pair is incomplete. The
     // backend must inspect/restore individual fields; never rewrite a pair blind.
@@ -75,7 +75,7 @@ namespace DaveCoop.Core.Guest
     public sealed class GuestShadowTransaction
     {
         private static readonly GuestShadowRoot[] Order = { GuestShadowRoot.GameData, GuestShadowRoot.PlayerData,
-            GuestShadowRoot.PlayerInteraction, GuestShadowRoot.PhotoData, GuestShadowRoot.UserOption, GuestShadowRoot.IngredientsCache };
+            GuestShadowRoot.PlayerInteraction, GuestShadowRoot.PhotoData, GuestShadowRoot.UserOption, GuestShadowRoot.IngredientsCache, GuestShadowRoot.IngameCache };
         private readonly IGuestShadowBackend _backend;
         private readonly Guid _hostBinding, _lease;
         private readonly int _thread;

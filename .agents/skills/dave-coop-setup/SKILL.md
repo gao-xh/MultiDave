@@ -204,6 +204,10 @@ description: Configure or continue development of the MultiDave prototype for Wi
 
 仓库只发布本项目源码、自写 DLL 和元数据，不发布游戏、互操作程序集或存档。
 
-- 当前源码0.1.20-dev、协议5，Build警告视为错误通过、174/174核心测试通过，见development/docs/GUEST_INGREDIENT_CACHE.md、GUEST_INGREDIENT_API.md及guest-ingredient-cache-build-verification.json。独立Ingredients dictionary/records/counts/13 Entity实例字段候选已接六步源码，原缓存与Interaction均在serializer前捕获；最多18显式strong handle不是框架/临时box总数。
+- 上一版源码0.1.20-dev、协议5，Build警告视为错误通过、174/174核心测试通过，见development/docs/GUEST_INGREDIENT_CACHE.md、GUEST_INGREDIENT_API.md及guest-ingredient-cache-build-verification.json。独立Ingredients dictionary/records/counts/13 Entity实例字段候选已接六步源码，原缓存与Interaction均在serializer前捕获；最多18显式strong handle不是框架/临时box总数。
 - 第六cache OwnedMixed仅表示每field已证original/detached组合，单个Save根不得接受；foreign/unknown不覆盖，进入后未知不重新派发。原loaded保真，不强制true；null原storage可捕获但准备拒绝。SingletonNoMono真实字段为_s_Instance_k__BackingField；不要调用Storage.Init/Load/Reset/Entity.Parent重建或补实例。
 - Entity Parent/static目录、旧UI/closures、Mission/Ingame/LootBox、全输出及native静止/ABI仍未证；typed副本/174 CLR测试不授GuestStateIsolated或个人捕鱼/入仓权限。用户测试继续延后，不自动部署/启动；完成房主世界、每人独立容量/捕获分流、逐产物返航与真实双端/冷配置后才算完整目标。
+
+- 当前源码0.1.21-dev、协议5，Build警告视为错误通过、176/176核心测试通过；继续临时状态隔离先读development/docs/GUEST_INGAME_CACHE.md、GUEST_INGAME_API.md及guest-ingame-cache-build-verification.json。第七IngameCache是单字段步骤，不能接受OwnedMixed；七步逆序补偿、最多21显式strong handles，四Data标量仍4份。
+- 三份known原图在serializer前闭合，三份prepared图在安装前再次strict核对；这是顺序已知图核对，不证明全图或静止。六种record声明只覆盖有限可独立构造子图；non-null SubHelperSpecData/live gearQueue、未证comparer/views/sync引用和重复mutable record alias须明确拒绝，不能分享/改空或拆alias代替；默认comparer也可能使准备拒绝，继续实际资源/设备/容器隔离。Exact class加object_new/IntPtr仅普通record候选，不用于Unity资产，全部native分配/ABI/隔离权限false。
+- 两组新增第七步CLR夹具覆盖未知恢复保留、晚到original读数和foreign/unknown/mixed/换单例/null拒绝，不运行helper。未部署/启动，用户试玩延后；每人独立袋/容量/负重、房主唯一长期进度规则保持，完整资源/actor/cache/output、房主世界、个人捕获/逐产物返航、真实双端及冷配置仍须完成。

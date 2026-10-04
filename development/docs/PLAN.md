@@ -22,7 +22,7 @@
 真实 `A01_01_01` 潜水已确认管理器玩家引用、位置、朝向、移动输入、动画与摄像机跟随。
 继续进入 `Boss_000` 后，旧玩家不再出现在当前采样中，新实例与管理器和摄像机正确绑定，
 跨场景读取无探针错误。完整旧日志后来还确认返航、大厅与主菜单，1886 条快照无探针错误。
-默认发行包保持 0.1.0，当前源码为 0.1.20-dev、协议 5，Build 警告视为错误通过、Test-Core 174/174 通过；本轮未部署/启动。
+默认发行包保持 0.1.0，当前源码为 0.1.21-dev、协议 5，Test-Core 176/176 通过，插件 Build 警告视为错误通过；未部署/启动。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试，加载/Update/网络入口及 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后；后续自主开发保持各项实机验收边界。
 最近完成潜水验证的是 0.1.11-dev。
@@ -178,3 +178,7 @@ F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房
 下一步在[更早的entry候选](GUEST_ENTRY_BOUNDARIES.md)补真实自然生命周期证据，接[其它运行缓存的typed准备/恢复](GUEST_RUNTIME_CACHES.md)，证明旧引用和全输出隔离，再推进房主地图采用、独立员工捕获/容量分流与逐产物返航结算。原M3—M7和冷配置/真实双端闭环验收保持完整范围。
 
 0.1.20 已将[独立食材缓存准备/恢复](GUEST_INGREDIENT_CACHE.md)接入第六步源码，174项测试仅覆盖CLR控制及此前范围；[当前摘要](../logs/guest-ingredient-cache-build-verification.json)不证明原生运行。每人独立容量/负重及房主唯一长期收益规则保持；完整资源、缓存、真实地图、捕鱼分流、返航和双游戏仍待验收。
+
+0.1.21 新增[游戏内临时缓存](GUEST_INGAME_CACHE.md)第七步与[精确接口工具](GUEST_INGAME_API.md)，176项Core测试通过、插件Build警告视为错误通过，见[本轮摘要](../logs/guest-ingame-cache-build-verification.json)。六record schema仅覆盖支持子图；non-null助手资源/live设备队列拒绝，不能清空或共享原状态代替。三known baselines在Serialize前捕获闭合，准备后strict复查；逆序恢复7→6→五Save根，最多21explicit handles/4Data stamps，第七singlefield无Mixed。
+
+进入/静止和native/guest/world/bag权限仍false，ordinary record exactclass/object_new候选未运行。后续M3—M7验收必须覆盖剩余资源/actor/cache/输出与旧引用、房主加载前地图采用、每人个人捕获/容量分流/返航、真实双端移动与退出恢复、冷配置发行；当前缓存源码与CLR测试不能缩减这些目标。

@@ -1,7 +1,7 @@
 # 潜水员戴夫联机原型
 
 当前进度：M1 已通过潜水、场景切换与返航读取验证，M2 回放基础验收通过。
-当前源码为 0.1.20-dev、协议 5，Build 警告视为错误通过，Test-Core 174/174 通过，本轮未部署或启动新版本。
+当前源码为 0.1.21-dev、协议 5，Test-Core 176/176 通过，插件 Build 警告视为错误通过；未部署或启动新版本。
 当前安装仍为 0.1.12-dev，仅主菜单加载/Update/网络入口及初始路线输入通过；最近完成潜水验证的是 0.1.11-dev。
 用户目前不方便试玩，Probe、自然地图回调、路线/场景切换及正常返航验证延后。
 0.1.5/0.1.6-dev 已在真实潜水确认鱼探针、本机 TCP 收发、显示组件及生命周期回调运行。
@@ -11,7 +11,7 @@
 完整计划见 [PLAN](docs/PLAN.md)，移动实现见 [MULTIPLAYER](docs/MULTIPLAYER.md)，
 地图、鱼与互动方案见 [WORLD_SYNC](docs/WORLD_SYNC.md)。
 尚未完成真实双游戏移动验收、同一地图生成、捕鱼同步或存档同步。
-当前构建与最终验证范围见 [原生影子桥摘要](logs/guest-ingredient-cache-build-verification.json)；
+当前验证范围与构建结果见 [游戏内缓存摘要](logs/guest-ingame-cache-build-verification.json)；
 0.1.13 历史观察构建见 [地图选择调用摘要](logs/map-selection-call-build-verification.json)。
 
 ## 本机环境
@@ -21,7 +21,7 @@
 - 检查时的 Steam Build ID：`25315876`
 - Unity：`6000.0.52f1`，Windows x64 IL2CPP
 - BepInEx：官方 `6.0.0-be.788+5b766a3`
-- 插件：`local.davecoop.prototype`，源码 `0.1.19-dev`，安装/最近启动 `0.1.12-dev`，最近潜水 `0.1.11-dev`，发布包 `0.1.0`
+- 插件：`local.davecoop.prototype`，源码 `0.1.21-dev`，安装/最近启动 `0.1.12-dev`，最近潜水 `0.1.11-dev`，发布包 `0.1.0`
 
 ## 编译与安装
 
@@ -47,7 +47,7 @@
 
 ## 运行验证
 
-当前已安装游戏显示 `DaveCoop Prototype 0.1.12-dev`；0.1.19-dev 尚未部署或启动，不能沿用旧进程日志验证新版本。
+当前已安装游戏显示 `DaveCoop Prototype 0.1.12-dev`；0.1.21-dev 尚未部署或启动，不能沿用旧进程日志验证新版本。
 F7 世界探针已有真实潜水读取证据；生命周期回调在 0.1.6-dev 实际触发，池复用与卸载恢复仍待验证。
 按 F8 显示或隐藏面板，设置保存在
 `BepInEx/config/local.davecoop.prototype.cfg`。
@@ -104,4 +104,8 @@ Test-Core直接编译实际Core登记器、MapChoiceController与DTO，仅替代
 
 0.1.19把typed交互准备接入根桥，原玩家缓存尚未同步或已知可变子引用仍共享则拒绝；完整baseline/graph和native ABI仍未证。见[交互缓存](docs/GUEST_INTERACTION_SHADOW.md)、[更早的进入时机](docs/GUEST_ENTRY_BOUNDARIES.md)、[其它运行缓存](docs/GUEST_RUNTIME_CACHES.md)及[当前摘要](logs/guest-interaction-build-verification.json)。
 
-0.1.20 将[typed食材缓存](docs/GUEST_INGREDIENT_CACHE.md)接入原生根桥第六步，原图在serializer前捕获；[精确API](docs/GUEST_INGREDIENT_API.md)核对真实SingletonNoMono backing及Entity字段。Build及174项测试通过，原生进入/静止仍关闭，见[当前摘要](logs/guest-ingredient-cache-build-verification.json)。
+0.1.20 将[typed食材缓存](docs/GUEST_INGREDIENT_CACHE.md)接入原生根桥第六步，原图在serializer前捕获；[精确API](docs/GUEST_INGREDIENT_API.md)核对真实SingletonNoMono backing及Entity字段。Build及174项测试通过，原生进入/静止仍关闭，见[该版摘要](logs/guest-ingredient-cache-build-verification.json)。
+
+0.1.21 将[游戏内临时缓存](docs/GUEST_INGAME_CACHE.md)接入第七步，声明与类型检查候选见[GUEST_INGAME_API](docs/GUEST_INGAME_API.md)。三份已知原图均先于Serialize捕获并闭合核对，准备结束再严格复查；恢复按7→6→五Save根。显式handle上限21、DataStamps仍4，第七步单字段不允许OwnedMixed。
+
+六种记录仅支持已覆盖子图；非空SubHelperSpecData或live gearQueue拒绝，不能分享或改空替代。普通record exact class检查及object_new+IntPtr包装仍未执行，进入/静止和全部客机/世界/袋权限false。[本轮摘要](logs/guest-ingame-cache-build-verification.json)记录176项Core测试通过、插件Build警告视为错误通过；测试不执行native helper。每人独立容量/负重、剩余M3—M7及真实双端/冷配置要求保持。

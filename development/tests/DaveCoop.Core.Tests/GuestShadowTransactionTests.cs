@@ -18,7 +18,8 @@ internal static class GuestShadowTransactionTests
         Assert(backend.Calls.IndexOf("fence") < backend.Calls.IndexOf("capture") && backend.Calls.IndexOf("capture") < backend.Calls.IndexOf("prepare") &&
             backend.Calls.IndexOf("prepare") < backend.Calls.IndexOf("install-GameData") &&
             backend.Calls.IndexOf("install-UserOption") < backend.Calls.IndexOf("install-IngredientsCache") &&
-            backend.Calls.IndexOf("install-IngredientsCache") < backend.Calls.IndexOf("validate") && active.Roots.Length == Roots().Length,
+            backend.Calls.IndexOf("install-IngredientsCache") < backend.Calls.IndexOf("install-IngameCache") &&
+            backend.Calls.IndexOf("install-IngameCache") < backend.Calls.IndexOf("validate") && active.Roots.Length == Roots().Length,
             "native clone/install entered before output fence, baseline, or detached preparation");
         int writes = backend.MutatingCalls;
         Assert(transaction.Install().Reason == GuestShadowReason.Duplicate && backend.MutatingCalls == writes,
@@ -209,11 +210,12 @@ internal static class GuestShadowTransactionTests
                 FailStage = "install-IngredientsCache", ThrowFailure = throws };
             var transaction = new GuestShadowTransaction(backend);
             Assert(!transaction.Install().Accepted && backend.AllOriginal && backend.RestoreCounts[5] == 1 &&
-                backend.Restored.SequenceEqual(Roots().Reverse()) && transaction.Snapshot.Fault != null &&
+                backend.Restored.SequenceEqual(Roots().Take(6).Reverse()) && transaction.Snapshot.Fault != null &&
                 transaction.Snapshot.OriginalsRestored && transaction.Snapshot.FenceRetained && transaction.Snapshot.ReferencesRetained &&
                 !backend.Calls.Contains("remove"), "known partial cache write was skipped, repeated, or unfenced before original confirmation");
             Accepted(transaction.RestoreAndRelease());
-            Assert(backend.RestoreCounts.All(count => count == 1), "cleanup repeated a confirmed partial cache compensation");
+            Assert(backend.RestoreCounts.Take(6).All(count => count == 1) && backend.RestoreCounts[6] == 0,
+                "cleanup repeated a confirmed partial cache compensation or restored an uninstalled later root");
         }
         // Even a backend returning true cannot turn an incomplete pair into
         // installed state; production readback must still match both fields.
@@ -307,8 +309,55 @@ internal static class GuestShadowTransactionTests
             "captured null cache was guessed to be detached, unknown, or writable after preparation rejection");
     }
 
+    internal static void IngameCacheUnknownRestorationRetainsBothCacheOwners()
+    {
+        foreach (bool throws in new[] { false, true })
+        {
+            var backend = new Backend { FailStage = "install-IngameCache", ThrowFailure = throws };
+            backend.BlockRestore.Add(GuestShadowRoot.IngameCache);
+            var transaction = new GuestShadowTransaction(backend);
+            Assert(!transaction.Install().Accepted && backend.RestoreCounts[6] == 1 && backend.Restored.First() == GuestShadowRoot.IngameCache &&
+                backend.RestoreCounts.Take(6).All(count => count == 1) && !transaction.Snapshot.OriginalsRestored &&
+                transaction.Snapshot.FenceRetained && transaction.Snapshot.ReferencesRetained && !backend.Calls.Contains("remove"),
+                "entered seventh-cache write was skipped or earlier-cache restoration authorized cleanup");
+            Assert(!transaction.RestoreAndRelease().Accepted && !transaction.RestoreAndRelease().Accepted && backend.RestoreCounts[6] == 1,
+                "unknown seventh-cache restore was redispatched");
+            backend.Current[6] = backend.Original[6]; Accepted(transaction.RestoreAndRelease());
+            Assert(backend.RestoreCounts.All(count => count == 1) && transaction.Snapshot.Fault != null,
+                "late exact seventh-cache evidence repeated work or erased the fault");
+        }
+    }
+
+    internal static void IngameCacheForeignUnknownAndMixedDoNotAuthorizeWrites()
+    {
+        for (int mode = 0; mode < 4; mode++)
+        {
+            var backend = new Backend(); var transaction = new GuestShadowTransaction(backend); Accepted(transaction.Install());
+            object foreign = new object();
+            if (mode == 0) backend.Current[6] = foreign;
+            if (mode == 1) backend.Unreadable.Add(GuestShadowRoot.IngameCache);
+            if (mode == 2) backend.Current[6] = backend.OwnedMixedState;
+            if (mode == 3) backend.IngameInstanceCurrent = false;
+            Assert(!transaction.ValidateActive().Accepted && backend.RestoreCounts[6] == 0 &&
+                backend.RestoreCounts.Take(6).All(count => count == 1) && !transaction.Snapshot.OriginalsRestored &&
+                transaction.Snapshot.FenceRetained && transaction.Snapshot.ReferencesRetained && !backend.Calls.Contains("remove"),
+                "unexplained seventh-cache identity overwrote state or prevented known independent compensation");
+            if (mode == 0) Assert(ReferenceEquals(backend.Current[6], foreign), "foreign seventh-cache pointer was overwritten");
+            if (mode == 2) Assert(transaction.Snapshot.Roots[6] == GuestShadowRootReadback.Unknown,
+                "single-field seventh-cache accepted the sixth cache's composite readback");
+            backend.Unreadable.Clear(); backend.IngameInstanceCurrent = true; backend.Current[6] = backend.Original[6];
+            Accepted(transaction.RestoreAndRelease());
+            Assert(backend.RestoreCounts[6] == 0, "exact original seventh-cache evidence caused a guessed write");
+        }
+        var absent = new Backend { FailStage = "prepare" }; absent.Original[6] = null; absent.Current[6] = null;
+        var rejected = new GuestShadowTransaction(absent);
+        Assert(!rejected.Install().Accepted && rejected.Snapshot.Roots[6] == GuestShadowRootReadback.Original &&
+            rejected.Snapshot.OriginalsRestored && absent.RestoreCounts[6] == 0 && !absent.Calls.Contains("install-IngameCache"),
+            "captured absent seventh table was treated as detached or replaced with guessed empty state");
+    }
+
     private static GuestShadowRoot[] Roots() => new[] { GuestShadowRoot.GameData, GuestShadowRoot.PlayerData,
-        GuestShadowRoot.PlayerInteraction, GuestShadowRoot.PhotoData, GuestShadowRoot.UserOption, GuestShadowRoot.IngredientsCache };
+        GuestShadowRoot.PlayerInteraction, GuestShadowRoot.PhotoData, GuestShadowRoot.UserOption, GuestShadowRoot.IngredientsCache, GuestShadowRoot.IngameCache };
     private static void Accepted(GuestShadowResult result) => Assert(result.Accepted, result.Reason + ": " + result.Message);
     private static void Assert(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
 
@@ -328,6 +377,7 @@ internal static class GuestShadowTransactionTests
         // Two independent fields model the composite step, including equal
         // scalar values. This is not native field/ABI or helper execution.
         public bool OriginalLoaded = false, DetachedLoaded = true, CurrentLoaded, CacheInstanceCurrent = true;
+        public bool IngameInstanceCurrent = true;
         public readonly int[] CacheInstallFieldAttempts = new int[2], CacheRestoreFieldAttempts = new int[2];
         public readonly object[] Current;
         public readonly List<string> Calls = new List<string>();
@@ -342,7 +392,8 @@ internal static class GuestShadowTransactionTests
         private bool _claimed, _fenced, _captured, _prepared;
         public int Reads;
         public int MutatingCalls => Calls.Count(call => call != "quiescent" && call != "validate");
-        public bool AllOriginal => Enumerable.Range(0, 5).All(i => ReferenceEquals(Current[i], Original[i])) && ReadCachePair() == GuestShadowRootReadback.Original;
+        public bool AllOriginal => Enumerable.Range(0, 5).All(i => ReferenceEquals(Current[i], Original[i])) &&
+            ReadCachePair() == GuestShadowRootReadback.Original && IngameInstanceCurrent && ReferenceEquals(Current[6], Original[6]);
         public Backend() { Current = (object[])Original.Clone(); }
         public bool TryClaimLease() { Calls.Add("claim"); if (_claimed) return false; _claimed = true; return true; }
         public bool BindingIsCurrent() { Reads++; return BindingCurrent; }
@@ -373,6 +424,7 @@ internal static class GuestShadowTransactionTests
         {
             Reads++; if (!_captured || Unreadable.Contains(root)) return GuestShadowRootReadback.Unknown;
             if (root == GuestShadowRoot.IngredientsCache) return ReadCachePair();
+            if (root == GuestShadowRoot.IngameCache && !IngameInstanceCurrent) return GuestShadowRootReadback.Foreign;
             int index = (int)root - 1;
             return ReferenceEquals(Current[index], Original[index]) ? GuestShadowRootReadback.Original :
                 ReferenceEquals(Current[index], Detached[index]) ? GuestShadowRootReadback.Detached :
@@ -390,7 +442,7 @@ internal static class GuestShadowTransactionTests
             return GuestShadowRootReadback.Foreign;
         }
         public bool ValidateRoots() => Step("validate") && Enumerable.Range(0, 5).All(i => ReferenceEquals(Current[i], Detached[i])) &&
-            ReadCachePair() == GuestShadowRootReadback.Detached;
+            ReadCachePair() == GuestShadowRootReadback.Detached && IngameInstanceCurrent && ReferenceEquals(Current[6], Detached[6]);
         public bool RestoreRoot(GuestShadowRoot root)
         {
             int index = (int)root - 1; RestoreCounts[index]++; Restored.Add(root);

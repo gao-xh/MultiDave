@@ -116,3 +116,9 @@ M2 先研究只复制显示组件/姿态的方式。直接克隆完整 `PlayerCh
 交互缓存的实际typed准备、字段映射和已知图验证见[GUEST_INTERACTION_SHADOW](GUEST_INTERACTION_SHADOW.md)；新增离线Cecil工具可复现对应元数据。其它运行缓存及entry签名见[GUEST_RUNTIME_CACHES](GUEST_RUNTIME_CACHES.md)、[GUEST_ENTRY_BOUNDARIES](GUEST_ENTRY_BOUNDARIES.md)。这些声明和可编译源码不代替native ABI、输出或运行隔离验证。
 
 食材缓存的SingletonNoMono真实direct backing、11条目字段、13资源实例字段和Parent/static未知图见[GUEST_INGREDIENT_API](GUEST_INGREDIENT_API.md)；typed准备与逐字段恢复源码见[GUEST_INGREDIENT_CACHE](GUEST_INGREDIENT_CACHE.md)。离线元数据和可编译字段代理不证明native构造/数组/Entry ABI或整个资源无共享。
+
+## 0.1.21 游戏内缓存精确接口
+
+[Inspect-GuestIngameApi.ps1](../scripts/Inspect-GuestIngameApi.ps1)已离线实际输出5程序集/89类型/6保存记录/34container声明/181direct child edges/8明确frontier/11closed contexts，MissingTypes=[]，hashfresh；不执行native/save。准确singleton、六record/slot/Data字段、Obscured真CLRstruct与ValueType wrapper区分、TryCast的assignable边界和exactclass/object_new候选见[GUEST_INGAME_API](GUEST_INGAME_API.md)。非空助手ScriptableObject资源或live设备队列未覆盖时拒绝，不清空/共享原指针替代。
+
+[GUEST_INGAME_CACHE](GUEST_INGAME_CACHE.md)接第七singlefield源码合同；Interaction/Ingredients/Ingame三known原图先于Serialize捕获闭合，准备全部完成再strict核对，逆序7→6→Save5；21explicit handles/4Data stamps，第七不接受Mixed。当前0.1.21-dev/协议5、176项Core通过，插件Build警告视为错误通过，见[本轮摘要](../logs/guest-ingame-cache-build-verification.json)。类型/分配/字段ABI均未实测，entry/quiet/native/guest/world/bag权限false，未部署/启动；完整缓存/资源/actor/输出、实际地图与个人捕获/返航、双端和冷配置仍待完成。

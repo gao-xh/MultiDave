@@ -640,3 +640,14 @@
 - 更新README/开发AGENTS/HANDOFF/PLAN/相关文档、core及guest-ingredient-cache-build-verification，Skill正式校验通过并同步；0.1.19历史170/hash与installed0.1.12/dive0.1.11/default0.1.0保留。validator首次缺PyYAML、补现有缓存模块后默认GBK读取失败，使用现有模块及Python -X utf8后通过，无下载或安装依赖。Inspector PowerShell解析错误0。
   两次独立只读末审无本轮阻断，确认字段/18显式handles预算、非递归窗口、faultserial每读写前后即时停止、null/loaded保真及全六步确认；不作为native运行证据。新鲜进程检查0，安装DLL仍为`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`。已枚举字段/共享引用审计不授完整baseline/资源/caches权限。
   下一步真实自然边界/其它typedcache/旧引用/全输出，随后房主地图采用、个人产物与容量分流、逐产物返航和双端/冷配置完整闭环；完整goal保持active。
+
+## 2026-10-04 — 0.1.21 临时状态表与七步恢复
+
+- 前一goal turn为具体进展：0.1.20食材缓存已提交3f636c4并远端核验；完整M3—M7目标保持active。用户再次明确“每个人的”，每人独立袋/容量/负重、房主唯一长期进度不变。本轮未部署/启动、调用游戏或读改存档；安装0.1.12/潜水0.1.11/default0.1.0保持原范围。
+- 新NativeGuestIngameCache接原生根桥第七步，捕获实际singleton/table与已知记录，有限支持六种record schema；非空助手资源、运行设备子图缺独立构造时明确拒绝，不共享/清空原值。Exact native class/key与普通record object_new+IntPtr为未运行候选，不把Unity ScriptableObject当普通record分配。
+- Capture三份known原图闭合先于serializer，Prepare三份strict闭合后才可安装；七步/21显式handles/4Data stamps，恢复7→6→Save5。第7单字段拒OwnedMixed，foreign/unknown不覆盖，进入后未知只读保留而不重派发；进入/静止及全部玩法权限仍false，无Network/GUI激活。
+- Test-Core176/176通过，新增两组第七cache生产事务夹具验证write后false/throw未知恢复、保留两cache owner、晚到Original读取可清理且无retry，以及foreign/unknown/mixed/换singleton/null拒绝。旧第六部分失败夹具确认未安装第7不能误恢复。夹具仅synthetic CLR，不执行nativehelper/field setter/allocator。
+- Inspect-GuestIngameApi实际离线成功：5程序集/89类型/6descendants/34SpecContainer声明/181字段边/8明确frontier/11closed contexts，MissingTypes空、PowerShell AST零错误。原报告只留.local，没有执行native/save。Build警告视为错误通过，SHA256：`CBEB47494C7C3BD3EA9419B78E1CCD683A100FC2A4D3161A597E861563A492D3`。
+- 首次Build暴露SubHelperSpecData基类所在Sirenix.Serialization编译引用缺失（CS0012），按实际interop补入Build脚本及项目Private=false引用后通过；不复制/发布该程序集。没有修改已通过Core源码或重跑无关测试。
+- 更新日志/当前摘要、接手文档和Skill；正式validator使用现有PyYAML缓存与Python -X utf8通过，Skill同步后SHA一致。独立只读末审无新增阻断，确认第七singlefield、三份closure、faultserial、aux/alias/frontier拒绝及key/child关联；仍不证明native构造或完整图。
+- 新鲜进程检查0，安装DLL仍为`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`。保留历史0.1.20/174/hash，用户试玩继续延后。继续实际资源/设备/actor/cache/output与自然进入/静止边界，然后房主地图采用、个人产物/容量分流、逐产物返航、真实双端与GitHub冷配置完整闭环；有限子图源码不是完整联机验收，完整goal保持active。

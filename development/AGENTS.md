@@ -1,6 +1,6 @@
 # 开发约定
 
-- M1 玩家发现与 M2 回放基础验收通过；当前源码为 0.1.20-dev、协议 5，Build 警告视为错误通过、Test-Core 174/174 通过，范围见 [客机食材缓存构建摘要](logs/guest-ingredient-cache-build-verification.json)；本轮未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
+- M1 玩家发现与 M2 回放基础验收通过；当前源码为 0.1.21-dev、协议 5，Test-Core 176/176 通过，插件 Build 警告视为错误通过，范围见 [游戏内缓存摘要](logs/guest-ingame-cache-build-verification.json)；未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
 - 继续工作前阅读 `docs/HANDOFF.md`、`docs/PLAN.md` 和当前阶段的 `docs/GAME_API.md` / `docs/MULTIPLAYER.md` / `docs/WORLD_SYNC.md`；配置别人电脑时使用仓库根目录的配置 Skill。
 - 用户确定首版房主＋员工且每人独立背包，继续捕获/库存/结算开发先读 `docs/CREW_MODE.md`。房主自己的原生LootBox，员工由房主Mod持有的独立会话袋，各自容量/重量/负重；产物与前置容量检查都需正确分流，不能先入房主袋再复制。房主唯一长期进度；返航房主袋原链不重复Add、员工未入仓物料需新桥逐项确认一次。员工断线不清潜水账本，未知原生结果不重试/补奖；隔离客机全部自动持久写。同层带队、独立员工生存/装备/投射物及上述袋/结算仍待实现。
 - 0.1.11-dev 含房主目标反向查询、冻结的本地指针/代次 CLR 快照、完整收到的活动观察鱼群显示，以及 8 个原生交互入口的只读前后成对观察。鱼清单仅玩家当前场景，每鱼最多 16 帧；缺显示或离镜头不释放数字身份，原生 AI/碰撞/收益保持原样。
@@ -23,7 +23,7 @@
   新entry/重复cache/Context清理/unload/destroy撤销，真实未知unload也留围栏；异常/丢失/线程/配额撤证，失败重启。
   RunId隔离重开后的life编号；0.1.16历史版本仅日志，0.1.17另接当前候选但不授权限，ScalarOriginChainMatched也不证明原生ABI/完整来源/跨机地址。
   NativeGenerationBound/HostSelectionApplied/WorldAuthority/CargoAuthority均false；148项含6组synthetic registry夹具，未运行NativeHooks。
-  当前源码编译通过，新版未部署/启动，最新实机范围仍0.1.12启动/0.1.11潜水。核对实际嵌套/typedreturn/Scene值/__state/owncleanup后才接采用。
+  0.1.16历史源码编译通过，新版未部署/启动，最新实机范围仍0.1.12启动/0.1.11潜水。核对实际嵌套/typedreturn/Scene值/__state/owncleanup后才接采用。
 - 下一步实现实际加载前房主选择采用、客机临时进度/生成与 AI 隔离，再接房主原生捕鱼及返航收益账本；不要把 CLR TCP、布局指纹或单游戏显示当 M4/M5/M6 或双游戏完成。
 - 原GameAssembly离线研究用`scripts/Inspect-NativeCalls.ps1`，先读`docs/NATIVE_ANALYSIS.md`；报告/机器码/游戏和依赖DLL只留.local。
   按精确metadata方法指针及version1 chained unwind三元组分析，静态边/别名/完整已知片段不证明运行顺序、数据流或能力。
@@ -53,6 +53,10 @@
 - 原10dirty拒绝、已知baseline逐值/版本及mutable graph审计；4096每侧含重复计数，两侧8192，0长数组不含可变元素可共享，非空数组/7record/嵌套货槽另查。KnownReferencesDisjoint只针对已读图；comparer/cache/其它Player字段与native array/Entry ABI等仍未知，SourceBaseline/CompleteGraph及全部权限false。
 - 新增Il2CppSystem.Core build引用供native HashSet，未复制依赖DLL。170项只新增3组实际CLR引用审计，不执行nativehelper；新两个Cecil工具及Depth1 cache native分析只留.local原报告。不自动部署或催测试，完整实际边界/缓存/输出恢复及两袋玩法仍必须完成。
 
-- 当前0.1.20先读docs/GUEST_INGREDIENT_CACHE.md和GUEST_INGREDIENT_API.md；缓存singleton只读实际SingletonNoMono<IngredientsStorage>._s_Instance_k__BackingField，不用不存在的_instance或runtime getter补实例。Capture两份原known baseline均先于serializer。
+- 0.1.20历史范围先读docs/GUEST_INGREDIENT_CACHE.md和GUEST_INGREDIENT_API.md；缓存singleton只读实际SingletonNoMono<IngredientsStorage>._s_Instance_k__BackingField，不用不存在的_instance或runtime getter补实例。Capture两份原known baseline均先于serializer。
 - GuestShadowTransaction新增第六IngredientsCache与仅此step合法OwnedMixed；五SaveRoots准备窗口与六步最终核对分开，cacheguard不能递归自身graph。最多18explicit strong handles，DataStamps仍4；全部原/native资源与玩法权限false，无Network/GUI调用。
 - 174项包含4组双字段CLR cache夹具，不执行nativehelper；相同loaded按storage身份区分，原storage null拒绝Prepare，unknown/foreign不盲写或retry。Entity仅复制13已知instance fields，Parent/static及任务/其它cache仍未知，不调用Init/Load/Reset修复。
+
+- 当前0.1.21先读docs/GUEST_INGAME_API.md与GUEST_INGAME_CACHE.md，第七IngameCache用实际SingletonNoMono backing及ingameSaveDatas。六kind schema只覆盖支持的known childgraph；未知class/keytype、非空SubHelperSpecData或live gearQueue拒绝，不改空、不共享原资源替代。
+- 三known baselines（Interaction/Ingredients/Ingame）在任何Serialize前捕获并闭合核对，全部Prepare完成再strict复查。五SaveRoots窗口与七步最终核对分开，轻量cache read guard不递归自身图；逆序恢复7→6→Save5，第七单field不允许OwnedMixed，只有第六两field合同可用Mixed。
+- 最多21explicit strong handles，4DataStamps保留；object_get_class exact比较与object_new+IntPtr普通record准备均未运行，class store初始化也是原生候选。176项测试只覆盖CLR控制/此前TCP，插件Build警告视为错误通过；进入/静止及所有native/guest/world/bag权限false，无自动GUI/Network入口。完整资源/角色/缓存/输出、房主地图采用、个人产物分流和返航、M3—M7/实际双端/冷配置仍必需。

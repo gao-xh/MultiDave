@@ -12,19 +12,20 @@ namespace DaveCoop.Networking
     // network entry point. Native boundary/cache/output coverage remains unverified.
     internal sealed class NativeGuestShadowBridge : IGuestShadowBackend
     {
-        public const int MaxOwnedHandles = 18;
+        public const int MaxOwnedHandles = 21;
         public const int MaxJsonCharactersPerRoot = 8 * 1024 * 1024;
         public const int MaxJsonCharactersPerLease = 16 * 1024 * 1024;
         private const int MaxVersionCharacters = 256;
         private static NativeGuestShadowBridge _processLease;
         private readonly GuestOutputFence _fence;
         private readonly List<OwnedReference> _references = new List<OwnedReference>(MaxOwnedHandles);
-        private readonly bool[] _installAttempted = new bool[6], _restoreAttempted = new bool[6];
+        private readonly bool[] _installAttempted = new bool[7], _restoreAttempted = new bool[7];
         private Managers _managers;
         private Roots _original, _detached;
         private NativeGuestInteractionShadowResult _interactionShadow;
         private NativeGuestInteractionBaseline _interactionBaseline;
         private NativeGuestIngredientCache _ingredientCache;
+        private NativeGuestIngameCache _ingameCache;
         private DataStamp[] _originalStamps;
         private bool _claimAttempted, _claimed, _captureAttempted, _captured, _prepareAttempted, _prepared;
         private bool _fenceAttempted, _removeAttempted, _releaseAttempted, _released, _busy;
@@ -83,6 +84,8 @@ namespace DaveCoop.Networking
         public bool KnownInteractionReferencesDisjoint => _interactionShadow?.KnownReferencesDisjoint ?? false;
         public bool IngredientCachePrepared => _ingredientCache?.Prepared ?? false;
         public bool KnownIngredientReferencesDisjoint => _ingredientCache?.KnownReferencesDisjoint ?? false;
+        public bool IngameCachePrepared => _ingameCache?.Prepared ?? false;
+        public bool KnownIngameReferencesDisjoint => _ingameCache?.KnownReferencesDisjoint ?? false;
         public bool GuestStateIsolated => false;
         public bool NativePermission => false;
         public bool WorldAuthority => false;
@@ -199,6 +202,14 @@ namespace DaveCoop.Networking
                     _original.Player, _original.Interaction, RequireCloneWindow);
                 _ingredientCache = NativeGuestIngredientCache.CaptureOriginal(
                     RequireIngredientCaptureWindow, value => { Keep(value); });
+                _ingameCache = NativeGuestIngameCache.CaptureOriginal(
+                    RequireIngameCaptureWindow, value => { Keep(value); });
+                // Recheck all known originals after the last capture and before
+                // the first serializer can allocate or invoke native callbacks.
+                if (!_interactionBaseline.ConfirmOriginalKnownGraph(RequireOriginalReadWindow) ||
+                    !_ingredientCache.ConfirmOriginalKnownGraph(RequireOriginalReadWindow) ||
+                    !_ingameCache.ConfirmOriginalKnownGraph(RequireOriginalReadWindow))
+                    return Reject("Original known graphs changed during capture.");
                 return CanEnterBoundary() && ReferencesValid() && ManagersCurrent() && OriginalScalarsUnchanged() && AllRoots(GuestShadowRootReadback.Original) && FenceReady();
             }
             catch (Exception) { return ExceptionFailure("Original root capture failed; owned references and fence remain retained."); }
@@ -233,6 +244,14 @@ namespace DaveCoop.Networking
                 if (_ingredientCache == null || !_ingredientCache.Prepare(RequireCloneWindow) ||
                     !_ingredientCache.ValidateKnownBinding(RequireCloneWindow))
                     return Reject("Detached ingredient cache could not be prepared and confirmed.");
+                if (_ingameCache == null || !_ingameCache.Prepare(RequireCloneWindow))
+                    return Reject("Detached ingame cache could not be prepared.");
+                // Later native preparations can invalidate earlier baselines.
+                // Sequential known-graph checks do not prove quiescence.
+                if (!_interactionShadow.ValidateKnownBinding(RequireCloneWindow) ||
+                    !_ingredientCache.ValidateKnownBinding(RequireCloneWindow) ||
+                    !_ingameCache.ValidateKnownBinding(RequireCloneWindow))
+                    return Reject("Prepared known graphs changed during preparation.");
                 _prepared = true;
                 return true;
             }
@@ -254,6 +273,14 @@ namespace DaveCoop.Networking
                     return _ingredientCache != null && _ingredientCache.Install(RequireIngredientInstallationWindow) &&
                         ReadRootCore(root) == GuestShadowRootReadback.Detached && FenceReady();
                 }
+                if (root == GuestShadowRoot.IngameCache)
+                {
+                    RequireIngameInstallationWindow();
+                    if (ReadRootCore(root) != GuestShadowRootReadback.Original) return false;
+                    _installAttempted[index] = true;
+                    return _ingameCache != null && _ingameCache.Install(RequireIngameInstallationWindow) &&
+                        ReadRootCore(root) == GuestShadowRootReadback.Detached && FenceReady();
+                }
                 if (!ReferencesValid() || !ManagersCurrent() || !OriginalScalarsUnchanged() || ReadRootCore(root) != GuestShadowRootReadback.Original)
                     return Reject("Install will not overwrite a foreign or unknown root.");
                 if (!CanEnterBoundary() || !FenceReady()) return false;
@@ -261,6 +288,8 @@ namespace DaveCoop.Networking
                     return Reject("Prepared interaction binding changed before root installation.");
                 if (_ingredientCache == null || !_ingredientCache.ValidateKnownBinding(RequireInteractionInstallationWindow))
                     return Reject("Prepared ingredient cache changed before root installation.");
+                if (_ingameCache == null || !_ingameCache.ValidateKnownBinding(RequireInteractionInstallationWindow))
+                    return Reject("Prepared ingame cache changed before root installation.");
                 if (!CanEnterBoundary() || !FenceReady()) return false;
                 _installAttempted[index] = true;
                 WriteRoot(root, _detached);
@@ -287,7 +316,8 @@ namespace DaveCoop.Networking
             try { return _prepared && ReferencesValid() && ManagersCurrent() && OriginalScalarsUnchanged() &&
                     AllRoots(GuestShadowRootReadback.Detached) && FenceReady() && _interactionShadow != null &&
                     _interactionShadow.ValidateKnownReferences(RequireInteractionBindingWindow) && _ingredientCache != null &&
-                    _ingredientCache.ValidateKnownReferences(RequireInteractionBindingWindow); }
+                    _ingredientCache.ValidateKnownReferences(RequireInteractionBindingWindow) && _ingameCache != null &&
+                    _ingameCache.ValidateKnownReferences(RequireInteractionBindingWindow); }
             catch (Exception) { return ExceptionFailure("Installed root validation failed; fence and references remain retained."); }
             finally { _busy = false; }
         }
@@ -310,6 +340,14 @@ namespace DaveCoop.Networking
                     return _ingredientCache != null && _ingredientCache.Restore(RequireIngredientRestoreWindow) &&
                         ReadRootCore(root) == GuestShadowRootReadback.Original;
                 }
+                if (root == GuestShadowRoot.IngameCache)
+                {
+                    if (current != GuestShadowRootReadback.Detached)
+                        return Reject("Unknown, mixed or foreign ingame cache will not be overwritten.");
+                    _restoreAttempted[index] = true;
+                    return _ingameCache != null && _ingameCache.Restore(RequireIngameRestoreWindow) &&
+                        ReadRootCore(root) == GuestShadowRootReadback.Original;
+                }
                 if (current != GuestShadowRootReadback.Detached) return Reject("Foreign or unknown root will not be overwritten during restore.");
                 _restoreAttempted[index] = true;
                 WriteRoot(root, _original);
@@ -323,9 +361,10 @@ namespace DaveCoop.Networking
         {
             if (!LeaseCurrent() || !_captured) return false;
             try { return ReferencesValid() && ManagersCurrent() && OriginalScalarsUnchanged() &&
-                    AllRoots(GuestShadowRootReadback.Original) && (_interactionBaseline == null ||
-                    _interactionBaseline.ConfirmOriginalKnownGraph(RequireOriginalReadWindow)) && _ingredientCache != null &&
-                    _ingredientCache.ConfirmOriginalKnownGraph(RequireOriginalReadWindow); }
+                    AllRoots(GuestShadowRootReadback.Original) && _interactionBaseline != null &&
+                    _interactionBaseline.ConfirmOriginalKnownGraph(RequireOriginalReadWindow) && _ingredientCache != null &&
+                    _ingredientCache.ConfirmOriginalKnownGraph(RequireOriginalReadWindow) && _ingameCache != null &&
+                    _ingameCache.ConfirmOriginalKnownGraph(RequireOriginalReadWindow); }
             catch (Exception) { return ExceptionFailure("Original roots/managers could not be confirmed."); }
         }
 
@@ -362,7 +401,7 @@ namespace DaveCoop.Networking
                 }
                 _references.Clear(); _original = null; _detached = null; _managers = null; _originalStamps = null;
                 _interactionShadow = null; _interactionBaseline = null;
-                _ingredientCache = null;
+                _ingredientCache = null; _ingameCache = null;
                 _captured = false; _prepared = false; _released = true;
                 Interlocked.CompareExchange(ref _processLease, null, this);
                 return true;
@@ -395,7 +434,8 @@ namespace DaveCoop.Networking
         {
             if (!CanEnterBoundary() || !FenceReady() || !ReferencesValid() || !ManagersCurrent() || !OriginalScalarsUnchanged() ||
                 !AllSaveRoots(GuestShadowRootReadback.Original) || (_ingredientCache != null &&
-                _ingredientCache.ReadCurrent(RequireIngredientReadWindow) != GuestShadowRootReadback.Original))
+                _ingredientCache.ReadCurrent(RequireIngredientReadWindow) != GuestShadowRootReadback.Original) ||
+                (_ingameCache != null && _ingameCache.ReadCurrent(RequireIngameReadWindow) != GuestShadowRootReadback.Original))
                 throw new InvalidOperationException("Native clone window lost its manager/root/fence binding.");
         }
 
@@ -416,9 +456,39 @@ namespace DaveCoop.Networking
 
         private void RequireIngredientInstallationWindow()
         {
-            if (!CanEnterBoundary() || !AllSaveRoots(GuestShadowRootReadback.Detached))
+            if (!CanEnterBoundary() || !AllSaveRoots(GuestShadowRootReadback.Detached) ||
+                _ingameCache == null || _ingameCache.ReadCurrent(RequireIngameReadWindow) != GuestShadowRootReadback.Original)
                 throw new InvalidOperationException("Ingredient installation lost its detached save roots or entry boundary.");
             RequireInteractionBindingWindow();
+        }
+
+        private void RequireIngameCaptureWindow()
+        {
+            // The seventh baseline is not bound yet; do not recursively ask it
+            // for its own readback while capturing it for the first time.
+            RequireCloneWindow();
+            if (_ingredientCache == null || _ingredientCache.ReadCurrent(RequireIngredientReadWindow) != GuestShadowRootReadback.Original)
+                throw new InvalidOperationException("Ingame capture lost the original ingredient cache.");
+        }
+
+        private void RequireIngameReadWindow()
+        {
+            if (!LeaseCurrent() || !ReferencesValid() || !ManagersCurrent() || !OriginalScalarsUnchanged())
+                throw new InvalidOperationException("Ingame readback lost its lease/manager/reference binding.");
+        }
+
+        private void RequireIngameInstallationWindow()
+        {
+            if (!CanEnterBoundary() || !AllSaveRoots(GuestShadowRootReadback.Detached) ||
+                _ingredientCache == null || _ingredientCache.ReadCurrent(RequireIngredientReadWindow) != GuestShadowRootReadback.Detached)
+                throw new InvalidOperationException("Ingame installation lost its detached predecessors or entry boundary.");
+            RequireInteractionBindingWindow();
+        }
+
+        private void RequireIngameRestoreWindow()
+        {
+            if (!LeaseCurrent() || !ReferencesValid() || !ManagersCurrent())
+                throw new InvalidOperationException("Ingame compensation lost its lease/manager/reference binding.");
         }
 
         private void RequireIngredientRestoreWindow()
@@ -529,6 +599,8 @@ namespace DaveCoop.Networking
             if (!ManagersCurrent()) return GuestShadowRootReadback.Foreign;
             if (root == GuestShadowRoot.IngredientsCache)
                 return _ingredientCache == null ? GuestShadowRootReadback.Unknown : _ingredientCache.ReadCurrent(RequireIngredientReadWindow);
+            if (root == GuestShadowRoot.IngameCache)
+                return _ingameCache == null ? GuestShadowRootReadback.Unknown : _ingameCache.ReadCurrent(RequireIngameReadWindow);
             IntPtr current = Pointer(GetCurrentRoot(root));
             if (current == IntPtr.Zero) return GuestShadowRootReadback.Unknown;
             if (current == Pointer(GetRoot(_original, root))) return GuestShadowRootReadback.Original;
@@ -578,7 +650,8 @@ namespace DaveCoop.Networking
 
         private bool AllRoots(GuestShadowRootReadback expected)
         {
-            return AllSaveRoots(expected) && ReadRootCore(GuestShadowRoot.IngredientsCache) == expected;
+            return AllSaveRoots(expected) && ReadRootCore(GuestShadowRoot.IngredientsCache) == expected &&
+                ReadRootCore(GuestShadowRoot.IngameCache) == expected;
         }
 
         private bool AllSaveRoots(GuestShadowRootReadback expected)
@@ -626,7 +699,7 @@ namespace DaveCoop.Networking
         private static int RootIndex(GuestShadowRoot root)
         {
             int index = (int)root - 1;
-            if (index < 0 || index >= 6) throw new ArgumentOutOfRangeException(nameof(root));
+            if (index < 0 || index >= 7) throw new ArgumentOutOfRangeException(nameof(root));
             return index;
         }
         private bool Reject(string reason) { Volatile.Write(ref _lastReason, reason); return false; }

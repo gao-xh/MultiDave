@@ -132,6 +132,8 @@ internal static class Program
             ("guest shadow unknown and foreign cache results cannot overwrite or retry", GuestShadowTransactionTests.CacheUnknownAndForeignResultsCannotOverwriteOrRetry),
             ("guest shadow composite readback cannot authorize single-field restoration", GuestShadowTransactionTests.MixedReadbackIsRejectedForSingleFieldRoots),
             ("guest shadow cache scalar and null pointer cannot supply identity", GuestShadowTransactionTests.CacheScalarAndNullPointerDoNotSupplyIdentity),
+            ("guest shadow seventh-cache unknown restore retains both cache owners", GuestShadowTransactionTests.IngameCacheUnknownRestorationRetainsBothCacheOwners),
+            ("guest shadow seventh-cache unexplained identity cannot authorize writes", GuestShadowTransactionTests.IngameCacheForeignUnknownAndMixedDoNotAuthorizeWrites),
             ("cargo independent capacities, reservations and native weight", CargoLedgerTests.IndependentCapacityReservationsAndNativeWeight),
             ("cargo operation provenance and atomic product ownership", CargoLedgerTests.OperationProvenanceAndAtomicProducts),
             ("cargo source fence, replay, cancellation and quota", CargoLedgerTests.SourceFenceReplayCancellationAndQuota),

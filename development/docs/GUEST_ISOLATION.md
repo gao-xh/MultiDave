@@ -107,7 +107,7 @@ var playerShadow = DR.Save.SaveDataBase.Deserialize<DR.Save.SavePlayerData>(
 
 ## 下一桥的最小安装与恢复合同
 
-建议 `NativeGuestShadowBridge` 分为 Prepare、Activate、ValidateActive、Restore 四步；具体源码与原生实测均待下一轮。它要保存 manager/root/cache 的实际 native 引用及生命周期身份，使用强存活保证，不能只存可复用的数字指针。
+以下为0.1.17研究时的安装/恢复建议，当前七步源码范围见文末；原生实测仍未进行。桥要保存 manager/root/cache 的实际 native 引用及生命周期身份，使用强存活保证，不能只存可复用的数字指针。
 
 1. 在确认本地加载完成、尚未创建员工本次世界对象的边界，先接管持久输出并排除在途保存、load、delegate 和 coroutine。房间状态或一个 Scene 名称不证明该边界。已有场景/旧 saveable 无法确认退休时拒绝进入。
 2. 同时准备 Game、Player 和 Interaction shadow。Photo/UserOption 的可写进度必须另有 shadow 或明确阻断；运行缓存逐项准备与核对。先完整准备、验证 detached 数据，再交换直接根，不能在半安装期间放行 guest 场景或动作。
@@ -127,3 +127,11 @@ var playerShadow = DR.Save.SaveDataBase.Deserialize<DR.Save.SavePlayerData>(
 0.1.19已实现[十组typed交互绑定](GUEST_INTERACTION_SHADOW.md)并接入根桥源码；实际进入仍关闭。其它缓存与副作用见[GUEST_RUNTIME_CACHES](GUEST_RUNTIME_CACHES.md)，原入口保护时机见[GUEST_ENTRY_BOUNDARIES](GUEST_ENTRY_BOUNDARIES.md)。已知字段等值和别名检查是必要条件，完整基线/深复制/所有旧引用仍未证。
 
 0.1.20 将[typed食材缓存](GUEST_INGREDIENT_CACHE.md)接入六步捕获/准备/恢复。实际SingletonNoMono字段与Entity实例/共享资源边界见[精确API](GUEST_INGREDIENT_API.md)；已编译、174项CLR/TCP测试通过，未执行native，GuestStateIsolated仍false。原五个Save根、Interaction基线及Data标量不由第六缓存替代。
+
+## 0.1.21 第七临时缓存候选
+
+当前源码0.1.21-dev/协议5，176项Core测试通过、插件Build警告视为错误通过，见[本轮摘要](../logs/guest-ingame-cache-build-verification.json)。[Ingame精确接口](GUEST_INGAME_API.md)与[typed缓存](GUEST_INGAME_CACHE.md)增加第七单字段步骤；六kind schema仅支持已覆盖子图，不是六种完整deep clone。non-null助手ScriptableObject资源和live设备队列明确拒绝，不能用共享指针或空状态代替。
+
+三known原图（Interaction/Ingredients/Ingame）在Serialize之前捕获并闭合核对，Prepare全部完成后严格重查。五Save根、两个cache的最终安装/确认共七步，恢复7→6→Save5；第七singlefield拒OwnedMixed，显式handles上限21、四Data scalar stamps仍4。普通record exactclass/object_new+IntPtr候选未运行；完整原树、资源、旧引用/actor/其它cache/输出与真实静止未证明。
+
+entry/quiet/native/guest/world/bag权限仍false，未接自动入口、未部署或启动。当前安装0.1.12/最近潜水0.1.11/default0.1.0及用户试玩延后保持；每人独立容量/重量/负重、房主地图采用、个人真实捕获/返航和完整M3—M7/双端/冷配置验收仍必需。

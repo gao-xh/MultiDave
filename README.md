@@ -53,7 +53,7 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 `distribution/` 是供自动安装使用的本项目插件包。
 本仓库不分发游戏、游戏接口程序集、存档或 BepInEx 运行库。
 
-`codex/player-discovery` 分支当前源码为 0.1.20-dev、协议 5；Build 警告视为错误通过，Test-Core 174/174 通过，本轮仅构建，未部署或启动。
+`codex/player-discovery` 分支当前源码为 0.1.21-dev、协议 5；Test-Core 176/176 通过，插件 Build 警告视为错误通过，未部署或启动。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试；该进程已确认插件加载、Unity Update、网络入口及 4 条初始路线输入日志，仅主菜单启动通过。
 目标检查、潜水路线、场景切换与正常返航仍待实机，用户当前不方便试玩，手动验证已延后。最近完成潜水验证的是 0.1.11-dev，单游戏 TCP 鱼群显示与发射/挂钩/伤害只读观察已运行。
 用户确认偏移鱼群可见、捕获原鱼时对应副本也消失，关闭鱼群显示后恢复正常，操作和镜头正常。
@@ -110,4 +110,8 @@ Mod 不持有原生包装器、不调用或改写选图/加载/存档入口；Di
 
 0.1.19版进一步实现临时玩家交互缓存准备与共享引用检查，编译和170项测试通过。见[交互缓存](development/docs/GUEST_INTERACTION_SHADOW.md)与[该版构建摘要](development/logs/guest-interaction-build-verification.json)。原生进入仍关闭；未部署或验证实际员工捕获和返航入仓。
 
-0.1.20 继续实现[客机食材缓存](development/docs/GUEST_INGREDIENT_CACHE.md)：独立条目、数量数组和资源实例字段副本，并接入六步准备/恢复源码。编译及174项测试通过，见[当前摘要](development/logs/guest-ingredient-cache-build-verification.json)。未部署或执行原生切换；完整缓存隔离、个人捕获和返航仍待接通。
+0.1.20 继续实现[客机食材缓存](development/docs/GUEST_INGREDIENT_CACHE.md)：独立条目、数量数组和资源实例字段副本，并接入六步准备/恢复源码。编译及174项测试通过，见[该版摘要](development/logs/guest-ingredient-cache-build-verification.json)。未部署或执行原生切换；完整缓存隔离、个人捕获和返航仍待接通。
+
+0.1.21 新增[游戏内临时保存缓存](development/docs/GUEST_INGAME_CACHE.md)第七步，接口见[精确 API](development/docs/GUEST_INGAME_API.md)。六种记录具有有限字段复制合同；非空助手资源和正在使用的设备队列明确拒绝，不能清空或共享原状态代替复制。三份已知原图在 Serialize 前捕获并再次核对，准备结束再严格复查；恢复顺序为游戏内缓存→食材缓存→五个保存根。显式强 handle 上限为21，四份 Data 标量检查保留。
+
+176项测试通过仅证明CLR控制和此前TCP范围；[本轮记录](development/logs/guest-ingame-cache-build-verification.json)的插件构建警告视为错误通过。原生类型/分配和七步切换未执行，进入/静止及客机、世界、背包权限均false。每人独立容量和负重保持；完整M3—M7仍需资源/角色/余下缓存/全输出隔离、房主地图采用、个人捕获与返航、真实双端及冷配置验收。

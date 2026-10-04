@@ -2,7 +2,7 @@
 
 这是按用户提出的“房主掌主动权，第二人充当员工”确定的首版玩法方案。
 房主带队潜水，员工提供捕鱼和搬运协作，长期进度归房主。
-当前源码为0.1.20-dev、协议5、174项CLR/TCP测试通过；本文件区分玩法约定、CLR基础和待接游戏行为。
+当前源码为0.1.21-dev、协议5，176项Core测试通过，插件Build警告视为错误通过；本文件区分玩法约定、CLR基础和待接游戏行为。
 现有地图选择仅是候选，未实现地图采用、员工原生操作、独立工作背包或返航结算。
 
 ## 首版规则
@@ -194,3 +194,7 @@ Unity线程内即时复制参数及袋重量/容量直接字段，只排队CLR�
 0.1.19版交互准备只补客机临时状态基础，未开放员工捕获/入仓权限；每人独立容量和负重、房主原袋不重复Add、员工逐产物结算规则保持。完整缓存及旧引用边界见[GUEST_RUNTIME_CACHES](GUEST_RUNTIME_CACHES.md)。
 
 0.1.20 已将[独立食材缓存准备/恢复](GUEST_INGREDIENT_CACHE.md)接入第六步源码，174项测试仅覆盖CLR控制及此前范围；[当前摘要](../logs/guest-ingredient-cache-build-verification.json)不证明原生运行。每人独立容量/负重及房主唯一长期收益规则保持；完整资源、缓存、真实地图、捕鱼分流、返航和双游戏仍待验收。
+
+0.1.21 增加第七[Ingame缓存](GUEST_INGAME_CACHE.md)，[API](GUEST_INGAME_API.md)核对六类记录及mutable子图。非空SubHelperSpecData和live gearQueue未支持时拒绝，不分享、不改空。三known原图在Serialize前闭合，准备后strict复查；七步按7→6→Save5恢复，21explicit handles/4Data stamps，第七singlefield无Mixed。176项Core仅控制证据，[本轮摘要](../logs/guest-ingame-cache-build-verification.json)的插件构建警告视为错误通过，native候选未执行。
+
+临时缓存副本不提供员工装备、工具、背包或捕获权限；entry/quiet/native/guest/world/bag仍false。每人的独立容量、重量与负重不变，房主原袋不补Add、员工未入仓产物须逐项真实确认。完整资源/actor/其它缓存/输出、房主地图采用、个人捕获与正常返航、实际双端/冷配置和M3—M7仍待完成。

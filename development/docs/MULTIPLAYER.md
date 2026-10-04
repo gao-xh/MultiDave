@@ -1,6 +1,6 @@
 # 第二角色与传输层
 
-当前源码 `0.1.20-dev`、协议 5，Build 警告视为错误通过、Test-Core 174/174 通过；本轮未部署/启动。
+当前源码 `0.1.21-dev`、协议 5，Test-Core 176/176 通过，插件 Build 警告视为错误通过；未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 `0.1.11-dev`。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，主菜单启动通过不扩展为玩法验收。
@@ -13,7 +13,7 @@ M2 在 0.1.2-dev 的真实潜水中通过基础验收。M3 会话/资源键/布�
 0.1.7-dev 用户确认预览鱼可见但会突然消失；日志定位到角色临时部件销毁触发自动断开。
 0.1.8-dev 已修复该失败路径但仍自动换鱼。0.1.9-dev 锁定目标，用户确认不再突然消失；动画、Disconnect/返航及两游戏验收待完成。
 启动证据见 `../logs/network-bootstrap-verification.json`，海洋同步、探针和一条鱼显示诊断见 [WORLD_SYNC](WORLD_SYNC.md)。
-当前边界见[客机食材缓存构建摘要](../logs/guest-ingredient-cache-build-verification.json)，0.1.14历史传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，已安装0.1.12-dev见[操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史0.1.11-dev潜水边界见[鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
+当前边界及构建结果见[游戏内缓存摘要](../logs/guest-ingame-cache-build-verification.json)，0.1.14历史传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，已安装0.1.12-dev见[操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史0.1.11-dev潜水边界见[鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
 
 ## M2 显示对象
 
@@ -185,7 +185,7 @@ DAVECOOP_LAYOUT_READY / WARNING。真实验证至少覆盖本机显示、双机�
 dotnet run --project development/tests/DaveCoop.Core.Tests/DaveCoop.Core.Tests.csproj
 ```
 
-本机当前已通过 170/170 项测试。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
+本机当前已通过 176/176 项Core测试，插件Build警告视为错误通过；新增缓存用例不执行native helper。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
 JSON 数字结构往返、错误数据拒绝、拆包/截断、TCP 双端握手及双向快照、
 版本不匹配、并发发送、重复序号、连接关闭和读取取消；另覆盖场景握手与不一致超时、
 旧 epoch 清理、客机重载、身份/权限错误、时钟偏移、深拷贝与队列上限、
@@ -243,3 +243,5 @@ M4 下一步是本地来源/代次与跨机地址确认后的实际选择采用�
 实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。
 
 0.1.20 已将[独立食材缓存准备/恢复](GUEST_INGREDIENT_CACHE.md)接入第六步源码，174项测试仅覆盖CLR控制及此前范围；[当前摘要](../logs/guest-ingredient-cache-build-verification.json)不证明原生运行。每人独立容量/负重及房主唯一长期收益规则保持；完整资源、缓存、真实地图、捕鱼分流、返航和双游戏仍待验收。
+
+0.1.21 第七[Ingame缓存](GUEST_INGAME_CACHE.md)仍不接Network/GUI、不改变协议5或Ready。六种record有限子图及exact类型声明见[GUEST_INGAME_API](GUEST_INGAME_API.md)，non-null助手资源/live设备队列拒绝。三known原图先于Serialize闭合，准备后strict复查；7→6→Save5恢复、21explicit handles/4Data stamps，第七singlefield拒Mixed。176项仅CLR控制与此前TCP，native/entry/quiet/guest/world/bag权限false；[本轮摘要](../logs/guest-ingame-cache-build-verification.json)的插件构建警告视为错误通过，真实双游戏和个人捕获返航仍待验收。

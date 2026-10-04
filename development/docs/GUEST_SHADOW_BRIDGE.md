@@ -34,7 +34,7 @@ bridge 从 `Singleton<SaveSystem>._instance` 及 SaveSystem 的四个直接 mana
 
 生成 wrapper 本身也有强 GC handle；桥额外拥有的 handle 用于明确 lease 生命周期，只释放自己的句柄，不接触 wrapper 私有 `myGcHandle`。本机 IL 与同 commit 官方源码已核对：[Il2CppObjectBase](https://github.com/BepInEx/Il2CppInterop/blob/dbda1cb353b0f4253345dc45136d170b9e50a5a0/Il2CppInterop.Runtime/InteropTypes/Il2CppObjectBase.cs)、[IL2CPP GC API](https://github.com/BepInEx/Il2CppInterop/blob/dbda1cb353b0f4253345dc45136d170b9e50a5a0/Il2CppInterop.Runtime/IL2CPP.cs)。这项框架证据不证明四个 closed generic 克隆的游戏行为或 ABI 已通过实测。
 
-桥没有把原 Interaction 的缓存引用复制到新对象，也没有调用 Sync；构造器是否隐式复用状态仍未实测。它目前只是新建临时对象，不能证明与 player shadow 的交互状态一致。顶层指针不同、版本相同和序列化可编译都不证明可变子树深复制、Obscured 私有状态完整、旧 saveable/delegate/iterator 脱离或运行缓存隔离。
+0.1.18初版没有把原 Interaction 的缓存引用复制到新对象，也没有调用 Sync；构造器是否隐式复用状态仍未实测。该初版只是新建临时对象，不能证明与 player shadow 的交互状态一致；0.1.19及之后的typed接线见文末。顶层指针不同、版本相同和序列化可编译都不证明可变子树深复制、Obscured 私有状态完整、旧 saveable/delegate/iterator 脱离或运行缓存隔离。
 
 ## 回读、补偿与保留
 
@@ -65,3 +65,13 @@ bridge 捕获四个 manager 的 `IsNewData` backing field，以及四个原 Data
 显式strong handle上限为18：既有15加IngredientsStorage singleton、原storage和新storage；原storage=null不Keep(null)，且拒绝准备。临时构造graph由helper强持有，unknown时整backend保留；wrapped Entry读取仍可分配native box，18不包括框架内部wrapper handles或所有临时分配。
 
 AllSaveRoots只查五根，cache读guard只查lease/thread/refs/managers/scalars，不要求自己的baseline就绪或递归读图。最终AllRoots、Confirm及free检查六步；卸fence后known原图读不要求fence仍active。OwnedMixed只允许cache组合，未知/外来不写，已进入结果不重派发。实际helper/ABI/静止及全部资源缓存尚未运行或验证。
+
+## 0.1.21 七步与三份早期原图
+
+当前0.1.21-dev/协议5新增[NativeGuestIngameCache合同](GUEST_INGAME_CACHE.md)，声明见[GUEST_INGAME_API](GUEST_INGAME_API.md)。固定顺序是五个Save manager根→第六IngredientsCache→第七IngameCache；恢复按7→6→Save5。第七只有ingameSaveDatas一个字段，必须Original/Detached/Foreign/Unknown，不允许OwnedMixed；这个状态仍只用于第六组合步骤。
+
+Capture在任何Serialize之前冻结Interaction、Ingredients、Ingame三份known baseline，全部捕获结束再核对三份原图，防止后续捕获使早期基线失效。Prepare三项全部完成后再strict核对，不能只依赖各helper刚准备完时的局部成功。它们是顺序已知图检查，仍不证明原生全局静止或完整图。
+
+explicit strong handle上限从历史18增至21：再加IngameSaveDataManager singleton、原ingameSaveDatas与新dictionary；原null不Keep(null)，准备拒绝。四Data scalar stamps保持四份。轻量cache guard不递归自己的完整图；最终七根读回、三份原known图确认、真实静止及输出围栏条件共同约束卸fence/free，未知结果保留整个backend/handles/围栏且不重复派发。
+
+六record采用已覆盖字段/集合的有限schema；非空SubHelperSpecData和live gearQueue拒绝，不清空、不分享替代。ordinary record的exact native class与object_new+IntPtr包装仅候选，class store初始化也非纯CLR；原生分配/写入/ABI未执行。[本轮摘要](../logs/guest-ingame-cache-build-verification.json)记录176项Core已通过、插件Build警告视为错误通过，无nativehelper/完整隔离证据。CanEnterBoundary/HasQuiescentBoundary及native/guest/world/bag权限保持false，没有Network/GUI自动调用。

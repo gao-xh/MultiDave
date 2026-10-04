@@ -1,6 +1,6 @@
 # 客机运行缓存的类型与恢复边界
 
-五个 manager 根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。0.1.19仅做离线研究，定位第一个可实施的 typed 缓存部分；没有安装、切换、清空或恢复任何游戏缓存，没有调用 Init、Load、Build、克隆或存档。已有桥的真实进入和静止边界仍关闭，`GuestStateIsolated`、`RuntimeCachesIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority` 均不能因此开放。
+五个 manager 根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。本页初版0.1.19为离线研究；当前0.1.21已增加有限typed缓存源码，176项Core通过、插件Build警告视为错误通过，见[本轮摘要](../logs/guest-ingame-cache-build-verification.json)。没有安装、切换、清空或恢复任何游戏缓存，没有调用 Init、Load、Build、克隆或存档。已有桥的真实进入和静止边界仍关闭，`GuestStateIsolated`、`RuntimeCachesIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority` 均不能因此开放。
 
 [Inspect-GuestRuntimeCacheApi.ps1](../scripts/Inspect-GuestRuntimeCacheApi.ps1) 用 Cecil 读取已生成的游戏、Il2Cppmscorlib 和 Interop.Runtime 元数据与包装器 IL。运行命令：
 
@@ -84,7 +84,7 @@
 
 枚举 `CharcterEquip` 拼写来自原声明，不能擅自改成 CharacterEquip。所有派生类另有 IntPtr wrapper 构造，它们不深复制底层对象。
 
-非空表需要按实际 native 类型处理；只复制 base InGameSaveData 或外层 Dictionary 会遗留装备列表、助手 slot、装置 slot 和对象保存 Data。未知派生类型、key/type 不符、重复对象或未知子结构都应拒绝准备，而非略过。需要继续研究 slot/Data 子结构的完整复制和恢复。
+非空表需要按实际 native 类型处理；只复制 base InGameSaveData 或外层 Dictionary 会遗留装备列表、助手 slot、装置 slot 和对象保存 Data。未知派生类型、key/type 不符、重复对象或未知子结构都应拒绝准备，而非略过。0.1.21的[精确子字段](GUEST_INGAME_API.md)与[有限typed合同](GUEST_INGAME_CACHE.md)支持已覆盖内容；非空SubHelperSpecData/live设备子图仍拒绝，不能把原状态改空替代。
 
 原入海入口有 `IngameSaveDataManager.Clear()` 静态目标。它可以帮助定位新潜水临时表的边界，但不证明每条入口分支都必然清空。只有真实入口意图和该清理阶段已证明，才能准备 owned 空表并保留原表待恢复；不能在任意连接时丢弃原非空表或将空表称为完整 clone。
 
@@ -106,7 +106,7 @@ LootBox 的 direct 会话状态另有 `m_CharacterStatus`、`m_LootBoxEventListe
 
 ## 后续 typed capture / prepare / validate / restore 合同
 
-推荐先实现 IngredientCache 的有限合同，独立于五个已存在的 manager root；本轮未实现以下源码 API。
+以下为0.1.19提出的IngredientCache有限合同，独立于五个manager根；0.1.20已实现的范围见文末专页，不能把原建议当作完整资源验证。
 
 1. Capture 固定本租约、Unity 线程、实际 SingletonNoMono 实例、原 m_Storage 指针和 m_IsLoaded，强持有原容器及原状态。读取有界条目/数组前后核对容器版本和身份；超限、未知字段、读取错误或实例变化拒绝，不截断后报告完整。
 2. Prepare 只创建新 dictionary、每条新 IngredientsData 和每条新 counts。原字典及所有原数组均不写；不要调用 Storage.Init/Load/Reset。候选实现可限制 4096 条、每条 16 个 count，这只是待审查的 Mod 配额，超过便失败，并非游戏容量事实。
@@ -121,3 +121,7 @@ LootBox 的 direct 会话状态另有 `m_CharacterStatus`、`m_LootBoxEventListe
 Dictionary.Entry 包装器继承 Il2CppSystem.ValueType，但本机 CLR `IsValueType=false`；与真正 CLR struct DateTime 不同。别名检查必须展开 Entry 的 key/value 等可变引用，不能将所有 IL2CPP 值类型 wrapper 一律视为无引用 leaf。direct proxy 仍属于原生内存访问，只读元数据和可编译 typed 签名不能代替实际 ABI、深复制、线程、完整 writer 或静止验证。边界未证明之前不连接游戏入口，也不授予客机世界和收益权限。
 
 0.1.20 已实现首个[typed食材缓存合同](GUEST_INGREDIENT_CACHE.md)并接入六步源码，精确字段补充见[GUEST_INGREDIENT_API](GUEST_INGREDIENT_API.md)。原Entry/Entity已知实例图准备独立副本，不把Parent/static目录当只读；实际native、完整缓存和消费者旧引用隔离仍未证。
+
+0.1.21 增加第七[Ingame缓存](GUEST_INGAME_CACHE.md)，[API](GUEST_INGAME_API.md)包含六record、mutable slots/Data、集合声明及exactclass候选。ordinary record object_new+IntPtr未执行；非空助手资源/live gearQueue拒绝，六kind schema不等于六种完整深复制。三known基线在Serialize前捕获闭合，Prepare后strict复查；恢复7→6→Save5，21explicit handles/4Data stamps，第七singlefield无Mixed。
+
+Mission、资源、旧UI/closures、独立actor和其它运行缓存/所有输出仍需实际隔离；本轮176项只验证CLR控制，插件Build警告视为错误通过，entry/quiet/native/guest/world/bag权限false。没有个人袋、地图采用或返航收益权限；每人独立容量/负重和完整M3—M7/双端/冷配置目标保持。
