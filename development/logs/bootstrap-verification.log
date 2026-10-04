@@ -1,0 +1,8 @@
+[Warning:Il2CppInterop] Class::Init signatures have been exhausted, using a substitute!
+[Info   :   BepInEx] Loading [DaveCoop Prototype 0.1.0]
+[Info   :DaveCoop Prototype] DAVECOOP_BOOTSTRAP_OK: DaveCoop Prototype 0.1.0; Unity 6000.0.52f1
+[Message:   BepInEx] Chainloader startup complete
+[Info   :DaveCoop Prototype] DAVECOOP_UPDATE_OK: Unity is calling the diagnostic component.
+[Info   :DaveCoop Prototype] DAVECOOP_SCENE: DR_Start
+[Info   :DaveCoop Prototype] DAVECOOP_SCENE: DR_Logo
+[Info   :DaveCoop Prototype] DAVECOOP_SCENE: DR_Title

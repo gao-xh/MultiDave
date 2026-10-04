@@ -1,0 +1,14 @@
+{
+  "steamAppId": "1868140",
+  "pluginVersion": "0.1.0",
+  "testedUnityVersion": "6000.0.52f1",
+  "testedSteamBuildId": "25315876",
+  "bepinex": {
+    "version": "6.0.0-be.788+5b766a3",
+    "url": "https://builds.bepinex.dev/projects/bepinex_be/788/BepInEx-Unity.IL2CPP-win-x64-6.0.0-be.788%2B5b766a3.zip",
+    "archive": "BepInEx-Unity.IL2CPP-win-x64-6.0.0-be.788.zip",
+    "sha256": "F4CC496BD098A0DF4164B81E3737297707F13A47C2478DBA2F60EEFAB784817A",
+    "coreSha256": "46CF1EF802BDF8CB6587FC1E4D98F7AF1073A60487B39A64E230E6F6E4C23AEC"
+  },
+  "repositoryUrl": "https://github.com/gao-xh/MultiDave"
+}

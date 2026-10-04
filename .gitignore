@@ -1,0 +1,6 @@
+.local/
+artifacts/
+bin/
+obj/
+*.user
+.vs/

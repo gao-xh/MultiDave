@@ -1,0 +1,4 @@
+interface:
+  display_name: "MultiDave 配置与开发"
+  short_description: "自动定位戴夫游戏，配置联机原型并验证加载，记录可接手的开发日志"
+  default_prompt: "使用 $dave-coop-setup 配置 MultiDave，检查游戏版本并验证插件加载。"
