@@ -1,6 +1,7 @@
 # 第二角色与传输层
 
-当前源码及部署版本 `0.1.12-dev`、协议 4，编译及 109/109 核心测试通过；新进程加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
+当前源码 `0.1.13-dev`、协议 4，编译及 112/112 核心测试通过，本轮未部署/启动。
+当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 `0.1.11-dev`。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，主菜单启动通过不扩展为玩法验收。
 新版单游戏 TCP 偏移鱼群可见与原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
@@ -12,7 +13,7 @@ M2 在 0.1.2-dev 的真实潜水中通过基础验收。M3 会话/资源键/布�
 0.1.7-dev 用户确认预览鱼可见但会突然消失；日志定位到角色临时部件销毁触发自动断开。
 0.1.8-dev 已修复该失败路径但仍自动换鱼。0.1.9-dev 锁定目标，用户确认不再突然消失；动画、Disconnect/返航及两游戏验收待完成。
 启动证据见 `../logs/network-bootstrap-verification.json`，海洋同步、探针和一条鱼显示诊断见 [WORLD_SYNC](WORLD_SYNC.md)。
-当前构建边界见 [操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史 0.1.11-dev 启动及实机边界见 [鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
+当前构建边界见 [地图选择调用摘要](../logs/map-selection-call-build-verification.json)，已安装 0.1.12-dev 见 [操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史 0.1.11-dev 潜水边界见 [鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
 
 ## M2 显示对象
 
@@ -130,6 +131,11 @@ Unity 场景句柄和对象实例 ID 只用于本机生命周期；不能作为�
   六种动作模型都有格式/Gate，真实发射/QTE/召回/拾取因缺 actor/loadout、地图权限、guest 隔离、本地竞争裁定及 native bridge 保持拒绝执行。
 - Transmit 开启时独立在入海前后最多 1Hz 读取 MapRouteObservation，MAP_ROUTE_INPUTS 只在值变化时记录。
   cache/roadmap/first 缺失或 cache 太短分别失效并撤销旧稳定候选；候选 bSelected 层、加载名称和变化键不是完整路线/地图指纹或加载前接管。
+- 0.1.13-dev 新增默认关闭的 Observe map selection calls (read-only)，独立于 TCP/Ready/Transmit。
+  在 cache/restore postfix、IGP 原 __result postfix、Prefab IEnumerator factory prefix 和 SceneLoader.LoadSceneAsync prefix 共五处自然边界，当次 Unity 线程冻结有界 CLR。
+  全进程 1024 条、queue 64，非 main 跳过 native 读取；空选择/截断/读取错误明确，不保留 native wrapper；Disconnect 关闭并卸载自己的 Observer。
+  RouteFingerprint 只属于 MapRouteSelection，不是完整 IGP manifest；factory 不证明实际请求/完成，尚无所有选择先于所有加载的统一屏障，未共享/采用地图或调用选图/load/save 写入。
+  两处 IsInitDone 改读直接 backing field，完整加载后选择门槛未放宽；新 observer 仅编译通过，原生回调与卸载仍待实机。
 
 0.1.11-dev 实际 A03_01_02 已记录 49 条 Loopback Ready 概要、53 条 FishWorld 状态，观察/绑定/可显示/可见最大 16，
 网格顶点 662，未知/缺 Visual/显示错误为零。用户确认成对偏移鱼可见，捕获原鱼时副本同时消失，
@@ -171,7 +177,7 @@ DAVECOOP_LAYOUT_READY / WARNING。真实验证至少覆盖本机显示、双机�
 dotnet run --project development/tests/DaveCoop.Core.Tests/DaveCoop.Core.Tests.csproj
 ```
 
-本机当前已通过 109 项测试，覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
+本机当前已通过 112 项测试，覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
 JSON 数字结构往返、错误数据拒绝、拆包/截断、TCP 双端握手及双向快照、
 版本不匹配、并发发送、重复序号、连接关闭和读取取消；另覆盖场景握手与不一致超时、
 旧 epoch 清理、客机重载、身份/权限错误、时钟偏移、深拷贝与队列上限、
@@ -187,6 +193,7 @@ JSON 数字结构往返、错误数据拒绝、拆包/截断、TCP 双端握手�
 鱼群用例覆盖完整清单原子增删更新、每鱼历史/复制隔离、缺 Visual/终态保留、旧 epoch/修订、超时恢复及 4096/16 帧界限。
 路线/IGP 用例覆盖规范排序/文化稳定性、清单边界/连通性、资源模式、畸形/重复数据与复制所有权；
 这些是 CLR 描述夹具，不能证明已执行原生路线读取、交互挂钩或加载前地图接管。
+新增路线用例覆盖有效完整路线没有 groups 时仍不能成为完整 manifest、断链/畸形边界、深复制、排序/文化/正负零规范指纹，以及旧完整 manifest 黄金指纹兼容；不执行原生地图回调。
 操作用例覆盖 6 种意图 schema、规范指纹/复制、来源冒充、同键冲突、pending/terminal 重复、缓存淘汰后重放、
 业务拒绝 ID 消费、scene/room 失效、FIFO/限流/新鲜事实、目标池代次退休、装备/空间/阶段许可、派发租约与原生未知不重试。
 协议/会话用例另覆盖单 payload、协议 3 拒绝、方向/来源权限、guest outstanding 与结果指纹/operation 核对、动作队列上限和公平调度。

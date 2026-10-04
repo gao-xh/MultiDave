@@ -52,8 +52,8 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 `distribution/` 是供自动安装使用的本项目插件包。
 本仓库不分发游戏、游戏接口程序集、存档或 BepInEx 运行库。
 
-`codex/player-discovery` 分支源码及当前部署版本为 0.1.12-dev，协议 4，编译及 109/109 项核心测试通过；
-新进程已确认插件加载、Unity Update、网络入口及 4 条初始路线输入日志，仅主菜单启动通过。
+`codex/player-discovery` 分支当前源码为 0.1.13-dev、协议 4，编译及 112/112 项核心测试通过，本轮仅构建，未部署或启动。
+当前安装及最近新鲜启动为 0.1.12-dev/109 项测试；该进程已确认插件加载、Unity Update、网络入口及 4 条初始路线输入日志，仅主菜单启动通过。
 目标检查、潜水路线、场景切换与正常返航仍待实机，用户当前不方便试玩，手动验证已延后。最近完成潜水验证的是 0.1.11-dev，单游戏 TCP 鱼群显示与发射/挂钩/伤害只读观察已运行。
 用户确认偏移鱼群可见、捕获原鱼时对应副本也消失，关闭鱼群显示后恢复正常，操作和镜头正常。
 动画、完整捕获链、统一地图和正常返航仍待验收。
@@ -77,7 +77,10 @@ F11 新增默认关闭的 Display received fish roster 和 Observe host harpoon 
 真实游戏意图缺少可信玩家/装备、地图接管、客机隔离与原生执行桥，保持拒绝执行。
 Transmit 开启后独立在入海前后读取路线输入，每秒最多一次、值变化才记录；候选选中层不是完整地图选择。
 三种本机 TCP 操作夹具（往返、旧协议拒绝、取出后场景切换恢复）通过不等于两游戏联机或合作捕鱼通过。
-当前构建边界见 [操作门禁验证摘要](development/logs/fish-action-gate-build-verification.json)；历史鱼群与交互证据见 [0.1.11-dev 摘要](development/logs/fish-world-interaction-build-verification.json)。
+0.1.13-dev 新增默认关闭的 Observe map selection calls，独立于 TCP/Transmit，在原游戏 5 处自然调用中即时冻结有界 CLR 路线/IGP/加载参数。
+RouteFingerprint 只代表路线候选；IGP 枚举器工厂不证明加载请求或完成，未证明所有选择均先于所有加载，也未共享或采用房主地图。
+Mod 不持有原生包装器、不调用或改写选图/加载/存档入口；Disconnect 关闭并卸载自己的观察挂钩。新观察仅通过构建，尚无实机回调证据。
+当前构建边界见 [地图选择调用构建摘要](development/logs/map-selection-call-build-verification.json)；已安装版本见 [0.1.12-dev 操作门禁摘要](development/logs/fish-action-gate-build-verification.json)，历史鱼群与交互证据见 [0.1.11-dev 摘要](development/logs/fish-world-interaction-build-verification.json)。
 同一海洋、鱼与互动的实现范围见 [WORLD_SYNC](development/docs/WORLD_SYNC.md)。
 开发时使用编译和部署脚本；默认玩家安装包保持 0.1.0。
 

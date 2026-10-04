@@ -397,3 +397,33 @@
   已请求用户潜水做目标检查，确认操作/镜头，再Disconnect、正常返航保存退出。用户现不方便试玩，三项保持待验；继续不依赖试玩的开发。
 - 更新README、计划/接手/网络/世界说明、构建/核心摘要与配置Skill；公开范围只含本项目源码和已授权摘要。
   默认发行包仍0.1.0；继续加载前房主选图/客机临时状态及AI隔离、原生执行桥、完整捕获与返航账本和双游戏/冷配置验收。
+
+## 2026-10-04 — 加载阶段即时复制路线与原始IGP选择
+
+- 前轮0.1.12-dev已完成109项测试、部署/新鲜主菜单启动、日志/Skill，并公开推送b1629f6；属于具体目标进展。
+  本轮重新核对工作树干净、已安装哈希8F90042C…；用户仍不方便试玩，不重新启动游戏。
+  本轮源码0.1.13-dev只构建待部署，原生挂钩ABI、Probe、潜水路线和返航仍未通过。
+- 研究生成包装器确认：没有证明全路线/所有IGP在任何资源加载前都已选完，不能用后加载清单假设一个统一阶段。
+  SceneContext.firstData/GetSelectedMapLayerCached、IGPSetController.IsInitDone/GetSaveableInterface会runtime_invoke；直接字段代理与主动getter区分。
+  私有元数据与研究笔记继续留.local，不提交游戏或生成互操作DLL。
+- 新增共享MapRouteSelection和ValidateRoute/CopyRoute/FingerprintRoute：完整3..32场景的唯一ID/名称、有限坐标、双向全链、文本边界及规范深复制。
+  route-only指纹为map-route-v1，完整map-selection-v1原字段顺序及IGP约束不变，路线候选不能充当完整世界权限。
+- MapSelectionCapture新增指定SceneContext的主线程即时读取，直接复制cache/roadmap/first及连接/偏移。
+  末尾重查列表数量/指针与入口以拒绝清空/替换；不含IGP、不要求已加载，也不缓存为新世界许可。
+  已加载完整读取复用同实现并保持原所有加载/IGP/注册/两帧条件；两处IsInitDone改直接backing字段。
+- MapSelectionHooks观察五处自然调用：cacheSelectedScenePath和LoadSceneMapCacheFromSave postfix、GetRandomIGPSetInfo原__result postfix、
+  IGPSetInfo.LoadPrefab工厂prefix、static SceneLoader.LoadSceneAsync(string,LoadSceneMode,bool) prefix。
+  MethodInfo精确检查声明/参数/static/返回，异步句柄只反射核对类型；callback全部void/by-value，不跳过原方法或改参数/结果。
+- 新MapSelectionHookCapture在确认Unity线程的原回调内即时复制，只将纯CLR路线/选择项/资源key排队。
+  非主线程不读任何Unity字段/帧/name；每进程1024调用、队列64、每Update消费16，截断/缺项/错误明示。
+  先保留原始IGP返回项再读取可选控制器地址，地址错误不会丢失瞬时选择；Prefab工厂不作为实际请求或加载完成证据。
+  observer使用独立读取器，候选错误不会重置已加载manifest稳定窗口；copy错误/丢弃/线程统计跨开关保留。
+- F11新增默认关闭Observe map selection calls，独立于TCP和Transmit，可在入海前启用。
+  MAP_SELECTION_HOOKS_READY / MAP_SELECTION_CALL / MAP_SELECTION_OBSERVER_STATE / MAP_SELECTION_HOOKS_STOPPED提供安装、值与卸载证据入口。
+  Disconnect关闭并清理自己的observer；回调/卸载失败锁存到进程重启，只卸自己的Harmony Owner。
+- Test-Core 112/112通过；新增路线非完整manifest、链/边界、深复制/culture/顺序/±0和既有完整指纹黄金值检查。
+  最终Build-Plugin警告视为错误通过，SHA256：
+  `E5013FB314A17D618F50AF0D8FA3DFB35CCD161DF069703D2759D92FC0CFCCA3`。
+  新版未部署/启动/安装原生挂钩；实机最近启动保持0.1.12，最近完成潜水证据保持0.1.11。
+- 更新开发/接手/网络/世界文档、配置Skill和构建/核心摘要。默认发行包仍0.1.0。
+  后续验证原调用顺序与临时缓存，再实现分阶段房主选择传输/采用、客机临时状态/AI隔离、实际捕鱼和返航账本及双游戏/冷安装验收。

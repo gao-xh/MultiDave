@@ -102,6 +102,18 @@ description: Configure or continue development of the MultiDave prototype for Wi
   MAP_ROUTE_INPUTS 在Transmit开启时独立1Hz观察入海前后路线字段，区分cache/roadmap/first缺失和cache过短。
   不调用选图/加载/存档写入，完整路线和双游戏世界接管仍待验证；新版原生目标检查须另有实际结果日志。
   新构建及启动证据见fish-action-gate-build-verification.json；最近完整潜水证据保持0.1.11。
+- 源码0.1.13-dev新增共享MapRouteSelection与默认关闭的Observe map selection calls；112项核心测试及编译通过。
+  此版本当前未部署/未启动，实机最新启动保持0.1.12、完成潜水记录保持0.1.11；先读HANDOFF确认实际版本。
+  用户暂不方便试玩时继续准备代码，不把编译或旧会话当新版原生验证。
+  正常退出后部署并确认新版加载，若验证此功能，应在入海前F11开启Observe map selection calls。
+  该观察独立于TCP/Transmit，核对MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE。
+  5处自然调用只观察cache/restored路线、GetRandomIGPSetInfo原__result、LoadPrefab枚举器factory及SceneLoader.LoadSceneAsync参数。
+  Unity线程原回调内即时冻结值；仅CLR DTO排队，不在Drain延迟解引用native包装器；非主线程跳过原生读取。
+  1024全进程调用、队列64、每Update16；丢弃/读取错误/线程计数跨开关保留，缺项/截断明示。
+  RouteFingerprint只含路线，不是完整路线+IGP清单或epoch权限；枚举器factory不等于资源请求执行或加载完成。
+  控制器路径仍未验证跨机稳定，不能据候选推断同一海洋或全选择先于全加载；没有地图采用或游戏/存档写入。
+  Disconnect会关闭开关、卸载自己的owner并清CLR队列，核对MAP_SELECTION_HOOKS_STOPPED、后续操作及正常返航保存。
+  原生ABI、实际返回项复制、加载顺序及新版画面都待实机；摘要见map-selection-call-build-verification.json。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

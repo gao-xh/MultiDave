@@ -6,8 +6,8 @@
 自定义插件加载、Unity Update 回调，以及 `DR_Start`、`DR_Logo`、`DR_Title` 场景读取。
 插件日志证据见 `../logs/bootstrap-verification.log`。
 
-开发在 `codex/player-discovery` 分支，当前源码及部署版本为 `0.1.12-dev`、协议 4，编译及 109/109 项核心测试通过。
-新进程加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过；Probe、潜水路线、场景切换与正常返航仍待实机。
+开发在 `codex/player-discovery` 分支，当前源码为 `0.1.13-dev`、协议 4，编译及 112/112 项核心测试通过，本轮未部署/启动。
+当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 最近完成潜水验证的是 `0.1.11-dev`。
 新版单游戏 TCP 偏移鱼群可见和原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
 发射/挂钩/伤害只读观察已运行；动画、完整捕获链、路线完整读取与正常返航仍待验收。
@@ -24,7 +24,7 @@
 旧 M1 会话完整日志最终为 1886 条快照，记录 Boss 返回潜水、返航大厅及主菜单，无探针错误。
 M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态中原生玩家数为 1，
 摄像机均绑定本地玩家，F10 停用/重建及返航清理有日志，无警告，基础验收通过。
-新增纯 CLR 姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询、鱼群缓冲、路线/IGP 清单、交互绑定观察与操作门禁，当前 109 项测试通过。
+新增纯 CLR 姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询、鱼群缓冲、路线/IGP 清单、交互绑定观察、操作门禁及独立路线描述，当前 112 项测试通过。
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
 0.1.4-dev 引入默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，0.1.5-dev 加入一条鱼的 Sprite/Spine 显示验证入口。
@@ -88,7 +88,7 @@ BOOTSTRAP_OK（0.1.11-dev）、UPDATE_OK、NETWORK_READY 及 DR_Start/DR_Logo。
 地图清单失败 Selected route incomplete。已有 FISH_INTERACTION_STOPPED 与 NETWORK_DISCONNECTED；
 用户确认主动退出且未返航；正常返航保存及动画仍未确认。
 
-0.1.12-dev 当前构建范围见 [操作门禁构建摘要](../logs/fish-action-gate-build-verification.json)，编译及 109/109 测试通过，已部署并通过主菜单启动验证：
+0.1.12-dev 已安装构建范围见 [操作门禁构建摘要](../logs/fish-action-gate-build-verification.json)，该版编译及 109/109 测试通过，已部署并通过主菜单启动验证：
 
 - `FishActions` 定义 ProbeTarget、FireHarpoon、FireGun、SubmitQteInput、RecallHarpoon、RequestPickup 的 schema、复制及规范指纹；请求不含 damage、收益、native token 或代次。
 - 协议 4 的请求/结果各走独立有界 FIFO，来源来自握手绑定的玩家，guest 只接受与 outstanding 请求元数据及指纹一致的结果。
@@ -111,6 +111,20 @@ BOOTSTRAP_OK（0.1.11-dev）、UPDATE_OK、NETWORK_READY 及 DR_Start/DR_Logo。
 这是主菜单启动与初始只读输入证据，尚无新版 Probe、潜水路线、场景切换或正常返航实机验收。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，暂不催测；继续开发时不能将这些条目标为通过。
 
+0.1.13-dev 当前构建见 [地图选择调用构建摘要](../logs/map-selection-call-build-verification.json)，Build 及 112/112 核心测试通过；本轮没有部署、启动或原生回调验证。
+本次构建自写 DLL SHA256：`E5013FB314A17D618F50AF0D8FA3DFB35CCD161DF069703D2759D92FC0CFCCA3`，这不是安装/实机哈希证据。
+
+- F11 新增默认关闭的 Observe map selection calls (read-only)，独立于 TCP、Ready 和 Transmit，可在原游戏自然选择/加载边界观察。
+- `MapSelectionHooks` 五处入口：SceneContext.cacheSelectedScenePath 和 LoadSceneMapCacheFromSave 的 postfix、IGPSetController.GetRandomIGPSetInfo 的原 __result postfix、IGPSetInfo.LoadPrefab 枚举器工厂 prefix、SceneLoader.LoadSceneAsync(string,LoadSceneMode,bool) prefix。
+  原方法不跳过、不修改参数/返回，不调用 MoveNext，不读取异步返回 handle；metadata 匹配和编译不证明原生 patch ABI 或调用顺序。
+- callback 当次确认 Unity 主线程后复制直接字段到有界 CLR；native wrappers 仅在立即复制期间使用，不放进 queue/drain/network。
+  非 main 回调跳过 native 读取并记录线程原因；全进程最多 1024 条、queue 64，空选择、截断、不可用路线和 ReadError 分开报告。
+- `MapRouteSelection` / ValidateRoute / CopyRoute / FingerprintRoute 使用严格 3..32 场景全链、有限数值、唯一身份和深复制。
+  RouteFingerprint 为 map-route-v1，完整 IGP manifest 仍为 map-selection-v1；路线已完整不能填补随后才选择的 IGP，旧完整指纹保持兼容。
+- `MapSelectionCapture` 两处 IsInitDone 改为直接 backing field；加载后完整选择仍要求 Loaded、每场景 IGP、原注册集合一致和两帧稳定。
+- factory prefix 只证明枚举器工厂调用边界，不能证明真正资源请求、MoveNext 或加载完成。尚无所有 selected-before-all-loaded 的全局时序证据，未共享/采用地图或调用选图/load/save 写入。
+- Disconnect 关闭并卸载本 Observer，清理自己的有界队列；新挂钩安装/自然回调/卸载须在之后真实游戏验证，用户当前不方便试玩，不催测。
+
 首次安装记录在忽略的 `artifacts/framework-install.json`；
 原始 EXE、GameAssembly.dll、UnityPlayer.dll 的 SHA256 经复核未改变。
 
@@ -129,7 +143,7 @@ BOOTSTRAP_OK（0.1.11-dev）、UPDATE_OK、NETWORK_READY 及 DR_Start/DR_Logo。
 
 M3 游戏适配实机验证和真实双游戏验收尚未完成。
 真实双游戏连接验收、客机原生鱼群/拾取接管与临时进度恢复均未完成。
-0.1.11-dev 的活动鱼群可见与移除同步已获用户确认，Fire/Hook/Damage 观察已有单游戏日志；0.1.12-dev 仅主菜单启动及初始路线输入通过，Probe/潜水路线/场景切换、动画、完整捕获链和路线完整读取仍待验证，不能据此标记 M4/M5 完成。
+0.1.11-dev 的活动鱼群可见与移除同步已获用户确认，Fire/Hook/Damage 观察已有单游戏日志；已安装 0.1.12-dev 仅主菜单启动及初始路线输入通过，新源码 0.1.13-dev 仅构建。自然地图调用、Probe/潜水路线/场景切换、动画、完整捕获链和路线完整读取仍待验证，不能据此标记 M4/M5 完成。
 服务器方案暂时搁置。当前包是验证开发入口的原型。
 
 ## 下一步
@@ -158,7 +172,9 @@ Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可�
 已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
 Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
 探针记录本机 ID 仅用于观察；网络数值实体已使用房主分配的 RoomId/epoch/EntityId。
-0.1.12-dev 已确认主菜单启动；在本次进程的 F11 / Local test 开启 Transmit read-only fish observations 后进入潜水。
+当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署 0.1.13-dev，核对新进程版本与加载，不以旧版启动证明新观察运行。
+在入海前开启独立 Observe map selection calls，核对 MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE、MAP_SELECTION_HOOKS_STOPPED 的五处自然边界、线程、路线候选、空/截断/读取错误及自己的卸载。
+随后按目标检查范围在 F11 / Local test 开启 Transmit read-only fish observations 后进入潜水。
 开启单鱼预览取得选中身份，点 Check selected fish target，核对 FISH_ACTION_SENT / ADMISSION / DECISION / RECEIVED 的请求元数据、指纹及 DryRunValidated/op0。
 测试源鱼移除、场景失效、Disconnect 与正常返航保存，不把拒绝或目标检查当捕获成功；再按需要开启 Display received fish roster 与只读交互观察。
 核对 WORLD_RECEIVED / NETWORK_STATE 及 FISH_WORLD_STATE / TRANSITION 的数字总数、可显示/未知资源/镜头内/节点数，

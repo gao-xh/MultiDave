@@ -5,13 +5,14 @@
 0.1.7-dev 用户确认鱼可见但镜头内突然消失，日志记录角色部件销毁导致自动断开。
 0.1.8-dev 没有旧异常，但用户确认标签换鱼及继续消失。0.1.9-dev 锁定身份并部署，用户确认不再突然消失。
 这些证据不证明两个游戏拥有同一地图、同一条鱼或共同捕获结果。
-当前源码及部署版本为 0.1.12-dev、协议 4，编译及 109/109 核心测试通过；新进程加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
+当前源码为 0.1.13-dev、协议 4，编译及 112/112 核心测试通过，本轮未部署/启动。
+当前安装及最近新鲜启动为 0.1.12-dev/109 项测试；加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 0.1.11-dev。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，保留主菜单启动通过和未验证边界。
 新版单游戏 TCP 偏移鱼群可见与原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
 Fire/Hook/Damage 成对观察已运行；动画、完整捕获链、路线完整读取和正常返航仍待验收。
 最近单鱼视觉稳定性证据来自 0.1.9-dev。
-当前构建范围见 [操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史实机见 [0.1.11-dev 鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，真实双游戏及真正合作捕获尚未完成。
+当前构建范围见 [地图选择调用摘要](../logs/map-selection-call-build-verification.json)，已安装 0.1.12-dev 见 [操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史潜水见 [0.1.11-dev 鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，真实双游戏及真正合作捕获尚未完成。
 
 ## 世界由房主裁定
 
@@ -67,7 +68,22 @@ sequenceDiagram
 并明确截断/扫描不完整/上限状态。变化键是诊断去重键，不是地图指纹或世界一致许可。
 完整清单读取分别报告 cache missing、roadmap missing、first scene missing、cache incomplete（太短），返回不可用并撤销旧稳定候选。
 候选选中层和加载名称不能回填为完整路线；仍要求原路线链、每场景 IGP、原注册集合一致和两帧稳定。
-本版主菜单启动已记录 4 条初始输入变化；尚待真实入海前后验证及完整路线采样，未接入加载前房主选图或客机进度隔离。
+0.1.12-dev 主菜单启动已记录 4 条初始输入变化；尚待真实入海前后验证及完整路线采样，未接入加载前房主选图或客机进度隔离。
+
+0.1.13-dev 新增独立 `MapRouteSelection` 与 ValidateRoute/CopyRoute/FingerprintRoute，严格共用完整 manifest 的路线校验，
+保持 3..32 场景、有效文本/有限几何、唯一 ID/名称和双向全链。逐元素拥有的 CLR 副本使用 map-route-v1 指纹；完整 manifest 的 map-selection-v1 仍必须含合法 IGP，旧指纹不变。
+路线与 IGP 的选择时间可能不同；已取得有效路线不构成完整世界选择。
+
+默认关闭的 F11 Observe map selection calls 独立于 TCP/Ready/Transmit；`MapSelectionHooks` 观察五处自然边界：
+cacheSelectedScenePath postfix、LoadSceneMapCacheFromSave postfix、GetRandomIGPSetInfo 的原 __result postfix、
+IGPSetInfo.LoadPrefab 的 IEnumerator 工厂 prefix、SceneLoader.LoadSceneAsync(string,LoadSceneMode,bool) prefix。
+确认 Unity 主线程时，在 callback 原引用仍有效的当次读取直接字段并冻结有界 CLR，不把 native wrapper/返回 handle 存入队列。
+非 main 回调跳过 native 读取；全进程最多 1024 条、queue 64，CLR 日志明确空选择、RouteUnavailableReason、截断和 ReadError。
+RouteFingerprint 仅路线候选；ResourceLoadCompletionObserved=false、HostSelectionApplied=false，controller address 跨机仍未验证。
+factory 调用不证明 MoveNext、真实资源请求或完成，SceneLoader prefix 不证明加载完成；不能把分散边界推成所有选择先于所有加载的全局屏障。
+Disconnect 关闭并卸载自己的 Observer；原方法保留自然执行，Mod 不调用或改写选图/load/save，也未共享/采用房主地图。
+加载后两处 IsInitDone 使用直接 backing field，原有 Loaded/每场景 IGP/注册集合/两帧完整要求保持。
+该版仅 Build/112 项核心测试通过，尚无新原生 ABI、回调时序、卸载或加载前捕获实机证据；用户当前不方便试玩，验证延后。
 
 ## 第二层：实体身份与鱼状态
 
@@ -172,7 +188,7 @@ Core/World 的 HostEntityRegistry 将本机对象 token 映射为房主分配的
 尚未开始的批次可替换。出站动作 FIFO、玩家移动和世界切片公平轮转，控制/心跳优先；入站世界只保留最新完整快照。
 禁止客机发布世界、禁止旧本地快照被改标为新 epoch，场景暂停/重载/关闭时清理缓存。
 
-当前核心总计 109/109 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
+当前核心总计 112/112 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
 修订更替/空清单、权限/epoch、容量/公平性、真实 TCP 数值清单/HP 更新/移除及旧协议拒绝。
 测试为 CLR 夹具；没有在两份游戏中调用捕鱼或物品 API。
 
@@ -339,7 +355,7 @@ F11 的 Check selected fish target 在 Guest 或 Local test 的 Ready/已选单�
 host 主线程重新 TryResolveNativeFish，并复核冻结身份和捕获/死亡状态，通过只返回 DryRunValidated、OperationId=0。
 状态读取前后复核 lifecycle 健康与代次，变化则撤销该次身份；同 epoch 开关观察保持世界 revision 单调。
 `FISH_ACTION_SENT` / ADMISSION / DECISION / RECEIVED 显示请求/结果及 NativeEffectsEnabled=false；未解析的目标明确拒绝。
-这个按钮只验证请求往返与有效目标，不发射鱼叉、不扣血或捕获。109 项核心测试及三种 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，不证明两个游戏或 M5 成功。
+这个按钮只验证请求往返与有效目标，不发射鱼叉、不扣血或捕获。当前 112 项核心测试及三种 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，不证明两个游戏或 M5 成功。
 0.1.12-dev 的新版 Probe 与真实游戏场景切换仍未执行验收；主菜单启动和初始 RouteInputs 不能代替这些行为。
 
 可复现元数据研究：`scripts/Inspect-FishInteractionApi.ps1`。确认鱼自身覆写 HookedByProjectile(ProjectileInfo) 和 WinFromProjectileinFight，

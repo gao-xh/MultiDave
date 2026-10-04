@@ -35,6 +35,11 @@ namespace DaveCoop.Networking
         private readonly RemoteFishWorld _fishWorld = new RemoteFishWorld();
         private readonly FishInteractionHooks _fishInteractions = new FishInteractionHooks();
         private MapSelectionCapture _mapSelection;
+        private readonly MapSelectionHooks _mapSelectionHooks = new MapSelectionHooks();
+        private MapSelectionHookCapture _mapCalls;
+        private bool _mapHooksBlocked;
+        private string _mapHookWarning;
+        private float _nextMapObserverLog;
         private readonly FishActionController _fishActions = new FishActionController();
         private string _lastRouteInputTrace;
         private float _nextRouteInputs;
@@ -91,6 +96,7 @@ namespace DaveCoop.Networking
                     _savedCursorVisible = Cursor.visible; _savedCursorLock = Cursor.lockState; _panelActive = true;
                 }
                 if (!NetworkDriver.ShowPanel.Value) RestoreCursor();
+                ObserveMapSelectionCalls();
                 ObserveRouteInputs();
                 FinishAttempt();
                 if (_peers == null) return;
@@ -179,6 +185,8 @@ namespace DaveCoop.Networking
                         FishInteractionNativeTargetsAtDrain = _nativeInteractionTargetsAtDrain,
                         FishInteractionNativeLookupErrors = _nativeInteractionLookupErrors,
                         MapSelectionFingerprint = _lastMapSelection, MapSelectionStatus = _mapSelectionStatus,
+                        MapSelectionHooks = _mapSelectionHooks.Installed, MapSelectionHooksHealthy = _mapSelectionHooks.Healthy,
+                        MapSelectionCallbackErrors = _mapSelectionHooks.CallbackErrors,
                         FishActionQueued = _fishActions.PendingCount, FishActionHighestRequestId = _fishActions.HighestRequestId,
                         FishActionReceived = _fishActions.ReceivedRequests, FishActionResults = _fishActions.ReceivedResults,
                         FishActionNativeLookupErrors = _fishActions.NativeLookupErrors,
@@ -373,6 +381,64 @@ namespace DaveCoop.Networking
             }
         }
 
+        private void ObserveMapSelectionCalls()
+        {
+            if (!NetworkDriver.ObserveMapSelectionCalls.Value)
+            {
+                StopMapSelectionCalls(); return;
+            }
+            if (_mapHooksBlocked) return;
+            try
+            {
+                if (_mapCalls == null) _mapCalls = new MapSelectionHookCapture(Environment.CurrentManagedThreadId);
+                bool wasInstalled = _mapSelectionHooks.Installed;
+                _mapSelectionHooks.Enable(_mapCalls.Capture);
+                _mapSelectionHooks.CheckHealthy();
+                if (!wasInstalled) NetworkDriver.Logger.LogInfo("DAVECOOP_MAP_SELECTION_HOOKS_READY: five read-only call observers installed; original arguments/results unchanged.");
+                int drained = 0;
+                while (drained++ < 16 && _mapCalls.TryTake(out MapSelectionCallObservation observation))
+                    NetworkDriver.Logger.LogInfo("DAVECOOP_MAP_SELECTION_CALL: " + JsonSerializer.Serialize(observation));
+                if (Time.unscaledTime >= _nextMapObserverLog)
+                {
+                    _nextMapObserverLog = Time.unscaledTime + 2;
+                    NetworkDriver.Logger.LogInfo("DAVECOOP_MAP_SELECTION_OBSERVER_STATE: " + JsonSerializer.Serialize(new
+                    {
+                        _mapSelectionHooks.Installed, _mapSelectionHooks.Healthy, _mapSelectionHooks.CallbackErrors,
+                        _mapSelectionHooks.ProcessAccepted, _mapSelectionHooks.ProcessLimitReached,
+                        HookDropped = _mapSelectionHooks.Dropped, _mapSelectionHooks.CleanupVerified,
+                        CopyDropped = _mapCalls.Dropped, _mapCalls.UnexpectedThreads, _mapCalls.ReadErrors,
+                        ObservationOnly = true, HostSelectionApplied = false
+                    }));
+                }
+            }
+            catch (Exception error)
+            {
+                _mapHooksBlocked = true;
+                ReportMapHookError(error);
+                StopMapSelectionCalls();
+            }
+        }
+
+        private void StopMapSelectionCalls()
+        {
+            bool hadObserver = _mapCalls != null || _mapSelectionHooks.Installed;
+            _mapCalls?.Stop(); _mapCalls = null;
+            try
+            {
+                _mapSelectionHooks.Dispose();
+                if (hadObserver && _mapSelectionHooks.CleanupVerified)
+                    NetworkDriver.Logger.LogInfo("DAVECOOP_MAP_SELECTION_HOOKS_STOPPED: own registrations removed; copied observation queue cleared.");
+            }
+            catch (Exception error) { _mapHooksBlocked = true; ReportMapHookError(error); }
+        }
+
+        private void ReportMapHookError(Exception error)
+        {
+            string message = error.GetType().Name + ": " + error.Message;
+            if (_mapHookWarning != message) NetworkDriver.Logger.LogWarning("DAVECOOP_MAP_SELECTION_HOOK_WARNING: " + message);
+            _mapHookWarning = message;
+        }
+
         private void ObserveFishInteractions()
         {
             if (!NetworkDriver.ObserveFishInteractions.Value || !NetworkDriver.TransmitFishObservations.Value ||
@@ -471,7 +537,7 @@ namespace DaveCoop.Networking
                 }
             }
             if (NetworkDriver.ShowPanel == null || !NetworkDriver.ShowPanel.Value) return;
-            GUI.Box(new Rect(12, 170, 640, 452), "MultiDave LAN prototype — F11");
+            GUI.Box(new Rect(12, 170, 640, 484), "MultiDave LAN prototype — F11");
             GUI.Label(new Rect(24, 194, 616, 28), "Player/fish display tests. Cooperative capture is still in development.");
             bool idle = _pending == null && _peers == null;
             bool originalEnabled = GUI.enabled;
@@ -501,12 +567,14 @@ namespace DaveCoop.Networking
             if (worldDisplay != NetworkDriver.ShowFishWorld.Value) NetworkDriver.ShowFishWorld.Value = worldDisplay;
             bool interaction = GUI.Toggle(new Rect(24, 464, 612, 25), NetworkDriver.ObserveFishInteractions.Value, "Observe host harpoon and fish interactions (read-only)");
             if (interaction != NetworkDriver.ObserveFishInteractions.Value) NetworkDriver.ObserveFishInteractions.Value = interaction;
+            bool mapCalls = GUI.Toggle(new Rect(24, 495, 612, 25), NetworkDriver.ObserveMapSelectionCalls.Value, "Observe map selection calls (read-only)");
+            if (mapCalls != NetworkDriver.ObserveMapSelectionCalls.Value) NetworkDriver.ObserveMapSelectionCalls.Value = mapCalls;
             SessionPeer guest = _peers?.Loopback ?? (_peers?.Main.Snapshot.Role == SessionRole.Guest ? _peers.Main : null);
             GUI.enabled = originalEnabled && guest != null && guest.Snapshot.Phase == SessionPhase.Ready && _fishPreview.SelectedEntity > 0;
-            if (GUI.Button(new Rect(24, 498, 220, 26), "Check selected fish target")) _fishActions.SubmitProbe(guest, _fishPreview.SelectedEntity);
+            if (GUI.Button(new Rect(24, 530, 220, 26), "Check selected fish target")) _fishActions.SubmitProbe(guest, _fishPreview.SelectedEntity);
             GUI.enabled = originalEnabled;
-            GUI.Label(new Rect(256, 498, 380, 26), _fishActions.Status);
-            GUI.Label(new Rect(24, 532, 612, 65), _message);
+            GUI.Label(new Rect(256, 530, 380, 26), _fishActions.Status);
+            GUI.Label(new Rect(24, 565, 612, 65), _message);
         }
 
         private void Start(string mode)
@@ -584,6 +652,11 @@ namespace DaveCoop.Networking
 
         private void Disconnect()
         {
+            if (_mapCalls != null || _mapSelectionHooks.Installed)
+            {
+                NetworkDriver.ObserveMapSelectionCalls.Value = false;
+                StopMapSelectionCalls();
+            }
             bool hadSession = _peers != null || _pending != null;
             _attempt?.Cancel();
             Task<Peers> pending = _pending; _pending = null;
@@ -612,6 +685,6 @@ namespace DaveCoop.Networking
             Cursor.visible = _savedCursorVisible; Cursor.lockState = _savedCursorLock; _panelActive = false;
         }
 
-        public void Dispose() { Disconnect(); RestoreCursor(); }
+        public void Dispose() { StopMapSelectionCalls(); Disconnect(); RestoreCursor(); }
     }
 }

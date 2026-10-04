@@ -1,13 +1,13 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T07:22:10.3245708Z",
-  "PluginVersion": "0.1.12-dev",
+  "RecordedUtc": "2026-10-04T07:40:41.3736855Z",
+  "PluginVersion": "0.1.13-dev",
   "VerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1"
   ],
-  "CoreTestsPassed": 109,
-  "CoreTestsTotal": 109,
+  "CoreTestsPassed": 112,
+  "CoreTestsTotal": 112,
   "TestNames": [
     "timeline boundaries and interpolation",
     "timeline capacity, ordering and reset",
@@ -88,6 +88,9 @@
     "map selection invalid strings and numbers",
     "map selection route connectivity and prefab modes",
     "map selection maximum bounded manifest",
+    "route candidate is not a complete manifest",
+    "route candidate chain and boundary rejection",
+    "route copy ownership and canonical compatibility",
     "fish world atomic roster and DTO ownership",
     "fish world invalid batch preserves committed state",
     "fish world independent interpolation and visual recovery",
@@ -120,7 +123,7 @@
     "TCP fish action protocol three rejection"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B",
+  "CompiledPluginSHA256": "E5013FB314A17D618F50AF0D8FA3DFB35CCD161DF069703D2759D92FC0CFCCA3",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
@@ -129,6 +132,6 @@
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Pure CLR math/protocol/session/world/render-buffer fixtures plus fish-action schema, source binding, request fingerprint and replay fences, bounded FIFO, fresh facts, dispatch lease and unknown-outcome non-retry. Actual loopback TCP tests cover request/result delivery, protocol-3 rejection, and scene invalidation after host take/admission followed by same-room recovery. Native target probes, map capture, effect dispatch, captures/rewards, normal return and two-game shared-world control are separate acceptance items.",
+  "Scope": "Pure CLR protocol/session/world/fish-action fixtures plus shared route-only schema, deep ownership, route chain rejection and fixed historical full-manifest hash compatibility. A valid route without IGP groups cannot be promoted to a full manifest. Native hook installation, original IGP return capture, loading order and cross-machine map adoption are separate unverified items. Native effect dispatch, captures/rewards, normal return and two-game shared-world control remain unverified.",
   "ProtocolVersion": 4
 }

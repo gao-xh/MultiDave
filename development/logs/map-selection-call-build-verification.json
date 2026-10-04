@@ -1,0 +1,48 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-04T07:40:41.4004164Z",
+  "PluginVersion": "0.1.13-dev",
+  "ProtocolVersion": 4,
+  "CompiledPluginSHA256": "E5013FB314A17D618F50AF0D8FA3DFB35CCD161DF069703D2759D92FC0CFCCA3",
+  "WarningAsErrorCompilationPassed": true,
+  "CoreTestsPassed": 112,
+  "CoreTestsTotal": 112,
+  "Deployed": false,
+  "NativeBootstrapVerified": false,
+  "NativeMapHooksInstalled": false,
+  "NativeMapHookAbiVerified": false,
+  "NativeMapCallbacksObserved": false,
+  "NativeRouteCandidateCaptured": false,
+  "NativeOriginalIgpReturnCopied": false,
+  "NativeSelectionLoadOrderVerified": false,
+  "AllSelectionsAvailableBeforeFirstLoadVerified": false,
+  "HostSelectionApplied": false,
+  "GuestNativeAIIsolated": false,
+  "NativeEffectDispatchImplemented": false,
+  "CooperativeFishingVerified": false,
+  "NativeNormalReturnVerified": false,
+  "TwoGameInstancesVerified": false,
+  "ManualGameplayDeferredByUser": true,
+  "InstalledPluginVersion": "0.1.12-dev",
+  "InstalledPluginSHA256": "8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B",
+  "MostRecentDiveEvidenceVersion": "0.1.11-dev",
+  "Limits": {
+    "ProcessCallbacks": 1024,
+    "CopiedEventQueue": 64,
+    "DrainPerUpdate": 16,
+    "RouteScenes": 32,
+    "PrefabNameCharacters": 512
+  },
+  "ObservedNativeDeclarations": [
+    "SceneContext.cacheSelectedScenePath postfix",
+    "SceneContext.LoadSceneMapCacheFromSave postfix",
+    "IGPSetController.GetRandomIGPSetInfo original result postfix",
+    "IGPSetInfo.LoadPrefab factory prefix",
+    "SceneLoader.LoadSceneAsync(string,LoadSceneMode,bool) prefix"
+  ],
+  "VerificationCommands": [
+    "development/scripts/Build-Plugin.ps1",
+    "development/scripts/Test-Core.ps1"
+  ],
+  "Scope": "Compile and CLR tests only. Default-off, thread-fenced immediate copies at five native call boundaries; queue carries copied CLR values only. Route candidates and per-call IGP choices are observation evidence, not an epoch-bound map adoption permission. Prefab IEnumerator factory is not loading completion. No new game launch or gameplay while user testing is deferred."
+}

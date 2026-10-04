@@ -4,6 +4,14 @@ using System.Linq;
 
 namespace DaveCoop.Core.World
 {
+    // Route selection can exist before loaded IGP choices. This DTO deliberately
+    // has no groups and cannot establish a complete map selection manifest.
+    public sealed class MapRouteSelection
+    {
+        public int EntrySceneId { get; set; }
+        public MapRouteScene[] Scenes { get; set; }
+    }
+
     // A route/IGP selection description, not a player save or a complete world
     // snapshot. Hierarchy addresses are cross-machine identity candidates only.
     public sealed class MapSelectionManifest
@@ -50,36 +58,9 @@ namespace DaveCoop.Core.World
         public static void Validate(MapSelectionManifest manifest)
         {
             if (manifest == null) throw new ArgumentNullException(nameof(manifest));
-            if (manifest.EntrySceneId < 1 || manifest.Scenes == null || manifest.Scenes.Length < MinScenes ||
-                manifest.Scenes.Length > MaxScenes || manifest.Groups == null || manifest.Groups.Length == 0 ||
+            if (manifest.Groups == null || manifest.Groups.Length == 0 ||
                 manifest.Groups.Length > MaxGroups) throw new ArgumentException("Incomplete or excessive map selection.");
-            var byId = new Dictionary<int, MapRouteScene>(); var names = new HashSet<string>(StringComparer.Ordinal);
-            foreach (MapRouteScene scene in manifest.Scenes)
-            {
-                if (scene == null || scene.SceneId < 1 || scene.PreviousSceneId < 0 || scene.NextSceneId < 0 ||
-                    scene.SceneId == scene.PreviousSceneId || scene.SceneId == scene.NextSceneId ||
-                    char.IsControl(scene.Layer) || char.IsWhiteSpace(scene.Layer) || char.IsSurrogate(scene.Layer))
-                    throw new ArgumentException("Invalid route scene identity.");
-                Text(scene.SceneName, MaxSceneName, false); Text(scene.TopConnection, MaxConnection, true);
-                Text(scene.BottomConnection, MaxConnection, true);
-                Coordinate(scene.TopY); Coordinate(scene.BottomY); Coordinate(scene.Offset);
-                if (!float.IsFinite(scene.MapHeight) || scene.MapHeight <= 0 || scene.MapHeight > 1000000)
-                    throw new ArgumentException("Invalid route height.");
-                if (!byId.TryAdd(scene.SceneId, scene) || !names.Add(scene.SceneName))
-                    throw new ArgumentException("Ambiguous route scene identity.");
-            }
-            if (!byId.TryGetValue(manifest.EntrySceneId, out MapRouteScene first) || first.PreviousSceneId != 0)
-                throw new ArgumentException("Missing route entry.");
-            var visited = new HashSet<int>(); MapRouteScene current = first;
-            while (current != null)
-            {
-                if (!visited.Add(current.SceneId)) throw new ArgumentException("Cyclic route selection.");
-                if (current.NextSceneId == 0) break;
-                if (!byId.TryGetValue(current.NextSceneId, out MapRouteScene next) || next.PreviousSceneId != current.SceneId)
-                    throw new ArgumentException("Inconsistent route connection.");
-                current = next;
-            }
-            if (visited.Count != manifest.Scenes.Length) throw new ArgumentException("Disconnected route selection.");
+            Dictionary<int, MapRouteScene> byId = ValidateRoute(manifest.EntrySceneId, manifest.Scenes);
             var groupAddresses = new Dictionary<int, HashSet<string>>();
             foreach (MapGroupSelection group in manifest.Groups)
             {
@@ -93,6 +74,46 @@ namespace DaveCoop.Core.World
             }
         }
 
+        public static void ValidateRoute(MapRouteSelection route)
+        {
+            if (route == null) throw new ArgumentNullException(nameof(route));
+            ValidateRoute(route.EntrySceneId, route.Scenes);
+        }
+
+        private static Dictionary<int, MapRouteScene> ValidateRoute(int entrySceneId, MapRouteScene[] scenes)
+        {
+            if (entrySceneId < 1 || scenes == null || scenes.Length < MinScenes || scenes.Length > MaxScenes)
+                throw new ArgumentException("Incomplete or excessive route selection.");
+            var byId = new Dictionary<int, MapRouteScene>(); var names = new HashSet<string>(StringComparer.Ordinal);
+            foreach (MapRouteScene scene in scenes)
+            {
+                if (scene == null || scene.SceneId < 1 || scene.PreviousSceneId < 0 || scene.NextSceneId < 0 ||
+                    scene.SceneId == scene.PreviousSceneId || scene.SceneId == scene.NextSceneId ||
+                    char.IsControl(scene.Layer) || char.IsWhiteSpace(scene.Layer) || char.IsSurrogate(scene.Layer))
+                    throw new ArgumentException("Invalid route scene identity.");
+                Text(scene.SceneName, MaxSceneName, false); Text(scene.TopConnection, MaxConnection, true);
+                Text(scene.BottomConnection, MaxConnection, true);
+                Coordinate(scene.TopY); Coordinate(scene.BottomY); Coordinate(scene.Offset);
+                if (!float.IsFinite(scene.MapHeight) || scene.MapHeight <= 0 || scene.MapHeight > 1000000)
+                    throw new ArgumentException("Invalid route height.");
+                if (!byId.TryAdd(scene.SceneId, scene) || !names.Add(scene.SceneName))
+                    throw new ArgumentException("Ambiguous route scene identity.");
+            }
+            if (!byId.TryGetValue(entrySceneId, out MapRouteScene first) || first.PreviousSceneId != 0)
+                throw new ArgumentException("Missing route entry.");
+            var visited = new HashSet<int>(); MapRouteScene current = first;
+            while (current != null)
+            {
+                if (!visited.Add(current.SceneId)) throw new ArgumentException("Cyclic route selection.");
+                if (current.NextSceneId == 0) break;
+                if (!byId.TryGetValue(current.NextSceneId, out MapRouteScene next) || next.PreviousSceneId != current.SceneId)
+                    throw new ArgumentException("Inconsistent route connection.");
+                current = next;
+            }
+            if (visited.Count != scenes.Length) throw new ArgumentException("Disconnected route selection.");
+            return byId;
+        }
+
         // Arrays and every mutable element belong to the returned DTO. Canonical
         // order depends on scene IDs/addresses, not native discovery/list order.
         public static MapSelectionManifest Copy(MapSelectionManifest manifest)
@@ -101,13 +122,7 @@ namespace DaveCoop.Core.World
             return new MapSelectionManifest
             {
                 EntrySceneId = manifest.EntrySceneId,
-                Scenes = manifest.Scenes.OrderBy(scene => scene.SceneId).Select(scene => new MapRouteScene
-                {
-                    SceneId = scene.SceneId, SceneName = scene.SceneName, Layer = scene.Layer,
-                    TopConnection = scene.TopConnection ?? "", BottomConnection = scene.BottomConnection ?? "",
-                    TopY = scene.TopY, BottomY = scene.BottomY, MapHeight = scene.MapHeight, Offset = scene.Offset,
-                    PreviousSceneId = scene.PreviousSceneId, NextSceneId = scene.NextSceneId
-                }).ToArray(),
+                Scenes = CopyScenes(manifest.Scenes),
                 Groups = manifest.Groups.OrderBy(group => group.SceneId).ThenBy(group => group.ControllerAddress, StringComparer.Ordinal)
                     .Select(group => new MapGroupSelection
                     {
@@ -120,18 +135,47 @@ namespace DaveCoop.Core.World
         public static string Fingerprint(MapSelectionManifest manifest)
         {
             MapSelectionManifest canonical = Copy(manifest);
-            var hash = new CanonicalHash("map-selection-v1").Add(canonical.EntrySceneId).Add(canonical.Scenes.Length);
-            foreach (MapRouteScene scene in canonical.Scenes)
-            {
-                hash.Add(scene.SceneId).Add(scene.SceneName).Add((int)scene.Layer).Add(scene.TopConnection).Add(scene.BottomConnection)
-                    .Add(scene.TopY).Add(scene.BottomY).Add(scene.MapHeight).Add(scene.Offset)
-                    .Add(scene.PreviousSceneId).Add(scene.NextSceneId);
-            }
+            var hash = new CanonicalHash("map-selection-v1");
+            AddRoute(hash, canonical.EntrySceneId, canonical.Scenes);
             hash.Add(canonical.Groups.Length);
             foreach (MapGroupSelection group in canonical.Groups)
                 hash.Add(group.SceneId).Add(group.ControllerAddress).Add(group.Addressable ? 1 : 0)
                     .Add(group.SelectedPrefabName).Add(group.PrefabObjectName);
             return "map-selection-v1/" + hash.Finish();
+        }
+
+        public static MapRouteSelection CopyRoute(MapRouteSelection route)
+        {
+            ValidateRoute(route);
+            return new MapRouteSelection { EntrySceneId = route.EntrySceneId, Scenes = CopyScenes(route.Scenes) };
+        }
+
+        public static string FingerprintRoute(MapRouteSelection route)
+        {
+            MapRouteSelection canonical = CopyRoute(route);
+            // Separate hash domain prevents a route-only candidate from being
+            // confused with a complete route-and-IGP selection fingerprint.
+            var hash = new CanonicalHash("map-route-v1");
+            AddRoute(hash, canonical.EntrySceneId, canonical.Scenes);
+            return "map-route-v1/" + hash.Finish();
+        }
+
+        private static MapRouteScene[] CopyScenes(MapRouteScene[] scenes) =>
+            scenes.OrderBy(scene => scene.SceneId).Select(scene => new MapRouteScene
+            {
+                SceneId = scene.SceneId, SceneName = scene.SceneName, Layer = scene.Layer,
+                TopConnection = scene.TopConnection ?? "", BottomConnection = scene.BottomConnection ?? "",
+                TopY = scene.TopY, BottomY = scene.BottomY, MapHeight = scene.MapHeight, Offset = scene.Offset,
+                PreviousSceneId = scene.PreviousSceneId, NextSceneId = scene.NextSceneId
+            }).ToArray();
+
+        private static void AddRoute(CanonicalHash hash, int entrySceneId, MapRouteScene[] scenes)
+        {
+            hash.Add(entrySceneId).Add(scenes.Length);
+            foreach (MapRouteScene scene in scenes)
+                hash.Add(scene.SceneId).Add(scene.SceneName).Add((int)scene.Layer).Add(scene.TopConnection).Add(scene.BottomConnection)
+                    .Add(scene.TopY).Add(scene.BottomY).Add(scene.MapHeight).Add(scene.Offset)
+                    .Add(scene.PreviousSceneId).Add(scene.NextSceneId);
         }
 
         private static void Coordinate(float value)

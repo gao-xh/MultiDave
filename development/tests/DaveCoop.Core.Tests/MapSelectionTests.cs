@@ -139,6 +139,93 @@ internal static class MapSelectionTests
         Assert(MapSelections.Fingerprint(value) == expected, "maximum bounded manifest depended on discovery order");
     }
 
+    internal static void RouteCandidateIsNotCompleteManifest()
+    {
+        MapSelectionManifest complete = Example();
+        const string legacy = "map-selection-v1/0570621489ca994e1209b0a8c793973f8efa6b385e2735db6ae362740cf23e20";
+        Assert(MapSelections.Fingerprint(complete) == legacy, "shared route extraction changed the existing full-manifest fingerprint");
+        var route = new MapRouteSelection { EntrySceneId = complete.EntrySceneId, Scenes = complete.Scenes };
+        MapSelections.ValidateRoute(route);
+        string candidate = MapSelections.FingerprintRoute(route);
+        Assert(candidate.StartsWith("map-route-v1/", StringComparison.Ordinal) && candidate.Length == 77 && candidate != legacy,
+            "route-only candidate used the complete route-and-IGP fingerprint domain");
+        var incomplete = new MapSelectionManifest { EntrySceneId = route.EntrySceneId, Scenes = route.Scenes };
+        Reject(incomplete); incomplete.Groups = Array.Empty<MapGroupSelection>(); Reject(incomplete);
+        complete.Groups[0].SelectedPrefabName += "changed";
+        Assert(MapSelections.Fingerprint(complete) != legacy && MapSelections.FingerprintRoute(route) == candidate,
+            "later IGP selection changed route identity or disappeared from the complete identity");
+        incomplete.Groups = new MapGroupSelection[MapSelections.MaxGroups + 1]; Reject(incomplete);
+        Assert(MapSelections.FingerprintRoute(route) == candidate, "rejected complete manifest damaged its independently valid route");
+    }
+
+    internal static void RouteChainAndBoundaryRejection()
+    {
+        Throws<ArgumentNullException>(() => MapSelections.ValidateRoute(null));
+        InvalidRoute(r => r.EntrySceneId = 0); InvalidRoute(r => r.EntrySceneId = 10);
+        InvalidRoute(r => r.Scenes = null);
+        InvalidRoute(r => r.Scenes = new[] { r.Scenes[0], r.Scenes[1] });
+        InvalidRoute(r => r.Scenes = new MapRouteScene[MapSelections.MaxScenes + 1]);
+        InvalidRoute(r => r.Scenes[1].SceneId = r.Scenes[0].SceneId);
+        InvalidRoute(r => r.Scenes[1].SceneName = r.Scenes[0].SceneName);
+        InvalidRoute(r => r.Scenes[0].NextSceneId = 0);
+        InvalidRoute(r => r.Scenes[0].NextSceneId = 999);
+        InvalidRoute(r => r.Scenes[1].PreviousSceneId = 0);
+        InvalidRoute(r => r.Scenes[2].NextSceneId = 30);
+        InvalidRoute(r => r.Scenes[1].NextSceneId = r.Scenes[1].SceneId);
+        InvalidRoute(r => r.Scenes[0].SceneName = "invalid\ud800");
+        InvalidRoute(r => r.Scenes[0].Layer = '\uD800');
+        InvalidRoute(r => r.Scenes[0].TopConnection = "top\n");
+        InvalidRoute(r => r.Scenes[0].BottomConnection = new string('b', MapSelections.MaxConnection + 1));
+        InvalidRoute(r => r.Scenes[0].TopY = float.NaN);
+        InvalidRoute(r => r.Scenes[0].BottomY = float.NegativeInfinity);
+        InvalidRoute(r => r.Scenes[0].Offset = 1000001);
+        InvalidRoute(r => r.Scenes[0].MapHeight = 0);
+        InvalidRoute(r => r.Scenes[0].MapHeight = float.PositiveInfinity);
+    }
+
+    internal static void RouteCopyOwnershipAndCanonicalCompatibility()
+    {
+        MapRouteSelection source = RouteExample();
+        const string expected = "map-route-v1/7568e19089be0c484bd4473a98ba2d8768bb5146b72586caf3bd725ac6c9dba3";
+        Assert(MapSelections.FingerprintRoute(source) == expected, "route fingerprint lost its canonical field schema");
+        MapRouteSelection copy = MapSelections.CopyRoute(source);
+        Assert(copy.EntrySceneId == 30 && copy.Scenes[0].SceneId == 10 && copy.Scenes[1].SceneId == 20,
+            "route copy used native discovery order instead of canonical scene order");
+        source.EntrySceneId = 999; source.Scenes[0].SceneName = "changed"; source.Scenes[1] = null;
+        Assert(MapSelections.FingerprintRoute(copy) == expected, "frozen route retained mutable source arrays or elements");
+        MapRouteSelection next = MapSelections.CopyRoute(copy); next.Scenes[0].Offset += 0.25f;
+        Assert(MapSelections.FingerprintRoute(next) != expected && MapSelections.FingerprintRoute(copy) == expected,
+            "route copies shared geometry or omitted it from identity");
+        Array.Reverse(copy.Scenes);
+        CultureInfo before = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR"); copy.Scenes[0].Offset = -0f;
+            Assert(MapSelections.FingerprintRoute(copy) == expected, "route ordering, culture or signed zero changed identity");
+        }
+        finally { CultureInfo.CurrentCulture = before; }
+        MapRouteSelection optional = RouteExample(); optional.Scenes[0].TopConnection = null;
+        MapRouteSelection normalized = MapSelections.CopyRoute(optional);
+        Assert(normalized.Scenes[2].TopConnection == "", "route copy failed to normalize optional connection text");
+        optional.Scenes[0].TopConnection = "";
+        Assert(MapSelections.FingerprintRoute(optional) == MapSelections.FingerprintRoute(normalized),
+            "route-only and complete canonical connection representation diverged");
+    }
+
+    private static MapRouteSelection RouteExample()
+    {
+        MapSelectionManifest manifest = Example();
+        return new MapRouteSelection { EntrySceneId = manifest.EntrySceneId, Scenes = manifest.Scenes };
+    }
+
+    private static void InvalidRoute(Action<MapRouteSelection> mutation)
+    {
+        MapRouteSelection route = RouteExample(); mutation(route);
+        Throws<ArgumentException>(() => MapSelections.ValidateRoute(route));
+        Throws<ArgumentException>(() => MapSelections.CopyRoute(route));
+        Throws<ArgumentException>(() => MapSelections.FingerprintRoute(route));
+    }
+
     private static MapSelectionManifest Example() => new MapSelectionManifest
     {
         EntrySceneId = 30,

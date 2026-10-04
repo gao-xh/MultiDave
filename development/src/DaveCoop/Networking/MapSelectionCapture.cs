@@ -36,12 +36,93 @@ namespace DaveCoop.Networking
         {
             if (Thread.CurrentThread.ManagedThreadId != _unityThreadId)
                 throw new InvalidOperationException("Map selection reads require the confirmed Unity thread.");
+            UnavailableReason = null;
             try { return CaptureLoaded(manager); }
             catch
             {
-                Unavailable("Map selection observation rejected.");
+                Unavailable(UnavailableReason ?? "Map selection observation rejected.");
                 throw;
             }
+        }
+
+        // Immediately copy this specific context's selected route. Loading and
+        // IGP completion are deliberately separate: this is not a manifest or
+        // a world-authority grant. Nothing native is retained by the returned DTO.
+        public MapRouteSelection ReadRouteCandidate(SceneContext context)
+        {
+            if (Thread.CurrentThread.ManagedThreadId != _unityThreadId)
+                throw new InvalidOperationException("Map route candidate reads require the confirmed Unity thread.");
+            try
+            {
+                MapRouteSelection route = ReadSelectedRoute(context);
+                if (route != null) UnavailableReason = null;
+                return route;
+            }
+            catch (Exception error)
+            {
+                Unavailable("Selected route candidate rejected: " + error.GetType().Name + ": " + error.Message);
+                throw;
+            }
+        }
+
+        public string ReadControllerAddress(IGPSetController controller)
+        {
+            if (Thread.CurrentThread.ManagedThreadId != _unityThreadId)
+                throw new InvalidOperationException("IGP address reads require the confirmed Unity thread.");
+            if (controller == null) throw new ArgumentNullException(nameof(controller));
+            return Address(controller);
+        }
+
+        private MapRouteSelection ReadSelectedRoute(SceneContext context)
+        {
+            if (context == null) return RouteUnavailable("Scene route context missing.");
+            var cache = context.selectedMapLayerCacheList;
+            var roadmap = context.m_SceneRoadmap;
+            var first = context._firstData_k__BackingField;
+            if (cache == null) return RouteUnavailable("Selected route cache missing.");
+            if (roadmap == null) return RouteUnavailable("Selected route roadmap missing.");
+            if (first == null) return RouteUnavailable("Selected route first scene missing.");
+            int count = cache.Count, roadCount = roadmap.Count, entrySceneId = first.sceneID;
+            if (count < MapSelections.MinScenes)
+                return RouteUnavailable("Selected route cache incomplete: " + count.ToString(CultureInfo.InvariantCulture) +
+                    "/" + MapSelections.MinScenes.ToString(CultureInfo.InvariantCulture) + " scenes.");
+            if (count > MapSelections.MaxScenes || roadCount > MapSelections.MaxScenes)
+                throw new InvalidOperationException("Map route exceeds bounded observation.");
+            var scenes = new MapRouteScene[count];
+            for (int i = 0; i < count; i++)
+            {
+                SceneMapLayerDataCache selected = cache[i];
+                if (selected == null || !selected.bSelected)
+                    return RouteUnavailable("Selected route cache entry is missing or not selected.");
+                int sceneId = selected.SceneID;
+                if (!roadmap.TryGetValue(sceneId, out SceneContext.SceneRoadmapData road) || road == null)
+                    return RouteUnavailable("Selected route roadmap incomplete.");
+                if (road.sceneID != sceneId) throw new InvalidOperationException("Route cache/roadmap scene disagreement.");
+                var previous = road.previous;
+                var next = road.next;
+                scenes[i] = new MapRouteScene
+                {
+                    SceneId = sceneId, SceneName = selected.SceneName, Layer = selected.LayerChar,
+                    TopConnection = selected.TopConnIdStr, BottomConnection = selected.BottomConnIdStr,
+                    TopY = selected.TopYCoord, BottomY = selected.BottomYCoord, MapHeight = selected.MapHeight,
+                    Offset = road.offset, PreviousSceneId = previous == null ? 0 : previous.sceneID,
+                    NextSceneId = next == null ? 0 : next.sceneID
+                };
+            }
+            // Field proxies are read again without invoking a selection getter.
+            // A replaced/cleared list or changed entry invalidates this attempt.
+            if (cache.Count != count || roadmap.Count != roadCount || first.sceneID != entrySceneId ||
+                context.selectedMapLayerCacheList?.Pointer != cache.Pointer ||
+                context.m_SceneRoadmap?.Pointer != roadmap.Pointer ||
+                context._firstData_k__BackingField?.Pointer != first.Pointer)
+                return RouteUnavailable("Route changed during observation.");
+            return MapSelections.CopyRoute(new MapRouteSelection { EntrySceneId = entrySceneId, Scenes = scenes });
+        }
+
+        private MapRouteSelection RouteUnavailable(string reason)
+        {
+            Unavailable(reason);
+            return null;
         }
 
         // Caller resets observation on session/scene ownership boundaries.
@@ -153,39 +234,22 @@ namespace DaveCoop.Networking
             // whose original getter may lazily create/reset the singleton.
             SceneContext context = SceneContext._s_Instance_k__BackingField;
             if (context == null) return Unavailable("Scene route context missing.");
+            MapRouteSelection route = ReadRouteCandidate(context);
+            if (route == null) return null;
             var cache = context.selectedMapLayerCacheList;
-            var roadmap = context.m_SceneRoadmap;
-            var first = context._firstData_k__BackingField;
-            if (cache == null) return Unavailable("Selected route cache missing.");
-            if (roadmap == null) return Unavailable("Selected route roadmap missing.");
-            if (first == null) return Unavailable("Selected route first scene missing.");
-            if (cache.Count < MapSelections.MinScenes)
-                return Unavailable("Selected route cache incomplete: " + cache.Count.ToString(CultureInfo.InvariantCulture) +
-                    "/" + MapSelections.MinScenes.ToString(CultureInfo.InvariantCulture) + " scenes.");
-            int count = cache.Count;
-            if (count > MapSelections.MaxScenes || roadmap.Count > MapSelections.MaxScenes)
-                throw new InvalidOperationException("Map route exceeds bounded observation.");
-            var scenes = new List<MapRouteScene>(count);
+            int count = route.Scenes.Length;
+            if (cache == null || cache.Count != count) return Unavailable("Route changed during observation.");
             var routeNames = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (MapRouteScene scene in route.Scenes) routeNames.Add(scene.SceneName, scene.SceneId);
+            var selectedIds = new HashSet<int>();
             for (int i = 0; i < count; i++)
             {
                 SceneMapLayerDataCache selected = cache[i];
                 if (selected == null || !selected.bSelected || !selected.IsSceneLoaded)
                     return Unavailable("Selected route is not fully loaded.");
-                if (!roadmap.TryGetValue(selected.SceneID, out SceneContext.SceneRoadmapData road) || road == null)
-                    return Unavailable("Selected route roadmap incomplete.");
-                if (road.sceneID != selected.SceneID) throw new InvalidOperationException("Route cache/roadmap scene disagreement.");
-                string name = selected.SceneName;
-                if (name == null || !routeNames.TryAdd(name, selected.SceneID))
-                    throw new InvalidOperationException("Ambiguous selected scene name.");
-                scenes.Add(new MapRouteScene
-                {
-                    SceneId = selected.SceneID, SceneName = name, Layer = selected.LayerChar,
-                    TopConnection = selected.TopConnIdStr, BottomConnection = selected.BottomConnIdStr,
-                    TopY = selected.TopYCoord, BottomY = selected.BottomYCoord, MapHeight = selected.MapHeight,
-                    Offset = road.offset, PreviousSceneId = road.previous == null ? 0 : road.previous.sceneID,
-                    NextSceneId = road.next == null ? 0 : road.next.sceneID
-                });
+                if (selected.SceneName == null || !routeNames.TryGetValue(selected.SceneName, out int sceneId) ||
+                    selected.SceneID != sceneId || !selectedIds.Add(sceneId))
+                    return Unavailable("Route changed during observation.");
             }
             if (cache.Count != count || !routeNames.ContainsKey(manager.playerCharacter.gameObject.scene.name))
                 return Unavailable("Route changed during observation.");
@@ -209,7 +273,7 @@ namespace DaveCoop.Networking
                 if (controller == null) return Unavailable("IGP controller destroyed during observation.");
                 if (!routeNames.TryGetValue(controller.gameObject.scene.name, out int sceneId)) continue;
                 IGPSetInfo selected = controller.CurrIGPSetInfo;
-                if (!controller.IsInitDone || selected == null || controller.CurrIGPSet == null)
+                if (!controller._IsInitDone_k__BackingField || selected == null || controller.CurrIGPSet == null)
                     return Unavailable("IGP selection/loading incomplete.");
                 if (!foundPointers.Add(controller.Pointer.ToInt64()))
                     throw new InvalidOperationException("Duplicate local IGP controller observation.");
@@ -242,12 +306,12 @@ namespace DaveCoop.Networking
                 IGPSetController controller = registered[i];
                 if (controller == null) return Unavailable("Registered IGP controller removed during observation.");
                 if (!routeNames.ContainsKey(controller.gameObject.scene.name)) continue;
-                if (!controller.IsInitDone || !registeredPointers.Add(controller.Pointer.ToInt64()))
+                if (!controller._IsInitDone_k__BackingField || !registeredPointers.Add(controller.Pointer.ToInt64()))
                     return Unavailable("IGP controller registrations are incomplete or repeated.");
             }
             if (registered.Count != registeredCount || !registeredPointers.SetEquals(foundPointers))
                 return Unavailable("Loaded/registered IGP controllers disagree.");
-            var manifest = new MapSelectionManifest { EntrySceneId = first.sceneID, Scenes = scenes.ToArray(), Groups = groups.ToArray() };
+            var manifest = new MapSelectionManifest { EntrySceneId = route.EntrySceneId, Scenes = route.Scenes, Groups = groups.ToArray() };
             MapSelectionManifest owned = MapSelections.Copy(manifest);
             string fingerprint = MapSelections.Fingerprint(owned);
             if (!manager.IsLoadedAll || manager.playerCharacter == null || context.Pointer != SceneContext._s_Instance_k__BackingField?.Pointer)

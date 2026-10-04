@@ -21,8 +21,8 @@
 真实 `A01_01_01` 潜水已确认管理器玩家引用、位置、朝向、移动输入、动画与摄像机跟随。
 继续进入 `Boss_000` 后，旧玩家不再出现在当前采样中，新实例与管理器和摄像机正确绑定，
 跨场景读取无探针错误。完整旧日志后来还确认返航、大厅与主菜单，1886 条快照无探针错误。
-默认发行包保持 0.1.0，当前源码及部署版本为 0.1.12-dev、协议 4，编译及 109/109 项核心测试通过。
-新进程加载/Update/网络入口及 4 条初始 RouteInputs 已确认，仅主菜单启动通过；Probe、潜水路线、场景切换与正常返航仍待实机。
+默认发行包保持 0.1.0，当前源码为 0.1.13-dev、协议 4，编译及 112/112 项核心测试通过，本轮未部署/启动。
+当前安装及最近新鲜启动为 0.1.12-dev/109 项测试，加载/Update/网络入口及 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后；后续自主开发保持各项实机验收边界。
 最近完成潜水验证的是 0.1.11-dev。
 新版单游戏 TCP 偏移鱼群可见和原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
@@ -50,7 +50,7 @@
 - 本机双端传输测试可先执行；真实游戏联机验收需要两份运行中的 Windows 游戏实例。
 
 独立于 M2 试玩的协议、握手、长度分帧、序号、校验和连接取消已实现，
-纯 CLR 及本机 TCP 双端 109 项测试通过。已实现线程安全会话边界、主线程数据邮箱、
+纯 CLR 及本机 TCP 双端 112 项测试通过。已实现线程安全会话边界、主线程数据邮箱、
 场景确认/提交/暂停、心跳、时钟估算及超时。资源键生成/歧义检测已测试，
 0.1.3-dev 加入 F11 房间入口、本机 TCP 测试、主线程捕获和资源解析、远程插值显示，
 以及静态碰撞几何/动态节点选择的布局指纹。已部署，新进程的组件加载已验证；
@@ -86,7 +86,10 @@
 Local test 保留原鱼并显示副本，成对及同步移除不代表统一世界或捕获副本；动画和正常返航仍待确认。
 0.1.11-dev 地图清单读取失败 Selected route incomplete。0.1.12-dev 新增独立 MapRouteObservation，Transmit 开启时入海前后最多 1Hz 观察、值变化才记录 MAP_ROUTE_INPUTS。
 加载后完整清单分别诊断 cache/roadmap/first 缺失或 cache 太短并撤销旧稳定候选；bSelected 候选层不能代替完整路线。
-下一步实测路线输入及目标检查，完成动画/隐藏/正常返航验收并解决路线清单完整性，再接入加载前地图选择、客机原生 AI/生成隔离及双端验收。
+0.1.13-dev 构建默认关闭、独立于 TCP/Transmit 的 Observe map selection calls，在 5 处自然 cache/restore/IGP 原返回/Prefab factory/SceneLoader prefix 中即时冻结 CLR。
+路线与完整 IGP manifest 分开校验/复制/指纹，1024 全进程/64 队列、非 Unity 回调跳过 native 读取，空/截断/读取错误明确；不保留 native wrapper。
+这是加载前时序观察准备，尚未实机；factory 不证明请求/完成，未证明所有选择先于所有加载，未共享/采用地图，Mod 不写选图/加载/存档。
+下一步在用户方便时正常退出后部署验证自然回调、路线时序及目标检查，完成动画/隐藏/正常返航验收并解决完整清单，再接入加载前房主选择、客机原生 AI/生成隔离及双端验收。
 布局核对和签名发现不代表 M4 完成。
 
 ## M5 — 合作捕鱼、伤害与拾取
@@ -108,7 +111,7 @@ prefix 固定当时房主身份，postfix 复用同一绑定；伤害 bool 只�
 F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房主主线程重新查原生目标/代次，通过只返回 DryRunValidated、OperationId=0。
 真实发射/QTE/召回/拾取缺少可信 actor/loadout、MapAuthorityReady/GuestStateIsolated/LocalActorArbitrated 与 native bridge，effects 仍 false；格式/门禁通过不等于攻击或捕获。
 下一步实测只读请求往返及失效，继续原生 owner/投射物/命中/入袋证据与客机隔离，再接入实际装备/距离/冷却和房主原生裁定。
-当前 109 项核心测试与编译范围见 [操作门禁构建摘要](../logs/fish-action-gate-build-verification.json)；
+当前 112 项核心测试与编译范围见 [地图选择调用构建摘要](../logs/map-selection-call-build-verification.json)；操作门禁见 [0.1.12-dev 摘要](../logs/fish-action-gate-build-verification.json)；
 上述历史实机见 [0.1.11-dev 鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，均不作为 M4/M5 或真实双游戏完成证据。
 
 ## M6 — 返航、结算与进度
