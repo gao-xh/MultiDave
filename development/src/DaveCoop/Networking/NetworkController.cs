@@ -118,6 +118,7 @@ namespace DaveCoop.Networking
                 {
                     string reason = state.Reason; Disconnect(); _message = reason; NetworkDriver.Status = "Network: " + reason; return;
                 }
+                _mapChoices.ObserveOrigin(_mapOrigins.CaptureSourceFrame(), _peers.Main);
                 _mapChoices.Update(_peers.Main, _peers.Loopback);
                 UpdateLocalScene();
                 state = _peers.Main.Snapshot;
@@ -203,6 +204,10 @@ namespace DaveCoop.Networking
                         MapChoiceReceivedSnapshots = _mapChoices.ReceivedSnapshots, MapChoiceUnboundChoices = _mapChoices.UnboundChoices,
                         MapChoiceRemoteGeneration = _mapChoices.RemoteGeneration, MapChoiceRemoteRouteScenes = _mapChoices.RemoteRouteSceneCount,
                         MapChoiceRemoteChoices = _mapChoices.RemoteChoiceCount, HostMapSelectionApplied = false,
+                        MapChoiceOriginRunId = _mapChoices.SourceOriginRunId,
+                        MapChoiceOriginOwnerLife = _mapChoices.SourceOriginOwnerLife,
+                        MapChoiceOriginPending = _mapChoices.PendingOriginChoices,
+                        MapChoiceLegacySuppressed = _mapChoices.SuppressedLegacyObservations,
                         LootObservationHooks = _lootObserver.Installed, LootObservationHealthy = _lootObserver.Healthy,
                         LootObservationEvents = _lootObserver.Events, LootObservationReadErrors = _lootObserver.ReadErrors,
                         LootObservationUnexpectedThreads = _lootObserver.UnexpectedThreads,
@@ -421,7 +426,7 @@ namespace DaveCoop.Networking
                 if (!wasInstalled) NetworkDriver.Logger.LogInfo("DAVECOOP_MAP_SELECTION_HOOKS_READY: five read-only call observers installed; original arguments/results unchanged.");
                 if (_mapCalls.Dropped > _lastMapCopyDropped || _mapCalls.UnexpectedThreads > _lastMapUnexpectedThreads ||
                     _mapCalls.ReadErrors > _lastMapReadErrors || _mapSelectionHooks.Dropped > _lastMapHookDropped)
-                    _mapChoices.Retire(_peers?.Main, _mapSelectionHooks.ProcessAccepted, "Map observation stream became incomplete.");
+                    NetworkDriver.Logger.LogWarning("DAVECOOP_MAP_SELECTION_TRACE_INCOMPLETE: legacy call diagnostics lost evidence; fixed-origin map source is independent.");
                 _lastMapCopyDropped = _mapCalls.Dropped; _lastMapUnexpectedThreads = _mapCalls.UnexpectedThreads;
                 _lastMapReadErrors = _mapCalls.ReadErrors; _lastMapHookDropped = _mapSelectionHooks.Dropped;
                 int drained = 0;
@@ -454,11 +459,6 @@ namespace DaveCoop.Networking
         private void StopMapSelectionCalls()
         {
             bool hadObserver = _mapCalls != null || _mapSelectionHooks.Installed;
-            if (hadObserver)
-            {
-                try { _mapChoices.Retire(_peers?.Main, _mapSelectionHooks.ProcessAccepted, "Map observation stopped."); }
-                catch (Exception error) { ReportMapHookError(error); }
-            }
             _mapCalls?.Stop(); _mapCalls = null;
             try
             {
@@ -679,7 +679,7 @@ namespace DaveCoop.Networking
             Task<Peers> finished = _pending; _pending = null;
             _peers = finished.GetAwaiter().GetResult();
             _fishActions.BindRoom(_peers.Main);
-            _mapChoices.BindRoom(_peers.Main, _mapSelectionHooks.ProcessAccepted);
+            _mapChoices.BindRoom(_peers.Main, _mapSelectionHooks.ProcessAccepted, _mapOrigins.RunId, _mapOrigins.ActiveOwnerLife);
             RemotePreview.NetworkActive = true;
             _nextOwnerCheck = 0; _nextCapture = 0; _lastError = null;
             NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_CONNECTED: " + (_peers.Loopback == null ? _peers.Main.Snapshot.Role.ToString() : "local TCP diagnostic; one game process"));

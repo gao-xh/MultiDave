@@ -115,9 +115,9 @@ description: Configure or continue development of the MultiDave prototype for Wi
   控制器路径仍未验证跨机稳定，不能据候选推断同一海洋或全选择先于全加载；没有地图采用或游戏/存档写入。
   Disconnect会关闭开关、卸载自己的owner并清CLR队列，核对MAP_SELECTION_HOOKS_STOPPED、后续操作及正常返航保存。
   原生ABI、实际返回项复制、加载顺序及新版画面都待实机；摘要见map-selection-call-build-verification.json。
-- 源码0.1.14-dev新增房主地图选择候选通道，协议5；当前构建和精确测试总数见map-choice-transport-build-verification.json。
+- 历史源码0.1.14-dev新增房主地图选择候选通道，协议5；该历史构建和精确测试总数见map-choice-transport-build-verification.json。
   最新安装仍0.1.12，最近完成潜水记录仍0.1.11；新源码未部署/未启动，用户试玩延后时继续独立工作。
-  入海前先建Host/Join或Local test，再开启Observe map selection calls；路线cache/restore自然回调开启新代次。
+  此为0.1.14历史流程，当前0.1.17按下文固定来源流程执行；旧Observe map selection calls仅诊断，不发候选。
   路线每片8场景、最多4片完整收齐后提交，随后IGP选择连续修订；WaitingForScene可传，不升级Ready或世界权限。
   32包FIFO与动作/移动/世界四路公平调度；队列满或观察停止/丢失/读取错误/截断时房主显式撤销。
   核对MAP_CHOICE_BOUND/ROUTE_SENT/CHOICE_SENT/RECEIVED/RETIRED及NETWORK_STATE的MapChoice统计。
@@ -154,7 +154,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   按工厂/MoveNext固定owner、显式子协程继承后再接操作版本/真实Scene句柄/controller寿命，不用当前singleton倒推旧调用。
   鱼产物/容量/水下进度共同分流，返航按类别逐项；guest加载/SetLoadedData有持久及同步副作用，不能当纯恢复。
   该离线工具轮仅工具与文档，历史插件0.1.15/142项及0.1.12安装/0.1.11潜水证据不扩大；摘要见native-call-analysis-verification.json。
-- 源码0.1.16-dev增加默认关闭Network.ObserveMapOrigins，继续此功能先读development/docs/MAP_ORIGINS.md。
+- 历史源码0.1.16-dev增加默认关闭Network.ObserveMapOrigins，继续此功能先读development/docs/MAP_ORIGINS.md。
   原生入口签名/直接字段分类可用development/scripts/Inspect-MapOriginApi.ps1复现，只输出.local报告。
   29声明自己的前后/finalizer观察：GoToInGameEntry创建固定owner，factory返回iterator固定归属，每MoveNext恢复/清scope，未知scope遮父。
   精确Addressables五参typed原返回，主线程保留operation wrapper最多64，直接version/status/result双核对后关联实际Scene句柄与controller出生。
@@ -162,11 +162,21 @@ description: Configure or continue development of the MultiDave prototype for Wi
   新entry/重复cache/Context清理/真实unload/destroy撤证；未知unload无birth也留tombstone，异常退休固定controller/owner。
   原生queue64/drain16/context256/每进程8192事件及Core有界围栏，线程/读取/丢失/配额失败锁存，重启再观察。
   原方法/参数/返回不改；只卸自己owner，核对MAP_ORIGIN_HOOKS_READY/CALL/BOUND_CHOICE/OBSERVER_STATE/OBSERVER_WARNING/HOOKS_STOPPED。
-  日志RunId隔离重开后的life编号，ScalarOriginChainMatched仅CLR登记关联，不是完整原生来源或权限；当前不接网络mapgeneration。
+  日志RunId隔离重开后的life编号，ScalarOriginChainMatched仅CLR登记关联，不是完整原生来源或权限；0.1.16历史版本不接网络mapgeneration，0.1.17另接当前清单。
   NativeTypedReturnAbiVerified/NativeGenerationBound/HostSelectionApplied/WorldAuthority/CargoAuthority始终false；框架同commit支持不算本游戏ABI通过。
-  本轮Build和148项测试通过，新增6组synthetic registry夹具；未部署/启动或执行nativecallbacks。
+  0.1.16历史Build和148项测试通过，新增6组synthetic registry夹具；未部署/启动或执行nativecallbacks。
   当前安装保持0.1.12、最近潜水0.1.11，用户试玩延后时不催测；正常保存退出后再部署验证typedreturn/Scene值/__state/加载嵌套/birth/owncleanup及画面。
   此原型不自动进入默认发行包；完整采用、guest持久/AI隔离、个人背包分流与正常返航仍待接通。
+- 当前源码0.1.17-dev、协议5、Build警告视为错误通过、Test-Core160/160通过；范围见development/docs/ORIGIN_MAP_TRANSPORT.md及origin-map-transport-build-verification.json。
+  候选只从TryCaptureSource当前owned清单发布，诊断drain不消耗来源；旧Observe关闭/丢失只影响诊断，Guest停本地origin保留Host收到的候选。
+  用户方便时正常保存退出后才部署，确认0.1.17新进程；先建Host/Join或Local test，再启用Observe loading coroutine and scene ownership并新自然入海。
+  4参BindRoom记录实际Run/owner floor；建房前entry、退休Run/owner/controller不能补旧来源。清单删除/替换退休wire代次后重发，每帧8条，超schema128整帧拒绝；64Run围栏跨Clear保留、controller历史256不淘汰。
+  网络摘要核对MapChoiceOriginRunId、MapChoiceOriginOwnerLife、MapChoiceOriginPending、MapChoiceLegacySuppressed与MAP_CHOICE撤销，待发0不表示全IGP完成。新增6组Core快照和6组actualTCP测试均用synthetic标量，不运行NativeHooks/Capture/Unity/provider。
+  未部署/启动；NativeGenerationBound/HostSelectionApplied/GuestStateIsolated/WorldAuthority/CargoAuthority仍false；实际采用、员工捕获/入仓及双游戏待完成。安装0.1.12/潜水0.1.11/默认包0.1.0仍为原证据范围。
+- 客机影子桥继续先读development/docs/GUEST_ISOLATION.md；Inspect-GuestStateApi.ps1离线只读wrapper/IL，报告仅.local，不调用游戏或读取存档。
+  Serialize<T>/Deserialize<T>是实际native clone候选，SaveData(string ver)不是JSON构造器，SetLoadedData/Load有副作用不能作纯恢复。
+  双Data/Interaction直接字段交换仍需detached子树、旧协程/缓存及全部输出围栏验证，Photo/UserOption也需明确隔离。178签名候选/static边不是所有writer覆盖或GuestStateIsolated证明。
+  Prepare/Activate/Validate/Restore代码与实机待完成，未知恢复不放开写入；每人独立袋/容量/负重规则保持，房主原袋不重复Add，员工逐产物入仓另证。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

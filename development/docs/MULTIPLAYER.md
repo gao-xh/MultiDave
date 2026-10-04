@@ -1,6 +1,6 @@
 # 第二角色与传输层
 
-当前源码 `0.1.16-dev`、协议 5，Build 警告视为错误通过、Test-Core 148/148 通过；本轮未部署/启动。
+当前源码 `0.1.17-dev`、协议 5，Build 警告视为错误通过、Test-Core 160/160 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 `0.1.11-dev`。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，主菜单启动通过不扩展为玩法验收。
@@ -13,7 +13,7 @@ M2 在 0.1.2-dev 的真实潜水中通过基础验收。M3 会话/资源键/布�
 0.1.7-dev 用户确认预览鱼可见但会突然消失；日志定位到角色临时部件销毁触发自动断开。
 0.1.8-dev 已修复该失败路径但仍自动换鱼。0.1.9-dev 锁定目标，用户确认不再突然消失；动画、Disconnect/返航及两游戏验收待完成。
 启动证据见 `../logs/network-bootstrap-verification.json`，海洋同步、探针和一条鱼显示诊断见 [WORLD_SYNC](WORLD_SYNC.md)。
-当前边界见 [地图选择传输构建摘要](../logs/map-choice-transport-build-verification.json)，0.1.13 历史构建见 [地图选择调用摘要](../logs/map-selection-call-build-verification.json)，已安装 0.1.12-dev 见 [操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史 0.1.11-dev 潜水边界见 [鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
+当前边界见[固定来源候选构建摘要](../logs/origin-map-transport-build-verification.json)，0.1.14历史传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，已安装0.1.12-dev见[操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史0.1.11-dev潜水边界见[鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
 
 ## M2 显示对象
 
@@ -185,7 +185,7 @@ DAVECOOP_LAYOUT_READY / WARNING。真实验证至少覆盖本机显示、双机�
 dotnet run --project development/tests/DaveCoop.Core.Tests/DaveCoop.Core.Tests.csproj
 ```
 
-本机当前已通过 148/148 项测试。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
+本机当前已通过 160/160 项测试。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
 JSON 数字结构往返、错误数据拒绝、拆包/截断、TCP 双端握手及双向快照、
 版本不匹配、并发发送、重复序号、连接关闭和读取取消；另覆盖场景握手与不一致超时、
 旧 epoch 清理、客机重载、身份/权限错误、时钟偏移、深拷贝与队列上限、
@@ -220,6 +220,16 @@ TCP测试使用同一进程中的两个真实回环 TCP 端点，没有运行两
 
 M3 游戏适配实机验证与双游戏移动同步、M4 地图/实体、
 M5 捕鱼/伤害/拾取、M6 临时客机进度与返航结算、M7 两机器和首次冷安装均未完成。
-0.1.16的ObserveMapOrigins独立于TCP且默认关闭，F11可启用，只日志记录来源关系；RunId不能跨重开比较life。原生ABI、真实嵌套及Scene/controller时序和own卸载仍待验。
+0.1.16的ObserveMapOrigins独立于TCP且默认关闭，F11可启用，0.1.16历史版本只日志，0.1.17另接当前候选；RunId不能跨重开比较life。原生ABI、真实嵌套及Scene/controller时序和own卸载仍待验。
 M4 下一步是本地来源/代次与跨机地址确认后的实际选择采用和客机原生隔离；当前地图快照一直为 ObservationOnly=true/HostSelectionApplied=false。
 持续目标保留完整双人潜水闭环，不能以回放、TCP 测试或同名场景代替完成验收。
+
+## 0.1.17 当前接线与下一桥
+
+0.1.17 将当前固定来源 CLR 清单接入候选发送：建房时记录实际 Run/owner floor，建房前 entry、退休 Run/owner/controller 和旧回调不能提供新来源。集合删除或替换先退休旧 wire 代次再重发，每帧最多 8 条选择；诊断队列消费不影响当前清单。旧 Observe map selection calls 仅诊断，其关闭或丢失不发送/撤销来源。
+
+新增 6 组 Core 快照和 6 组实际回环 TCP 适配测试，原 4 项源适配已迁移，总计 160/160 通过；Build 警告视为错误通过。测试使用合成标量，不运行 NativeHooks、NativeCapture、Unity provider 或两个游戏。NativeGenerationBound、HostSelectionApplied、GuestStateIsolated、WorldAuthority、CargoAuthority 仍为 false；未部署或启动。
+
+当前行为见[固定来源候选传输](ORIGIN_MAP_TRANSPORT.md)和[0.1.17 构建摘要](../logs/origin-map-transport-build-verification.json)。0.1.14 的 callbackFloor/cache 来源与 0.1.16 的“仅日志”是历史范围，当前发送流程按新文档执行。
+
+客机的原生 Serialize/Deserialize、双 Data/Interaction 根及直接恢复候选已离线定位，见[客机影子桥研究](GUEST_ISOLATION.md)。SaveData(string ver) 不是 JSON 构造器，SetLoadedData/Load 不是纯交换；旧协程、缓存、可变子树及全部持久输出仍需隔离与恢复验证。尚未执行原生克隆/根替换或证明 GuestStateIsolated。每人的独立容量和负重规则保持不变。

@@ -31,10 +31,23 @@ namespace DaveCoop.Networking
         public long BoundChoices { get; private set; }
         public long ReadErrors => _capture?.ReadErrors ?? 0;
         public long UnexpectedThreads => _capture?.UnexpectedThreads ?? 0;
+        public Guid RunId => _runId;
+        public long ActiveOwnerLife => _registry?.ActiveOwnerLife ?? 0;
         public string Status { get; private set; } = "Map origin observer: off";
         private bool TraceLost => _hooks.Dropped != 0 || _hooks.UnmatchedAfter != 0 ||
             _hooks.ProcessLimitReached || (_capture != null &&
                 (_capture.Dropped != 0 || _capture.ReadErrors != 0 || _capture.UnexpectedThreads != 0));
+
+        public MapOriginSourceFrame CaptureSourceFrame()
+        {
+            var frame = new MapOriginSourceFrame { RunId = _runId, Healthy = false };
+            // Fresh CLR inventory from the same fixed registry; diagnostic
+            // call queues and the old observer's global cache are not sources.
+            if (Environment.CurrentManagedThreadId != _unityThreadId || !Healthy) return frame;
+            if (!_registry.TryCaptureSource(out MapOriginSourceSnapshot source) || !Healthy) return frame;
+            frame.Source = source; frame.Healthy = true;
+            return frame;
+        }
 
         public void Update(bool enabled, float now)
         {

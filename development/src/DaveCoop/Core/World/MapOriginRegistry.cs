@@ -32,6 +32,21 @@ namespace DaveCoop.Core.World
         public bool CrossMachineAddressVerified => false;
     }
 
+    // A current, owned view of one local entry's evidence. It does not consume
+    // the diagnostic event queue or establish a complete/adopted world.
+    public sealed class MapOriginSourceSnapshot
+    {
+        public long OwnerLife { get; set; }
+        public string RouteFingerprint { get; set; }
+        public MapRouteSelection Route { get; set; }
+        public MapOriginChoiceEvidence[] Choices { get; set; }
+        public bool ObservationOnly => true;
+        public bool NativeGenerationBound => false;
+        public bool HostSelectionApplied => false;
+        public bool NativePermission => false;
+        public bool CrossMachineAddressVerified => false;
+    }
+
     // Caller supplies values frozen at the natural callback. Native wrappers,
     // singleton lookups, scene-name ownership guesses and network state are absent.
     // Tombstones remain for this instance; a quota never evicts a replay fence.
@@ -320,6 +335,52 @@ namespace DaveCoop.Core.World
                 evidence = null; if (Guard() != MapOriginStatus.Accepted) return false;
                 if (_ready.Count == 0) return false;
                 evidence = CopyEvidence(_ready.Dequeue()); return true;
+            }
+        }
+
+        public bool TryCaptureSource(out MapOriginSourceSnapshot snapshot)
+        {
+            lock (_gate)
+            {
+                snapshot = null;
+                if (Guard() != MapOriginStatus.Accepted) return false;
+                if (!Active(_activeOwnerLife))
+                {
+                    snapshot = new MapOriginSourceSnapshot { Choices = Array.Empty<MapOriginChoiceEvidence>() };
+                    return true;
+                }
+                if (_controllers.Count > MaxControllers)
+                { Fail(MapOriginStatus.LimitExceeded, "Source controller quota."); return false; }
+                Owner owner = _owners[_activeOwnerLife];
+                // Resolve may fail closed and retire records. Traverse a bounded
+                // owned list, and never FlushPending or iterate its mutable queue.
+                var controllers = new List<Controller>(_controllers.Values);
+                controllers.Sort((first, second) => first.Life.CompareTo(second.Life));
+                var choices = new List<MapOriginChoiceEvidence>();
+                foreach (Controller controller in controllers)
+                {
+                    if (controller.Retired || controller.BirthBoundary != owner.Life || controller.LastChoice == null) continue;
+                    var selection = new Selection { ControllerLife = controller.Life,
+                        Sequence = controller.LastSequence, Choice = controller.LastChoice };
+                    MapOriginStatus status = Resolve(selection, out MapOriginChoiceEvidence evidence);
+                    if (_fault != null) return false;
+                    if (status == MapOriginStatus.Pending || status == MapOriginStatus.Unbound || status == MapOriginStatus.Retired) continue;
+                    if (status != MapOriginStatus.Accepted || evidence == null || evidence.OwnerLife != owner.Life)
+                    { Fail(MapOriginStatus.Conflict, "Source choice has conflicting provenance."); return false; }
+                    if (choices.Count == MaxControllers)
+                    { Fail(MapOriginStatus.LimitExceeded, "Source choice quota."); return false; }
+                    // Resolve constructs new evidence and a new mutable choice.
+                    choices.Add(evidence);
+                }
+                MapRouteSelection route;
+                try { route = owner.Route == null ? null : MapSelections.CopyRoute(owner.Route); }
+                catch (ArgumentException) { Fail(MapOriginStatus.Conflict, "Source route copy is unavailable."); return false; }
+                snapshot = new MapOriginSourceSnapshot
+                {
+                    OwnerLife = owner.Life, RouteFingerprint = owner.Fingerprint,
+                    Route = route, Choices = choices.ToArray()
+                };
+                return true;
             }
         }
 

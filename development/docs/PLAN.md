@@ -22,7 +22,7 @@
 真实 `A01_01_01` 潜水已确认管理器玩家引用、位置、朝向、移动输入、动画与摄像机跟随。
 继续进入 `Boss_000` 后，旧玩家不再出现在当前采样中，新实例与管理器和摄像机正确绑定，
 跨场景读取无探针错误。完整旧日志后来还确认返航、大厅与主菜单，1886 条快照无探针错误。
-默认发行包保持 0.1.0，当前源码为 0.1.16-dev、协议 5，Build 警告视为错误通过、Test-Core 148/148 通过；本轮未部署/启动。
+默认发行包保持 0.1.0，当前源码为 0.1.17-dev、协议 5，Build 警告视为错误通过、Test-Core 160/160 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试，加载/Update/网络入口及 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后；后续自主开发保持各项实机验收边界。
 最近完成潜水验证的是 0.1.11-dev。
@@ -95,7 +95,7 @@ Local test 保留原鱼并显示副本，成对及同步移除不代表统一世
 cache/restore 每次合法自然样本都创建新 generation，SceneLoader 同指纹去重。copy 错误、截断、丢失或已发布组再次空/unknown 主动撤销；未绑定及未知新组空 IGP 不缓存。
 callbackFloor 只排除已经排队的旧回调，没有原生 controller/context 代次证明；新 cache 后迟到且同 scene/address 的旧 IGP 仍可附当前候选。NativeGenerationBound=false，所有 Snapshot 为 ObservationOnly、HostSelectionApplied=false，传输不授予世界权限。
 0.1.16-dev已接默认关闭的29声明加载来源观察：entry/factory/MoveNext固定owner、精确typedoperation成功Scene结果与controller出生、迟到结果/未知unload围栏。
-新增6组registry夹具（总计148项）验证标量关联和撤销，不运行NativeHooks；只写日志、不接网络地图generation，NativeGenerationBound/WorldAuthority仍false。
+0.1.16历史新增6组registry夹具（总计148项）验证标量关联和撤销，不运行NativeHooks；只写日志、不接网络地图generation，NativeGenerationBound/WorldAuthority仍false。
 本轮未部署/启动，实际回调嵌套、typedreturn/Scene值/__state、原生出生时序和卸自己的挂钩待验收，详见[MAP_ORIGINS](MAP_ORIGINS.md)与[构建摘要](../logs/map-origin-build-verification.json)。
 下一步验证本地 origin/代次与跨机地址证据，接入真正加载前房主路线/IGP 采用、客机临时进度/生成及 AI 隔离，再验证双端同地图和同实体；用户方便时再部署验证自然回调、目标检查、画面与正常返航。尚未执行原生选择采用，不能用 CLR TCP 替代实机。
 布局核对和签名发现不代表 M4 完成。
@@ -120,7 +120,7 @@ prefix 固定当时房主身份，postfix 复用同一绑定；伤害 bool 只�
 F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房主主线程重新查原生目标/代次，通过只返回 DryRunValidated、OperationId=0。
 真实发射/QTE/召回/拾取缺少可信 actor/loadout、MapAuthorityReady/GuestStateIsolated/LocalActorArbitrated 与 native bridge，effects 仍 false；格式/门禁通过不等于攻击或捕获。
 下一步实测只读请求往返及失效，继续原生 owner/投射物/命中/入袋证据与客机隔离，再接入实际装备/距离/冷却和房主原生裁定。
-当前核心与构建范围见 [独立背包构建摘要](../logs/cargo-ledger-build-verification.json)，0.1.14历史候选传输见 [地图选择传输构建摘要](../logs/map-choice-transport-build-verification.json)；0.1.13 历史观察构建见 [地图选择调用摘要](../logs/map-selection-call-build-verification.json)，操作门禁见 [0.1.12-dev 摘要](../logs/fish-action-gate-build-verification.json)；
+当前核心与构建范围见[固定来源候选构建摘要](../logs/origin-map-transport-build-verification.json)，0.1.15历史个人账本见[独立背包摘要](../logs/cargo-ledger-build-verification.json)，0.1.14历史候选传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，操作门禁见[0.1.12-dev摘要](../logs/fish-action-gate-build-verification.json)；
 上述历史实机见 [0.1.11-dev 鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，均不作为 M4/M5 或真实双游戏完成证据。
 
 ## M6 — 返航、结算与进度
@@ -152,3 +152,13 @@ F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房
 寿司店、完整剧情、Boss、DLC、重连恢复和公网方案在基础潜水闭环稳定后另行规划。
 两袋转移、员工持久报酬与自由跨层在独立背包/房主统一入仓闭环之后推进。
 不预先承诺工期；主要不确定项是第二角色生命周期、地图一致性和游戏实例测试条件。
+
+## 0.1.17 当前接线与下一桥
+
+0.1.17 将当前固定来源 CLR 清单接入候选发送：建房时记录实际 Run/owner floor，建房前 entry、退休 Run/owner/controller 和旧回调不能提供新来源。集合删除或替换先退休旧 wire 代次再重发，每帧最多 8 条选择；诊断队列消费不影响当前清单。旧 Observe map selection calls 仅诊断，其关闭或丢失不发送/撤销来源。
+
+新增 6 组 Core 快照和 6 组实际回环 TCP 适配测试，原 4 项源适配已迁移，总计 160/160 通过；Build 警告视为错误通过。测试使用合成标量，不运行 NativeHooks、NativeCapture、Unity provider 或两个游戏。NativeGenerationBound、HostSelectionApplied、GuestStateIsolated、WorldAuthority、CargoAuthority 仍为 false；未部署或启动。
+
+当前行为见[固定来源候选传输](ORIGIN_MAP_TRANSPORT.md)和[0.1.17 构建摘要](../logs/origin-map-transport-build-verification.json)。0.1.14 的 callbackFloor/cache 来源与 0.1.16 的“仅日志”是历史范围，当前发送流程按新文档执行。
+
+客机的原生 Serialize/Deserialize、双 Data/Interaction 根及直接恢复候选已离线定位，见[客机影子桥研究](GUEST_ISOLATION.md)。SaveData(string ver) 不是 JSON 构造器，SetLoadedData/Load 不是纯交换；旧协程、缓存、可变子树及全部持久输出仍需隔离与恢复验证。尚未执行原生克隆/根替换或证明 GuestStateIsolated。每人的独立容量和负重规则保持不变。

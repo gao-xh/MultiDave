@@ -5,7 +5,7 @@
 0.1.7-dev 用户确认鱼可见但镜头内突然消失，日志记录角色部件销毁导致自动断开。
 0.1.8-dev 没有旧异常，但用户确认标签换鱼及继续消失。0.1.9-dev 锁定身份并部署，用户确认不再突然消失。
 这些证据不证明两个游戏拥有同一地图、同一条鱼或共同捕获结果。
-当前源码为 0.1.16-dev、协议 5，Build 警告视为错误通过，Test-Core 148/148 通过；本轮未部署/启动。
+当前源码为 0.1.17-dev、协议 5，Build 警告视为错误通过，Test-Core 160/160 通过；本轮未部署/启动。
 默认发行包保持 0.1.0，源码能力不自动进入玩家安装包。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试；加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 0.1.11-dev。
@@ -13,7 +13,7 @@ Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜
 新版单游戏 TCP 偏移鱼群可见与原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
 Fire/Hook/Damage 成对观察已运行；动画、完整捕获链、路线完整读取和正常返航仍待验收。
 最近单鱼视觉稳定性证据来自 0.1.9-dev。
-当前范围见 [地图选择传输构建摘要](../logs/map-choice-transport-build-verification.json)，0.1.13 历史构建见 [地图选择调用摘要](../logs/map-selection-call-build-verification.json)，已安装 0.1.12-dev 见 [操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史潜水见 [0.1.11-dev 鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，真实双游戏及真正合作捕获尚未完成。
+当前范围见 [固定来源候选构建摘要](../logs/origin-map-transport-build-verification.json)，0.1.14历史传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，已安装0.1.12-dev见[操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史潜水见[0.1.11-dev鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，真实双游戏及真正合作捕获尚未完成。
 
 ## 世界由房主裁定
 
@@ -94,7 +94,7 @@ Disconnect 关闭并卸载自己的 Observer；原方法保留自然执行，Mod
 客机接到新 generation 首片先撤销旧路线，partial Snapshot.Route=null；完整链及指纹核对后才原子提供路线，再接受连续 revision 的 IGP。同 scene/address 组按新修订更新，最多 128 组；数量或最后修订不代表完整地图/所有组已选完。
 普通 SetLocalScene/场景暂停及帧清理保留 preload 候选；源观察显式失效才 Retire，Close 清 source/assembler/mailbox。溢出主动清地图队列并发控制撤销；generation 高水位保留、inactive 重复 Retire 返回 false，下一路线另开新代次。合法旧或已退休 choice 取消不关房，未来/当前冲突、畸形与错误来源拒绝。
 
-`MapChoiceController` 在绑定房间后把 host 自然观察转为候选。cache/restore 每次合法样本都开新 generation，指纹相同也不沿用上一代；SceneLoader prefix 同指纹仅去重。未绑定路线的 IGP 直接 Unbound 丢弃，不缓存后补；copy 错误、Truncated、观察丢失主动撤销。已发布组再次空/unknown 返回会撤销当前候选，避免继续沿用先前非空项；未知新组空值仍 Unbound。
+0.1.14历史`MapChoiceController`在绑定房间后把host观察转为候选，0.1.17已替换此来源。cache/restore 每次合法样本都开新 generation，指纹相同也不沿用上一代；SceneLoader prefix 同指纹仅去重。未绑定路线的 IGP 直接 Unbound 丢弃，不缓存后补；copy 错误、Truncated、观察丢失主动撤销。已发布组再次空/unknown 返回会撤销当前候选，避免继续沿用先前非空项；未知新组空值仍 Unbound。
 callbackFloor 只排除绑定/撤销前已经排队的旧观察，DTO 尚无原生 controller/context 代次证明。新 cache 边界后迟到、且 sceneName/address 相同的旧 IGP 回调仍可能附当前候选；所有 MAP_CHOICE_* 日志 NativeGenerationBound=false、CrossMachineAddressVerified=false。Scene/address 匹配和 CLR 连续 revision 均不能证明 native origin。
 
 所有 MapChoiceSnapshot 仅为 evidence：ObservationOnly=true、HostSelectionApplied=false。0.1.14 的134项测试中包含4项实际源适配用例；Test-Core 与测试 csproj 编译实际 MapChoiceController 和 MapSelectionCallObservation，仅替代 logger，再由 synthetic DTO 与实际回环 TCP 检查分批、取消和顺序。它们不运行 NativeHook、不调用游戏入口，不是两个游戏、实际地图采用或正常返航验收。
@@ -213,7 +213,7 @@ Core/World 的 HostEntityRegistry 将本机对象 token 映射为房主分配的
 尚未开始的批次可替换。出站动作 FIFO、玩家移动、世界切片和地图 FIFO 四路公平轮转，控制/心跳与撤销优先；入站世界只保留最新完整快照。
 禁止客机发布世界、禁止旧本地快照被改标为新 epoch，场景暂停/重载/关闭时清理缓存。
 
-当前核心总计 148/148 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
+当前核心总计 160/160 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
 修订更替/空清单、权限/epoch、容量/公平性、真实 TCP 数值清单/HP 更新/移除及旧协议拒绝。
 测试为 CLR 夹具；没有在两份游戏中调用捕鱼或物品 API。
 
@@ -380,7 +380,7 @@ F11 的 Check selected fish target 在 Guest 或 Local test 的 Ready/已选单�
 host 主线程重新 TryResolveNativeFish，并复核冻结身份和捕获/死亡状态，通过只返回 DryRunValidated、OperationId=0。
 状态读取前后复核 lifecycle 健康与代次，变化则撤销该次身份；同 epoch 开关观察保持世界 revision 单调。
 `FISH_ACTION_SENT` / ADMISSION / DECISION / RECEIVED 显示请求/结果及 NativeEffectsEnabled=false；未解析的目标明确拒绝。
-这个按钮只验证请求往返与有效目标，不发射鱼叉、不扣血或捕获。当前 148 项核心测试及三种 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，不证明两个游戏或 M5 成功。
+这个按钮只验证请求往返与有效目标，不发射鱼叉、不扣血或捕获。当前 160 项核心测试及三种 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，不证明两个游戏或 M5 成功。
 0.1.12-dev 的新版 Probe 与真实游戏场景切换仍未执行验收；主菜单启动和初始 RouteInputs 不能代替这些行为。
 
 可复现元数据研究：`scripts/Inspect-FishInteractionApi.ps1`。确认鱼自身覆写 HookedByProjectile(ProjectileInfo) 和 WinFromProjectileinFight，
@@ -403,7 +403,7 @@ Addressables五参LoadSceneAsync，绕过当前SceneLoader三参观察；不能�
 cacheSelectedScenePath与IGP.Init还含持久缓存/实例保存目标，地图采用须共同隔离客机状态。
 详见[NATIVE_ANALYSIS](NATIVE_ANALYSIS.md)。0.1.16已接默认关闭的加载来源只读adapter，具体fixed scope、typedoperation→Scene/controller、限额与撤证见[MAP_ORIGINS](MAP_ORIGINS.md)。
 本轮6组synthetic registry夹具通过，未部署/启动或运行原生挂钩；完整来源与原生ABI/加载时序仍待验证。
-此adapter尚不接网络MapChoice generation，不修改原选择，原生代次、客机采用与世界权限仍false。
+0.1.16历史adapter尚不接网络MapChoice generation；0.1.17另接当前CLR清单，不修改原选择，原生代次、客机采用与世界权限仍false。
 
 1. 只读探针验证真实对象和加载顺序。
 2. 两份游戏使用不同本地存档/入海条件，仍按房主选择得到相同布局。
@@ -411,3 +411,13 @@ cacheSelectedScenePath与IGP.Init还含持久缓存/实例保存目标，地图�
 4. 客机攻击后房主扣血，两端显示同一结果；重复请求与同时捕获不增加收益。
 5. 普通鱼能对两位玩家响应；断线和场景切换没有残留接管或错误奖励。
 6. 完成双人入海、合作捕获、房主返航结算、客机临时状态恢复，再验证冷配置并发布。
+
+## 0.1.17 当前接线与下一桥
+
+0.1.17 将当前固定来源 CLR 清单接入候选发送：建房时记录实际 Run/owner floor，建房前 entry、退休 Run/owner/controller 和旧回调不能提供新来源。集合删除或替换先退休旧 wire 代次再重发，每帧最多 8 条选择；诊断队列消费不影响当前清单。旧 Observe map selection calls 仅诊断，其关闭或丢失不发送/撤销来源。
+
+新增 6 组 Core 快照和 6 组实际回环 TCP 适配测试，原 4 项源适配已迁移，总计 160/160 通过；Build 警告视为错误通过。测试使用合成标量，不运行 NativeHooks、NativeCapture、Unity provider 或两个游戏。NativeGenerationBound、HostSelectionApplied、GuestStateIsolated、WorldAuthority、CargoAuthority 仍为 false；未部署或启动。
+
+当前行为见[固定来源候选传输](ORIGIN_MAP_TRANSPORT.md)和[0.1.17 构建摘要](../logs/origin-map-transport-build-verification.json)。0.1.14 的 callbackFloor/cache 来源与 0.1.16 的“仅日志”是历史范围，当前发送流程按新文档执行。
+
+客机的原生 Serialize/Deserialize、双 Data/Interaction 根及直接恢复候选已离线定位，见[客机影子桥研究](GUEST_ISOLATION.md)。SaveData(string ver) 不是 JSON 构造器，SetLoadedData/Load 不是纯交换；旧协程、缓存、可变子树及全部持久输出仍需隔离与恢复验证。尚未执行原生克隆/根替换或证明 GuestStateIsolated。每人的独立容量和负重规则保持不变。

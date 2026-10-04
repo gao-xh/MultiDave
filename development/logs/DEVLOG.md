@@ -564,3 +564,30 @@
   夹具不运行NativeHooks/Capture/Controller或游戏；原始Build/Test与元数据/框架研究只留.local，公开摘要见map-origin-build-verification.json。
 - F11增加载来源开关，面板按屏幕尺寸缩放并恢复GUI状态，实际画面待验收；更新README/AGENTS/PLAN/HANDOFF/GAME_API/MULTIPLAYER/WORLD_SYNC/CREW_MODE/NATIVE_ANALYSIS及MAP_ORIGINS、配置Skill。
   下一步用户方便后验证fresh入海实际嵌套、typedreturn/Scene值/__state、操作与出生时序和关闭自身挂钩；同时继续准备guest全部持久副作用隔离及房主采用、个人分流与逐产物返航。
+
+## 2026-10-04 — 0.1.17 固定来源候选发送与客机影子桥入口
+
+- 用户指定每个人独立背包、容量与负重，继续按个人Cargo账本开发；本轮未接员工原生捕获/分流/入仓。
+  源码升0.1.17-dev、协议保持5，未部署或启动；安装0.1.12、最近潜水0.1.11和默认发行包0.1.0仍为原证据范围，手动试玩继续延后。
+- MapOriginRegistry新增TryCaptureSource，在登记线程owned复制当前route与每个活controller最新有效选择，不消费诊断ready队列。
+  owner0健康空清单、活owner尚无route保持待定；pending/unbound/退休不输出，fault/冲突/错线程原子失败，不复用旧快照。
+  Controller新增带RunId/Healthy的MapOriginSourceFrame，Unity线程前后核对健康；NetworkController接到每帧候选发布。
+- MapChoiceController唯一发布来源改为ObserveOrigin；原MapSelectionCallObservation仅计数/水位/诊断，关闭或丢失不撤固定来源。
+  4参BindRoom保存实际Run/ActiveOwnerLife floor，建房前entry即使路线迟完成也不能提供来源；新自然owner同指纹仍新wire代次。
+  64 Run退休与owner高水位跨Clear/换房保留，旧Run重放不影响新Run；新pending-owner可补route，失败Run/owner不得复活。
+- 每帧整份owned清单严格复制/校验，完整owner/context/op/真实Scene/controller标量链、路线指纹与组地址冲突整体拒绝。
+  缺key或controller替换先Retire旧wire代次，再发route和完整当前清单；每owner controller历史256不随wire重建清掉，旧life不可回放。
+  wire选择最多128，超限不截取；每帧最多8条改变项，余项留owned清单，FIFO32取消/满撤源封owner，不下一帧重播。
+  Guest停本地origin保留Host收到候选；普通角色epoch不替代native来源。日志OriginRun/owner/Pending/LegacySuppressed已接，F11仅状态。
+- 六组Core快照与六组actualTCP来源夹具新增；原四项源适配已迁移固定来源合同。初次159/160中pending测试Choices=null不符Core空数组，修夹具后160/160通过。
+  同时修正常关闭观察器的EmptyRun/Healthy=false不逐帧累加Invalid；真实Healthy/Empty仍拒绝，新增计数断言覆盖。
+  夹具编译实际Core/MapChoiceController/DTO，只替代logger，所有来源事实为synthetic；未执行NativeHooks/Capture/Unity provider或两个游戏。
+- 最终Build-Plugin警告视为错误通过；末尾空白清理后再编译，SHA256：`B14381625A27B82396D6C474B4B6DACB0DA8DB12ACB7D6CCF07AD79C7C22E1C3`。
+  全部NativeGenerationBound/HostSelectionApplied/GuestStateIsolated/WorldAuthority/CargoAuthority保持false；候选不证明完整manifest、真实原生来源、采用或捕获。
+- 新增可复现Inspect-GuestStateApi.ps1，实际离线读取7程序集/42类型/46 typed根与saveable引用/178持久输出签名候选，PowerShell解析错误0。
+  SaveDataBase.Serialize/Deserialize泛型和Game/Player Data、Interaction直接字段交换候选已定位；string ver不是JSON构造器，SetLoadedData/Load有同步/转换/云副作用，不作纯恢复。
+  原PE clone静态报告6选择器/8根/90记录，54有已知unwind族、36范围不可用不猜leaf；根遗漏/指令截断0，40别名截断边。
+  不证明具体T分支、Obscured覆盖、深复制/旧缓存引用或全部writer，未调用原生clone/根交换/恢复，未读改存档。
+- 新增ORIGIN_MAP_TRANSPORT/GUEST_ISOLATION，更新README/AGENTS/PLAN/HANDOFF/MULTIPLAYER/WORLD_SYNC/GAME_API/CREW_MODE/NATIVE_ANALYSIS和Skill；Skill校验通过。
+  当前摘要core-verification及origin-map-transport-build-verification，离线摘要guest-shadow-analysis-verification；0.1.16历史148/hash保持不变，原日志/报告留.local。
+  下一步实现有输出围栏的客机shadow准备/安装/核对/恢复及运行缓存切换，继续真实地图采用、个人捕获/入仓桥；用户方便后再验证真实来源链与双游戏闭环。

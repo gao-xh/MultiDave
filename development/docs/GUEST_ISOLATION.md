@@ -1,0 +1,117 @@
+# 客机原生存档影子桥研究
+
+员工的游戏应在临时状态上运行，长期进度与返航收益由房主保存。每人仍有独立背包：房主使用自己的原生 `LootBox`，员工的独立容量、重量与物料由房主 Mod 账本持有；不能先加到房主袋再复制。详见 [CREW_MODE](CREW_MODE.md)。
+
+本页给出实际原生影子桥的接口候选与验证合同。本轮仅离线读取互操作元数据、包装器 IL 和原 PE 的有界调用边；没有调用序列化、替换根、读取或写入存档、挂钩或启动游戏。签名可用于实现下一桥，尚不能授予 `GuestStateIsolated`、`WorldAuthority` 或捕获/结算权限。
+
+## 可复现证据
+
+从仓库根目录执行 [Inspect-GuestStateApi.ps1](../scripts/Inspect-GuestStateApi.ps1)：
+
+```powershell
+.\development\scripts\Inspect-GuestStateApi.ps1
+```
+
+脚本通过 Steam 定位游戏，也支持显式 `-GamePath`。它用已安装的 Mono.Cecil 读取七个生成程序集，不解析或执行游戏类型，不下载依赖；报告写入忽略的 `.local/analysis/guest-isolation-root-api.json`。当前输出为 42 个类型、46 条已类型化根/saveable 引用和 178 条持久输出**签名候选**。候选集合包括读取、路径、回调与备份相关声明，数量不是已证明的写入入口数，也不证明覆盖所有输出。
+
+原生调用研究使用 [Inspect-NativeCalls.ps1](../scripts/Inspect-NativeCalls.ps1)：
+
+```powershell
+.\development\scripts\Inspect-NativeCalls.ps1 `
+  -Method 'DR.Save.SaveDataBase::Serialize', `
+          'DR.Save.SaveDataBase::Deserialize', `
+          'SaveData::.ctor', `
+          'DR.Save.SavePlayerData::.ctor', `
+          'DR.Save.SaveSystemPlayerDataManager+InstanceInteractionData::.ctor', `
+          'DR.Save.SaveSystemPlayerDataManager::SyncInstanceDataWithPlayerData' `
+  -Depth 2 -MaxMethods 128 -ReportName 'guest-shadow-clone-native-calls'
+```
+
+本次六个选择器匹配八个根声明，输出 90 条方法记录；方法上限 128、每方法指令上限 8192，根遗漏和指令截断均为零，方法配额未触顶。54 条记录解码已知 unwind 族，36 条没有包含该入口的 runtime-function 范围，工具没有猜测 leaf 主体。存在共享地址别名截断与未解析间接调用；全 PE 的三个不支持 unwind 项也保留在报告中。所有八个根都有已知范围输出，`GameCodeExecuted=false`。
+
+这不是具体泛型实例的完整控制流分析。唯一直接目标、完整已知 unwind 片段和没有看到文件写入边，均不能证明分支可达性、回调副作用、深复制或输出覆盖。证据限制见 [NATIVE_ANALYSIS](NATIVE_ANALYSIS.md)。原始报告与本机路径、地址、第三方 DLL 不提交 Git。
+
+## 内存根与生成字段边界
+
+以下声明来自 `Assembly-CSharp.dll` 的生成包装器。名称带 backing field 的 C# 属性是原生字段代理：getter/setter 读写 native 字段，引用写入还调用 GC write barrier；没有调用原游戏的 `il2cpp_runtime_invoke`。它们不是普通 CLR 字段，仍必须在已确认的 Unity 主线程操作，保存真实对象引用并核对所属实例。
+
+| 所属类型 | 可直接读取和恢复的根 |
+| --- | --- |
+| `Singleton<DR.Save.SaveSystem>` | 静态 `_instance : SaveSystem`；公共 `Instance` 是原生 getter |
+| `DR.Save.SaveSystem` | `_GameDataManager`、`_PlayerDataManager`、`_PhotoDataManager`、`_UserOptionManager`；公共 manager getter 会 RuntimeInvoke |
+| `DR.Save.SaveSystemGameDataManager` | `_Data_k__BackingField : SaveData`、`_LastSavedTurnInfo_k__BackingField : ValueTuple<long,int>`、`m_SaveLocks : HashSet<uint>` |
+| `DR.Save.SaveSystemPlayerDataManager` | `_Data_k__BackingField : SavePlayerData`、`_InstanceData_k__BackingField : InstanceInteractionData` |
+| `DR.Save.SaveSystemPhotoDataManager` | `_Data_k__BackingField : SavePhotoData` |
+| `DR.Save.SaveSystemUserOptionManager` | `_Data_k__BackingField : SaveUserOptions` |
+| `DR.Save.SaveLoadManagerBase<T>` | `_IsNewData_k__BackingField : bool`；`Data` 是原生虚属性，没有基类通用的直接 Data 根 |
+| `DR.Save.SaveDataBase` | `Version`、`BuildVersion`、`lastUpdateLocalTime`、`isPrevDataCorrupted`、`_IsUpdated_k__BackingField`；同名公共状态 getter/setter 的边界另行核对 |
+
+`GameSave`、`Data`、`GetGameSave()`、`CurrentSceneNameForPlayerSave` 及 `InstanceData` 公共入口会调用原游戏方法。桥应保留现有 manager 实例并替换其 Data 字段，避免新建 MonoBehaviour manager。直接根交换只是具体可实现的安装点，不证明原数据的所有引用已经切换。
+
+不能遗漏的状态包括：
+
+- `SaveData` 的 `m_Box`、`m_LobbyBox`、`m_IngredientsData`、`m_MissionData`、`m_CaughtFishData`、`m_FishDropPitySaveData`、`m_SceneMapLayerCacheList` 等完整子树；CLR 摘要或只复制金币/鱼库不足以隔离。
+- Player 的 `InstanceInteractionData` 内设备列表、使用过的交互/可破坏物/蟹笼/随机器、独占物、IGP 列表、`_usedIGPSetRuntimeSet_k__BackingField` 和各更新标记。`new InstanceInteractionData(bool needUpdate)` 的参数不是克隆数据。
+- `IngameSaveDataManager.ingameSaveDatas`、`IngredientsStorage.m_Storage/m_IsLoaded`、任务运行缓存、LootBox 状态；这些运行对象不因换一个 SaveData 引用自动冻结或恢复。
+- `IGPSetController._cachedSaveable : ISaveableInstanceData`，以及随机器、Jungle 对象缓存的 saveable/`InstanceDataSaveBehaviour`。Jungle 的 `m_GameSave` 反向引用与日常/RPG 交互状态也需归属核对。
+- 已存在的 delegate/iterator 引用：`PlayerCharacter.__c__DisplayClass464_0/464_1.playerData`、`InGameManager._InitSunangEmitterSystem_d__177._save_5__2` 等。入海后仅换全局根不能改写它们已捕获的原对象；类型化扫描也不能排除经 `Object`、容器或更深子对象保留的引用。
+
+## 两条实际原生克隆候选
+
+已核实静态声明：
+
+```csharp
+string DR.Save.SaveDataBase.Serialize<T>(T data) where T : DR.Save.SaveDataBase;
+T DR.Save.SaveDataBase.Deserialize<T>(DR.Save.SaveDataType type, string jsonVal)
+    where T : DR.Save.SaveDataBase;
+```
+
+下一桥可用以下两个真实包装器表达式准备 detached shadow；本轮没有执行它们：
+
+```csharp
+var gameShadow = DR.Save.SaveDataBase.Deserialize<SaveData>(
+    DR.Save.SaveDataType.GameData,
+    DR.Save.SaveDataBase.Serialize<SaveData>(originalGame));
+
+var playerShadow = DR.Save.SaveDataBase.Deserialize<DR.Save.SavePlayerData>(
+    DR.Save.SaveDataType.PlayerData,
+    DR.Save.SaveDataBase.Serialize<DR.Save.SavePlayerData>(originalPlayer));
+```
+
+`SaveDataType` 明确为 `UserOption=1`、`PlayerData=2`、`GameData=3`、`PhotoData=4`。静态原生边确认 Serialize 包含原生 Newtonsoft `SerializeObject(Object,Formatting)` 和 Unity `JsonUtility.ToJson(Object)` 目标，Deserialize 包含原生 Newtonsoft `DeserializeObject<T>(string)` 和 Unity `JsonUtility.FromJson<T>(string)` 目标。canonical 泛型主体有地址与范围，具体 `T` 的分支、默认 settings/delegate、私有 Obscured 状态覆盖和原生序列化回调仍未验证。
+
+因此应先安装持久输出围栏，再执行有界克隆，并核对新对象及可变子树没有指向原根、版本与必要数据有效、双向交互缓存和反向引用完整。临时 JSON 仅留内存，不写日志或协议。普通 CLR JSON 序列化生成 wrapper 无法据此复制原生 Obscured 私有状态；native JSON round trip 也不是任意运行缓存的内存快照。
+
+`SaveData(string ver)` 与 `SavePlayerData(string ver)` 的参数名明确为 `ver`。原生构造器包括初始化子对象，SaveData 的版本构造器还有时间戳相关目标，不能把 JSON 传进此构造器冒充克隆。`IntPtr` 构造器只包装现有对象，也不会克隆它。
+
+`SaveSystemPlayerDataManager.SetLoadedData(SavePlayerData)` 的实际直接目标包括基类 SetLoadedData、创建 InstanceInteractionData 和 Sync。`SyncInstanceDataWithPlayerData()` 又触及 `LoadRuntimeIGPHashData()`，并有十次未解析间接调用。`LoadData()` 包含云加载、转换和文件复制/删除路径。这些入口不能当作纯字段交换或恢复；重建交互缓存若选用原 Sync，必须另行验证其完整副作用并在 shadow/输出围栏内执行。
+
+## 必须覆盖的持久输出声明
+
+下面是可用于下一桥定位的精确入口组；除已记录的静态调用边外，不声称每条都会在 Steam 客机路径执行或已被拦截。返回值为 bool 的阻断应明确失败，不能伪报保存成功。泛型共享原生地址和 struct 返回 ABI 也需验证自己的挂钩覆盖。
+
+| 类型/程序集 | 声明 |
+| --- | --- |
+| `DR.Save.SaveSystem` / Assembly-CSharp | `void SaveAllData()`、`bool TrySaveGameData()`、`bool SaveGameData()`、`bool SaveGameDataInSlot(int,bool)`、`bool SaveGameDataInSlot(int,bool,SaveSlotType)`、`void SavePhotoData()`、`void DeleteGameData()` |
+| `DR.Save.SaveLoadManagerBase<T>` / Assembly-CSharp | `void SaveData(bool)`、`bool SaveOnSelectedSlot(int,SaveSlotType)`、`bool SaveSlotWithJson(string,int,SaveSlotType)`、`void SaveBackupData()`、`void CreateNewAndSave(bool)`、`void DeleteSaveFile()`、`void DeleteSaveFile(string)`、`void WriteOldFileOnConvert(string,string)` |
+| 同一基类 / Assembly-CSharp | `void CopyFileToCloud(int,bool)`、`void WriteOnCloud(string,int,SaveSlotType)`、`void WriteAllAutoSaveOnCloud(string)`、`void LoadFromCloud(int,SaveSlotType)`、`void LoadAllFromCloud()`；拉取/转换也可能改本地文件 |
+| Game/Photo manager / Assembly-CSharp | 各自 `void SaveData(bool)`、`void DeleteSaveFile()`；Game 另有 `void CopyDemoSaveFiles()`；继承的各 closed generic 实例不能仅凭源码名称假定都受同一 patch 保护 |
+| `GDKSaveLoadModule` / Assembly-CSharp | `void SaveData(string,Il2CppStructArray<byte>)`、`void DeleteData(string)`、`void DeleteFiles(Il2CppStringArray)`；在 Steam 上是否使用尚未证明 |
+| `TKoU.UniversalSaveSystem.ISaveSystemService` / TKoU.UniversalSaveSystem.Core | `void FileWriteBytes(RelativePath,Il2CppStructArray<byte>)`、`void FileDelete(RelativePath)`；接口声明不是所有具体实现的拦截点 |
+| `Toolbox.SaveSystem.SaveManager` / SaveSystem | `SaveResult Save(Object,int,bool)`、`DeleteResult Delete(int)`；这是额外系统的候选，不能默认与 DR.Save 是同一流程 |
+| `Steamworks.SteamRemoteStorage` / com.rlabrecque.steamworks.net | `bool FileWrite(string,Il2CppStructArray<byte>,int)`、`SteamAPICall_t FileWriteAsync(string,Il2CppStructArray<byte>,uint)`、`bool FileDelete(string)`、`bool FileForget(string)`、`SteamAPICall_t FileShare(string)`、`bool SetSyncPlatforms(string,ERemoteStoragePlatform)`，另有 stream open/write/close/cancel 与 batch 声明 |
+| `SteamAchievements` / Assembly-CSharp；`Steamworks.SteamUserStats` / steamworks | 进度同步/成就与 stat 写入候选包括 `UnlockProgressSyncFromSave()`、`UnlockAchievement(string)`、`UnlockAchievementWithStat(string,string,int)`、`SetStat(string,int/float)`、`SetAchievement(string)`、`ClearAchievement(string)`、`StoreStats()` |
+| `UnityEngine.PlayerPrefs` / UnityEngine.CoreModule | `void SetInt(string,int)`、`void SetFloat(string,float)`、`void SetString(string,string)`、`void DeleteKey(string)`、`void DeleteAll()`、`void Save()`；尚未证明哪些键属于游戏进度，不能泛化为全局禁用偏好设置 |
+
+已观察的原生基类 SaveData 静态路径包括 Serialize、加密、目录创建、`System.IO.File.WriteAllText(string,string)`；LoadData 包括读、转换、Copy/Delete。只拦最终 SaveGameData 或只改保存目录均不足以覆盖槽位、备份、云端及成就，也不能阻止仍指向原对象的内存进度被修改。`SaveData.DeleteSerializedUserData<T>(ref T)` 是另一个内存用户数据声明，方法名不能直接当作文件删除证据。
+
+## 下一桥的最小安装与恢复合同
+
+建议 `NativeGuestShadowBridge` 分为 Prepare、Activate、ValidateActive、Restore 四步；具体源码与原生实测均待下一轮。它要保存 manager/root/cache 的实际 native 引用及生命周期身份，使用强存活保证，不能只存可复用的数字指针。
+
+1. 在确认本地加载完成、尚未创建员工本次世界对象的边界，先接管持久输出并排除在途保存、load、delegate 和 coroutine。房间状态或一个 Scene 名称不证明该边界。已有场景/旧 saveable 无法确认退休时拒绝进入。
+2. 同时准备 Game、Player 和 Interaction shadow。Photo/UserOption 的可写进度必须另有 shadow 或明确阻断；运行缓存逐项准备与核对。先完整准备、验证 detached 数据，再交换直接根，不能在半安装期间放行 guest 场景或动作。
+3. 保持 manager 实例，使用 `_Data_k__BackingField`、`_InstanceData_k__BackingField` 等直接字段代理交换；逐项读回确认。`ShadowRootsInstalled` 仅说明根交换匹配，仍不等于 `GuestStateIsolated` 或持久输出覆盖已验收。缺缓存、旧别名、克隆失败、异常或不可覆盖 writer 均保持 native 权限关闭。
+4. 恢复时仍保持输出围栏，停用员工世界对象并排除在途操作；确认当前 manager/root 正是本 lease 安装的 shadow，再按原引用恢复所有根、脏标记和缓存。原指针恢复并不能证明嵌套原数据从未被旧引用修改。发生未知替换、恢复不完整或仍有 guest callback 时，不能卸载围栏后恢复普通存档写入；应进入需要重启的失败状态。
+
+员工断线不清房主潜水账本，客机 shadow 也不回写为自己的进度。两袋结算由房主真实产物/捕获/返航证据驱动：房主原袋不重复 Add，员工未入仓条目由新的原生 bridge 逐项确认一次。shadow 安装、bool 保存返回或副本消失不能作为捕获/入仓 receipt；未知结果不重放。完整采用、个人袋分流和双游戏验证仍待完成。

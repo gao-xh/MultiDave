@@ -6,7 +6,7 @@
 自定义插件加载、Unity Update 回调，以及 `DR_Start`、`DR_Logo`、`DR_Title` 场景读取。
 插件日志证据见 `../logs/bootstrap-verification.log`。
 
-开发在 `codex/player-discovery` 分支，当前源码为 `0.1.16-dev`、协议 5，Build 警告视为错误通过、Test-Core 148/148 通过；本轮未部署/启动。
+开发在 `codex/player-discovery` 分支，当前源码为 `0.1.17-dev`、协议 5，Build 警告视为错误通过、Test-Core 160/160 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 最近完成潜水验证的是 `0.1.11-dev`。
 
@@ -18,8 +18,8 @@
 该离线工具轮保持历史0.1.15/142项记录，未部署/启动；原始报告及其证据不扩大。
 随后0.1.16已接默认关闭ObserveMapOrigins：29声明前后/finalizer、固定entry/factory/MoveNext owner、Addressables精确typedoperation成功结果→实际Scene句柄→首次controller寿命。
 主线程operation保留64/版本复核，队列64/消费16，进程8192/context256；无birth的真实unload也留tombstone，错误/丢失/线程/配额撤证。
-MapOriginController独立于TCP，RunId隔离重开后的编号；CALL/BOUND_CHOICE只记录本机标量证据，不接MapChoice generation或权限。
-6组纯CLR registry夹具通过，总计148/148；Build警告视为错误通过，新挂钩原生ABI/真实时序/关闭清理仍待实机。
+MapOriginController独立于TCP，RunId隔离重开后的编号；0.1.16历史CALL/BOUND_CHOICE仅记录标量，0.1.17另接当前候选清单，始终不授权限。
+0.1.16历史6组纯CLR registry夹具通过，总计148/148；Build警告视为错误通过，新挂钩原生ABI/真实时序/关闭清理仍待实机。
 F11面板新增开关并按屏幕尺寸缩放，画面仍待验收；本轮未部署/启动游戏。
 NativeGenerationBound/HostSelectionApplied/WorldAuthority/CargoAuthority始终false，独立员工背包与正常返航桥未接通。
 详见[MAP_ORIGINS](MAP_ORIGINS.md)及[构建摘要](../logs/map-origin-build-verification.json)；框架同commit证据不当作本游戏typedreturn验收。
@@ -38,7 +38,7 @@ NativeGenerationBound/HostSelectionApplied/WorldAuthority/CargoAuthority始终fa
 旧 M1 会话完整日志最终为 1886 条快照，记录 Boss 返回潜水、返航大厅及主菜单，无探针错误。
 M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态中原生玩家数为 1，
 摄像机均绑定本地玩家，F10 停用/重建及返航清理有日志，无警告，基础验收通过。
-新增纯 CLR 姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询、鱼群缓冲、路线/IGP 清单、交互绑定观察、操作门禁、独立路线描述及分阶段地图选择传输；最终验证范围见 [地图选择传输构建摘要](../logs/map-choice-transport-build-verification.json)。
+新增纯CLR姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询、鱼群缓冲、路线/IGP清单、操作门禁、个人Cargo账本和固定来源候选传输；当前验证范围见[固定来源候选构建摘要](../logs/origin-map-transport-build-verification.json)。
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
 0.1.4-dev 引入默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，0.1.5-dev 加入一条鱼的 Sprite/Spine 显示验证入口。
@@ -208,8 +208,8 @@ Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可�
 已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
 Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
 探针记录本机 ID 仅用于观察；网络数值实体已使用房主分配的 RoomId/epoch/EntityId。
-当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.16-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
-在入海前开启独立 Observe map selection calls，核对 MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE、MAP_SELECTION_HOOKS_STOPPED 的五处自然边界、线程、路线候选、空/截断/读取错误及自己的卸载。
+当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.17-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
+当前候选测试先建Host/Join或Local test，再开启Observe loading coroutine and scene ownership并进行新自然入海。旧Observe map selection calls仅可选诊断，不能发送候选；可核对 MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE、MAP_SELECTION_HOOKS_STOPPED 的五处自然边界、线程、路线候选、空/截断/读取错误及自己的卸载。
 随后按目标检查范围在 F11 / Local test 开启 Transmit read-only fish observations 后进入潜水。
 开启单鱼预览取得选中身份，点 Check selected fish target，核对 FISH_ACTION_SENT / ADMISSION / DECISION / RECEIVED 的请求元数据、指纹及 DryRunValidated/op0。
 测试源鱼移除、场景失效、Disconnect 与正常返航保存，不把拒绝或目标检查当捕获成功；再按需要开启 Display received fish roster 与只读交互观察。
@@ -256,3 +256,13 @@ M5 需接入鱼叉发射/飞行/命中/回收及房主裁定，不能给显示�
 
 M1 源码与计划已推送至 `codex/player-discovery` 分支。自动审批首次拒绝公开推送
 含真实运行摘要的文件；用户明确授权公开自写源码、计划、日志及验证摘要后，重新推送成功。
+
+## 0.1.17 当前接线与下一桥
+
+0.1.17 将当前固定来源 CLR 清单接入候选发送：建房时记录实际 Run/owner floor，建房前 entry、退休 Run/owner/controller 和旧回调不能提供新来源。集合删除或替换先退休旧 wire 代次再重发，每帧最多 8 条选择；诊断队列消费不影响当前清单。旧 Observe map selection calls 仅诊断，其关闭或丢失不发送/撤销来源。
+
+新增 6 组 Core 快照和 6 组实际回环 TCP 适配测试，原 4 项源适配已迁移，总计 160/160 通过；Build 警告视为错误通过。测试使用合成标量，不运行 NativeHooks、NativeCapture、Unity provider 或两个游戏。NativeGenerationBound、HostSelectionApplied、GuestStateIsolated、WorldAuthority、CargoAuthority 仍为 false；未部署或启动。
+
+当前行为见[固定来源候选传输](ORIGIN_MAP_TRANSPORT.md)和[0.1.17 构建摘要](../logs/origin-map-transport-build-verification.json)。0.1.14 的 callbackFloor/cache 来源与 0.1.16 的“仅日志”是历史范围，当前发送流程按新文档执行。
+
+客机的原生 Serialize/Deserialize、双 Data/Interaction 根及直接恢复候选已离线定位，见[客机影子桥研究](GUEST_ISOLATION.md)。SaveData(string ver) 不是 JSON 构造器，SetLoadedData/Load 不是纯交换；旧协程、缓存、可变子树及全部持久输出仍需隔离与恢复验证。尚未执行原生克隆/根替换或证明 GuestStateIsolated。每人的独立容量和负重规则保持不变。

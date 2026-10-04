@@ -9,5 +9,6 @@
     <Compile Include="..\..\src\DaveCoop\Core\**\*.cs" Exclude="..\..\src\DaveCoop\Core\**\obj\**\*.cs;..\..\src\DaveCoop\Core\**\bin\**\*.cs" />
     <Compile Include="..\..\src\DaveCoop\Networking\MapChoiceController.cs" Link="Networking\MapChoiceController.cs" />
     <Compile Include="..\..\src\DaveCoop\Networking\MapSelectionCallObservation.cs" Link="Networking\MapSelectionCallObservation.cs" />
+    <Compile Include="..\..\src\DaveCoop\Networking\MapOriginSourceFrame.cs" Link="Networking\MapOriginSourceFrame.cs" />
   </ItemGroup>
 </Project>
