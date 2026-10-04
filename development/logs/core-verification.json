@@ -1,13 +1,13 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T05:20:10.9151391Z",
-  "PluginVersion": "0.1.4-dev",
+  "RecordedUtc": "2026-10-04T05:42:17.6334216Z",
+  "PluginVersion": "0.1.5-dev",
   "VerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1"
   ],
-  "CoreTestsPassed": 44,
-  "CoreTestsTotal": 44,
+  "CoreTestsPassed": 50,
+  "CoreTestsTotal": 50,
   "TestNames": [
     "timeline boundaries and interpolation",
     "timeline capacity, ordering and reset",
@@ -52,10 +52,16 @@
     "world session authority and epoch cleanup",
     "world mailbox capacity and player fairness",
     "TCP world bootstrap, update and removal",
-    "TCP legacy world protocol rejection"
+    "TCP legacy world protocol rejection",
+    "fish visual numeric wire and DTO ownership",
+    "fish visual malformed data rejection",
+    "fish visual maximum fields fit packet limit",
+    "fish preview clock, interpolation and staleness",
+    "fish preview removal and epoch reset",
+    "slow world producer cannot starve atomic commit"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "76225076A95982E8A43D24E62C79607A680D67752B95CE8239CE7E164FF163D0",
+  "CompiledPluginSHA256": "F8063FA1E1C025A8B17575A5C763AF15B662B44D84377D29787886A17C5BEA60",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
@@ -64,6 +70,6 @@
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Pure CLR math, protocol/transport/session, resource keys, layout/motion, host entity IDs and atomic bounded world snapshot transfer. World bootstrap, HP update and roster removal tested over real loopback TCP with fixtures. Native fish capture compiled, not deployed or runtime-verified; no guest fish control or rewards.",
-  "ProtocolVersion": 2
+  "Scope": "Pure CLR math, protocol/transport/session, resource keys, layout/motion, host entity IDs, atomic bounded world transfer, fish visual descriptors and one-fish display buffering. Fixture TCP covers world HP/update/removal. Maximum visual packet size and slow continuous-producer commit verified. Native Sprite/Spine capture and preview compiled only; not deployed or runtime-verified; guest map/AI and rewards remain pending.",
+  "ProtocolVersion": 3
 }

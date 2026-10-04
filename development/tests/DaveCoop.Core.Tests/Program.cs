@@ -51,7 +51,13 @@ internal static class Program
             ("world session authority and epoch cleanup", EntityWorldTests.SessionAuthorityAndEpoch),
             ("world mailbox capacity and player fairness", EntityWorldTests.SnapshotFairnessAndBounds),
             ("TCP world bootstrap, update and removal", () => EntityWorldTests.TcpWorldLifecycle().GetAwaiter().GetResult()),
-            ("TCP legacy world protocol rejection", () => EntityWorldTests.RejectLegacyProtocol().GetAwaiter().GetResult())
+            ("TCP legacy world protocol rejection", () => EntityWorldTests.RejectLegacyProtocol().GetAwaiter().GetResult()),
+            ("fish visual numeric wire and DTO ownership", FishVisualTests.CodecAndOwnership),
+            ("fish visual malformed data rejection", FishVisualTests.InvalidVisuals),
+            ("fish visual maximum fields fit packet limit", FishVisualTests.MaximumLegalPacketFits),
+            ("fish preview clock, interpolation and staleness", FishVisualTests.PreviewInterpolationAndStaleness),
+            ("fish preview removal and epoch reset", FishVisualTests.PreviewRemovalAndEpoch),
+            ("slow world producer cannot starve atomic commit", EntityWorldTests.SlowWorldProducerCannotStarveCommit)
         };
         int failures = 0;
         foreach (var test in tests)

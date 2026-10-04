@@ -2,7 +2,7 @@
 
 对应 PLAN 的 M4、M5 和 M6。这里区分设计、已确认的接口签名和待实机验证的行为。
 当前只验证了第二角色本地回放，以及 0.1.3-dev 网络组件在新进程中的加载。
-44 项核心测试不证明两个游戏拥有同一地图、同一条鱼或共同捕获结果。
+50 项核心测试不证明两个游戏拥有同一地图、同一条鱼或共同捕获结果。
 
 ## 世界由房主裁定
 
@@ -99,7 +99,7 @@ Steam Build 25315876 / Unity 6000.0.52f1，读取 BepInEx 生成的互操作元�
 可复现签名研究：`development/scripts/Inspect-WorldApi.ps1`。
 报告保存到忽略的 `.local/analysis/world-api.json`，不发布游戏程序集或完整机器记录。
 
-## 0.1.4-dev 只读探针（已编译，待部署）
+## 只读探针（0.1.4-dev 引入，当前仍待部署）
 
 F7 切换 Discovery.EnableWorldProbe，默认关闭。开启后每 2 秒在 Unity 主线程读取
 活动管理器、节点选择、IGP 组、分配器、鱼的种类/位置/HP/捕获/死亡状态与物品。
@@ -114,35 +114,71 @@ F7 切换 Discovery.EnableWorldProbe，默认关闭。开启后每 2 秒在 Unit
 核对节点选择何时稳定、每条鱼的初始化/死亡/销毁过程、延迟生成与 ID 复用。
 探针尚未实际运行，字段可读取和观察开销仍需验证。
 
-## 0.1.4-dev 数值实体通道（已测试，原生适配待部署）
+## 0.1.5-dev 实体通道（核心已测试，原生适配待部署）
 
 Core/World 的 HostEntityRegistry 将本机对象 token 映射为房主分配的 ID，
 同种鱼不同 ID；明确释放后复用 token 分配新 ID，同 epoch 清空也不会复用旧 ID。
 新 epoch 清空绑定；房间和 epoch 来自已确认的会话，不发送 Native 指针或本机实例 ID。
 
-协议 2 的 WorldSlice 消息最多每块 64 个实体、每快照 4096 个实体。
-快照携带 epoch、场景、递增修订和采样时间，含类型/TID、姿态、HP/MaxHP、死亡与捕获状态。
+协议 3 的 WorldSlice 消息最多每块 16 个实体、每快照 4096 个实体。
+快照携带 epoch、场景、递增修订和采样时间，含类型/TID、姿态、HP/MaxHP、死亡与捕获状态及可选显示描述。
+每块降至 16 个实体以容纳显示字段的合法最大值，保持 128 KiB 消息限制；双方版本必须匹配。
 检查数值、种类、数量、唯一 ID、分块顺序和一致的头部；完整收齐后才移交客机主线程。
-中途开始新修订会放弃未完成旧修订，保留已提交状态；空快照可表达清单清空。
-出站世界清单与玩家移动轮流发送，控制消息优先；入站只保留最新完整快照。
+接收端允许新修订的首块替换未完成旧修订，保留已提交状态；空快照可表达清单清空。
+发送端完成已开始的整批清单，仅保留下一批最新状态；两批有界缓存避免持续采样让慢连接一直无法提交。
+尚未开始的批次可替换。出站世界清单与玩家移动轮流发送，控制消息优先；入站只保留最新完整快照。
 禁止客机发布世界、禁止旧本地快照被改标为新 epoch，场景暂停/重载/关闭时清理缓存。
 
-9 项实体测试新增至总计 44/44：覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
+核心总计 50/50 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
 修订更替/空清单、权限/epoch、容量/公平性、真实 TCP 数值清单/HP 更新/移除及旧协议拒绝。
 测试为 CLR 夹具；没有在两份游戏中调用捕鱼或物品 API。
 
 Native FishStateCapture 在房主的 Unity 线程最多 5Hz 读取玩家所在场景的已初始化鱼，
-仅发布数值观察。F11 勾选 Transmit read-only fish observations 后启用，默认关闭。
+发布数值观察及可读取的显示描述。F11 勾选 Transmit read-only fish observations 后启用，默认关闭。
 Local test 的内部客机会经过真实 TCP 接收完整清单，或由另一台客机接收；
 WORLD_RECEIVED 最多每 2 秒记录数量/修订，NETWORK_STATE 同时记录本地观察与远端数量。
 完整读取和验证后先清理旧绑定再分配新 ID，避免读取失败积累半批绑定。
 原生读取失败只记 WORLD_CAPTURE_WARNING，不发布该批清单。
 
-该适配尚未部署/实机验证。它不创建远程鱼、不关闭客机鱼 AI、不替换地图、不处理收益；
-只包含当前场景的已初始化鱼，物品读取/生成事件/跨场景和资源解析仍需接入。
+该适配尚未部署/实机验证。0.1.5-dev 可另开一条鱼的显示诊断，客机鱼 AI、地图及收益尚未接管；
+只包含当前场景的已初始化鱼，物品读取、生成事件及跨场景实体仍需接入。
 轮询可发现已观察到的销毁/失活、指针或鱼种变化，
 但同种池对象在两次轮询之间关闭再启用仍需原生生命周期挂钩才能可靠分配新身份。
 完整数值快照也不能捕获两次采样之间生成又消失的短命对象，后续需有序生命周期/互动事件。
+
+## 一条鱼的显示诊断（0.1.5-dev 已编译，未实机验证）
+
+FishVisualCapture 优先读取鱼的 SpriteRenderer，否则读取 FishSpineAnimator 或 SkeletonMecanim。
+已确认的本机接口来自生成的 spine-unity.dll，未安装或升级 Spine。
+可复现签名读取：`development/scripts/Inspect-FishRenderApi.ps1`，输出到忽略的 .local/analysis。
+其组件与动画概念可参考 [Spine 官方 Unity 组件说明](https://eu.esotericsoftware.com/spine-unity-main-components)。
+Mecanim 以主层权重最高的动画片段名称寻找骨骼动画；名称对应关系参考
+[官方开发者说明](https://en.esotericsoftware.com/forum/d/29724-unity-animationclip-renaming-issues-and-editing-conflicts-in-skeleton-mecanim/7)，
+本机实际名称和片段时长仍待观察。
+
+显示描述包含资源键、相对姿态、颜色/排序/朝向，以及 Spine 的皮肤、主动画、采样时刻和缩放。
+Sprite 使用已有 SpriteKey；SpineCatalog 使用骨骼资源名、缩放和图集名序列生成 spine-v1 元数据哈希。
+哈希不包含像素或资源 GUID，跨机稳定性待验；同键不同本机资源标记歧义并拒绝显示。
+资源注册与查找在 Unity 线程；网络只传 CLR 数据，不上传本机资源引用或游戏资产。
+
+RemoteFishPreview 保留一个收到的鱼 ID，使用最多 16 帧进行姿态插值；清单移除后清理或选择另一条鱼，
+一秒未收到新状态便隐藏，epoch/场景/断线变化清空。Sprite 显示创建自己的 SpriteRenderer，
+Spine 显示创建自己的 SkeletonAnimation，关闭自动更新并按收到的主动画时间手动更新显示。
+不复制 FishAISystem、碰撞体、伤害、拾取或存档组件；清理仅销毁自己创建的节点。
+尚未验证原生初始化、材质、排序和动画效果。主动画路径不覆盖混合、多轨、槽位材质、
+自定义骨骼约束或非 Spine Mesh；未知显示资源隐藏，数值鱼状态仍可传输。
+
+实机验证步骤：
+
+1. 正常保存退出后部署 0.1.5-dev，重新启动并核对本次加载版本。
+2. F11 点击 Local test，勾选 Transmit read-only fish observations 和 Preview one received fish，关闭面板入海。
+3. 核对 WORLD_RECEIVED 数量/修订、NETWORK_STATE 的 UnresolvedVisuals/FirstVisualError、
+   FishPreviewEntity/Visible/UnknownResource；观察一条向右偏移 3 个单位的淡蓝色鱼的动画和转向。
+4. 捕获原鱼后观察显示移除或换鱼；Disconnect、返航、再入海均应清理，保持玩家操作与镜头正常。
+5. 对照 F7 探针记录实际鱼生命周期；再在两份游戏中核对资源键和显示。
+
+两个诊断选项均默认关闭。该测试保留原生鱼群，仅验证收到的数据能显示，
+不能作为 M4 的客机世界接管或 M5 合作捕鱼验收。
 
 ## 验收顺序
 

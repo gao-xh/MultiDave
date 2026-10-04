@@ -7,7 +7,7 @@ using UnityEngine;
 namespace DaveCoop.Rendering
 {
     // Call only from the Unity thread, and clear on scene changes. It owns no sprites.
-    // This adapter is compiled but not yet attached to the network renderer.
+    // Used by the player renderer and fish display preview; runtime scope is logged.
     internal sealed class SpriteCatalog
     {
         private const int Capacity = 16384;

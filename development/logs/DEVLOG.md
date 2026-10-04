@@ -184,6 +184,37 @@
   Sprite/Spine/Mesh 资源与远程鱼显示、客机 AI 隔离、M5 裁定及 M6 返航账本。
   同种池对象在两次轮询之间重启及短命生成/销毁仍需事件入口；本次未将 M4 标记完成。
 
+## 2026-10-03 — M4 单鱼 Sprite/Spine 显示准备与慢连接完整提交
+
+- 目标：先验证房主实际鱼状态在接收端的显示，再实现完整地图/鱼群接管与互动。
+  当前游戏仍运行 0.1.3-dev；未覆盖运行中的插件，也未调用原生伤害、捕获或存档写入。
+- 读取鱼显示/生命周期及 Spine 互操作签名，确认 FishSpineAnimator、SkeletonMecanim、
+  SkeletonAnimation 创建/更新与动画/皮肤接口；FishAISystem OnEnable/OnDisable/OnDie 是后续池生命周期研究入口。
+  新增 scripts/Inspect-FishRenderApi.ps1，实际成功读取游戏 7 个类型与 Spine 9 个类型。
+  这些仅是签名，不证明原生控制流、挂钩副作用或实际画面。
+- 新增 Core/World/FishVisual、FishPreviewBuffer；EntityState 带可选显示描述并深拷贝。
+  网络只含资源键、数值姿态、颜色/排序及皮肤/主动画/时间/缩放，限制长度和数值。
+  缓冲只选择一条鱼，保留 16 帧；清单移除、场景/epoch 更换或失联按界限清理/隐藏。
+- 新增 Rendering/SpineCatalog、Networking/FishVisualCapture 和 RemoteFishPreview。
+  Sprite 复用资源键；Spine 使用骨骼名/缩放/图集名元数据哈希，歧义拒绝，跨机稳定性仍待实测。
+  只创建自己的显示组件，未复制鱼 AI/物理/伤害/奖励脚本；动画混合、多轨、约束、槽位材质和非 Spine Mesh 未覆盖。
+  本机 TCP 显示向右偏移 3 个单位并着淡蓝色，以便与原鱼区分。
+- F11 新增 Preview one received fish，和 Transmit read-only fish observations 均默认关闭。
+  NETWORK_STATE 记录显示选择/可见/未知资源及捕获显示失败数；预览异常单独处理并清理自己节点。
+- 协议改为 3，拒绝旧协议 2；每块 16 个实体以容纳最大显示字段，快照仍最多 4096 个实体。
+  修改 SessionMachine：已开始的批次发完才提交下一批，后续更新仅保留最新清单。
+  持续生产新快照不会让慢连接不断丢弃未完成批次；控制和移动消息仍有发送机会，缓存有界。
+- Test-Core 50/50 通过（新增 5 项显示描述/缓冲用例和慢连接用例）：
+  覆盖编码/复制隔离、畸形字段、最大消息大小、插值/失联/清单移除/epoch 重置，
+  以及每发一块便更新状态仍能完成整批原子提交。测试是 CLR 夹具，不是原生鱼或双游戏验收。
+  Build-Plugin 警告视为错误通过，引用现有生成的 spine-unity.dll，无新依赖下载。
+  当前 0.1.5-dev 自写 DLL SHA256：
+  `F8063FA1E1C025A8B17575A5C763AF15B662B44D84377D29787886A17C5BEA60`。
+- 更新计划、接手记录、WORLD_SYNC、MULTIPLAYER、README、开发约定、配置 Skill 和公开验证摘要。
+  新版本尚未部署，原生初始化、材质、动画、布局读取及跨机资源键仍待验证。
+  下一步：正常退出后部署并验证 F7/F11 实际鱼数据和显示；接入池生命周期、房主地图选择，
+  客机生成/AI 接管与双游戏验收，再推进 M5 裁定和 M6 返航账本。默认发行包仍为 0.1.0。
+
 ## 后续日志格式
 
 每次追加：日期、目标、关键改动、验证命令及实际结果、遗留问题、下一步。

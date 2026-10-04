@@ -1,0 +1,27 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-04T05:42:17.6334216Z",
+  "PluginVersion": "0.1.5-dev",
+  "ProtocolVersion": 3,
+  "CompiledPluginSHA256": "F8063FA1E1C025A8B17575A5C763AF15B662B44D84377D29787886A17C5BEA60",
+  "WarningAsErrorCompilationPassed": true,
+  "CoreTestsPassed": 50,
+  "CoreTestsTotal": 50,
+  "CoreEvidence": "core-verification.json",
+  "SupportedDisplayDescriptors": [
+    "Sprite",
+    "Spine single primary animation"
+  ],
+  "TransmitFishObservationsDefault": false,
+  "FishPreviewDefault": false,
+  "DisplayEntityLimit": 1,
+  "WorldEntitiesPerSlice": 16,
+  "WorldEntityLimit": 4096,
+  "ContinuousProducerAtomicCommitVerified": true,
+  "NativeFishCaptureVerified": false,
+  "NativeFishDisplayVerified": false,
+  "TwoGameInstancesVerified": false,
+  "GuestMapAndAITakeoverVerified": false,
+  "CooperativeFishingVerified": false,
+  "Scope": "Compiled native adapters and verified CLR fixtures only. Original game fish remain independently controlled. Actual resources, initialization, materials, animation, lifecycle and two-machine stability still require game testing."
+}

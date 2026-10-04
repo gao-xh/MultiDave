@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DaveCoop.Core.World;
+using DaveCoop.Rendering;
 using DR.AI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,13 +20,15 @@ namespace DaveCoop.Networking
         private readonly Dictionary<long, LocalBinding> _bindings = new Dictionary<long, LocalBinding>();
         public int ObservedFish { get; private set; }
         public int UninitializedFish { get; private set; }
+        public int UnresolvedVisuals { get; private set; }
+        public string FirstVisualError { get; private set; }
 
-        public WorldSnapshot Capture(Scene scene, long epoch, string sceneKey, double sampleTime)
+        public WorldSnapshot Capture(Scene scene, long epoch, string sceneKey, double sampleTime, SpriteCatalog sprites, SpineCatalog spines)
         {
             if (_registry.Epoch != epoch) { _registry.BeginEpoch(epoch); _bindings.Clear(); }
             var found = UnityObject.FindObjectsOfType<FishAISystem>();
             if (found.Length > WorldFrames.MaxEntities) throw new InvalidOperationException("Too many fish objects for bounded world observation.");
-            var candidates = new List<Candidate>(); var seen = new HashSet<long>(); UninitializedFish = 0;
+            var candidates = new List<Candidate>(); var seen = new HashSet<long>(); UninitializedFish = 0; UnresolvedVisuals = 0; FirstVisualError = null;
             foreach (FishAISystem fish in found)
             {
                 if (fish == null || !fish.gameObject.activeInHierarchy || fish.gameObject.scene.handle != scene.handle) continue;
@@ -46,6 +49,9 @@ namespace DaveCoop.Networking
                         Scale = new System.Numerics.Vector3(scale.x, scale.y, scale.z)
                     }
                 };
+                try { state.Visual = FishVisualCapture.Capture(fish, sprites, spines); }
+                catch (Exception error) { state.Visual = null; if (FirstVisualError == null) FirstVisualError = error.GetType().Name + ": " + error.Message; }
+                if (state.Visual == null) UnresolvedVisuals++;
                 WorldFrames.ValidateEntity(state);
                 if (token == 0 || !seen.Add(token)) throw new InvalidOperationException("Ambiguous local fish identity.");
                 candidates.Add(new Candidate { Token = token, Pointer = pointer, State = state });
@@ -70,7 +76,7 @@ namespace DaveCoop.Networking
 
         public void Clear()
         {
-            _registry = new HostEntityRegistry(); _bindings.Clear(); ObservedFish = 0; UninitializedFish = 0;
+            _registry = new HostEntityRegistry(); _bindings.Clear(); ObservedFish = 0; UninitializedFish = 0; UnresolvedVisuals = 0; FirstVisualError = null;
         }
     }
 }

@@ -38,6 +38,7 @@ namespace DaveCoop.Core.Session
         private ReceivedFrame _incomingFrame;
         private readonly WorldAssembler _worldAssembler = new WorldAssembler();
         private WorldSlice[] _outgoingWorld;
+        private WorldSlice[] _pendingWorld;
         private int _nextWorldSlice;
         private long _worldRevision;
         private double _lastLocalWorldTime = -1;
@@ -206,7 +207,7 @@ namespace DaveCoop.Core.Session
             if (_outgoingWorld != null && (_preferWorld || _outgoingFrame == null))
             {
                 packet = new WirePacket { Kind = PacketKind.WorldSlice, RoomId = _identity.RoomId, World = _outgoingWorld[_nextWorldSlice++] };
-                if (_nextWorldSlice == _outgoingWorld.Length) { _outgoingWorld = null; _nextWorldSlice = 0; }
+                if (_nextWorldSlice == _outgoingWorld.Length) { _outgoingWorld = _pendingWorld; _pendingWorld = null; _nextWorldSlice = 0; }
                 _preferWorld = false; return true;
             }
             packet = _outgoingFrame; _outgoingFrame = null;
@@ -229,9 +230,12 @@ namespace DaveCoop.Core.Session
             WorldSlice[] slices = WorldFrames.Split(copy);
             if (source.SampleTime <= _lastLocalWorldTime) return false;
             _worldRevision++; _lastLocalWorldTime = source.SampleTime;
-            // Replacing a partial unsent snapshot starts a newer revision at index 0.
-            // The receiver retains its last complete world until the new one commits.
-            _outgoingWorld = slices; _nextWorldSlice = 0; return true;
+            // Finish a started snapshot even on a slow link. Retain only the
+            // latest subsequent snapshot, so continuous producers cannot starve
+            // the receiver's atomic commits or grow a send backlog.
+            if (_outgoingWorld != null && _nextWorldSlice > 0) _pendingWorld = slices;
+            else { _outgoingWorld = slices; _nextWorldSlice = 0; }
+            return true;
         }
 
         public bool TryTakeRemoteWorld(out WorldSnapshot snapshot)
@@ -283,7 +287,7 @@ namespace DaveCoop.Core.Session
         private void ClearFrames()
         {
             _outgoingFrame = null; _incomingFrame = null; _lastFrameTime = -1; _lastLocalFrameTime = -1;
-            _outgoingWorld = null; _nextWorldSlice = 0; _incomingWorld = null;
+            _outgoingWorld = null; _pendingWorld = null; _nextWorldSlice = 0; _incomingWorld = null;
             _worldRevision = 0; _lastLocalWorldTime = -1; _worldAssembler.Clear(); _preferWorld = false;
         }
 

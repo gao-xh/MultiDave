@@ -43,12 +43,16 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - 源码开发版的 F11 打开房间面板。先按 MULTIPLAYER 验证 Local test 的真实 TCP
   收发与主线程显示，再验证 Host/Join 的两个游戏实例；默认发行包不包含这个新入口。
   对照 NETWORK/LAYOUT 标记记录成功或失败，布局指纹通过不等于统一地图/实体已完成。
-- 0.1.4-dev 新增 F7 世界只读探针，默认关闭，已编译但实机验证状态以 HANDOFF 为准。
+- 源码 0.1.5-dev 含 F7 世界只读探针，默认关闭，已编译但实机验证状态以 HANDOFF 为准。
   正常退出后部署、验证新版本启动，再观察地图选择、鱼 HP/捕获和返航生命周期。
   `development/scripts/Inspect-WorldApi.ps1` 可复现接口签名研究；元数据不能证明挂钩副作用。
-- 同版源码的 F11 可开启 Transmit read-only fish observations，在 Host/Local test 潜水时
-  核对 WORLD_RECEIVED 与 NETWORK_STATE 的数量/修订；这是实际鱼数据的只读通道，
-  尚不创建远程鱼或裁定捕获。协议为 2，双方源码/版本应匹配。
+- 同版源码的 F11 可开启 Transmit read-only fish observations 和 Preview one received fish，
+  均默认关闭。正常退出后部署并验证新进程版本，再在 Local test 潜水核对 WORLD_RECEIVED，
+  以及 NETWORK_STATE 的 FishPreviewEntity/Visible/UnknownResource、UnresolvedVisuals/FirstVisualError。
+  请用户观察一条淡蓝色鱼的动画/转向，并核对捕获后移除、断线与返航清理、本地输入/镜头。
+  实际鱼的 Sprite/Spine 读取与显示仍待验证，单游戏显示不能证明客机地图/鱼群/AI 接管或合作捕获。
+  协议为 3，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
+  `development/scripts/Inspect-FishRenderApi.ps1` 可复现游戏/Spine 显示与生命周期接口签名研究。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

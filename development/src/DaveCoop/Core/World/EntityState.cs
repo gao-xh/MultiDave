@@ -15,11 +15,12 @@ namespace DaveCoop.Core.World
         public float MaxHp { get; set; }
         public bool Dead { get; set; }
         public bool Captured { get; set; }
+        public FishVisual Visual { get; set; }
 
         public EntityState Copy() => new EntityState
         {
             Id = Id, Kind = Kind, DataTid = DataTid, Root = Root,
-            Hp = Hp, MaxHp = MaxHp, Dead = Dead, Captured = Captured
+            Hp = Hp, MaxHp = MaxHp, Dead = Dead, Captured = Captured, Visual = Visual?.Copy()
         };
     }
 
@@ -48,7 +49,7 @@ namespace DaveCoop.Core.World
     public static class WorldFrames
     {
         public const int MaxEntities = 4096;
-        public const int EntitiesPerSlice = 64;
+        public const int EntitiesPerSlice = 16;
 
         public static WorldSlice[] Split(WorldSnapshot snapshot)
         {
@@ -107,6 +108,11 @@ namespace DaveCoop.Core.World
                 (entity.Kind == EntityKind.Fish && entity.MaxHp <= 0) ||
                 (entity.Kind == EntityKind.Item && (entity.Hp != 0 || entity.MaxHp != 0 || entity.Captured)))
                 throw new ProtocolException("Invalid world entity health.");
+            if (entity.Visual != null)
+            {
+                if (entity.Kind != EntityKind.Fish) throw new ProtocolException("Item includes a fish visual.");
+                entity.Visual.Validate();
+            }
         }
 
         private static void ValidateHeader(long epoch, string scene, long revision, double time)

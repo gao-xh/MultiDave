@@ -45,15 +45,17 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 - [分阶段开发计划](development/docs/PLAN.md)
 - [玩家与摄像机发现](development/docs/GAME_API.md)
 - [第二角色与传输层](development/docs/MULTIPLAYER.md)
+- [同一海洋、鱼与互动](development/docs/WORLD_SYNC.md)
 - [Codex 配置技能](.agents/skills/dave-coop-setup/SKILL.md)
 
 源代码和重复使用的配置工具位于 `development/`；
 `distribution/` 是供自动安装使用的本项目插件包。
 本仓库不分发游戏、游戏接口程序集、存档或 BepInEx 运行库。
 
-`codex/player-discovery` 分支源码为 0.1.4-dev：玩家探针与第二角色回放基础验收通过，
-核心有 44 项通过测试，0.1.3-dev 房间组件已实机加载，连接/显示与双游戏验收待完成。
-0.1.4-dev 世界只读探针与鱼状态诊断通道已编译未部署；同一海洋、鱼与互动方案见 development/docs/WORLD_SYNC.md。
+`codex/player-discovery` 分支源码为 0.1.5-dev：玩家探针与第二角色回放基础验收通过，
+核心有 50 项通过测试，0.1.3-dev 房间组件已实机加载，连接/显示与双游戏验收待完成。
+世界只读探针、鱼状态通道及一条鱼的 Sprite/Spine 显示已编译未部署；
+同一海洋、鱼与互动的实现范围见 [WORLD_SYNC](development/docs/WORLD_SYNC.md)。
 开发时使用编译和部署脚本；默认玩家安装包保持 0.1.0。
 
 ## 暂时停用

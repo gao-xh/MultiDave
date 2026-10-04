@@ -1,17 +1,17 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T05:20:10.9507561Z",
-  "PluginVersion": "0.1.4-dev",
-  "CompiledPluginSHA256": "76225076A95982E8A43D24E62C79607A680D67752B95CE8239CE7E164FF163D0",
+  "RecordedUtc": "2026-10-04T05:42:17.6334216Z",
+  "PluginVersion": "0.1.5-dev",
+  "CompiledPluginSHA256": "F8063FA1E1C025A8B17575A5C763AF15B662B44D84377D29787886A17C5BEA60",
   "CompilationVerified": true,
   "ProbeDefaultEnabled": false,
   "TransmitFishObservationsDefault": false,
-  "CoreTestsPassed": 44,
+  "CoreTestsPassed": 50,
   "CoreEvidence": "core-verification.json",
   "NativeProbeDeployed": false,
   "NativeProbeRuntimeVerified": false,
   "NativeFishCaptureVerified": false,
   "SameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Latest 0.1.4-dev includes the F7 read-only probe and host fish observation channel. The older probe-only build 587D4D... is superseded. Current live game remains 0.1.3-dev."
+  "Scope": "Latest 0.1.5-dev includes the F7 read-only probe, host fish observations and optional one-fish Sprite/Spine preview. Probe and observation adapters are still not deployed. Current live game remains 0.1.3-dev; historical build hashes stay in DEVLOG."
 }

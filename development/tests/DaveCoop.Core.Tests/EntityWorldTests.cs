@@ -60,12 +60,12 @@ internal static class EntityWorldTests
     {
         WorldSnapshot source = Snapshot(129); WorldSlice[] slices = WorldFrames.Split(source);
         source.Entities[0].Hp = 1;
-        Assert(slices.Length == 3 && slices[0].Entities[0].Hp == 10, "split did not bound or copy the source");
+        Assert(slices.Length == 9 && slices[0].Entities[0].Hp == 10, "split did not bound or copy the source");
         var assembler = new WorldAssembler();
         Assert(!assembler.Accept(slices[0], out _), "partial world exposed entities");
         slices[0].Entities[0].Hp = 2;
-        Assert(!assembler.Accept(slices[1], out _), "partial world committed early");
-        Assert(assembler.Accept(slices[2], out WorldSnapshot complete), "complete world did not commit");
+        for (int i = 1; i < slices.Length - 1; i++) Assert(!assembler.Accept(slices[i], out _), "partial world committed early");
+        Assert(assembler.Accept(slices[slices.Length - 1], out WorldSnapshot complete), "complete world did not commit");
         Assert(complete.Entities.Length == 129 && complete.Entities[0].Hp == 10, "incoming data ownership was not isolated");
         Assert(!assembler.Accept(slices[0], out _), "committed revision replayed");
         assembler.Clear(); Assert(assembler.CommittedRevision == 0 && !assembler.Accept(WorldFrames.Split(Snapshot(129))[0], out _), "reset retained previous scene state");
@@ -127,7 +127,7 @@ internal static class EntityWorldTests
         Assert(a.Kind != b.Kind && (a.Kind == PacketKind.PlayerFrame || b.Kind == PacketKind.PlayerFrame), "large world starved player movement");
         int slices = a.Kind == PacketKind.WorldSlice ? 1 : 0; slices += b.Kind == PacketKind.WorldSlice ? 1 : 0;
         while (pair.Host.TryTakePacket(out WirePacket packet)) if (packet.Kind == PacketKind.WorldSlice) slices++;
-        Assert(slices == 64, "world queue exceeded its bounded chunk count");
+        Assert(slices == 256, "world queue exceeded its bounded chunk count");
         full.SampleTime = 0.2; pair.Host.PublishWorld(full, 0.2); full.Entities[0].DataTid = -1;
         pair.Host.TryTakePacket(out a); Assert(a.World.Entities[0].DataTid == 2010007, "publisher retained mutable caller entity data");
     }
@@ -154,12 +154,30 @@ internal static class EntityWorldTests
         await guest.StopAsync(); await host.Completion.WaitAsync(cancellation.Token);
     }
 
+    internal static void SlowWorldProducerCannotStarveCommit()
+    {
+        var pair = new Pair(); pair.Ready();
+        pair.Host.PublishWorld(Snapshot(65, 0.1), 0.1);
+        WorldSnapshot received = null;
+        for (int i = 0; i < 5; i++)
+        {
+            Assert(pair.Host.TryTakePacket(out WirePacket packet), "started snapshot vanished"); pair.Deliver(packet);
+            pair.Guest.TryTakeRemoteWorld(out received);
+            double now = 0.2 + i * 0.1; pair.Host.PublishWorld(Snapshot(65, now), now);
+        }
+        Assert(received != null && received.Revision == 1 && received.Entities.Length == 65,
+            "continuous updates prevented a slow peer from completing the first world");
+        pair.Pump();
+        Assert(pair.Guest.TryTakeRemoteWorld(out received) && received.Revision == 6,
+            "latest coalesced world did not follow the completed world");
+    }
+
     internal static async Task RejectLegacyProtocol()
     {
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         using var listener = new LanHost(IPAddress.Loopback, 0);
-        PeerIdentity current = Identity("Host"), legacy = Identity("Guest"); legacy.ProtocolVersion = 1;
-        Assert(current.ProtocolVersion == 2, "world channel did not advance the negotiated protocol");
+        PeerIdentity current = Identity("Host"), legacy = Identity("Guest"); legacy.ProtocolVersion = 2;
+        Assert(current.ProtocolVersion == 3, "fish visual channel did not advance the negotiated protocol");
         Task<SessionPeer> accepting = listener.AcceptOneAsync(current, cancellation.Token);
         bool rejectedGuest = false, rejectedHost = false;
         try { using SessionPeer unexpected = await LanGuest.ConnectAsync("127.0.0.1", listener.Port, legacy, cancellation.Token); }
@@ -180,7 +198,7 @@ internal static class EntityWorldTests
     };
 
     private static PeerIdentity Identity(string name) => new PeerIdentity
-    { ModVersion = "0.1.4-dev", SteamBuildId = "25315876", UnityVersion = "6000.0.52f1", Name = name };
+    { ModVersion = "0.1.5-dev", SteamBuildId = "25315876", UnityVersion = "6000.0.52f1", Name = name };
     private static async Task Until(Func<bool> condition, CancellationToken cancellation)
     {
         while (!condition()) await Task.Delay(5, cancellation);
