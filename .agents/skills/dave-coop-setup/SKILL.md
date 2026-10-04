@@ -30,6 +30,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
 
 读 `development/docs/HANDOFF.md`、`PLAN.md`；研究游戏接口时读 `GAME_API.md`，
 研究显示/协议/会话时读 `MULTIPLAYER.md`，研究同一海洋、鱼与互动时读 `WORLD_SYNC.md`。
+研究捕获、背包、员工及返航时另读 `CREW_MODE.md`，按用户确定的每人独立背包方案开发。
 源码在 `development/src/DaveCoop/`。
 
 - C# 修改后运行 `development/scripts/Build-Plugin.ps1`。
@@ -126,6 +127,13 @@ description: Configure or continue development of the MultiDave prototype for Wi
   新路线之后迟到的旧原生controller可能同名/同地址，候选代次不能证明native origin，NativeGenerationBound=false。
   HostSelectionApplied始终false；未实现客机地图采用、原生鱼AI隔离、实际捕鱼或正常返航闭环。
   核心夹具编译实际MapChoiceController与DTO（测试仅替代logger），不模拟或验证Unity原生hook行为。
+- 首版玩法为房主＋员工，每人独立背包/容量/负重；房主的原生LootBox仅本人使用，员工袋由房主Mod权威持有。
+  同层潜水、房主带队换层与返航；长期图鉴/任务/材料/经济归房主，员工个人进度不接收房主收益。
+  必须在员工捕获产物及前置容量判断处按操作归属分流，不能先Add房主袋再复制，不扩大房主容量替代员工袋。
+  成员MemberId/潜水ExpeditionId/每袋修订关联归属；员工断线保留已确认袋，账本不随网络Disconnect或scene清空。
+  房主原袋按原生链返航不补Add；员工尚未入仓物料需要新增原生桥按ReturnId/CaptureId/ProductIndex一次确认入房主仓库。
+  未知原生结果不补奖/不重派发整批；跨崩溃共同事务未证，不能承诺恰好一次恢复。
+  客机须隔离全部自动持久写入，并实现独立actor/装备/氧气/受伤/投射物；此模式目前为设计，未实现或实机验收。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

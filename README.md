@@ -46,6 +46,7 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 - [玩家与摄像机发现](development/docs/GAME_API.md)
 - [第二角色与传输层](development/docs/MULTIPLAYER.md)
 - [同一海洋、鱼与互动](development/docs/WORLD_SYNC.md)
+- [房主与员工、独立背包方案](development/docs/CREW_MODE.md)
 - [Codex 配置技能](.agents/skills/dave-coop-setup/SKILL.md)
 
 源代码和重复使用的配置工具位于 `development/`；

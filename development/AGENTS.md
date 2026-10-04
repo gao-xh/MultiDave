@@ -2,6 +2,7 @@
 
 - M1 玩家发现与 M2 回放基础验收通过；当前源码为 0.1.14-dev、协议 5，Build 警告视为错误通过、Test-Core 134/134 通过，范围见 [地图选择传输构建摘要](logs/map-choice-transport-build-verification.json)；本轮未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
 - 继续工作前阅读 `docs/HANDOFF.md`、`docs/PLAN.md` 和当前阶段的 `docs/GAME_API.md` / `docs/MULTIPLAYER.md` / `docs/WORLD_SYNC.md`；配置别人电脑时使用仓库根目录的配置 Skill。
+- 用户确定首版房主＋员工且每人独立背包，继续捕获/库存/结算开发先读 `docs/CREW_MODE.md`。房主自己的原生LootBox，员工由房主Mod持有的独立会话袋，各自容量/重量/负重；产物与前置容量检查都需正确分流，不能先入房主袋再复制。房主唯一长期进度；返航房主袋原链不重复Add、员工未入仓物料需新桥逐项确认一次。员工断线不清潜水账本，未知原生结果不重试/补奖；隔离客机全部自动持久写。同层带队、独立员工生存/装备/投射物及上述袋/结算仍待实现。
 - 0.1.11-dev 含房主目标反向查询、冻结的本地指针/代次 CLR 快照、完整收到的活动观察鱼群显示，以及 8 个原生交互入口的只读前后成对观察。鱼清单仅玩家当前场景，每鱼最多 16 帧；缺显示或离镜头不释放数字身份，原生 AI/碰撞/收益保持原样。
 - F11 的 Display received fish roster / Observe host harpoon and fish interactions 默认关闭，房主观察仍须启用 Transmit read-only fish observations。交互在 prefix 固定绑定，postfix 复用；bool 只是原返回，HpAtDrain 只是主线程消费时读数，不代表捕获结果或授权。只卸载自己的挂钩。
 - 0.1.12-dev 新增独立操作请求/结果 FIFO、握手绑定来源、规范指纹和 guest outstanding 核对。Gate 保留房间内 RequestId 高水位，业务拒绝也消费新 ID，场景失效/缓存淘汰不允许重放；未知原生结果不重派发。6 种动作具有 schema/Gate，实际 effects 的地图权限、客机隔离、本地竞争裁定、可信玩家/装备及原生桥仍为 false，不能声称可捕鱼。
