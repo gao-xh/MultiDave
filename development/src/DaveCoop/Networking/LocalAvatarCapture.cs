@@ -21,6 +21,7 @@ namespace DaveCoop.Networking
         public int SceneHandle { get; private set; }
         public int PartCount => _parts.Count;
         public int UnkeyedVisibleParts { get; private set; }
+        public int SkippedDestroyedParts { get; private set; }
 
         public static InGameManager FindLocalManager()
         {
@@ -78,18 +79,21 @@ namespace DaveCoop.Networking
             Transform origin = Player.transform;
             Quaternion inverse = Quaternion.Inverse(origin.rotation);
             Vector3 rootScale = origin.lossyScale;
-            var parts = new SpritePartFrame[_parts.Count];
-            UnkeyedVisibleParts = 0;
+            var parts = new List<SpritePartFrame>(_parts.Count);
+            UnkeyedVisibleParts = 0; SkippedDestroyedParts = 0;
             for (int i = 0; i < _parts.Count; i++)
             {
                 Part binding = _parts[i]; SpriteRenderer source = binding.Source;
-                if (source == null) throw new InvalidOperationException("Local avatar part was destroyed.");
+                // Equipment/effects can be removed after the periodic owner
+                // check. Omit stale slots for this frame and refresh next Update;
+                // an ordinary visual change must not terminate the LAN session.
+                if (source == null) { SkippedDestroyedParts++; continue; }
                 string key = null;
                 try { key = catalog.Register(source.sprite); } catch (ArgumentException) { }
                 bool visible = source.enabled && source.gameObject.activeInHierarchy && source.sprite != null;
                 if (visible && key == null) UnkeyedVisibleParts++;
                 Vector3 scale = source.transform.lossyScale; Color color = source.color;
-                parts[i] = new SpritePartFrame
+                parts.Add(new SpritePartFrame
                 {
                     Slot = binding.Slot, SpriteKey = key, Visible = visible && key != null,
                     Pose = PoseOf(origin.InverseTransformPoint(source.transform.position), inverse * source.transform.rotation,
@@ -97,12 +101,12 @@ namespace DaveCoop.Networking
                     Color = new System.Numerics.Vector4(color.r, color.g, color.b, color.a),
                     FlipX = source.flipX, FlipY = source.flipY, Layer = source.gameObject.layer,
                     SortingLayer = source.sortingLayerID, SortingOrder = source.sortingOrder
-                };
+                });
             }
             return new PlayerFrame
             {
                 PlayerId = 1, SceneEpoch = 1, SceneKey = Player.gameObject.scene.name, SampleTime = now,
-                Root = PoseOf(origin.position, origin.rotation, rootScale), Parts = parts
+                Root = PoseOf(origin.position, origin.rotation, rootScale), Parts = parts.ToArray()
             };
         }
 
@@ -116,7 +120,7 @@ namespace DaveCoop.Networking
         public void Clear()
         {
             Manager = null; Player = null; PlayerId = 0; SceneHandle = 0;
-            _parts.Clear(); _templates.Clear(); UnkeyedVisibleParts = 0;
+            _parts.Clear(); _templates.Clear(); UnkeyedVisibleParts = 0; SkippedDestroyedParts = 0;
         }
 
         internal static Pose PoseOf(Vector3 position, Quaternion rotation, Vector3 scale) => new Pose

@@ -1,0 +1,20 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-03T23:18:02.967052-07:00",
+  "PluginVersion": "0.1.8-dev",
+  "CompiledPluginSHA256": "7950EF93D20CF6E9912C14390D8649CB1C501ADB73A61495DEF9899777C875B5",
+  "WarningAsErrorCompilationPassed": true,
+  "CoreTestsPassed": 58,
+  "CoreTestsTotal": 58,
+  "Change": "Skip destroyed cached local display parts, schedule owner-list refresh, keep LAN session; retain selected fish across camera edge margin.",
+  "NativeRecoveredDestroyedPartsVerified": false,
+  "UserStabilityAccepted": false,
+  "DisconnectAndReturnVerified": false,
+  "Scope": "Compilation and existing CLR suites passed. The actual destroyed local renderer failure was observed in 0.1.7-dev; the native repair and stability acceptance remain pending in 0.1.8-dev.",
+  "NativeStartupVerified": true,
+  "InstalledPluginSHA256": "7950EF93D20CF6E9912C14390D8649CB1C501ADB73A61495DEF9899777C875B5",
+  "ProcessStartUtc": "2026-10-04T06:16:09.6178891Z",
+  "CurrentProcessLogFresh": true,
+  "FrameworkClassInitWarningPresent": true,
+  "NativeDiveRecoveryVerified": false
+}

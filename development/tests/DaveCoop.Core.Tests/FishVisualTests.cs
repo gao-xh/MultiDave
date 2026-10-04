@@ -78,6 +78,43 @@ internal static class FishVisualTests
         buffer.Clear(); Assert(buffer.EntityId == 0 && buffer.Count == 0, "disconnect retained preview selection");
     }
 
+    internal static void PreviewViewportAndNearestSelection()
+    {
+        var buffer = new FishPreviewBuffer(); WorldSnapshot source = Snapshot(1, 1);
+        source.Entities = new[] { Entity(1), Entity(2), Entity(3), Entity(4) };
+        source.Entities[0].Root = PoseAt(100); source.Entities[1].Root = PoseAt(2);
+        source.Entities[2].Root = PoseAt(1); source.Entities[3].Visual.Visible = false;
+        buffer.Push(source, 10, Vector3.Zero, entity => entity.Id != 1 && entity.Id != 3);
+        Assert(buffer.EntityId == 2, "preview chose the first/offscreen/invisible fish instead of an eligible nearby fish");
+        source.Revision = 2; source.SampleTime = 2; source.Entities[1].Dead = true;
+        buffer.Push(source, 11, Vector3.Zero, entity => entity.Id != 1);
+        Assert(buffer.EntityId == 3 && buffer.Count == 1, "dead selected fish retained its display/history");
+        source.Revision = 3; source.SampleTime = 3;
+        buffer.Push(source, 12, Vector3.Zero, entity => false);
+        Assert(buffer.EntityId == 0 && buffer.Count == 0, "viewport with no eligible fish kept an offscreen selection");
+    }
+
+    internal static void PreviewSelectionHysteresis()
+    {
+        var buffer = new FishPreviewBuffer(); WorldSnapshot source = Snapshot(1, 1);
+        source.Entities = new[] { Entity(1), Entity(2) };
+        source.Entities[0].Root = PoseAt(2); source.Entities[1].Root = PoseAt(2.1f);
+        buffer.Push(source, 10, Vector3.Zero);
+        source.Revision = 2; source.SampleTime = 2; source.Entities[0].Root = PoseAt(2.1f); source.Entities[1].Root = PoseAt(2);
+        buffer.Push(source, 11, Vector3.Zero);
+        Assert(buffer.EntityId == 1 && buffer.Count == 2, "nearby fish alternation caused selection flicker");
+        source.Revision = 3; source.SampleTime = 3; source.Entities[0].Root = PoseAt(20); source.Entities[1].Root = PoseAt(1);
+        buffer.Push(source, 12, Vector3.Zero);
+        Assert(buffer.EntityId == 2 && buffer.Count == 1, "far fish did not yield to a much nearer candidate");
+    }
+
+    internal static void PreviewInvalidViewer()
+    {
+        var buffer = new FishPreviewBuffer();
+        Throws<ArgumentException>(() => buffer.Push(Snapshot(1, 1), 10, new Vector3(float.NaN, 0, 0)));
+        Assert(buffer.EntityId == 0 && buffer.Count == 0, "invalid viewer mutated preview state");
+    }
+
     private static void Reject(FishVisual visual) => Throws<ProtocolException>(() => visual.Validate());
     private static void Throws<T>(Action action) where T : Exception
     {

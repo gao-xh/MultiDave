@@ -29,6 +29,7 @@ namespace DaveCoop.Networking
         private readonly SpriteCatalog _catalog = new SpriteCatalog();
         private readonly NetworkAvatarRenderer _display = new NetworkAvatarRenderer();
         private readonly FishStateCapture _fish = new FishStateCapture();
+        private readonly FishLifecycleHooks _fishLifecycle = new FishLifecycleHooks();
         private readonly SpineCatalog _spines = new SpineCatalog();
         private readonly RemoteFishPreview _fishPreview = new RemoteFishPreview();
         private string _fishPreviewWarning;
@@ -82,9 +83,10 @@ namespace DaveCoop.Networking
                 }
                 UpdateLocalScene();
                 state = _peers.Main.Snapshot;
+                if (state.Role != SessionRole.Host || !NetworkDriver.TransmitFishObservations.Value) _fishLifecycle.Dispose();
                 if (state.Phase != SessionPhase.Ready || state.SceneEpoch != _worldEpoch)
                 {
-                    _fish.Clear(); _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0;
+                    _fish.Clear(); _fishLifecycle.ClearObserved(); _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0;
                     _fishPreview.Clear(); _spines.Clear();
                     _worldEpoch = state.Phase == SessionPhase.Ready ? state.SceneEpoch : 0;
                 }
@@ -101,7 +103,7 @@ namespace DaveCoop.Networking
                 if (worldReceiver.TryTakeRemoteWorld(out WorldSnapshot world) && world.SceneEpoch == state.SceneEpoch && state.Phase == SessionPhase.Ready)
                 {
                     _lastRemoteWorldRevision = world.Revision; _lastRemoteFishCount = world.Entities.Length;
-                    if (NetworkDriver.ShowFishPreview.Value) _fishPreview.Receive(world, worldReceiver.Now);
+                    if (NetworkDriver.ShowFishPreview.Value) _fishPreview.Receive(world, worldReceiver.Now, _local, _peers.Loopback != null);
                     if (Time.unscaledTime >= _nextWorldLog)
                     {
                         _nextWorldLog = Time.unscaledTime + 2f;
@@ -122,11 +124,14 @@ namespace DaveCoop.Networking
                     {
                         Mode = mode, state.Phase, state.SceneEpoch, state.SceneKey, state.HasClockEstimate,
                         state.RoundTripSeconds, LocalPlayer = _local.PlayerId, LocalParts = _local.PartCount,
-                        UnkeyedLocalParts = _local.UnkeyedVisibleParts, RemoteVisibleParts = _display.VisibleParts,
+                        UnkeyedLocalParts = _local.UnkeyedVisibleParts, SkippedDestroyedLocalParts = _local.SkippedDestroyedParts, RemoteVisibleParts = _display.VisibleParts,
                         RemoteUnknownAssets = _display.UnknownAssets, RemoteHistoryCount = _display.HistoryCount,
                         ObservedHostFish = _fish.ObservedFish, _fish.UninitializedFish,
                         _fish.UnresolvedVisuals, _fish.FirstVisualError, RemoteWorldRevision = _lastRemoteWorldRevision, RemoteFishCount = _lastRemoteFishCount,
-                        FishPreviewEntity = _fishPreview.SelectedEntity, FishPreviewVisible = _fishPreview.Visible, FishPreviewUnknownResource = _fishPreview.UnknownResource
+                        FishPreviewEntity = _fishPreview.SelectedEntity, FishPreviewVisible = _fishPreview.Visible, FishPreviewUnknownResource = _fishPreview.UnknownResource,
+                        FishPreviewInView = _fishPreview.InView, FishPreviewMeshVertices = _fishPreview.MeshVertices,
+                        FishLifecycleHooks = _fishLifecycle.Installed, FishLifecycleTracked = _fishLifecycle.Tracker.Count,
+                        FishLifecycleTransitions = _fishLifecycle.Tracker.Transitions, FishLifecycleCallbackErrors = _fishLifecycle.CallbackErrors
                     }));
                 }
             }
@@ -146,6 +151,11 @@ namespace DaveCoop.Networking
                 {
                     _nextCapture = Time.unscaledTime + 1f / 30;
                     PlayerFrame frame = _local.Capture(_peers.Main.Now, _catalog);
+                    if (_local.SkippedDestroyedParts > 0)
+                    {
+                        _nextOwnerCheck = 0;
+                        NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_PARTS_STALE: skipped destroyed display slots; refresh scheduled; session retained.");
+                    }
                     _peers.Main.PublishFrame(frame);
                     if (_peers.Loopback != null && _peers.Loopback.Snapshot.Phase == SessionPhase.Ready)
                     {
@@ -235,7 +245,7 @@ namespace DaveCoop.Networking
         private void ClearLocal()
         {
             _scene = null; _layoutMessage = null; SetScene(null); _local.Clear(); _catalog.Clear(); _display.Clear(); _displayEpoch = 0;
-            _fish.Clear(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0;
+            _fish.Clear(); _fishLifecycle.ClearObserved(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0;
             _fishPreview.Clear(); _spines.Clear();
         }
 
@@ -245,7 +255,9 @@ namespace DaveCoop.Networking
             _nextWorldCapture = Time.unscaledTime + 0.2f;
             try
             {
-                WorldSnapshot snapshot = _fish.Capture(_local.Player.gameObject.scene, state.SceneEpoch, state.SceneKey, _peers.Main.Now, _catalog, _spines);
+                _fishLifecycle.Enable();
+                if (!_fishLifecycle.Healthy) throw new InvalidOperationException("Fish lifecycle callback failed; state publication stopped.");
+                WorldSnapshot snapshot = _fish.Capture(_local.Player.gameObject.scene, state.SceneEpoch, state.SceneKey, _peers.Main.Now, _catalog, _spines, _fishLifecycle.Tracker);
                 _peers.Main.PublishWorld(snapshot); _worldWarning = null;
             }
             catch (Exception error)
@@ -258,6 +270,16 @@ namespace DaveCoop.Networking
 
         public void Draw()
         {
+            if (NetworkDriver.ShowFishPreview != null && NetworkDriver.ShowFishPreview.Value)
+            {
+                try { _fishPreview.DrawMarker(); }
+                catch (Exception error)
+                {
+                    string message = error.GetType().Name + ": " + error.Message;
+                    if (_fishPreviewWarning != message) NetworkDriver.Logger.LogWarning("DAVECOOP_FISH_PREVIEW_WARNING: " + message);
+                    _fishPreviewWarning = message;
+                }
+            }
             if (NetworkDriver.ShowPanel == null || !NetworkDriver.ShowPanel.Value) return;
             GUI.Box(new Rect(12, 170, 640, 315), "MultiDave LAN movement test — F11");
             GUI.Label(new Rect(24, 194, 616, 28), "Movement display only. Fish, items and results are not synchronized.");
@@ -360,16 +382,18 @@ namespace DaveCoop.Networking
 
         private void Disconnect()
         {
+            bool hadSession = _peers != null || _pending != null;
             _attempt?.Cancel();
             Task<Peers> pending = _pending; _pending = null;
             if (pending != null) _ = DisposePendingAsync(pending);
             _peers?.Dispose(); _peers = null;
             _attempt?.Dispose(); _attempt = null;
             _scene = null; _layoutMessage = null; _local.Clear(); _catalog.Clear(); _display.Clear(); _displayEpoch = 0;
-            _fish.Clear(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0; _worldWarning = null;
+            _fish.Clear(); _fishLifecycle.Dispose(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0; _worldWarning = null;
             _fishPreview.Clear(); _spines.Clear(); _fishPreviewWarning = null;
             RemotePreview.NetworkActive = false;
             NetworkDriver.Status = "Network: offline (F11)"; _message = "Disconnected.";
+            if (hadSession) NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_DISCONNECTED: peers disposed; own avatar/fish display cleared; local replay restored.");
         }
 
         private static async Task DisposePendingAsync(Task<Peers> pending)

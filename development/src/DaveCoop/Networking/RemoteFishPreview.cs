@@ -28,12 +28,31 @@ namespace DaveCoop.Networking
         public long SelectedEntity => _motion.EntityId;
         public bool Visible { get; private set; }
         public bool UnknownResource { get; private set; }
+        public bool InView { get; private set; }
+        public int MeshVertices { get; private set; }
+        private Vector3 _displayPosition;
 
-        public void Receive(WorldSnapshot snapshot, double now) { _motion.Push(snapshot, now); }
+        public void Receive(WorldSnapshot snapshot, double now, LocalAvatarCapture local, bool loopback)
+        {
+            if (!local.IsAvailable) return;
+            Camera camera = Camera.main; Vector3 position = local.Player.transform.position;
+            var viewer = new System.Numerics.Vector3(position.x, position.y, position.z);
+            _motion.Push(snapshot, now, viewer, entity =>
+            {
+                if (camera == null) return System.Numerics.Vector3.DistanceSquared(entity.Root.Position, viewer) <= 400;
+                var root = entity.Root.Position;
+                Vector3 point = new Vector3(root.X + (loopback ? 3 : 0), root.Y, root.Z);
+                Vector3 viewport = camera.WorldToViewportPoint(point);
+                float min = entity.Id == _motion.EntityId ? -0.05f : 0.05f;
+                float max = entity.Id == _motion.EntityId ? 1.05f : 0.95f;
+                return (camera.cullingMask & (1 << entity.Visual.Layer)) != 0 && viewport.z > 0 &&
+                    viewport.x >= min && viewport.x <= max && viewport.y >= min && viewport.y <= max;
+            });
+        }
 
         public void Render(double now, double delay, LocalAvatarCapture local, SpriteCatalog sprites, SpineCatalog spines, bool loopback)
         {
-            Visible = false; UnknownResource = false;
+            Visible = false; UnknownResource = false; InView = false; MeshVertices = 0;
             if (_motion.EntityId == 0) { DestroyNodes(); return; }
             if (!local.IsAvailable || !_motion.Sample(now, delay, out EntityState from, out EntityState to, out float alpha)) { Hide(); return; }
             bool teleport = System.Numerics.Vector3.DistanceSquared(from.Root.Position, to.Root.Position) > 144;
@@ -105,6 +124,35 @@ namespace DaveCoop.Networking
                 _skeleton.Update(0); _skeleton.LateUpdateMesh();
             }
             _root.SetActive(true); _renderer.enabled = true; Visible = true;
+            _displayPosition = _model.transform.position;
+            Camera activeCamera = Camera.main;
+            if (activeCamera != null)
+            {
+                Vector3 viewport = activeCamera.WorldToViewportPoint(_displayPosition);
+                InView = viewport.z > 0 && viewport.x >= 0 && viewport.x <= 1 && viewport.y >= 0 && viewport.y <= 1;
+            }
+            if (_skeleton != null)
+            {
+                MeshFilter filter = _model.GetComponent<MeshFilter>();
+                if (filter != null && filter.sharedMesh != null) MeshVertices = filter.sharedMesh.vertexCount;
+            }
+        }
+
+        public void DrawMarker()
+        {
+            if (!Visible || !InView || _root == null) return;
+            Camera camera = Camera.main; if (camera == null) return;
+            Vector3 screen = camera.WorldToScreenPoint(_displayPosition); if (screen.z <= 0) return;
+            float x = screen.x, y = Screen.height - screen.y;
+            Color previous = GUI.color;
+            try
+            {
+                GUI.color = new Color(0.3f, 0.95f, 1, 1);
+                GUI.DrawTexture(new Rect(x - 9, y - 1, 18, 2), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(x - 1, y - 9, 2, 18), Texture2D.whiteTexture);
+                GUI.Box(new Rect(x - 112, y - 40, 224, 25), "MultiDave Fish Preview #" + SelectedEntity);
+            }
+            finally { GUI.color = previous; }
         }
 
         private void Hide() { if (_root != null) _root.SetActive(false); }
@@ -113,6 +161,6 @@ namespace DaveCoop.Networking
             if (_root != null) UnityObject.Destroy(_root);
             _root = null; _model = null; _sprite = null; _skeleton = null; _renderer = null; _assetKey = null; _skin = null; _animation = null;
         }
-        public void Clear() { DestroyNodes(); _motion.Clear(); Visible = false; UnknownResource = false; }
+        public void Clear() { DestroyNodes(); _motion.Clear(); Visible = false; UnknownResource = false; InView = false; MeshVertices = 0; }
     }
 }

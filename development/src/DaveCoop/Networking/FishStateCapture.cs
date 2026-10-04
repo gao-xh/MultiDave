@@ -11,7 +11,7 @@ using Pose = DaveCoop.Core.Pose;
 namespace DaveCoop.Networking
 {
     // Main-thread observation adapter. No AI/physics/health/interaction writes.
-    // A pool disable+enable wholly between polls still needs a spawn lifecycle hook.
+    // Lifecycle generations fence pool reuse even between successive polls.
     internal sealed class FishStateCapture
     {
         private sealed class LocalBinding { public long Pointer; public int Tid; }
@@ -23,7 +23,7 @@ namespace DaveCoop.Networking
         public int UnresolvedVisuals { get; private set; }
         public string FirstVisualError { get; private set; }
 
-        public WorldSnapshot Capture(Scene scene, long epoch, string sceneKey, double sampleTime, SpriteCatalog sprites, SpineCatalog spines)
+        public WorldSnapshot Capture(Scene scene, long epoch, string sceneKey, double sampleTime, SpriteCatalog sprites, SpineCatalog spines, FishLifecycleTracker lifecycle)
         {
             if (_registry.Epoch != epoch) { _registry.BeginEpoch(epoch); _bindings.Clear(); }
             var found = UnityObject.FindObjectsOfType<FishAISystem>();
@@ -31,7 +31,7 @@ namespace DaveCoop.Networking
             var candidates = new List<Candidate>(); var seen = new HashSet<long>(); UninitializedFish = 0; UnresolvedVisuals = 0; FirstVisualError = null;
             foreach (FishAISystem fish in found)
             {
-                if (fish == null || !fish.gameObject.activeInHierarchy || fish.gameObject.scene.handle != scene.handle) continue;
+                if (fish == null || !fish.isActiveAndEnabled || fish.gameObject.scene.handle != scene.handle) continue;
                 long token = fish.GetInstanceID(); float hp = fish.HP, maxHp = fish.MaxHP; int tid = fish.FishDataTID;
                 if (tid < 1 || !float.IsFinite(hp) || !float.IsFinite(maxHp) || maxHp <= 0 || hp < 0 || hp > maxHp || maxHp > 1000000)
                 { UninitializedFish++; continue; }
@@ -59,6 +59,9 @@ namespace DaveCoop.Networking
             var gone = new List<long>();
             foreach (long token in _bindings.Keys) if (!seen.Contains(token)) gone.Add(token);
             foreach (long token in gone) { _bindings.Remove(token); _registry.Unbind(token); }
+            var livePointers = new HashSet<long>();
+            foreach (Candidate candidate in candidates) livePointers.Add(candidate.Pointer);
+            lifecycle.Retain(livePointers);
             // Validate the complete observation and prune gone bindings before
             // allocating IDs; a failed read cannot accumulate partial new bindings.
             var states = new List<EntityState>(candidates.Count);
@@ -66,7 +69,8 @@ namespace DaveCoop.Networking
             {
                 if (_bindings.TryGetValue(candidate.Token, out LocalBinding previous) &&
                     (previous.Pointer != candidate.Pointer || previous.Tid != candidate.State.DataTid)) _registry.Unbind(candidate.Token);
-                candidate.State.Id = _registry.Bind(candidate.Token, EntityKind.Fish, candidate.State.DataTid);
+                long generation = lifecycle.ObserveActive(candidate.Pointer);
+                candidate.State.Id = _registry.Bind(candidate.Token, EntityKind.Fish, candidate.State.DataTid, generation);
                 _bindings[candidate.Token] = new LocalBinding { Pointer = candidate.Pointer, Tid = candidate.State.DataTid };
                 states.Add(candidate.State);
             }

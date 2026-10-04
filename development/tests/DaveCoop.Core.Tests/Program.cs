@@ -57,7 +57,15 @@ internal static class Program
             ("fish visual maximum fields fit packet limit", FishVisualTests.MaximumLegalPacketFits),
             ("fish preview clock, interpolation and staleness", FishVisualTests.PreviewInterpolationAndStaleness),
             ("fish preview removal and epoch reset", FishVisualTests.PreviewRemovalAndEpoch),
-            ("slow world producer cannot starve atomic commit", EntityWorldTests.SlowWorldProducerCannotStarveCommit)
+            ("slow world producer cannot starve atomic commit", EntityWorldTests.SlowWorldProducerCannotStarveCommit),
+            ("fish pool cycle between snapshots changes identity", FishLifecycleTests.PoolCycleBetweenSnapshots),
+            ("fish destroy and pointer reuse", FishLifecycleTests.DestroyAndPointerReuse),
+            ("fish lifecycle bounds and untracked callbacks", FishLifecycleTests.BoundsAndUntrackedCallbacks),
+            ("fish lifecycle clear preserves generations", FishLifecycleTests.ClearPreservesGeneration),
+            ("fish lifecycle concurrent callback ownership", FishLifecycleTests.ConcurrentCallbacks),
+            ("fish preview viewport and nearest eligible fish", FishVisualTests.PreviewViewportAndNearestSelection),
+            ("fish preview selection hysteresis", FishVisualTests.PreviewSelectionHysteresis),
+            ("fish preview invalid viewer rejection", FishVisualTests.PreviewInvalidViewer)
         };
         int failures = 0;
         foreach (var test in tests)

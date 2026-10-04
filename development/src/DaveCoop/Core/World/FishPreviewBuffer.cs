@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Numerics;
 
 namespace DaveCoop.Core.World
 {
@@ -16,16 +16,28 @@ namespace DaveCoop.Core.World
         public long EntityId { get; private set; }
         public int Count => _timeline.Count;
 
-        public bool Push(WorldSnapshot snapshot, double receivedAt)
+        public bool Push(WorldSnapshot snapshot, double receivedAt, Vector3? viewer = null, Func<EntityState, bool> eligible = null)
         {
             WorldFrames.ValidateSnapshot(snapshot);
             if (!double.IsFinite(receivedAt) || receivedAt < 0) throw new ArgumentException("Invalid world arrival clock.");
+            if (viewer.HasValue && (!float.IsFinite(viewer.Value.X) || !float.IsFinite(viewer.Value.Y) || !float.IsFinite(viewer.Value.Z)))
+                throw new ArgumentException("Invalid fish preview viewer position.");
             if (_epoch != 0 && receivedAt < _lastReceived) throw new ArgumentException("Fish arrival clock moved backwards.");
             if (_epoch > snapshot.SceneEpoch || (_epoch == snapshot.SceneEpoch && snapshot.Revision <= _revision)) return false;
             if (_epoch != snapshot.SceneEpoch || _scene != snapshot.SceneKey) Clear();
             _epoch = snapshot.SceneEpoch; _scene = snapshot.SceneKey; _revision = snapshot.Revision;
-            EntityState selected = snapshot.Entities.FirstOrDefault(entity => entity.Id == EntityId && entity.Visual != null);
-            if (selected == null) selected = snapshot.Entities.FirstOrDefault(entity => entity.Kind == EntityKind.Fish && entity.Visual != null);
+            EntityState nearest = null, current = null; float nearestDistance = float.PositiveInfinity, currentDistance = float.PositiveInfinity;
+            foreach (EntityState entity in snapshot.Entities)
+            {
+                if (entity.Kind != EntityKind.Fish || entity.Visual == null || !entity.Visual.Visible || entity.Dead || entity.Captured ||
+                    (eligible != null && !eligible(entity))) continue;
+                float distance = viewer.HasValue ? Vector3.DistanceSquared(entity.Root.Position, viewer.Value) : 0;
+                if (entity.Id == EntityId) { current = entity; currentDistance = distance; }
+                if (nearest == null || distance < nearestDistance) { nearest = entity; nearestDistance = distance; }
+            }
+            // Avoid changing fish when two nearby candidates trade places, but
+            // release the selection as soon as it leaves the eligible viewport.
+            EntityState selected = current != null && currentDistance <= nearestDistance * 1.5f + 9 ? current : nearest;
             if (selected == null) { EntityId = 0; _timeline.Clear(); return false; }
             if (EntityId != selected.Id)
             {

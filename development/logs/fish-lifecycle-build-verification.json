@@ -1,0 +1,22 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-04T06:00:14.0153072Z",
+  "PluginVersion": "0.1.6-dev",
+  "ProtocolVersion": 3,
+  "CompiledPluginSHA256": "8563E3C2835178CF03299851C904F471CE5873A094B57A2432BDA44B2AFE1A24",
+  "WarningAsErrorCompilationPassed": true,
+  "CoreTestsPassed": 55,
+  "CoreTestsTotal": 55,
+  "HarmonyAssemblyVersion": "2.10.2.0",
+  "LifecyclePatchTargets": 9,
+  "TrackerLimit": 4096,
+  "PoolCycleCLRIdentityVerified": true,
+  "NativePluginDeployed": true,
+  "NativeBootstrapVerified": true,
+  "NativeLifecycleHooksInstalled": true,
+  "NativeLifecycleCallbacksVerified": true,
+  "TwoGameInstancesVerified": false,
+  "SharedWorldVerified": false,
+  "Scope": "Compiled lifecycle hooks and 55 CLR tests, plus fresh single-game native install and callback observations. Actual pooled-object reactivation, visual, unpatch/return and two-game acceptance remain pending.",
+  "NativeRuntimeEvidence": "native-fish-lifecycle-verification.json"
+}

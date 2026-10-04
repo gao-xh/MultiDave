@@ -24,7 +24,7 @@ $references = @(Get-ChildItem -LiteralPath $runtimeRoot -Filter 'System.*.dll' -
 foreach ($runtimeName in @('mscorlib.dll', 'netstandard.dll', 'Microsoft.CSharp.dll')) {
     $references += Join-Path $runtimeRoot $runtimeName
 }
-foreach ($coreName in @('BepInEx.Core.dll', 'BepInEx.Unity.IL2CPP.dll', 'Il2CppInterop.Runtime.dll')) {
+foreach ($coreName in @('BepInEx.Core.dll', 'BepInEx.Unity.IL2CPP.dll', 'Il2CppInterop.Runtime.dll', '0Harmony.dll')) {
     $references += Join-Path $coreRoot $coreName
 }
 foreach ($interopName in @('Il2Cppmscorlib.dll', 'Assembly-CSharp.dll', 'UnityEngine.CoreModule.dll', 'UnityEngine.AnimationModule.dll', 'UnityEngine.Physics2DModule.dll', 'UnityEngine.InputLegacyModule.dll', 'UnityEngine.IMGUIModule.dll', 'spine-unity.dll')) {

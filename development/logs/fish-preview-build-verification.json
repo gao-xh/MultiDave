@@ -18,10 +18,12 @@
   "WorldEntitiesPerSlice": 16,
   "WorldEntityLimit": 4096,
   "ContinuousProducerAtomicCommitVerified": true,
-  "NativeFishCaptureVerified": false,
+  "NativeFishCaptureVerified": true,
   "NativeFishDisplayVerified": false,
   "TwoGameInstancesVerified": false,
   "GuestMapAndAITakeoverVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Compiled native adapters and verified CLR fixtures only. Original game fish remain independently controlled. Actual resources, initialization, materials, animation, lifecycle and two-machine stability still require game testing."
+  "Scope": "Historical 0.1.5-dev compiled artifact with 50 CLR tests, later deployed: real fish observations transferred in a single-game loopback session and display components ran. Visual appearance and normal disconnect/return not yet confirmed. Guest map/AI, projectiles, rewards and two-game acceptance remain pending.",
+  "NativeDisplayComponentsRan": true,
+  "NativeRuntimeEvidence": "native-fish-loopback-verification.json"
 }

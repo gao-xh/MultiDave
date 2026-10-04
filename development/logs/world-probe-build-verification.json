@@ -8,10 +8,11 @@
   "TransmitFishObservationsDefault": false,
   "CoreTestsPassed": 50,
   "CoreEvidence": "core-verification.json",
-  "NativeProbeDeployed": false,
-  "NativeProbeRuntimeVerified": false,
-  "NativeFishCaptureVerified": false,
+  "NativeProbeDeployed": true,
+  "NativeProbeRuntimeVerified": true,
+  "NativeFishCaptureVerified": true,
   "SameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Latest 0.1.5-dev includes the F7 read-only probe, host fish observations and optional one-fish Sprite/Spine preview. Probe and observation adapters are still not deployed. Current live game remains 0.1.3-dev; historical build hashes stay in DEVLOG."
+  "Scope": "Historical 0.1.5-dev: 72 real world-probe snapshots without errors, plus native fish observations transferred over two TCP peers in one game. Allocator/item probe sets truncated at configured limits. Does not prove two-game shared world or cooperation.",
+  "NativeRuntimeEvidence": "native-fish-loopback-verification.json"
 }
