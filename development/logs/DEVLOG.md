@@ -477,3 +477,38 @@
   原生产物可有随机追加，不能重新roll；Slot没有已发现的(id,count,grade)便利构造；CommitDiveLootDataOnlyJungle不作普通海洋返航入口。
 - 同步PLAN/HANDOFF/WORLD_SYNC/开发约定、README链接与配置Skill；这是设计改动，未新编译、部署或启动游戏，不增加任何原生通过项。
   已有134项测试与0.1.14构建证据仍原样保留，Skill和文档一致性另作校验。下一步先建立可信分流/员工袋账本与入仓桥的证据边界，继续M4接管/客机隔离和M5/M6实作。
+
+## 2026-10-04 — 每人独立Cargo账本与Loot/返航只读观察
+
+- 用户再次明确背包是“每个人的”，继续按房主原生袋和员工独立Mod袋开发，不共用容量或负重。
+  源码升为0.1.15-dev，协议保持5；本轮未部署或启动游戏。安装DLL复核仍0.1.12-dev/8F90042C…，最新潜水证据仍0.1.11，手动验证按用户要求延后。
+- 新增Core/Cargo的CargoTypes/ExpeditionCargoLedger。Expedition与两个Member分别关联容量、重量、预约重量、袋修订与请求高水位。
+  完整房主确认产物先形成候选计划，绑定来源Room/epoch/实体/本地代次、RequestId/OperationId/Member/玩家与产物指纹。
+  256个捕获/每捕获8产物；深复制、规范GUID/文化/正负零、有限数值与批次检查，不淘汰旧重放屏障。
+  未知随机产物不能预先猜成计划、重复随机或用物种TID冒充完整产物；尚未接游戏潜水生命周期或网络袋清单。
+- 容量预约按Member执行；HostNative必须重新核对可信原生总重量与当前袋修订，EmployeeVirtual不挤占房主容量。
+  Enter再查新鲜操作/来源/个人袋事实，只有明确未进入才释放预约；已进入未知保留来源和重量屏障。
+  Host receipt取当前原生总重量，不把确认产物重量再次相加；员工必须有真实完整产物、容量路由、分流、无房主袋写入与捕获终态证据。
+- 评审补强两个命名空间/时间问题：首次来源Room绑定跨Disconnect保持，无已验证映射不允许新Room重编号绕过；
+  同Room换epoch仍有Reserved/EnteredUnknown时保守拒绝新epoch捕获，防止guest pause换epoch但原鱼未换绕过去重。
+  原生重量按Member采样时间和当前BagRevision核对，旧样本不能覆盖较新baseline，同重量的新样本也推进时间与袋修订屏障，防止同帧旧读数覆盖。
+  断线撤销新进入能力，仍可核对已进入操作的迟到产物；历史delta需重绑新鲜原生总重量，不能用旧总重退回袋状态。
+- 返航冻结唯一ReturnId并停止新预约。Host仅记录原链入仓，拒绝员工式新增物料租约；Employee按CaptureId/ProductIndex一次租约、进入、实际入仓与保存分别确认。
+  部分成功不重放整批，Abort不冒充正常返航或释放未知；员工已断线仍保留确认货物/逐项状态。
+  CompleteReturn只针对跟踪产物，NativeBagInventoryComplete=false；返航Member袋视图用于审计，逐项状态看ReturnItems，尚非实时袋/负重UI。
+  这是caller-serialized内存账本，未有原生执行、存储共同事务或跨崩溃恰好一次保证。
+- 新增LootObservationHooks/Capture/Controller，Plugin/NetworkDriver/NetworkController接默认关闭ObserveLootCalls和F11开关。
+  独立TCP/Transmit/Ready，精确观察鱼AddDropItem_Impl、LootBox.Add、AddCaughtFish(int,int,bool)、IngredientsStorage.AddFromLootBox四处自然方法的八个前后回调。
+  原参数/结果不改，不跳过原方法；Unity线程内即时冻结纯CLR值、原生重量/容量直接字段，消费日志不再解引用wrapper。
+  鱼prefix仅冻结自身身份，不将嵌套Add/图鉴/入仓按时间/线程猜归属；slot加密字段与Func/GetTimes内容不读取。
+  所有ActualBagDeltaProven/SourceOperationBound/CaptureSuccess/StorageDeltaProven始终false，观察不提交Cargo receipt或打开分流/奖品权限。
+- 进程1024前后事件、queue64/context128、每Update消费16。统计/错误锁存跨开关保留，正常重开另建copy队列。
+  Stop/Disconnect/配额停止只卸自己的owner；丢弃与OwnHooksRemoved明确记录，停止或队列满可能截断链，不声称观察完整。
+  评审补Stop卸载失败状态，失败不继续显示read-only。新F11布局与四处原生ABI/实际读取/卸载均待实机。
+- Test-Core 142/142通过，新增8组Cargo夹具覆盖独立容量/超重/重量、操作来源与产物替换、去重/取消/256限额、
+  断线迟到receipt/跨Room和epoch围栏、旧weight/BRevision、Host总重不双计、逐项返航部分成功、pending/Abort与深复制/畸形批次。
+  夹具使用synthetic房主事实，不运行原生桥。最终Build-Plugin警告视为错误通过，SHA256：
+  `1C03DC606FA3DFD218D5288C9780A4C0E226CF38E45CC078DA011AC1A51AD71D`。
+- 更新core-verification和cargo-ledger-build-verification摘要、README/AGENTS/PLAN/HANDOFF/MULTIPLAYER/WORLD_SYNC/CREW_MODE与配置Skill；Skill校验通过。
+  0.1.14的134项/旧hash保留在map-choice-transport-build-verification，原始输出仅.local/verification，默认发行包仍0.1.0。
+  下一步验证完整产物/容量路由/持久副作用与正常入仓链，再接Expedition生命周期、员工分流/入仓桥，继续地图采用、客机隔离、独立actor和真实双游戏闭环。

@@ -42,6 +42,7 @@ namespace DaveCoop.Networking
         private float _nextMapObserverLog;
         private readonly FishActionController _fishActions = new FishActionController();
         private readonly MapChoiceController _mapChoices = new MapChoiceController();
+        private LootObservationController _lootObserver;
         private long _lastMapCopyDropped;
         private long _lastMapUnexpectedThreads;
         private long _lastMapReadErrors;
@@ -93,6 +94,7 @@ namespace DaveCoop.Networking
                 {
                     _started = true; _portText = NetworkDriver.Port.Value.ToString(CultureInfo.InvariantCulture);
                     _mapSelection = new MapSelectionCapture(Environment.CurrentManagedThreadId);
+                    _lootObserver = new LootObservationController(Environment.CurrentManagedThreadId, ResolveHealthyFish);
                     NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_READY: F11 opens LAN movement test panel; no automatic connection.");
                 }
                 if (Input.GetKeyDown(KeyCode.F11)) NetworkDriver.ShowPanel.Value = !NetworkDriver.ShowPanel.Value;
@@ -103,6 +105,7 @@ namespace DaveCoop.Networking
                 if (!NetworkDriver.ShowPanel.Value) RestoreCursor();
                 ObserveMapSelectionCalls();
                 ObserveRouteInputs();
+                _lootObserver.Update(NetworkDriver.ObserveLootCalls.Value, Time.unscaledTime);
                 FinishAttempt();
                 if (_peers == null) return;
                 SessionSnapshot state = _peers.Main.Snapshot;
@@ -197,6 +200,10 @@ namespace DaveCoop.Networking
                         MapChoiceReceivedSnapshots = _mapChoices.ReceivedSnapshots, MapChoiceUnboundChoices = _mapChoices.UnboundChoices,
                         MapChoiceRemoteGeneration = _mapChoices.RemoteGeneration, MapChoiceRemoteRouteScenes = _mapChoices.RemoteRouteSceneCount,
                         MapChoiceRemoteChoices = _mapChoices.RemoteChoiceCount, HostMapSelectionApplied = false,
+                        LootObservationHooks = _lootObserver.Installed, LootObservationHealthy = _lootObserver.Healthy,
+                        LootObservationEvents = _lootObserver.Events, LootObservationReadErrors = _lootObserver.ReadErrors,
+                        LootObservationUnexpectedThreads = _lootObserver.UnexpectedThreads,
+                        CargoGameplayEnabled = false, EmployeeBagDiversionEnabled = false, EmployeeStorageBridgeEnabled = false,
                         FishActionQueued = _fishActions.PendingCount, FishActionHighestRequestId = _fishActions.HighestRequestId,
                         FishActionReceived = _fishActions.ReceivedRequests, FishActionResults = _fishActions.ReceivedResults,
                         FishActionNativeLookupErrors = _fishActions.NativeLookupErrors,
@@ -560,7 +567,7 @@ namespace DaveCoop.Networking
                 }
             }
             if (NetworkDriver.ShowPanel == null || !NetworkDriver.ShowPanel.Value) return;
-            GUI.Box(new Rect(12, 170, 640, 484), "MultiDave LAN prototype — F11");
+            GUI.Box(new Rect(12, 170, 640, 514), "MultiDave LAN prototype — F11");
             GUI.Label(new Rect(24, 194, 616, 28), "Player/fish display tests. Cooperative capture is still in development.");
             bool idle = _pending == null && _peers == null;
             bool originalEnabled = GUI.enabled;
@@ -592,12 +599,14 @@ namespace DaveCoop.Networking
             if (interaction != NetworkDriver.ObserveFishInteractions.Value) NetworkDriver.ObserveFishInteractions.Value = interaction;
             bool mapCalls = GUI.Toggle(new Rect(24, 495, 612, 25), NetworkDriver.ObserveMapSelectionCalls.Value, "Observe map selection calls (read-only)");
             if (mapCalls != NetworkDriver.ObserveMapSelectionCalls.Value) NetworkDriver.ObserveMapSelectionCalls.Value = mapCalls;
+            bool lootCalls = GUI.Toggle(new Rect(24, 526, 612, 25), NetworkDriver.ObserveLootCalls.Value, "Observe loot and return calls (read-only)");
+            if (lootCalls != NetworkDriver.ObserveLootCalls.Value) NetworkDriver.ObserveLootCalls.Value = lootCalls;
             SessionPeer guest = _peers?.Loopback ?? (_peers?.Main.Snapshot.Role == SessionRole.Guest ? _peers.Main : null);
             GUI.enabled = originalEnabled && guest != null && guest.Snapshot.Phase == SessionPhase.Ready && _fishPreview.SelectedEntity > 0;
-            if (GUI.Button(new Rect(24, 530, 220, 26), "Check selected fish target")) _fishActions.SubmitProbe(guest, _fishPreview.SelectedEntity);
+            if (GUI.Button(new Rect(24, 561, 220, 26), "Check selected fish target")) _fishActions.SubmitProbe(guest, _fishPreview.SelectedEntity);
             GUI.enabled = originalEnabled;
-            GUI.Label(new Rect(256, 530, 380, 26), _fishActions.Status);
-            GUI.Label(new Rect(24, 565, 612, 65), _message + "\n" + _mapChoices.Status);
+            GUI.Label(new Rect(256, 561, 380, 26), _fishActions.Status);
+            GUI.Label(new Rect(24, 596, 612, 76), _message + "\n" + _mapChoices.Status + "\n" + (_lootObserver?.Status ?? "Loot observer: off"));
         }
 
         private void Start(string mode)
@@ -676,6 +685,8 @@ namespace DaveCoop.Networking
 
         private void Disconnect()
         {
+            if (NetworkDriver.ObserveLootCalls != null) NetworkDriver.ObserveLootCalls.Value = false;
+            _lootObserver?.Stop();
             if (_mapCalls != null || _mapSelectionHooks.Installed)
             {
                 NetworkDriver.ObserveMapSelectionCalls.Value = false;

@@ -6,7 +6,7 @@
 自定义插件加载、Unity Update 回调，以及 `DR_Start`、`DR_Logo`、`DR_Title` 场景读取。
 插件日志证据见 `../logs/bootstrap-verification.log`。
 
-开发在 `codex/player-discovery` 分支，当前源码为 `0.1.14-dev`、协议 5，Build 警告视为错误通过、Test-Core 134/134 通过；本轮未部署/启动。
+开发在 `codex/player-discovery` 分支，当前源码为 `0.1.15-dev`、协议 5，Build 警告视为错误通过、Test-Core 142/142 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 最近完成潜水验证的是 `0.1.11-dev`。
 新版单游戏 TCP 偏移鱼群可见和原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
@@ -125,7 +125,7 @@ BOOTSTRAP_OK（0.1.11-dev）、UPDATE_OK、NETWORK_READY 及 DR_Start/DR_Logo。
 - factory prefix 只证明枚举器工厂调用边界，不能证明真正资源请求、MoveNext 或加载完成。尚无所有 selected-before-all-loaded 的全局时序证据，未共享/采用地图或调用选图/load/save 写入。
 - Disconnect 关闭并卸载本 Observer，清理自己的有界队列；新挂钩安装/自然回调/卸载须在之后真实游戏验证，用户当前不方便试玩，不催测。
 
-0.1.14-dev 当前范围见 [地图选择传输构建摘要](../logs/map-choice-transport-build-verification.json)。核心及真实回环 TCP 夹具验证的是候选传输，本轮未部署/启动，没有新原生 ABI、双游戏、选择采用或正常返航证据。
+0.1.14-dev 历史范围见 [地图选择传输构建摘要](../logs/map-choice-transport-build-verification.json)。核心及真实回环 TCP 夹具验证的是候选传输，本轮未部署/启动，没有新原生 ABI、双游戏、选择采用或正常返航证据。
 本轮构建自写 DLL SHA256：`AF3CB8BE38E0402ECBA173F86C3C458CC82D6248664E16A35E58FC08729766D0`；这不是安装或实机哈希。
 
 - 协议 5 的路线每片最多 8 场景、最多 4 片，map FIFO 最多 32 包，房主发布、客机接收且绑定握手 Room。控制/心跳和 MapChoiceRetire 优先，动作/角色/世界/地图四路公平；新路线先完整复制/校验全部分片再原子入队，取消旧未发批次。
@@ -154,16 +154,21 @@ BOOTSTRAP_OK（0.1.11-dev）、UPDATE_OK、NETWORK_READY 及 DR_Start/DR_Logo。
 ## 尚未完成
 
 首版玩法已按用户选择收敛为[房主＋员工、每人独立背包](CREW_MODE.md)：房主自己的原生LootBox，员工由房主持有的Mod会话工作袋，
-各自容量/负重独立；长期任务/图鉴/材料/经济归房主。双方计划独立操作及生存状态，先同层潜水由房主带队；这是方案，尚未实现。
+各自容量/负重独立；长期任务/图鉴/材料/经济归房主。双方计划独立操作及生存状态，先同层潜水由房主带队；已准备CLR账本，实际员工玩法尚未接通。
 捕获账本必须跨场景/员工断线保留；员工产物/容量判断需分流且不污染房主原袋。返航房主袋原链不补Add，员工袋需新结算桥逐条确认一次入仓；
 客机全部自动写入隔离、原生提交证据、员工actor/loadout/vitals和唯一结算仍是必做项。后续开发先读CREW_MODE。
 
 M3 游戏适配实机验证和真实双游戏验收尚未完成。
 真实双游戏连接验收、客机原生鱼群/拾取接管与临时进度恢复均未完成。
-0.1.11-dev 的活动鱼群可见与移除同步已获用户确认，Fire/Hook/Damage 观察已有单游戏日志；已安装 0.1.12-dev 仅主菜单启动及初始路线输入通过，新源码 0.1.14-dev 仅构建。自然地图调用、Probe/潜水路线/场景切换、动画、完整捕获链和路线完整读取仍待验证，不能据此标记 M4/M5 完成。
+0.1.11-dev 的活动鱼群可见与移除同步已获用户确认，Fire/Hook/Damage 观察已有单游戏日志；已安装 0.1.12-dev 仅主菜单启动及初始路线输入通过，新源码 0.1.15-dev 仅构建。自然地图调用、Probe/潜水路线/场景切换、动画、完整捕获链和路线完整读取仍待验证，不能据此标记 M4/M5 完成。
 服务器方案暂时搁置。当前包是验证开发入口的原型。
 
 ## 下一步
+
+0.1.15-dev已准备独立的纯CLR个人Cargo账本及四处Loot/返航只读观察，详情见[员工模式](CREW_MODE.md)和[构建摘要](../logs/cargo-ledger-build-verification.json)。
+账本寿命不绑定NetworkController.Disconnect；尚未创建真实潜水账本或发布网络袋清单，不能把CLR候选测试当原生分流/入仓通过。
+F11的Observe loot and return calls默认关闭、独立TCP；每次正常捕获及返航时自然观察，不提供模拟Add/补奖按钮。
+新版未部署/启动，原生ABI、现场重量读取、来源/产物强关联与正常入仓/保存均待用户方便后验证。
 
 按 `PLAN.md`、`GAME_API.md`、`MULTIPLAYER.md` 和 `WORLD_SYNC.md` 继续。
 M2 历史验证构建 SHA256 为 `E2A7DEC29ACB894F72A2D8528C099E82AB867DDE00F82DC739707BAA8EBB5AB9`。
@@ -189,7 +194,7 @@ Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可�
 已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
 Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
 探针记录本机 ID 仅用于观察；网络数值实体已使用房主分配的 RoomId/epoch/EntityId。
-当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.14-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
+当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.15-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
 在入海前开启独立 Observe map selection calls，核对 MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE、MAP_SELECTION_HOOKS_STOPPED 的五处自然边界、线程、路线候选、空/截断/读取错误及自己的卸载。
 随后按目标检查范围在 F11 / Local test 开启 Transmit read-only fish observations 后进入潜水。
 开启单鱼预览取得选中身份，点 Check selected fish target，核对 FISH_ACTION_SENT / ADMISSION / DECISION / RECEIVED 的请求元数据、指纹及 DryRunValidated/op0。

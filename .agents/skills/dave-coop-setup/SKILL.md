@@ -134,6 +134,18 @@ description: Configure or continue development of the MultiDave prototype for Wi
   房主原袋按原生链返航不补Add；员工尚未入仓物料需要新增原生桥按ReturnId/CaptureId/ProductIndex一次确认入房主仓库。
   未知原生结果不补奖/不重派发整批；跨崩溃共同事务未证，不能承诺恰好一次恢复。
   客机须隔离全部自动持久写入，并实现独立actor/装备/氧气/受伤/投射物；此模式目前为设计，未实现或实机验收。
+- 源码0.1.15-dev开始实现Core/Cargo个人容量/重量/预约和逐产物返航阶段，完整构建/测试结果见cargo-ledger-build-verification.json。
+  协议仍5；账本尚未接游戏潜水生命周期、网络袋清单、员工原生分流/入仓或持久共同事务。
+  只接受房主核实的完整产物计划与新鲜member/op/source/产品指纹，未知随机产物不能猜或再次roll。
+  房主重量取原生总值，不重复加产物；员工容量独立。断线保留已确认货物与未知屏障，不把Disconnect当新潜水。
+  当前来源Room绑定尚无已验证迁移，新Room不能绕过去重；按真实源码合同复核事实，不把synthetic CLR标志当权限。
+  旧epoch仍有预约/未知执行时，新epoch捕获保留屏障；Host重量按当前BagRevision和采样时间核对，旧样本不能回退总重。
+  快照仅tracked捕获，房主原袋非全量；返航Member袋视图用于审计，实际逐项状态看ReturnItems，不直接作为live袋/负重UI。
+  默认关闭Observe loot and return calls独立于TCP/Transmit，正常捕获及返航时观察四处自然前后调用。
+  核对LOOT_HOOKS_READY、LOOT_CALL、LOOT_OBSERVER_STATE及LOOT_HOOKS_STOPPED；参数/返回不改，Unity线程即时冻结。
+  进程1024前后事件、queue64/context128/每Update16；丢失或停止可以截断链，OwnHooksRemoved和Discarded要分别核对。
+  鱼prefix身份不能按嵌套/时间猜到Add/图鉴/仓库；slot加密字段不读，ActualBagDeltaProven/SourceOperationBound/CaptureSuccess/StorageDeltaProven始终false。
+  新版未部署/启动，原生ABI、真实重量、完整产物、容量分流、正常入仓/保存均待验证。当前安装仍0.1.12，默认发行包0.1.0。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

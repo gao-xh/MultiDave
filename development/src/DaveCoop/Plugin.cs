@@ -17,7 +17,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.14-dev";
+        public const string Version = "0.1.15-dev";
 
         public override void Load()
         {
@@ -57,6 +57,8 @@ namespace DaveCoop
                 "Observe native host harpoon, damage and pickup calls while transmitting fish observations; bounded read-only diagnostics.");
             NetworkDriver.ObserveMapSelectionCalls = Config.Bind("Network", "ObserveMapSelectionCalls", false,
                 "Freeze route and original IGP choices at native call boundaries on the Unity thread; bounded read-only diagnostics, no map/save writes.");
+            NetworkDriver.ObserveLootCalls = Config.Bind("Network", "ObserveLootCalls", false,
+                "Observe natural loot, bag, caught-fish and return-storage calls on the Unity thread; bounded read-only diagnostics, no rewards or bag/save writes.");
             AddComponent<Diagnostics>();
             AddComponent<PlayerProbe>();
             AddComponent<RemotePreview>();

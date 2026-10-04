@@ -1,6 +1,6 @@
 # 开发约定
 
-- M1 玩家发现与 M2 回放基础验收通过；当前源码为 0.1.14-dev、协议 5，Build 警告视为错误通过、Test-Core 134/134 通过，范围见 [地图选择传输构建摘要](logs/map-choice-transport-build-verification.json)；本轮未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
+- M1 玩家发现与 M2 回放基础验收通过；当前源码为 0.1.15-dev、协议 5，Build 警告视为错误通过、Test-Core 142/142 通过，范围见 [独立背包构建摘要](logs/cargo-ledger-build-verification.json)；本轮未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
 - 继续工作前阅读 `docs/HANDOFF.md`、`docs/PLAN.md` 和当前阶段的 `docs/GAME_API.md` / `docs/MULTIPLAYER.md` / `docs/WORLD_SYNC.md`；配置别人电脑时使用仓库根目录的配置 Skill。
 - 用户确定首版房主＋员工且每人独立背包，继续捕获/库存/结算开发先读 `docs/CREW_MODE.md`。房主自己的原生LootBox，员工由房主Mod持有的独立会话袋，各自容量/重量/负重；产物与前置容量检查都需正确分流，不能先入房主袋再复制。房主唯一长期进度；返航房主袋原链不重复Add、员工未入仓物料需新桥逐项确认一次。员工断线不清潜水账本，未知原生结果不重试/补奖；隔离客机全部自动持久写。同层带队、独立员工生存/装备/投射物及上述袋/结算仍待实现。
 - 0.1.11-dev 含房主目标反向查询、冻结的本地指针/代次 CLR 快照、完整收到的活动观察鱼群显示，以及 8 个原生交互入口的只读前后成对观察。鱼清单仅玩家当前场景，每鱼最多 16 帧；缺显示或离镜头不释放数字身份，原生 AI/碰撞/收益保持原样。
@@ -9,6 +9,7 @@
 - F11 的 Check selected fish target 仅发送 ProbeTarget；房主主线程重新 native 查目标/代次，通过为 DryRunValidated、OperationId=0，不执行鱼叉/伤害/捕获。新鲜权限事实及短租约只构成候选计划，派发前还须复核。当前摘要为 `logs/fish-action-gate-build-verification.json`，本机 TCP 夹具不等于双游戏或 M5 验收。
 - 合法 pause/场景切换期间旧请求或结果的发布在会话锁内返回 false，不错误关房；GUI 发布异常捕获并显示状态。目标读取前后复核 lifecycle 健康与代次，失败不保留旧身份；同 epoch 的 Transmit 开关不归零 world revision。三种 TCP 操作夹具已覆盖往返、旧协议拒绝与 take 后场景切换恢复，实际游戏切换仍待验证。
 - 用户当前不方便试玩，0.1.12-dev 的手动潜水 Probe、路线和返航验证已延后；保留主菜单启动通过，不催测、不把延后算作玩法通过。
+- 0.1.15-dev新增Core/Cargo纯CLR个人袋账本与默认关闭的Observe loot and return calls。账本不接NetworkController/scene清理或协议，需房主核实完整产物和新鲜操作/来源事实；CLR标记不授权原生分流/奖品/入仓。房主重量取总值不重复累加，员工容量独立；未知已进入操作不重新执行，员工返航逐产物派发/入仓/保存。四处Loot前后只读观察在Unity线程即时冻结、仅CLR排队，1024进程事件/队列64/context128/每Update16，停止可截断链且需计数。默认游戏能力全部false，原生ABI/完整产物/分流/返航/保存待实机，详见CREW_MODE及cargo-ledger-build-verification.json。
 - Transmit 开启时 MapRouteObservation 独立在入海前后最多 1Hz 读取 cache/roadmap/first、候选 bSelected 层与加载场景，MAP_ROUTE_INPUTS 仅值变化记录。cache 缺失/roadmap 缺失/first 缺失/cache 太短分别报不可用并撤销旧稳定候选；候选层不是完整清单，未调用选图、加载或保存写入。
 - 0.1.13-dev 默认关闭的 Observe map selection calls 独立于 TCP/Transmit，观察路线 cache/restore、IGP 原 __result、Prefab IEnumerator 工厂和 SceneLoader.LoadSceneAsync prefix 五处自然边界。当次回调只在确认 Unity 线程冻结有界 CLR，非 main 跳过 native 读取；全进程 1024、队列 64，空/截断/读取错误明确记录，不保留 native wrapper。Disconnect 关闭并卸载自己的 Observer。
 - MapRouteSelection 的 ValidateRoute/CopyRoute/FingerprintRoute 严格校验并复制路线；RouteFingerprint 不是完整 manifest，缺 IGP 不升格完整。IGP factory 不证明真实请求/完成，未证明所有选择在所有加载前已完成；两处 IsInitDone 改读直接 backing field，不调用原 getter。0.1.13 历史观察构建见 `logs/map-selection-call-build-verification.json`，未实机。

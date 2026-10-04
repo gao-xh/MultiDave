@@ -22,7 +22,7 @@
 真实 `A01_01_01` 潜水已确认管理器玩家引用、位置、朝向、移动输入、动画与摄像机跟随。
 继续进入 `Boss_000` 后，旧玩家不再出现在当前采样中，新实例与管理器和摄像机正确绑定，
 跨场景读取无探针错误。完整旧日志后来还确认返航、大厅与主菜单，1886 条快照无探针错误。
-默认发行包保持 0.1.0，当前源码为 0.1.14-dev、协议 5，Build 警告视为错误通过、Test-Core 134/134 通过；本轮未部署/启动。
+默认发行包保持 0.1.0，当前源码为 0.1.15-dev、协议 5，Build 警告视为错误通过、Test-Core 142/142 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试，加载/Update/网络入口及 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后；后续自主开发保持各项实机验收边界。
 最近完成潜水验证的是 0.1.11-dev。
@@ -117,10 +117,13 @@ prefix 固定当时房主身份，postfix 复用同一绑定；伤害 bool 只�
 F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房主主线程重新查原生目标/代次，通过只返回 DryRunValidated、OperationId=0。
 真实发射/QTE/召回/拾取缺少可信 actor/loadout、MapAuthorityReady/GuestStateIsolated/LocalActorArbitrated 与 native bridge，effects 仍 false；格式/门禁通过不等于攻击或捕获。
 下一步实测只读请求往返及失效，继续原生 owner/投射物/命中/入袋证据与客机隔离，再接入实际装备/距离/冷却和房主原生裁定。
-当前核心与构建范围见 [地图选择传输构建摘要](../logs/map-choice-transport-build-verification.json)；0.1.13 历史观察构建见 [地图选择调用摘要](../logs/map-selection-call-build-verification.json)，操作门禁见 [0.1.12-dev 摘要](../logs/fish-action-gate-build-verification.json)；
+当前核心与构建范围见 [独立背包构建摘要](../logs/cargo-ledger-build-verification.json)，0.1.14历史候选传输见 [地图选择传输构建摘要](../logs/map-choice-transport-build-verification.json)；0.1.13 历史观察构建见 [地图选择调用摘要](../logs/map-selection-call-build-verification.json)，操作门禁见 [0.1.12-dev 摘要](../logs/fish-action-gate-build-verification.json)；
 上述历史实机见 [0.1.11-dev 鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，均不作为 M4/M5 或真实双游戏完成证据。
 
 ## M6 — 返航、结算与进度
+
+0.1.15-dev开始实现纯CLR个人账本和默认关闭的原生Loot只读观察，范围见[独立背包构建摘要](../logs/cargo-ledger-build-verification.json)。
+账本暂不接游戏生命周期或网络房间，不能作为员工背包已可玩的证据；员工产物分流、真实容量路由、入仓桥与保存仍未接通。
 
 - 每人独立背包、容量与负重：房主自己的原生LootBox，员工由房主持有的Mod会话工作袋；两人的实际收获返航归房主仓库。
 - 用ExpeditionId关联跨场景/断线潜水、MemberId关联员工、CaptureId关联真实来源与品质/数量/重量；请求通过、鱼移除或QTE不等于入袋。

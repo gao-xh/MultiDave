@@ -1,13 +1,13 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T08:01:26.4997990Z",
-  "PluginVersion": "0.1.14-dev",
+  "RecordedUtc": "2026-10-04T08:40:11.2647482Z",
+  "PluginVersion": "0.1.15-dev",
   "VerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1"
   ],
-  "CoreTestsPassed": 134,
-  "CoreTestsTotal": 134,
+  "CoreTestsPassed": 142,
+  "CoreTestsTotal": 142,
   "TestNames": [
     "timeline boundaries and interpolation",
     "timeline capacity, ordering and reset",
@@ -113,6 +113,14 @@
     "TCP map choice adapter natural generations and choice revisions",
     "TCP map choice adapter unavailable sample retirement and recovery",
     "TCP map choice adapter guest observer stop retains host evidence",
+    "cargo independent capacities, reservations and native weight",
+    "cargo operation provenance and atomic product ownership",
+    "cargo source fence, replay, cancellation and quota",
+    "cargo disconnect, scene and room fences",
+    "cargo host receipt uses native total and explicit capabilities",
+    "cargo per-item return leases, partial success and host observation",
+    "cargo pending return and abort preserve unknown results",
+    "cargo canonical fingerprints, copy ownership and invalid bounds",
     "fish world atomic roster and DTO ownership",
     "fish world invalid batch preserves committed state",
     "fish world independent interpolation and visual recovery",
@@ -145,7 +153,7 @@
     "TCP fish action protocol three rejection"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "AF3CB8BE38E0402ECBA173F86C3C458CC82D6248664E16A35E58FC08729766D0",
+  "CompiledPluginSHA256": "1C03DC606FA3DFD218D5288C9780A4C0E226CF38E45CC078DA011AC1A51AD71D",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
@@ -154,10 +162,12 @@
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Pure CLR protocol/session/world/fish-action fixtures plus host map-choice route slicing, canonical assembly, continuous IGP revisions and explicit retirement. Real IPv4 loopback TCP verifies preload transfer, scene preservation, replacement, fairness and source ownership. Four adapter fixtures compile the production MapChoiceController and observation DTO with only a logger stub; synthetic copied observations verify callback floors, no pre-route buffering, same-hash natural generations, truncated/read-error/null-group retirement, recovery and guest-local observer shutdown. Native hooks, native controller origin, cross-machine addresses, map adoption, AI isolation, effects, captures/rewards, normal return and two-game control remain unverified.",
+  "Scope": "Pure CLR protocol/session/world/action and production map-choice adapter fixtures with real loopback TCP, plus caller-serialized in-memory per-member cargo evidence. Eight cargo fixtures use synthetic host-local facts and verified-yield plans; they exercise independent capacity/reservations, provenance/product fingerprints, source and request replay fences, room migration rejection, late receipts after disconnect, host native total weight, per-product return leases, partial success, unknown outcomes and bounded deep copies. No native execution, actual employee diversion, game expedition binding, guest save isolation, real storage/save transactions, normal return or two-game gameplay is verified.",
   "ProtocolVersion": 5,
   "MapChoiceTcpTransferVerified": true,
   "ProductionMapChoiceAdapterFixtureVerified": true,
   "NativeControllerOriginVerified": false,
-  "HostSelectionApplied": false
+  "HostSelectionApplied": false,
+  "CargoLedgerFixtureVerified": true,
+  "NativeCargoGameplayVerified": false
 }
