@@ -39,6 +39,9 @@ description: Configure or continue development of the MultiDave prototype for Wi
   再启动，并从本次进程日志验证。缺少编译器时玩家配置仍可使用发行包。
 - 第二角色的本地回放由 F10 切换；潜水时验证显示、转向、输入、镜头及返航清理。
   用户不方便试玩时记录待验证项，继续独立开发，不把主菜单启动当成画面验收。
+- 源码开发版的 F11 打开房间面板。先按 MULTIPLAYER 验证 Local test 的真实 TCP
+  收发与主线程显示，再验证 Host/Join 的两个游戏实例；默认发行包不包含这个新入口。
+  对照 NETWORK/LAYOUT 标记记录成功或失败，布局指纹通过不等于统一地图/实体已完成。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

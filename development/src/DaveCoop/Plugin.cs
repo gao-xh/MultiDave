@@ -6,6 +6,7 @@ using BepInEx.Unity.IL2CPP;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using DaveCoop.Rendering;
+using DaveCoop.Networking;
 
 namespace DaveCoop
 {
@@ -15,7 +16,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.2-dev";
+        public const string Version = "0.1.3-dev";
 
         public override void Load()
         {
@@ -34,9 +35,16 @@ namespace DaveCoop
                 "Visual replay delay in seconds, clamped to 0.1..2.5.");
             RemotePreview.OffsetX = Config.Bind("Preview", "OffsetX", 3f,
                 "Horizontal replay offset in world units, clamped to -10..10.");
+            NetworkDriver.Logger = Log;
+            NetworkDriver.ShowPanel = Config.Bind("Network", "ShowPanel", false, "F11 opens the LAN movement prototype panel.");
+            NetworkDriver.HostAddress = Config.Bind("Network", "HostAddress", "127.0.0.1", "LAN IPv4 of the host.");
+            NetworkDriver.Port = Config.Bind("Network", "Port", 27182, "TCP listen/connect port.");
+            NetworkDriver.PlayerName = Config.Bind("Network", "PlayerName", "Dave", "Room display name, up to 32 characters.");
+            NetworkDriver.RenderDelay = Config.Bind("Network", "RenderDelaySeconds", 0.12f, "Remote interpolation delay, clamped to 0.05..0.5 seconds.");
             AddComponent<Diagnostics>();
             AddComponent<PlayerProbe>();
             AddComponent<RemotePreview>();
+            AddComponent<NetworkDriver>();
             Log.LogInfo($"DAVECOOP_BOOTSTRAP_OK: {Name} {Version}; Unity {Application.unityVersion}");
         }
     }
@@ -90,8 +98,8 @@ namespace DaveCoop
             if (ShowOverlay == null || !ShowOverlay.Value)
                 return;
 
-            GUI.Box(new Rect(12, 12, 520, 130),
-                $"DaveCoop Prototype {Plugin.Version}\nPlugin loaded | Scene: {_scene}\n{PlayerProbe.Status}\n{RemotePreview.Status}\nF8: panel | F9: snapshot | F10: replay | Network: not implemented");
+            GUI.Box(new Rect(12, 12, 640, 145),
+                $"DaveCoop Prototype {Plugin.Version}\nPlugin loaded | Scene: {_scene}\n{PlayerProbe.Status}\n{RemotePreview.Status}\n{NetworkDriver.Status}\nF8: panel | F9: snapshot | F10: replay | F11: room");
         }
     }
 }

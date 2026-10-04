@@ -1,16 +1,28 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T04:17:06.3670881Z",
+  "RecordedUtc": "2026-10-04T04:42:17.3311516Z",
   "PluginVersion": "0.1.2-dev",
   "SourceLog": "discovery-20261004-041049-626.jsonl",
   "DeployedPluginSHA256": "E2A7DEC29ACB894F72A2D8528C099E82AB867DDE00F82DC739707BAA8EBB5AB9",
   "CurrentSessionBootVerified": true,
   "UnityUpdateVerified": true,
   "PreviewComponentReady": true,
-  "DiveDisplayVerified": false,
-  "F10Verified": false,
-  "InputAndCameraVerified": false,
-  "ReturnCleanupVerified": false,
-  "UserGameplayStatus": "Requested; user now available, awaiting results.",
-  "Scope": "Fresh native game launch and main menu only; does not verify the subsequently added CLR session source or dive graphics."
+  "DiveDisplayVerified": true,
+  "F10Verified": true,
+  "InputAndCameraVerified": true,
+  "ReturnCleanupVerified": true,
+  "UserGameplayStatus": "User confirmed visible, normal and imitating local movements.",
+  "Scope": "One native 0.1.2-dev game process: A03_01_02 sprite replay, F10 off/on, local player/camera preservation and return cleanup. No multiplayer; 0.1.3-dev modifications are not covered.",
+  "NativeStateSamples": 37,
+  "NativePlayerCounts": [
+    1
+  ],
+  "LocalCameraUnboundSamples": 0,
+  "SpritePartCounts": [
+    21,
+    25
+  ],
+  "PreviewWarnings": 0,
+  "ToggleCleanupCount": 1,
+  "ReturnCleanupCount": 1
 }

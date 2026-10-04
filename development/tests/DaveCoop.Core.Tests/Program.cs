@@ -36,7 +36,13 @@ internal static class Program
             ("sprite asset key descriptor identity", AssetTests.DistinctDescriptors),
             ("sprite asset invalid descriptor rejection", AssetTests.InvalidDescriptors),
             ("sprite asset metadata collision rejection", AssetTests.RegistryCollisions),
-            ("sprite asset capacity and scene reset", AssetTests.RegistryBoundsAndClear)
+            ("sprite asset capacity and scene reset", AssetTests.RegistryBoundsAndClear),
+            ("layout ordering and multiplicity", WorldAndMotionTests.LayoutOrderAndMultiplicity),
+            ("layout geometry and field boundaries", WorldAndMotionTests.LayoutGeometryAndFieldBoundaries),
+            ("layout invalid and excessive input rejection", WorldAndMotionTests.LayoutRejectsInvalidInput),
+            ("remote motion clock anchoring and staleness", WorldAndMotionTests.MotionClockAndInterpolation),
+            ("remote motion epoch, capacity and reset", WorldAndMotionTests.MotionEpochCapacityAndReset),
+            ("remote motion malformed data rejection", WorldAndMotionTests.MotionRejectsInvalidData)
         };
         int failures = 0;
         foreach (var test in tests)

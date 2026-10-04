@@ -43,10 +43,10 @@ namespace DaveCoop.Rendering
                     RemotePreview.Logger.LogInfo("DAVECOOP_PREVIEW_READY: independent sprite-only actor; F10 toggles local replay.");
                 }
                 if (Input.GetKeyDown(KeyCode.F10)) RemotePreview.Enabled.Value = !RemotePreview.Enabled.Value;
-                if (!RemotePreview.Enabled.Value)
+                if (!RemotePreview.Enabled.Value || RemotePreview.NetworkActive)
                 {
-                    Cleanup("disabled");
-                    RemotePreview.Status = "Second actor: disabled (F10)";
+                    Cleanup(RemotePreview.NetworkActive ? "network display active" : "disabled");
+                    RemotePreview.Status = RemotePreview.NetworkActive ? "Second actor: network display active" : "Second actor: disabled (F10)";
                     return;
                 }
                 float now = Time.unscaledTime;
@@ -61,7 +61,15 @@ namespace DaveCoop.Rendering
                 }
                 int id = candidate.GetInstanceID();
                 int scene = candidate.gameObject.scene.handle;
-                if (_root != null && _source != null && id == _sourceId && scene == _sourceScene) return;
+                if (_root != null && _source != null && id == _sourceId && scene == _sourceScene)
+                {
+                    var current = candidate.GetComponentsInChildren<SpriteRenderer>(true);
+                    bool same = current.Length == _parts.Count;
+                    for (int i = 0; same && i < current.Length; i++)
+                        same = _parts[i].Source != null && current[i].GetInstanceID() == _parts[i].Source.GetInstanceID();
+                    if (same) return;
+                    Cleanup("visual parts changed"); Create(candidate); return;
+                }
                 Cleanup("owner or scene changed");
                 Create(candidate);
             }

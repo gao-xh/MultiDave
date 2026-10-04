@@ -27,7 +27,7 @@ foreach ($runtimeName in @('mscorlib.dll', 'netstandard.dll', 'Microsoft.CSharp.
 foreach ($coreName in @('BepInEx.Core.dll', 'BepInEx.Unity.IL2CPP.dll', 'Il2CppInterop.Runtime.dll')) {
     $references += Join-Path $coreRoot $coreName
 }
-foreach ($interopName in @('Il2Cppmscorlib.dll', 'Assembly-CSharp.dll', 'UnityEngine.CoreModule.dll', 'UnityEngine.AnimationModule.dll', 'UnityEngine.InputLegacyModule.dll', 'UnityEngine.IMGUIModule.dll')) {
+foreach ($interopName in @('Il2Cppmscorlib.dll', 'Assembly-CSharp.dll', 'UnityEngine.CoreModule.dll', 'UnityEngine.AnimationModule.dll', 'UnityEngine.Physics2DModule.dll', 'UnityEngine.InputLegacyModule.dll', 'UnityEngine.IMGUIModule.dll')) {
     $references += Join-Path $interopRoot $interopName
 }
 foreach ($reference in $references) {

@@ -12,6 +12,7 @@ namespace DaveCoop.Rendering
         internal static ConfigEntry<bool> Enabled;
         internal static ConfigEntry<float> Delay;
         internal static ConfigEntry<float> OffsetX;
+        internal static bool NetworkActive;
         internal static string Status = "Second actor: starting";
         private readonly RemotePreviewController _controller;
 
