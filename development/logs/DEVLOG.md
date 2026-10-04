@@ -918,3 +918,16 @@
 
 - 初次统一验证实际Core323/323通过但插件两处接口编译失败；私有完整stdout/stderr与seal保留。仅修Harmony.Patch命名新重载和真实Il2CppArrayBase类型后重新封存，最终Core323/323和Build通过；未为失败轮写成功摘要。
 - 配置Skill官方draft/protected校验均通过，目标与draft同SHA256 `248508A0506CA6DC9A60ACBD3EA60A79013186B4CB6EAD0F61E82258FCB894F9`。LOD4/allocator30仅预期声明，不是运行安装或ABI证据；LOD最多512rows/batch、4096records/32managers/24576显式handles及1retained owner/process，primitive/guard steps不含source复合getter内部全部native调用。实际性能与完整远处AI仍待验。
+
+## 2026-10-04 — 0.1.43-dev：远处鱼避让与员工生产路径
+
+- 上一轮仅核对用户远距离显示问题，本轮继续完整M3—M7；未部署/启动或读写存档，安装.12/潜水.11/default.0保持。
+- 新默认关闭的原自然fishUpdate/同鱼renderer同步桥，保原true，只将员工附近的严格内含正交几何作为一次原false补充；未知/其他线程/嵌套/失源保原，不写鱼/renderer/GO或主动调用AI。原生ABI、多camera/shadow差异、全部鱼行为和实际性能待验。
+- 独立员工actor与capture生产调用方离线研究形成新实施文档；现有选择/个人袋/返航桥需真实生产者，不能再次增恒false门禁或将guest pose当实际命中。后续接Host-owned物理角色与输入/批准装备/O2/HP/投射物，真实鱼命中终局及个人产物/容量分流、逐项返航。
+- 实际Core/TCP 327/327通过，UTC `2026-10-04T21:40:37.0656545Z` → `2026-10-04T21:40:44.5454772Z`；完整PASS对应Program，新增4个几何边界夹具。实际Core源码99份、插件源码116份、联合输入169份执行前保自写bytes并封存，Core/Build后同hash。
+- 插件Build警告视为错误通过，UTC `2026-10-04T21:40:46.4929215Z` → `2026-10-04T21:40:48.9181589Z`，SHA256 `BEC78C63A0B946875E2E96979B6AADC6AF8577B00BF455475A21D24DC8A7BAF8`；摘要见[本轮记录](host-fish-visibility-build-verification.json)。所选工具/reference不称完整OS/SDK闭包；旧.42/.41/.40/.39/.38/.37摘要保持历史。
+- 接手/计划/世界与配置Skill更新；远距离、Guest完整隔离、员工玩法/两袋及返航保存、真实双端/GitHub冷配置与测试发行仍需完成，goal保持active。
+
+- 非作者末审修正大坐标/tinyextent与边界微小平移的double区间外包、自定义camera双矩阵affine检查，以及originaltrue零额外原生读取；完整来源在读组与最终返回前复核，primitive读只作scope/thread/reentry守卫，实际性能仍未测。
+- 新可见性Cecil实际2assemblies/16types/13methods/缺0；复用.42的338条Update已知范围，12未解析精确入口边不是本轮新PE或全body。员工研究新24types/846method/853property/缺精确名3，physics10types/136method另15property/20field/缺0；PE8roots/12methods/5123decoded=text、28indirectcalls/1branch，零省略/配额不是全方法/ABI证据。原metadata/IL/PE/地址及机器路径只.local，公开相对path/count/UTC/hash与自写方案。
+- Skill官方草稿校验通过、复制后protected校验通过，同SHA256 `837F4863E0695AE14AF0A8DD0182CB48F1B3B515D64729446A728C5C0DF453C6`；2条visibility target为预期声明，非运行安装证明。全部169个编译/执行输入仍相同，只有文档/摘要/Skill收尾，没有重复Core/Build或执行游戏。

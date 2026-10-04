@@ -1,6 +1,6 @@
 # MultiDave
 
-当前源码0.1.42-dev（协议8），本轮实际Core/TCP323/323及插件Build警告视为错误通过，执行输入前后相同。新增[房主双成员鱼区域](development/docs/HOST_FISH_INTEREST.md)：真实接收来源绑定到默认关闭的普通allocator距离与原LOD结果消费者，保原生成/生命周期、独立计算两区域后合并。见[本轮记录](development/logs/host-fish-interest-build-verification.json)。原生ABI、普通与group鱼完整覆盖、远处避让及双游戏未验证；不能称远距离探索完成。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、Guest隔离、可信员工命中、每人独立袋/容量/负重、逐项返航保存与GitHub冷配置仍待完成。
+当前源码0.1.43-dev（协议8），本轮实际Core/TCP327/327及插件Build警告视为错误通过，执行输入前后相同。新增[远处鱼避让接线](development/docs/HOST_FISH_VISIBILITY.md)：默认关闭的双成员区域沿自然鱼更新，按实际同鱼renderer与员工附近几何补充一次原可见性返回。见[本轮记录](development/logs/host-fish-visibility-build-verification.json)。原生ABI、全部鱼行为、远距离双游戏与性能仍未验证。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、独立员工角色/武器/生存、每人袋/容量/负重、逐项返航保存与GitHub冷配置仍待完成。
 
 《潜水员戴夫》Windows Steam 版的联机 Mod 开发项目。
 

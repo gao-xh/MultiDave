@@ -1,6 +1,6 @@
 # MultiDave 开发计划
 
-当前源码0.1.42-dev（协议8），本轮实际Core/TCP323/323及插件Build警告视为错误通过，执行输入前后相同。新增[房主双成员鱼区域](HOST_FISH_INTEREST.md)：真实接收来源绑定到默认关闭的普通allocator距离与原LOD结果消费者，保原生成/生命周期、独立计算两区域后合并。见[本轮记录](../logs/host-fish-interest-build-verification.json)。原生ABI、普通与group鱼完整覆盖、远处避让及双游戏未验证；不能称远距离探索完成。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、Guest隔离、可信员工命中、每人独立袋/容量/负重、逐项返航保存与GitHub冷配置仍待完成。
+当前源码0.1.43-dev（协议8），本轮实际Core/TCP327/327及插件Build警告视为错误通过，执行输入前后相同。新增[远处鱼避让接线](HOST_FISH_VISIBILITY.md)：默认关闭的双成员区域沿自然鱼更新，按实际同鱼renderer与员工附近几何补充一次原可见性返回。见[本轮记录](../logs/host-fish-visibility-build-verification.json)。原生ABI、全部鱼行为、远距离双游戏与性能仍未验证。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、独立员工角色/武器/生存、每人袋/容量/负重、逐项返航保存与GitHub冷配置仍待完成。
 
 目标：Windows Steam 版双人潜水合作 MVP，先做局域网房主/客户端。
 房主负责游戏世界和结算。服务器方案暂缓。
@@ -272,3 +272,7 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 ## 0.1.42 房主双成员鱼区域
 
 见[HOST_FISH_INTEREST](HOST_FISH_INTEREST.md)。成功接收帧固定实际Room/member/sequence；主线程来源只接当前真实Host/Ready同场景peer，原接收时间过期、暂停/断线/本地源变更即撤，插值节点不当原生员工。默认关闭入口只在首次Network Update读取。普通typedMove内一次原玩家位置→同allocator中心查询代理距离，原getter/cache/真实中心/RNG/body保持；仅minDistance0窄路径，Wave/force/未知来源保原。自然鱼LOD请求冻结target/returneddata，原Complete匹配job正常完成后只合并已绑定鱼newLayer；原迟滞/Z/Behaviour/生命周期保持，不造两人间大矩形。group/早于确认线程的注册、其他激活writer/避让、原生值类型与NativeArray ABI未证。实际323/323 CLR/TCP与插件Build通过，不是原生远距离验证；World/Cargo/GuestStateIsolated仍false。自由跨层、可信employee actor/装备/生存/命中、每人产物/前置容量/独立重量/负重、逐项返航和真实双端/冷配置仍按完整M3—M7推进。
+
+## 0.1.43 远处鱼避让与员工生产路径
+
+见[HOST_FISH_VISIBILITY](HOST_FISH_VISIBILITY.md)。沿默认关闭的双成员区域入口，自然SABaseFishSystem.Update_Imple与实际同鱼renderer的原false返回形成同步范围；只在当前同层来源、实际正交镜头与平移renderer bounds八角都在严格视口/深度内时补true。原true、其他对象/线程/未知或嵌套来源保原，不改renderer/GO/鱼HP/产物，也不主动额外更新AI。这只为原避让调用增加员工区域候选，不等同全部Unity可见性或全部远处AI；原生运行与完整覆盖仍待验。实际327/327 CLR/TCP与Build通过；安装及潜水历史保持。独立员工actor与capture生产链见[CREW_ACTOR_IMPLEMENTATION](CREW_ACTOR_IMPLEMENTATION.md)和[CREW_CAPTURE_IMPLEMENTATION](CREW_CAPTURE_IMPLEMENTATION.md)，仍须实际输入/碰撞/装备/生存/命中、产物及前置容量分流、个人负重、正常返航逐项入仓/save、Guest完整隔离、真实双端/GitHub冷配置与测试发行。

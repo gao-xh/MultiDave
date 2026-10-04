@@ -1,6 +1,6 @@
 # 客机原生根影子桥
 
-当前源码0.1.42-dev（协议8），本轮实际Core/TCP323/323及插件Build警告视为错误通过，执行输入前后相同。新增[房主双成员鱼区域](HOST_FISH_INTEREST.md)：真实接收来源绑定到默认关闭的普通allocator距离与原LOD结果消费者，保原生成/生命周期、独立计算两区域后合并。见[本轮记录](../logs/host-fish-interest-build-verification.json)。原生ABI、普通与group鱼完整覆盖、远处避让及双游戏未验证；不能称远距离探索完成。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、Guest隔离、可信员工命中、每人独立袋/容量/负重、逐项返航保存与GitHub冷配置仍待完成。
+当前源码0.1.43-dev（协议8），本轮实际Core/TCP327/327及插件Build警告视为错误通过，执行输入前后相同。新增[远处鱼避让接线](HOST_FISH_VISIBILITY.md)：默认关闭的双成员区域沿自然鱼更新，按实际同鱼renderer与员工附近几何补充一次原可见性返回。见[本轮记录](../logs/host-fish-visibility-build-verification.json)。原生ABI、全部鱼行为、远距离双游戏与性能仍未验证。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、独立员工角色/武器/生存、每人袋/容量/负重、逐项返航保存与GitHub冷配置仍待完成。
 
 0.1.18-dev 新增 [NativeGuestShadowBridge](../src/DaveCoop/Networking/NativeGuestShadowBridge.cs) 和纯 CLR 的 [GuestShadowTransaction](../src/DaveCoop/Core/Guest/GuestShadowTransaction.cs)。桥包含实际的原生序列化、强引用、直接根交换、回读及恢复代码；该历史阶段没有接入 Network、GUI 或游戏生命周期。0.1.37新增默认关闭的[自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接实际Guest房间与固定原iterator，仍未在游戏中执行这些原生操作。接口研究及其静态证据见 [GUEST_ISOLATION](GUEST_ISOLATION.md)，已枚举输出的围栏范围见 [GUEST_OUTPUT_FENCE](GUEST_OUTPUT_FENCE.md)。
 

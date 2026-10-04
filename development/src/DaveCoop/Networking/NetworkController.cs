@@ -46,6 +46,7 @@ namespace DaveCoop.Networking
         private HostFishInterestSource _hostFishInterest;
         private NativeHostFishAllocatorArea _hostFishAllocatorArea;
         private NativeHostFishLodArea _hostFishLodArea;
+        private NativeHostFishVisibilityArea _hostFishVisibilityArea;
         private bool _hostFishAreasFailed;
         private float _nextCargoObservation;
         private LootObservationController _lootObserver;
@@ -110,7 +111,8 @@ namespace DaveCoop.Networking
                         _hostFishInterest.ConfirmUnityUpdate();
                         _hostFishAllocatorArea = new NativeHostFishAllocatorArea(_hostFishInterest, NetworkDriver.Logger);
                         _hostFishLodArea = new NativeHostFishLodArea(_hostFishInterest, NetworkDriver.Logger);
-                        try { _hostFishAllocatorArea.Install(); _hostFishLodArea.Install(); }
+                        _hostFishVisibilityArea = new NativeHostFishVisibilityArea(_hostFishInterest, NetworkDriver.Logger);
+                        try { _hostFishAllocatorArea.Install(); _hostFishLodArea.Install(); _hostFishVisibilityArea.Install(); }
                         catch (Exception error) { StopHostFishAreas(error); }
                     }
                     NetworkDriver.Logger.LogInfo(NativeGuestInitializationController.Current == null
@@ -234,6 +236,12 @@ namespace DaveCoop.Networking
                         HostFishLodUnsupportedTargets = _hostFishLodArea?.UnsupportedTargets ?? 0,
                         HostFishLodUnsupportedRows = _hostFishLodArea?.UnsupportedRows ?? 0,
                         HostFishLodUnknownWriteOutcomes = _hostFishLodArea?.UnknownWriteOutcomes ?? 0,
+                        HostFishVisibilityAreaStatus = _hostFishVisibilityArea?.Status,
+                        HostFishVisibilityProxyReturns = _hostFishVisibilityArea?.ProxyReturns ?? 0,
+                        HostFishVisibilityUnsupported = _hostFishVisibilityArea?.Unsupported ?? 0,
+                        HostFishVisibilityMissingInterest = _hostFishVisibilityArea?.MissingInterest ?? 0,
+                        HostFishVisibilityPendingScopes = _hostFishVisibilityArea?.PendingScopes ?? 0,
+                        HostFishVisibilityCallbackErrors = _hostFishVisibilityArea?.CallbackErrors ?? 0,
                         AutomaticHostFishObservation = state.Role == SessionRole.Host && state.RemoteRequestsHostFishDisplay,
                         GuestQuarantinedFish = NativeGuestInitializationController.Current?.QuarantinedFishCount ?? 0,
                         GuestFishStatus = NativeGuestInitializationController.Current?.GuestFishStatus,
@@ -886,7 +894,8 @@ namespace DaveCoop.Networking
                     throw new InvalidOperationException("Host fish interest source became unavailable.");
                 _hostFishAllocatorArea.CheckHealthy();
                 _hostFishLodArea.Update();
-                if (!_hostFishAllocatorArea.Healthy || !_hostFishLodArea.Healthy)
+                _hostFishVisibilityArea.CheckHealthy();
+                if (!_hostFishAllocatorArea.Healthy || !_hostFishLodArea.Healthy || !_hostFishVisibilityArea.Healthy)
                     StopHostFishAreas(new InvalidOperationException("Host fish area adapter became unavailable."));
             }
             catch (Exception error) { StopHostFishAreas(error); }
@@ -903,7 +912,7 @@ namespace DaveCoop.Networking
         public void Dispose()
         {
             StopMapSelectionCalls(); Disconnect(); RestoreCursor();
-            _hostFishAllocatorArea?.Dispose(); _hostFishLodArea?.Dispose();
+            _hostFishAllocatorArea?.Dispose(); _hostFishLodArea?.Dispose(); _hostFishVisibilityArea?.Dispose();
         }
     }
 }

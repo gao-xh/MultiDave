@@ -330,7 +330,11 @@ internal static class Program
             ("host fish allocator exact zero observation input", FishAllocatorInterestMathTests.ObservationAtAllocatorCenterHasExactZeroDistanceInput),
             ("host fish allocator nearer conservative transient distance", FishAllocatorInterestMathTests.NearerObservationProducesConservativeTransientDistance),
             ("host fish allocator equal farther and near ties keep original", FishAllocatorInterestMathTests.EqualFartherAndNearTieKeepOriginalCenter),
-            ("host fish allocator cancellation and nonfinite keep original", FishAllocatorInterestMathTests.CancellationAndNonfiniteInputsCannotInventNearDistance)
+            ("host fish allocator cancellation and nonfinite keep original", FishAllocatorInterestMathTests.CancellationAndNonfiniteInputsCannotInventNearDistance),
+            ("host fish visibility shifted bounds preserve actual source inputs", FishVisibilityInterestMathTests.RemoteBoundsTranslateIntoActualHostCameraWithoutChangingInputs),
+            ("host fish visibility partial viewport and clip boundaries keep original", FishVisibilityInterestMathTests.PartialViewportAndDepthBoundariesNeverGrantVisibility),
+            ("host fish visibility large coordinates round bounds outward", FishVisibilityInterestMathTests.LargeCoordinatesRoundBoundsOutwardInsteadOfShrinking),
+            ("host fish visibility different planes and invalid samples keep original", FishVisibilityInterestMathTests.DifferentPlanesMalformedSamplesAndNonfiniteGeometryKeepOriginal)
         };
         int failures = 0;
         foreach (var test in tests)
