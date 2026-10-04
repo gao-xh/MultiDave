@@ -111,6 +111,13 @@ flowchart LR
 
 ## 返航和退出
 
+原GameAssembly离线分析补定位：`AddDropItem_Impl`包含袋Add/IgnoreOverloaded及
+`AddLootingSaveData`目标，容量与持久副作用必须随员工产物一起分流。
+`AddFromLootBox`的关联代码有六参数IngredientsStorage.Add目标，普通返航还分鱼卵、
+采集物、关键物品、种子与装饰路径；不能仅一个入仓回调代表整个背包。
+保存/加载基类包含文件写/复制/删除等目标，SetLoadedData也含同步；不能当纯恢复接口。
+这些是静态目标，不证明分支、增量或保存；复现及下一接入点见[NATIVE_ANALYSIS](NATIVE_ANALYSIS.md)。
+
 - 房主开始正常返航后停止新操作，冻结已确认入袋清单，处理已进入原生的未决操作。
   只有证据充分才标记完成；结果未知不自动重试、退款、回滚库存或重复结算。
 - 房主原生袋让原游戏按已验证的链入仓和保存，不能按CaptureId给这一袋重复Add。

@@ -9,6 +9,13 @@
 开发在 `codex/player-discovery` 分支，当前源码为 `0.1.15-dev`、协议 5，Build 警告视为错误通过、Test-Core 142/142 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 最近完成潜水验证的是 `0.1.11-dev`。
+
+新增`scripts/Inspect-NativeCalls.ps1`和自写`tools/NativeCallInspector.cs`，用本机解析依赖离线读取原GameAssembly/metadata。
+5组真实静态报告已生成、边界和失败路径通过；原始结果只在.local，精简摘要见`logs/native-call-analysis-verification.json`。
+复现及具体入口见[NATIVE_ANALYSIS](NATIVE_ANALYSIS.md)：换层/附加协程直接走Addressables五参入口，当前三参观察漏该路径；
+要固定工厂/MoveNext owner并显式继承子协程，再关联实际操作/Scene/controller寿命。
+鱼产物、容量与水下进度同归属分流；返航包含多类别入仓，保存/加载不只是简单根赋值。
+这是离线工具修改，插件仍0.1.15，未重新Build/Test-Core/部署/启动，历史142项和实机范围保持原记录；原生能力全部未接通。
 新版单游戏 TCP 偏移鱼群可见和原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
 发射/挂钩/伤害只读观察已运行；动画、完整捕获链、路线完整读取与正常返航仍待验收。
 最近单鱼稳定性实测来自 `0.1.9-dev`，M1 历史证据来自 `0.1.1-dev`。

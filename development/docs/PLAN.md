@@ -124,6 +124,9 @@ F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房
 
 0.1.15-dev开始实现纯CLR个人账本和默认关闭的原生Loot只读观察，范围见[独立背包构建摘要](../logs/cargo-ledger-build-verification.json)。
 账本暂不接游戏生命周期或网络房间，不能作为员工背包已可玩的证据；员工产物分流、真实容量路由、入仓桥与保存仍未接通。
+原GameAssembly离线调用工具已定位实际鱼掉落/容量、六参数入仓、多类别返航与保存/加载副作用目标，
+并发现换层协程绕过现有加载观察。下一适配顺序为固定iterator owner/操作/场景寿命、客机临时状态及集中输出隔离、
+个人产物/容量分流和按类别逐项入仓。静态边与源码工具通过不算M4/M5/M6验收，见[NATIVE_ANALYSIS](NATIVE_ANALYSIS.md)。
 
 - 每人独立背包、容量与负重：房主自己的原生LootBox，员工由房主持有的Mod会话工作袋；两人的实际收获返航归房主仓库。
 - 用ExpeditionId关联跨场景/断线潜水、MemberId关联员工、CaptureId关联真实来源与品质/数量/重量；请求通过、鱼移除或QTE不等于入袋。

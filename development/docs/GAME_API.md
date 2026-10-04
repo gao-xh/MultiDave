@@ -82,6 +82,11 @@ F8 显示或隐藏面板。该探针没有网络功能。
 
 ## 后续设计约束
 
+新增原GameAssembly离线调用分析工具：`scripts/Inspect-NativeCalls.ps1`。
+精确选择器、unwind代码片段、复现命令和实际产物/加载/保存目标见[NATIVE_ANALYSIS](NATIVE_ANALYSIS.md)。
+它不执行游戏、挂钩或读存档；静态direct target及共享别名不证明运行顺序或原生能力。
+新研究没有修改0.1.15插件或扩大既有142项测试/实机范围。
+
 M2 先研究只复制显示组件/姿态的方式。直接克隆完整 `PlayerCharacter` GameObject
 可能运行 Awake、注册输入和其他监听；在明确这些行为之前，不尝试完整角色克隆。
 远程显示对象不作为游戏管理器的本地玩家，也不绑定本地摄像机。

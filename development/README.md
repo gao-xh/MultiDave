@@ -90,6 +90,8 @@ Test-Core 与测试 csproj 编译实际 MapChoiceController 和 MapSelectionCall
 4. 完成正常返航、唯一收益账本及客机恢复，最后验证冷配置并更新发行包。
 
 具体阶段与验收条件按 [开发计划](docs/PLAN.md) 执行。
+原游戏产物、返航、保存及加载协程研究可用离线[NATIVE_ANALYSIS](docs/NATIVE_ANALYSIS.md)工具复现；
+静态调用分析不执行游戏，也不代表原生捕鱼或双人玩法已完成。
 
 ## 官方资料
 

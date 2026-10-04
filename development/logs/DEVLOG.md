@@ -512,3 +512,29 @@
 - 更新core-verification和cargo-ledger-build-verification摘要、README/AGENTS/PLAN/HANDOFF/MULTIPLAYER/WORLD_SYNC/CREW_MODE与配置Skill；Skill校验通过。
   0.1.14的134项/旧hash保留在map-choice-transport-build-verification，原始输出仅.local/verification，默认发行包仍0.1.0。
   下一步验证完整产物/容量路由/持久副作用与正常入仓链，再接Expedition生命周期、员工分流/入仓桥，继续地图采用、客机隔离、独立actor和真实双游戏闭环。
+
+## 2026-10-04 — 原GameAssembly离线调用工具与真实接入点
+
+- 继续按“每个人的背包”规则，保持0.1.15个人Cargo账本与原生能力未接通状态。
+  本轮修改离线工具、文档及Skill，没有修改/重新编译插件，未部署或启动游戏；历史142项测试和0.1.12安装/0.1.11潜水证据保持原范围。
+- 新增Inspect-NativeCalls.ps1及自写NativeCallInspector.cs。读取本机原GameAssembly/metadata，不加载或调用游戏，不读存档。
+  使用已安装LibCpp2IL/Iced和独立net6进程、SDK5 Roslyn3.11警告视为错误编译，不下载依赖或发布原DLL。
+  Steam自动定位、精确Namespace.Type::Method、原metadata方法指针、按命名关联iterator MoveNext；泛型实例/共享别名仍未知。
+- 解析283291方法定义、421353个PE runtime-function项，parser识别metadata31.1。
+  初版只含首个unwind片段，不能据缺边推断无业务；修为version1 CHAININFO完整三元组父链，严格匹配原.pdata、循环/32层检查，拒绝按相邻代码猜归属。
+  3个不支持版本明确计数；无表项/内部/次级入口不猜主体。仅唯一文件映射可执行片段，32片/262144字节与方法/指令配额。
+- 5组本机静态报告为Loot21、Expedition211、地图59、GuestSave56、加载owner19条方法记录；根收齐且方法限额未触顶。
+  partial、不可用、indirect、外部跳转、alias截断均保留；报告之间可重复方法，不能作为独立接口或完整可达调用图总数。
+  真实边表明鱼产物进入Add/IgnoreOverloaded及AddLootingSaveData，袋Add还有CheckOverloadedState/Add_Impl；员工容量、产物与水下进度需同归属分流。
+- AddFromLootBox的三片代码包含IngredientsStorage六参数Add；Normal有Result/Finished工厂，Result按鱼肉/鱼卵/采集/关键/种子/装饰分路。
+  保存基类有Serialize/加密/目录/文件写；加载有云/转换/复制/删除；SetLoadedData含互动同步。
+  这些仅static direct targets，不能证明实际分支/产物增量/正常返航或写盘成功，不能开放员工执行权限。
+- map额外报告定位coLoadAdditiveScene与CoLoadSceneAsync.MoveNext直接走Addressables五参LoadSceneAsync，绕过现SceneLoader三参观察。
+  需工厂固定iterator owner、每MoveNext恢复、显式子协程继承，继而operation指针/版本→成功Scene.m_Handle→controller寿命；不读当前singleton倒推旧协程。
+  cacheSelectedScenePath还有持久cache写目标，IGP.Init仍有保存接口，地图postfix或只跳随机不足以隔离guest。
+- 复核修正限额后HashSet仍增长与interior跳转归属边缘；新工具按已知整个family判断外部跳转，generic context不解。
+  每次GUID编译目录、原文件前后hash、同目录临时文件原子替换，失败保留旧报告且报错，旧报告不算fresh。
+  实际检查MaxMethods1/OmittedRoot1/MaxInstructions64、未知选择器失败且旧报告hash不变、Depth4参数拒绝均通过。
+  独立PE复核Loot/GuestSave共93个报告片段，parent三元组/最终root正确，BadChainClaims=0、实际最长链3层；没有原生运行验收。
+- 新增NATIVE_ANALYSIS与精简验证JSON，更新AGENTS/README/PLAN/HANDOFF/GAME_API/CREW_MODE/WORLD_SYNC及配置Skill。
+  原报告、地址明细、解析日志与检查输出留.local。下一步按已定位入口接实际origin/guest隔离、个人分流与逐产物返航桥，手动与真实双游戏验证继续等待用户方便。

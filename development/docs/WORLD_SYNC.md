@@ -397,6 +397,12 @@ QTE 胜利、捕获、入袋、图鉴与返航入仓须分别验证，不能由�
 
 ## 验收顺序
 
+离线原生分析已发现`coLoadAdditiveScene/CoLoadSceneAsync.MoveNext`直接调用
+Addressables五参LoadSceneAsync，绕过当前SceneLoader三参观察；不能声称现有观察覆盖全部请求。
+需要工厂/每次MoveNext的固定owner及显式子协程继承，关联typed操作指针/版本→实际Scene句柄→controller寿命。
+cacheSelectedScenePath与IGP.Init还含持久缓存/实例保存目标，地图采用须共同隔离客机状态。
+详见[NATIVE_ANALYSIS](NATIVE_ANALYSIS.md)。本次未接adapter，原生代次、客机采用与世界权限仍false。
+
 1. 只读探针验证真实对象和加载顺序。
 2. 两份游戏使用不同本地存档/入海条件，仍按房主选择得到相同布局。
 3. 同一条普通鱼在两端出现、移动和消失，客机没有重复的自主鱼。

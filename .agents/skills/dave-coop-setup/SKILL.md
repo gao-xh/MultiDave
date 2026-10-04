@@ -146,6 +146,14 @@ description: Configure or continue development of the MultiDave prototype for Wi
   进程1024前后事件、queue64/context128/每Update16；丢失或停止可以截断链，OwnHooksRemoved和Discarded要分别核对。
   鱼prefix身份不能按嵌套/时间猜到Add/图鉴/仓库；slot加密字段不读，ActualBagDeltaProven/SourceOperationBound/CaptureSuccess/StorageDeltaProven始终false。
   新版未部署/启动，原生ABI、真实重量、完整产物、容量分流、正常入仓/保存均待验证。当前安装仍0.1.12，默认发行包0.1.0。
+- 离线研究原GameAssembly调用时用`development/scripts/Inspect-NativeCalls.ps1`，先读`development/docs/NATIVE_ANALYSIS.md`。
+  使用已安装LibCpp2IL/Iced、SDK与net6 runtime，按精确Type::Method选择；不启动/执行游戏或读取存档，不下载依赖。
+  原报告/地址/机器码/依赖只留.local，按成功时间与原文件hash核对新鲜度；失败保留的旧报告不是本次证据。
+  exact version1 chained unwind/共享别名/partial限制明确；不能凭static target或缺边开启world/cargo权限。
+  已定位coLoadAdditiveScene/CoLoadSceneAsync.MoveNext直接走Addressables五参LoadSceneAsync，现三参SceneLoader观察漏该路径。
+  按工厂/MoveNext固定owner、显式子协程继承后再接操作版本/真实Scene句柄/controller寿命，不用当前singleton倒推旧调用。
+  鱼产物/容量/水下进度共同分流，返航按类别逐项；guest加载/SetLoadedData有持久及同步副作用，不能当纯恢复。
+  本轮仅工具与文档，插件仍0.1.15，142项历史证据/0.1.12安装/0.1.11潜水不扩大；摘要见native-call-analysis-verification.json。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

@@ -18,6 +18,11 @@
 - MapChoiceController 的 cache/restore 同指纹也创建新 generation，SceneLoader 同指纹去重；copy 错误/截断/丢失主动撤销，未绑定 IGP 丢弃且不缓存；已发布组再次空/unknown 撤销候选，未知新组空仍 Unbound。callbackFloor 仅排除已排队旧观察，DTO 无原生 context/controller 代次证明；新 cache 后迟到且同 scene/address 的旧 IGP 仍可附当前候选。日志 NativeGenerationBound=false，Snapshot 一律 ObservationOnly=true/HostSelectionApplied=false；补本地 origin/代次及跨机地址证据后才可采用。
 - Test-Core 与测试 csproj 编译实际 MapChoiceController/MapSelectionCallObservation，仅替代 logger；4 项源适配夹具用 synthetic DTO 与实际回环 TCP，不运行 NativeHook、不调用游戏入口，不算原生或双游戏验收。
 - 下一步实现实际加载前房主选择采用、客机临时进度/生成与 AI 隔离，再接房主原生捕鱼及返航收益账本；不要把 CLR TCP、布局指纹或单游戏显示当 M4/M5/M6 或双游戏完成。
+- 原GameAssembly离线研究用`scripts/Inspect-NativeCalls.ps1`，先读`docs/NATIVE_ANALYSIS.md`；报告/机器码/游戏和依赖DLL只留.local。
+  按精确metadata方法指针及version1 chained unwind三元组分析，静态边/别名/完整已知片段不证明运行顺序、数据流或能力。
+  已发现coLoadAdditiveScene/CoLoadSceneAsync直接走Addressables五参入口，现SceneLoader三参观察不全；固定iterator owner和子协程继承后再接operation/Scene/controller寿命。
+  鱼产物还触及水下进度、容量与多类返航库存，guest加载/SetLoadedData有副作用；不据单Add/最终Save开员工权限。
+  本轮仅工具/文档，插件版本/142项和实机证据不变，摘要见`logs/native-call-analysis-verification.json`。
 - 加载后的路线/IGP 清单要求每个选中场景至少一组、查找结果与原注册列表一致，并在两个不同 Unity 帧稳定。跨机地址未验证，尚未在加载前采用房主选择；M4 接管、M5 裁定及 M6 收益未实现。构建范围见 `logs/fish-world-interaction-build-verification.json`。
 - 0.1.11-dev 的 A03_01_02 本机 TCP 已记录 49 条 Ready 概要、53 条 FishWorld 状态，观察/绑定/可显示/可见最大 16、网格顶点 662，未知资源/缺 Visual/显示错误为零。8 个交互挂钩健康，42 条事件组成 21 对 CallId，覆盖 HarpoonFire、FishHookedByProjectile、FishDamage 和 SpecialDamage，两个原 bool 为 true；Win/Pickup 未见。回调/解析/未配对/查询错误为零，地图读取失败 Selected route incomplete。Local test 的成对鱼是原鱼加偏移诊断副本，同步消失不等于捕获副本。自己的挂钩卸载与 Disconnect 有标记；用户确认主动退出且未返航，正常返航保存未验证。
 - 每次改动记录日期、目的、修改文件、执行的验证、结果、遗留问题与下一步。
