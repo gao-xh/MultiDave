@@ -5,14 +5,15 @@
 0.1.7-dev 用户确认鱼可见但镜头内突然消失，日志记录角色部件销毁导致自动断开。
 0.1.8-dev 没有旧异常，但用户确认标签换鱼及继续消失。0.1.9-dev 锁定身份并部署，用户确认不再突然消失。
 这些证据不证明两个游戏拥有同一地图、同一条鱼或共同捕获结果。
-当前源码为 0.1.13-dev、协议 4，编译及 112/112 核心测试通过，本轮未部署/启动。
+当前源码为 0.1.14-dev、协议 5，Build 警告视为错误通过，Test-Core 134/134 通过；本轮未部署/启动。
+默认发行包保持 0.1.0，源码能力不自动进入玩家安装包。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试；加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 0.1.11-dev。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，保留主菜单启动通过和未验证边界。
 新版单游戏 TCP 偏移鱼群可见与原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
 Fire/Hook/Damage 成对观察已运行；动画、完整捕获链、路线完整读取和正常返航仍待验收。
 最近单鱼视觉稳定性证据来自 0.1.9-dev。
-当前构建范围见 [地图选择调用摘要](../logs/map-selection-call-build-verification.json)，已安装 0.1.12-dev 见 [操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史潜水见 [0.1.11-dev 鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，真实双游戏及真正合作捕获尚未完成。
+当前范围见 [地图选择传输构建摘要](../logs/map-choice-transport-build-verification.json)，0.1.13 历史构建见 [地图选择调用摘要](../logs/map-selection-call-build-verification.json)，已安装 0.1.12-dev 见 [操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史潜水见 [0.1.11-dev 鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)，真实双游戏及真正合作捕获尚未完成。
 
 ## 世界由房主裁定
 
@@ -21,6 +22,8 @@ Fire/Hook/Damage 成对观察已运行；动画、完整捕获链、路线完整
 这种权责划分参考 Unity 的
 [NetworkObject 身份和生成权限说明](https://mp-docs.dl.it.unity3d.com/netcode/1.10.0/basics/networkobject/)，
 本项目采用自己的 IL2CPP 适配和协议，尚未安装或集成 Unity Netcode。
+
+以下为目标流程；0.1.14-dev 仅传输选择候选，尚未提交共享世界或执行攻击/收益。
 
 ```mermaid
 sequenceDiagram
@@ -84,6 +87,18 @@ factory 调用不证明 MoveNext、真实资源请求或完成，SceneLoader pre
 Disconnect 关闭并卸载自己的 Observer；原方法保留自然执行，Mod 不调用或改写选图/load/save，也未共享/采用房主地图。
 加载后两处 IsInitDone 使用直接 backing field，原有 Loaded/每场景 IGP/注册集合/两帧完整要求保持。
 该版仅 Build/112 项核心测试通过，尚无新原生 ABI、回调时序、卸载或加载前捕获实机证据；用户当前不方便试玩，验证延后。
+
+0.1.14-dev 的 `MapChoiceFrames` / `MapChoiceAssembler` 已将分散选择接入独立传输。协议 5 的 MapRouteSlice、MapIgpChoice、MapChoiceRetire 沿用 Room 绑定，仅 host 发布、guest 接收；地图 generation 与 choice revision 独立于场景 epoch，可在 WaitingForScene、epoch 0 时传输，不修改 Ready 或世界权限。
+
+路线为严格 3..32 场景的 owned CLR 副本，按场景 ID 排序，每片最多 8 场景、最多 4 片；分片全部复制/校验及编码检查后，才原子取消旧待发送批次并提交新 generation。地图发送 FIFO 最多 32 包，与动作/角色/世界四路公平；控制、心跳与撤销优先。
+客机接到新 generation 首片先撤销旧路线，partial Snapshot.Route=null；完整链及指纹核对后才原子提供路线，再接受连续 revision 的 IGP。同 scene/address 组按新修订更新，最多 128 组；数量或最后修订不代表完整地图/所有组已选完。
+普通 SetLocalScene/场景暂停及帧清理保留 preload 候选；源观察显式失效才 Retire，Close 清 source/assembler/mailbox。溢出主动清地图队列并发控制撤销；generation 高水位保留、inactive 重复 Retire 返回 false，下一路线另开新代次。合法旧或已退休 choice 取消不关房，未来/当前冲突、畸形与错误来源拒绝。
+
+`MapChoiceController` 在绑定房间后把 host 自然观察转为候选。cache/restore 每次合法样本都开新 generation，指纹相同也不沿用上一代；SceneLoader prefix 同指纹仅去重。未绑定路线的 IGP 直接 Unbound 丢弃，不缓存后补；copy 错误、Truncated、观察丢失主动撤销。已发布组再次空/unknown 返回会撤销当前候选，避免继续沿用先前非空项；未知新组空值仍 Unbound。
+callbackFloor 只排除绑定/撤销前已经排队的旧观察，DTO 尚无原生 controller/context 代次证明。新 cache 边界后迟到、且 sceneName/address 相同的旧 IGP 回调仍可能附当前候选；所有 MAP_CHOICE_* 日志 NativeGenerationBound=false、CrossMachineAddressVerified=false。Scene/address 匹配和 CLR 连续 revision 均不能证明 native origin。
+
+所有 MapChoiceSnapshot 仅为 evidence：ObservationOnly=true、HostSelectionApplied=false。134 项测试中包含 4 项实际源适配用例；Test-Core 与测试 csproj 编译实际 MapChoiceController 和 MapSelectionCallObservation，仅替代 logger，再由 synthetic DTO 与实际回环 TCP 检查分批、取消和顺序。它们不运行 NativeHook、不调用游戏入口，不是两个游戏、实际地图采用或正常返航验收。
+下一步补本地 origin/代次及跨机地址证据，在实际资源加载前采用房主路线/IGP，建立客机临时进度恢复并隔离其原生生成/AI，再核对最终地形与实体后授予世界权限。不得从收到候选设置 MapAuthorityReady、GuestStateIsolated 或 M4 完成。
 
 ## 第二层：实体身份与鱼状态
 
@@ -154,7 +169,7 @@ Init/LoadPrefab 返回 IEnumerator，观察工厂返回不等于异步加载完�
 
 IGP 还有 `saveDatatype`、`ISaveableInstanceData` 及 `StoreUsedInstacneID(string)` 路径。
 客机进度隔离不能只覆盖 IngameSaveDataManager。尚未改写这些选择或保存入口；
-下一步先观察真实调用顺序，验证稳定路线/组标识，再接入加载前房主选择清单与确认。
+选择候选传输已接入；下一步补真实调用顺序与 native origin/代次及跨机组标识证据，再实现加载前实际采用和客机临时状态/生成/AI 隔离与布局确认。
 可运行 `scripts/Inspect-MapEntryApi.ps1` 复现元数据签名；签名不能证明原始控制流或存档副作用。
 
 ## 只读探针（0.1.4-dev 引入，0.1.5-dev 已实机读取）
@@ -179,16 +194,16 @@ Core/World 的 HostEntityRegistry 将本机对象 token 映射为房主分配的
 同种鱼不同 ID；明确释放后复用 token 分配新 ID，同 epoch 清空也不会复用旧 ID。
 新 epoch 清空绑定；房间和 epoch 来自已确认的会话，不发送 Native 指针或本机实例 ID。
 
-当前协议 4 保留历史协议 3 引入的 WorldSlice：最多每块 16 个实体、每快照 4096 个实体。
+当前协议 5 保留历史协议 3 引入的 WorldSlice：最多每块 16 个实体、每快照 4096 个实体。
 快照携带 epoch、场景、递增修订和采样时间，含类型/TID、姿态、HP/MaxHP、死亡与捕获状态及可选显示描述。
 每块降至 16 个实体以容纳显示字段的合法最大值，保持 128 KiB 消息限制；双方版本必须匹配。
 检查数值、种类、数量、唯一 ID、分块顺序和一致的头部；完整收齐后才移交客机主线程。
 接收端允许新修订的首块替换未完成旧修订，保留已提交状态；空快照可表达清单清空。
 发送端完成已开始的整批清单，仅保留下一批最新状态；两批有界缓存避免持续采样让慢连接一直无法提交。
-尚未开始的批次可替换。出站动作 FIFO、玩家移动和世界切片公平轮转，控制/心跳优先；入站世界只保留最新完整快照。
+尚未开始的批次可替换。出站动作 FIFO、玩家移动、世界切片和地图 FIFO 四路公平轮转，控制/心跳与撤销优先；入站世界只保留最新完整快照。
 禁止客机发布世界、禁止旧本地快照被改标为新 epoch，场景暂停/重载/关闭时清理缓存。
 
-当前核心总计 112/112 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
+当前核心总计 134/134 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
 修订更替/空清单、权限/epoch、容量/公平性、真实 TCP 数值清单/HP 更新/移除及旧协议拒绝。
 测试为 CLR 夹具；没有在两份游戏中调用捕鱼或物品 API。
 
@@ -355,7 +370,7 @@ F11 的 Check selected fish target 在 Guest 或 Local test 的 Ready/已选单�
 host 主线程重新 TryResolveNativeFish，并复核冻结身份和捕获/死亡状态，通过只返回 DryRunValidated、OperationId=0。
 状态读取前后复核 lifecycle 健康与代次，变化则撤销该次身份；同 epoch 开关观察保持世界 revision 单调。
 `FISH_ACTION_SENT` / ADMISSION / DECISION / RECEIVED 显示请求/结果及 NativeEffectsEnabled=false；未解析的目标明确拒绝。
-这个按钮只验证请求往返与有效目标，不发射鱼叉、不扣血或捕获。当前 112 项核心测试及三种 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，不证明两个游戏或 M5 成功。
+这个按钮只验证请求往返与有效目标，不发射鱼叉、不扣血或捕获。当前 134 项核心测试及三种 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，不证明两个游戏或 M5 成功。
 0.1.12-dev 的新版 Probe 与真实游戏场景切换仍未执行验收；主菜单启动和初始 RouteInputs 不能代替这些行为。
 
 可复现元数据研究：`scripts/Inspect-FishInteractionApi.ps1`。确认鱼自身覆写 HookedByProjectile(ProjectileInfo) 和 WinFromProjectileinFight，

@@ -24,6 +24,9 @@ $arguments = @('-nostdlib+', '-target:exe', '-langversion:9.0', '-deterministic+
 $arguments += $references | ForEach-Object { '-reference:"' + $_ + '"' }
 $arguments += Get-ChildItem -LiteralPath (Join-Path $projectRoot 'src\DaveCoop\Core') -Filter '*.cs' -File -Recurse |
     Sort-Object FullName | ForEach-Object { '"' + $_.FullName + '"' }
+$arguments += @('MapChoiceController.cs', 'MapSelectionCallObservation.cs') | ForEach-Object {
+    '"' + (Join-Path $projectRoot ('src\DaveCoop\Networking\' + $_)) + '"'
+}
 $arguments += Get-ChildItem -LiteralPath (Join-Path $projectRoot 'tests\DaveCoop.Core.Tests') -Filter '*.cs' -File -Recurse |
     Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } | Sort-Object FullName | ForEach-Object { '"' + $_.FullName + '"' }
 $responsePath = Join-Path $outputRoot 'compile.rsp'

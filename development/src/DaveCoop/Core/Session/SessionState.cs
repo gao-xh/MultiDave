@@ -64,6 +64,9 @@ namespace DaveCoop.Core.Session
         public bool HasClockEstimate { get; internal set; }
         public double RemoteClockOffsetSeconds { get; internal set; }
         public double RoundTripSeconds { get; internal set; }
+        public long MapChoiceGeneration { get; internal set; }
+        public long MapChoiceRevision { get; internal set; }
+        public string MapChoiceFingerprint { get; internal set; }
     }
 
     public sealed class SessionEvent

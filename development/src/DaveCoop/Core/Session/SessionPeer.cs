@@ -98,6 +98,55 @@ namespace DaveCoop.Core.Session
             lock (_gate) return _machine.TryTakeRemoteWorld(out snapshot);
         }
 
+        public bool PublishMapRoute(MapRouteSelection route)
+        {
+            lock (_gate)
+            {
+                try
+                {
+                    bool accepted = _machine.PublishMapRoute(route, Now);
+                    if (accepted) SignalWriter();
+                    return accepted;
+                }
+                catch (ProtocolException error) { Terminate(error.Message); throw; }
+            }
+        }
+
+        public bool PublishMapIgpChoice(MapIgpChoice choice)
+        {
+            lock (_gate)
+            {
+                try
+                {
+                    bool accepted = _machine.PublishMapIgpChoice(choice, Now);
+                    // A false queue-overflow result still queued a retirement.
+                    // Wake the writer to make that cancellation observable.
+                    SignalWriter();
+                    return accepted;
+                }
+                catch (ProtocolException error) { Terminate(error.Message); throw; }
+            }
+        }
+
+        public bool RetireMapChoices(string reason)
+        {
+            lock (_gate)
+            {
+                try
+                {
+                    bool accepted = _machine.RetireMapChoices(reason, Now);
+                    if (accepted) SignalWriter();
+                    return accepted;
+                }
+                catch (ProtocolException error) { Terminate(error.Message); throw; }
+            }
+        }
+
+        public bool TryTakeRemoteMapChoices(out MapChoiceSnapshot choices)
+        {
+            lock (_gate) return _machine.TryTakeRemoteMapChoices(out choices);
+        }
+
         public bool PublishFishAction(FishActionRequest request)
         {
             lock (_gate)

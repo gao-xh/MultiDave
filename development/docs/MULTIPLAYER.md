@@ -1,6 +1,6 @@
 # 第二角色与传输层
 
-当前源码 `0.1.13-dev`、协议 4，编译及 112/112 核心测试通过，本轮未部署/启动。
+当前源码 `0.1.14-dev`、协议 5，Build 警告视为错误通过、Test-Core 134/134 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 `0.1.11-dev`。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，主菜单启动通过不扩展为玩法验收。
@@ -13,7 +13,7 @@ M2 在 0.1.2-dev 的真实潜水中通过基础验收。M3 会话/资源键/布�
 0.1.7-dev 用户确认预览鱼可见但会突然消失；日志定位到角色临时部件销毁触发自动断开。
 0.1.8-dev 已修复该失败路径但仍自动换鱼。0.1.9-dev 锁定目标，用户确认不再突然消失；动画、Disconnect/返航及两游戏验收待完成。
 启动证据见 `../logs/network-bootstrap-verification.json`，海洋同步、探针和一条鱼显示诊断见 [WORLD_SYNC](WORLD_SYNC.md)。
-当前构建边界见 [地图选择调用摘要](../logs/map-selection-call-build-verification.json)，已安装 0.1.12-dev 见 [操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史 0.1.11-dev 潜水边界见 [鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
+当前边界见 [地图选择传输构建摘要](../logs/map-choice-transport-build-verification.json)，0.1.13 历史构建见 [地图选择调用摘要](../logs/map-selection-call-build-verification.json)，已安装 0.1.12-dev 见 [操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史 0.1.11-dev 潜水边界见 [鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
 
 ## M2 显示对象
 
@@ -54,7 +54,7 @@ F10 停用/重建与返航清理有日志，用户确认可见并正常模仿动
 游戏适配器在主线程处理已验证的数据，0.1.5-dev 已实际执行本机 TCP 路径；跨机器运行验证待完成。
 
 - Hello/Welcome 验证协议、Mod、Steam Build 和 Unity 版本，分配房主 1 / 客机 2。
-  当前源码协议版本 4 新增 FishActionRequest/FishActionResult，保留历史协议 3 的 WorldSlice/鱼显示描述，握手拒绝协议 3。
+  当前源码协议版本 5 新增 MapRouteSlice/MapIgpChoice/MapChoiceRetire，保留协议 4 的 FishActionRequest/FishActionResult 和协议 3 的 WorldSlice/鱼显示描述，握手拒绝旧协议 4。
 - 房间使用会话 GUID；每个方向使用连续序号，重复或跳号关闭连接。
 - 使用 4 字节小端长度前缀，消息最大 128 KiB，循环读取支持 TCP 拆包。
 - 发送互斥，避免并发消息字节交错；无效出站消息不占用序号。
@@ -72,9 +72,13 @@ F10 停用/重建与返航清理有日志，用户确认可见并正常模仿动
   世界发送最多保留已开始的一批和下一批最新清单，接收最多保留一批拼装和最新完整清单。
   发布/接收快照深拷贝，防止调用方修改已排队的数据。
 - 操作使用独立 FIFO：入站请求最多 16、出站动作/结果 32、入站结果 32、guest outstanding 32，不覆盖旧意图。
-  请求源自握手绑定玩家，结果与 guest 自己 outstanding 的元数据/指纹精确核对；控制/心跳优先，动作与姿态/世界公平轮转。
+  请求源自握手绑定玩家，结果与 guest 自己 outstanding 的元数据/指纹精确核对；控制/心跳优先，动作与姿态/世界/地图四路公平轮转。
   旧 epoch 或非 Ready 请求交给房主 Gate 消费 ID 并明确拒绝；未来 epoch、错误当前场景和冒充来源拒绝。
   正常 pause/场景切换期间旧发布在会话锁内返回 false，保留连接；take 后切换不把旧请求/结果重发进新场景。
+- 地图选择独立 FIFO 最多 32 包，路线每片 8 场景、最多 4 片；只由 host 发布、guest 接收，沿用握手 Room，单包单 payload 且小于 131072 字节。
+  generation/revision 独立于 scene epoch，可在 WaitingForScene 传输；不改变 Ready、场景确认或 authority flags。新路线整批校验后原子入队并取消旧未发 batch；新代次首片先撤旧路线，完整拼装才提交。
+  完整路线后 IGP revision 连续，同组新修订覆盖旧项，不猜完整 IGP 集合。地图队列满主动清队列并通过控制 MapChoiceRetire 撤销，重复 inactive Retire 返回 false，之后路线另开新 generation。
+  普通场景/帧清理保留 preload 候选；显式 Retire 保留房间 generation 高水位，Close 清 source、assembler 和接收 mailbox。合法旧或已退休 choice 取消返回 false；未来/当前冲突、错误方向/Room 与畸形数据 fail closed。
 - 房主提出 SceneChange，客机核对场景键和世界指纹后 Ack，房主 Commit。
   双方 Ready 前不发送移动帧；同名场景但不同指纹不能通过。
 - 房主加载时 Suspend；客机已确认的场景失效时 Pause，房主重新分配 epoch。
@@ -87,7 +91,7 @@ F10 停用/重建与返航清理有日志，用户确认可见并正常模仿动
 
 Unity 场景句柄和对象实例 ID 只用于本机生命周期；不能作为跨机器实体身份。
 场景名称相同也不证明地图相同，M4 仍需真实地图选择/生成与世界状态验证。
-下一步是实机运行该适配器，再验证两个游戏实例及跨机资源键。
+下一步补本地原生选择 origin/代次与跨机地址证据，接入加载前房主选择采用和客机临时状态/生成/AI 隔离，再验证两个游戏实例及跨机资源键。
 
 ## 精灵资源键准备
 
@@ -136,6 +140,10 @@ Unity 场景句柄和对象实例 ID 只用于本机生命周期；不能作为�
   全进程 1024 条、queue 64，非 main 跳过 native 读取；空选择/截断/读取错误明确，不保留 native wrapper；Disconnect 关闭并卸载自己的 Observer。
   RouteFingerprint 只属于 MapRouteSelection，不是完整 IGP manifest；factory 不证明实际请求/完成，尚无所有选择先于所有加载的统一屏障，未共享/采用地图或调用选图/load/save 写入。
   两处 IsInitDone 改读直接 backing field，完整加载后选择门槛未放宽；新 observer 仅编译通过，原生回调与卸载仍待实机。
+- 0.1.14-dev 的 MapChoiceController 将 host 自然观察转成协议 5 候选；Observer 默认关闭，发布须绑定房间，独立于鱼 Transmit 和 Ready。
+  cache/restore 即使同指纹也创建新 generation，SceneLoader 同指纹仅去重。callbackFloor 挡住绑定/撤销前已排队的旧观察；copy 错误/丢失/Truncated 主动撤销，未绑定 IGP 不缓存。
+  已发布组再次空/unknown 返回时撤销候选，未知新组空值仍 Unbound。DTO 无原生 controller/context 代次证据，迟到同 scene/address 的旧原生回调仍可附当前候选；NativeGenerationBound=false。
+  MAP_CHOICE_* 和 NETWORK_STATE 分别记录发布/接收/撤销及候选代次，所有 Snapshot 只为 evidence、HostSelectionApplied=false；它们不能填补 MapAuthorityReady/GuestStateIsolated。新版未部署/启动，原生 ABI 与两游戏均待验。
 
 0.1.11-dev 实际 A03_01_02 已记录 49 条 Loopback Ready 概要、53 条 FishWorld 状态，观察/绑定/可显示/可见最大 16，
 网格顶点 662，未知/缺 Visual/显示错误为零。用户确认成对偏移鱼可见，捕获原鱼时副本同时消失，
@@ -177,7 +185,7 @@ DAVECOOP_LAYOUT_READY / WARNING。真实验证至少覆盖本机显示、双机�
 dotnet run --project development/tests/DaveCoop.Core.Tests/DaveCoop.Core.Tests.csproj
 ```
 
-本机当前已通过 112 项测试，覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
+本机当前已通过 134/134 项测试。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
 JSON 数字结构往返、错误数据拒绝、拆包/截断、TCP 双端握手及双向快照、
 版本不匹配、并发发送、重复序号、连接关闭和读取取消；另覆盖场景握手与不一致超时、
 旧 epoch 清理、客机重载、身份/权限错误、时钟偏移、深拷贝与队列上限、
@@ -196,12 +204,15 @@ JSON 数字结构往返、错误数据拒绝、拆包/截断、TCP 双端握手�
 新增路线用例覆盖有效完整路线没有 groups 时仍不能成为完整 manifest、断链/畸形边界、深复制、排序/文化/正负零规范指纹，以及旧完整 manifest 黄金指纹兼容；不执行原生地图回调。
 操作用例覆盖 6 种意图 schema、规范指纹/复制、来源冒充、同键冲突、pending/terminal 重复、缓存淘汰后重放、
 业务拒绝 ID 消费、scene/room 失效、FIFO/限流/新鲜事实、目标池代次退休、装备/空间/阶段许可、派发租约与原生未知不重试。
-协议/会话用例另覆盖单 payload、协议 3 拒绝、方向/来源权限、guest outstanding 与结果指纹/operation 核对、动作队列上限和公平调度。
+协议/会话用例另覆盖单 payload、旧协议拒绝、方向/来源权限、guest outstanding 与结果指纹/operation 核对、动作队列上限和公平调度。
 三种本机 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，只证明实际网络流的请求/结果及场景失效行为，不执行原生攻击/捕获，也不等于真实游戏切换或两游戏验收。
+地图夹具覆盖 8 场景分片/原子拼装、复制所有权、独立代次与连续修订、同组更新、旧批次打断、32 包 FIFO、溢出/重复撤销、Room/方向/冲突拒绝、四路公平、场景保留/关房清理，以及真实 TCP 完整路线/选择/撤销和协议 4 拒绝。
+4 项源适配测试由 Test-Core 与测试 csproj 编译实际 MapChoiceController/MapSelectionCallObservation，仅替代 logger，用 synthetic DTO 与实际回环 TCP 执行候选路径。自然边界、callbackFloor、未绑定选择和失效撤销不构成原生 origin 证明；没有运行 NativeHook。
 这些测试使用同一进程中的两个真实回环 TCP 端点，没有运行两份游戏实例。
 
 ## 尚需完成
 
 M3 游戏适配实机验证与双游戏移动同步、M4 地图/实体、
 M5 捕鱼/伤害/拾取、M6 临时客机进度与返航结算、M7 两机器和首次冷安装均未完成。
+M4 下一步是本地来源/代次与跨机地址确认后的实际选择采用和客机原生隔离；当前地图快照一直为 ObservationOnly=true/HostSelectionApplied=false。
 持续目标保留完整双人潜水闭环，不能以回放、TCP 测试或同名场景代替完成验收。

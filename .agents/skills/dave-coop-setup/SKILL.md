@@ -55,7 +55,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   请用户确认标签下方的鱼可见及动画/转向正常，并核对捕获后移除、断线与返航清理、本地输入/镜头。
   组件启用、镜头内、网格顶点和标签分别是不同证据，仅有标签不能证明鱼网格可见。
   0.1.7-dev 用户确认鱼可见但会突然消失；0.1.8-dev 无旧异常但标签换鱼；0.1.9-dev 已获用户确认不再突然消失；单游戏显示不能证明客机地图/鱼群/AI 接管或合作捕获。
-  当前协议为 4，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
+  当前协议为 5，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
   `development/scripts/Inspect-FishRenderApi.ps1` 可复现游戏/Spine 显示与生命周期接口签名研究。
 - 0.1.6-dev 在房主开启鱼诊断且发布状态时安装自己的生命周期观察挂钩。
   核对 FISH_LIFECYCLE_READY 及 NETWORK_STATE 中 FishLifecycleHooks/Tracked/Transitions/CallbackErrors；
@@ -90,7 +90,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   用户确认成对鱼可见、捕获原鱼同步移除显示，关闭显示恢复正常，操作/镜头正常。
   Win/Pickup未见回调，MAP_SELECTION返回Selected route incomplete；完整捕获收益链和正常返航保存仍待验证。
   真实范围详见fish-world-interaction-native-verification.json，不把部分注册/ABI通过推广为全部鱼型或合作捕鱼。
-- 0.1.12-dev 增加独立的鱼操作请求/结果 FIFO，协议升至4；当前109项CLR/TCP测试通过。
+- 0.1.12-dev 增加独立的鱼操作请求/结果 FIFO，协议升至4；该历史构建109项CLR/TCP测试通过。
   正常退出后部署、确认本次进程版本，再 F11 → Local test，开启 Transmit read-only fish observations
   和 Preview one received fish；点击 Check selected fish target，核对 FISH_ACTION_SENT/ADMISSION/DECISION/RECEIVED。
   ProbeTarget 的 DryRunValidated 只证明房主主线程重查了当前epoch/编号/池代次且鱼未死亡或捕获；
@@ -103,7 +103,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   不调用选图/加载/存档写入，完整路线和双游戏世界接管仍待验证；新版原生目标检查须另有实际结果日志。
   新构建及启动证据见fish-action-gate-build-verification.json；最近完整潜水证据保持0.1.11。
 - 源码0.1.13-dev新增共享MapRouteSelection与默认关闭的Observe map selection calls；112项核心测试及编译通过。
-  此版本当前未部署/未启动，实机最新启动保持0.1.12、完成潜水记录保持0.1.11；先读HANDOFF确认实际版本。
+  此历史构建未部署/未启动，实机最新启动保持0.1.12、完成潜水记录保持0.1.11；先读HANDOFF确认实际版本。
   用户暂不方便试玩时继续准备代码，不把编译或旧会话当新版原生验证。
   正常退出后部署并确认新版加载，若验证此功能，应在入海前F11开启Observe map selection calls。
   该观察独立于TCP/Transmit，核对MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE。
@@ -114,6 +114,18 @@ description: Configure or continue development of the MultiDave prototype for Wi
   控制器路径仍未验证跨机稳定，不能据候选推断同一海洋或全选择先于全加载；没有地图采用或游戏/存档写入。
   Disconnect会关闭开关、卸载自己的owner并清CLR队列，核对MAP_SELECTION_HOOKS_STOPPED、后续操作及正常返航保存。
   原生ABI、实际返回项复制、加载顺序及新版画面都待实机；摘要见map-selection-call-build-verification.json。
+- 源码0.1.14-dev新增房主地图选择候选通道，协议5；当前构建和精确测试总数见map-choice-transport-build-verification.json。
+  最新安装仍0.1.12，最近完成潜水记录仍0.1.11；新源码未部署/未启动，用户试玩延后时继续独立工作。
+  入海前先建Host/Join或Local test，再开启Observe map selection calls；路线cache/restore自然回调开启新代次。
+  路线每片8场景、最多4片完整收齐后提交，随后IGP选择连续修订；WaitingForScene可传，不升级Ready或世界权限。
+  32包FIFO与动作/移动/世界四路公平调度；队列满或观察停止/丢失/读取错误/截断时房主显式撤销。
+  核对MAP_CHOICE_BOUND/ROUTE_SENT/CHOICE_SENT/RECEIVED/RETIRED及NETWORK_STATE的MapChoice统计。
+  缓存/恢复即使同指纹也为新代次，普通scene切换保留选择；新代次首片撤旧路线，Disconnect清本房证据。
+  已排队旧回调由callbackFloor拒绝，无路线/控制器绑定的IGP不缓冲；同组后续空结果撤销旧候选。
+  客机关闭自己的本地观察不会撤销房主证据。自然回调、跨机地址与原生来源代次仍待验证；
+  新路线之后迟到的旧原生controller可能同名/同地址，候选代次不能证明native origin，NativeGenerationBound=false。
+  HostSelectionApplied始终false；未实现客机地图采用、原生鱼AI隔离、实际捕鱼或正常返航闭环。
+  核心夹具编译实际MapChoiceController与DTO（测试仅替代logger），不模拟或验证Unity原生hook行为。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

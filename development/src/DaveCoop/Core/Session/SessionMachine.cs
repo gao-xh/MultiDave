@@ -16,6 +16,7 @@ namespace DaveCoop.Core.Session
         public const int MaxRemoteFishActionResults = 32;
         public const int MaxOutstandingFishActions = 32;
         private const int MaxCompletedFishActions = 32;
+        public const int MaxOutgoingMapPackets = 32;
         private sealed class LocalAction
         {
             public FishActionRequest Request;
@@ -63,6 +64,19 @@ namespace DaveCoop.Core.Session
         private readonly Dictionary<long, FishActionResult> _completedActions = new Dictionary<long, FishActionResult>();
         private readonly Queue<long> _completedActionOrder = new Queue<long>();
         private long _highestLocalActionId;
+        private readonly Queue<WirePacket> _outgoingMap = new Queue<WirePacket>();
+        private readonly Dictionary<(int Scene, string Address), MapIgpChoice> _publishedMapChoices = new Dictionary<(int, string), MapIgpChoice>();
+        private MapRouteSelection _publishedMapRoute;
+        private long _mapGeneration;
+        private long _mapRevision;
+        private string _mapFingerprint;
+        private MapChoiceAssembler _mapAssembler = new MapChoiceAssembler();
+        private MapChoiceSnapshot _incomingMapChoices;
+        private long _receivedMapGeneration;
+        private long _receivedMapRevision;
+        private string _receivedMapFingerprint;
+        private bool _receivedMapRetired;
+        private bool _receivedMapRouteComplete;
 
         public SessionMachine(SessionRole role, HandshakeResult identity, double now, SessionOptions options = null)
         {
@@ -82,7 +96,10 @@ namespace DaveCoop.Core.Session
             Role = _role, Phase = _phase, RoomId = _identity.RoomId, Reason = _reason,
             LocalPlayerId = _identity.LocalPlayerId, RemotePlayerId = _identity.RemotePlayerId,
             SceneEpoch = _epoch, SceneKey = _proposal?.SceneKey, HasClockEstimate = _hasClock,
-            RemoteClockOffsetSeconds = _offset, RoundTripSeconds = _rtt
+            RemoteClockOffsetSeconds = _offset, RoundTripSeconds = _rtt,
+            MapChoiceGeneration = _role == SessionRole.Host ? _mapGeneration : _receivedMapGeneration,
+            MapChoiceRevision = _role == SessionRole.Host ? _mapRevision : _receivedMapRevision,
+            MapChoiceFingerprint = _role == SessionRole.Host ? (_publishedMapRoute == null ? null : _mapFingerprint) : _receivedMapFingerprint
         };
 
         public void SetLocalScene(SceneDescriptor scene, double now)
@@ -216,6 +233,21 @@ namespace DaveCoop.Core.Session
                     RequireRole(SessionRole.Guest);
                     ReceiveFishActionResult(packet.ActionResult);
                     break;
+                case PacketKind.MapRouteSlice:
+                    RequireRole(SessionRole.Guest);
+                    PacketCodec.ValidateMapPayload(() => _mapAssembler.AcceptRoute(packet.MapRoute));
+                    RefreshReceivedMapChoices();
+                    break;
+                case PacketKind.MapIgpChoice:
+                    RequireRole(SessionRole.Guest);
+                    PacketCodec.ValidateMapPayload(() => _mapAssembler.AcceptChoice(packet.MapChoice));
+                    RefreshReceivedMapChoices();
+                    break;
+                case PacketKind.MapChoiceRetire:
+                    RequireRole(SessionRole.Guest);
+                    PacketCodec.ValidateMapPayload(() => _mapAssembler.Retire(packet.MapRetire));
+                    RefreshReceivedMapChoices();
+                    break;
                 case PacketKind.Leave:
                     Close("Peer left: " + packet.Reason);
                     break;
@@ -244,9 +276,9 @@ namespace DaveCoop.Core.Session
             if (_controls.Count > 0) { packet = _controls.Dequeue(); return true; }
             // Controls/heartbeats precede gameplay. Each populated gameplay
             // lane receives a turn; action FIFO cannot overwrite older intent.
-            for (int offset = 0; offset < 3; offset++)
+            for (int offset = 0; offset < 4; offset++)
             {
-                int lane = (_nextGameplayLane + offset) % 3;
+                int lane = (_nextGameplayLane + offset) % 4;
                 if (lane == 0 && _outgoingActions.Count > 0)
                     packet = _outgoingActions.Dequeue();
                 else if (lane == 1 && _outgoingFrame != null)
@@ -256,8 +288,10 @@ namespace DaveCoop.Core.Session
                     packet = new WirePacket { Kind = PacketKind.WorldSlice, RoomId = _identity.RoomId, World = _outgoingWorld[_nextWorldSlice++] };
                     if (_nextWorldSlice == _outgoingWorld.Length) { _outgoingWorld = _pendingWorld; _pendingWorld = null; _nextWorldSlice = 0; }
                 }
+                else if (lane == 3 && _outgoingMap.Count > 0)
+                    packet = _outgoingMap.Dequeue();
                 else continue;
-                _nextGameplayLane = (lane + 1) % 3; return true;
+                _nextGameplayLane = (lane + 1) % 4; return true;
             }
             packet = null; return false;
         }
@@ -320,6 +354,125 @@ namespace DaveCoop.Core.Session
         {
             result = _incomingActionResults.Count == 0 ? null : _incomingActionResults.Dequeue();
             return result != null;
+        }
+
+        public bool PublishMapRoute(MapRouteSelection route, double now)
+        {
+            CheckTime(now); RequireRole(SessionRole.Host);
+            if (_phase == SessionPhase.Closed) return false;
+            if (_mapGeneration == long.MaxValue) throw new ProtocolException("Map choice generation exhausted.");
+            MapRouteSelection owned = MapCopy(() => MapSelections.CopyRoute(route));
+            MapRouteSlice[] slices = MapCopy(() => MapChoiceFrames.SplitRoute(owned, _mapGeneration + 1));
+            // Prepare every owned packet before canceling the old batch or
+            // publishing a new generation. No partially queued route is possible.
+            if (slices.Length > MaxOutgoingMapPackets) return false;
+            var packets = new WirePacket[slices.Length];
+            for (int i = 0; i < slices.Length; i++)
+            {
+                packets[i] = new WirePacket { Kind = PacketKind.MapRouteSlice, RoomId = _identity.RoomId, MapRoute = slices[i] };
+                ValidateOutgoingMapPacket(packets[i]);
+            }
+            _outgoingMap.Clear();
+            foreach (WirePacket packet in packets) _outgoingMap.Enqueue(packet);
+            _mapGeneration++; _mapRevision = 0; _mapFingerprint = slices[0].RouteFingerprint;
+            _publishedMapRoute = owned; _publishedMapChoices.Clear();
+            // A packet already taken by the single writer precedes this new
+            // generation on TCP. Its first slice invalidates the old candidate.
+            return true;
+        }
+
+        public bool PublishMapIgpChoice(MapIgpChoice choice, double now)
+        {
+            CheckTime(now); RequireRole(SessionRole.Host);
+            if (_phase == SessionPhase.Closed) return false;
+            MapIgpChoice owned = MapCopy(() => MapChoiceFrames.Copy(choice));
+            if (owned.Generation < _mapGeneration) return false;
+            if (owned.Generation > _mapGeneration || owned.RouteFingerprint != _mapFingerprint)
+                throw new ProtocolException("Local IGP choice does not match the published map generation/fingerprint.");
+            if (_publishedMapRoute == null) return false;
+            if (_mapRevision == long.MaxValue || owned.Revision != _mapRevision + 1)
+                throw new ProtocolException("Local IGP choice revision must advance continuously.");
+            bool knownScene = false;
+            foreach (MapRouteScene scene in _publishedMapRoute.Scenes)
+                if (scene.SceneId == owned.SceneId) { knownScene = true; break; }
+            if (!knownScene) throw new ProtocolException("Local IGP choice targets a scene outside the published route.");
+            var key = (owned.SceneId, owned.ControllerAddress);
+            if (!_publishedMapChoices.ContainsKey(key) && _publishedMapChoices.Count >= MapChoiceFrames.MaxChoices)
+                return RetireOverflowedMap("Map choice group capacity exceeded.", now);
+            if (_outgoingMap.Count >= MaxOutgoingMapPackets)
+                return RetireOverflowedMap("Map choice send queue full.", now);
+            var packet = new WirePacket { Kind = PacketKind.MapIgpChoice, RoomId = _identity.RoomId, MapChoice = owned };
+            ValidateOutgoingMapPacket(packet);
+            _outgoingMap.Enqueue(packet); _publishedMapChoices[key] = owned; _mapRevision = owned.Revision;
+            return true;
+        }
+
+        // Retirement is a control packet: cancel pending slices/choices, retain
+        // the room's generation high water, and send before any later generation.
+        public bool RetireMapChoices(string reason, double now)
+        {
+            CheckTime(now); RequireRole(SessionRole.Host);
+            if (_phase == SessionPhase.Closed || _publishedMapRoute == null) return false;
+            MapChoiceRetire notice = MapCopy(() => MapChoiceFrames.Copy(new MapChoiceRetire { Generation = _mapGeneration, Reason = reason }));
+            var packet = new WirePacket { Kind = PacketKind.MapChoiceRetire, RoomId = _identity.RoomId, MapRetire = notice };
+            ValidateOutgoingMapPacket(packet);
+            // If the control bound is full, the peer terminates on this explicit
+            // protocol failure rather than hiding an untransmitted retirement.
+            Queue(packet);
+            _outgoingMap.Clear(); _publishedMapRoute = null; _publishedMapChoices.Clear();
+            // Keep the retired fingerprint internally so a legitimate delayed
+            // same-generation callback cancels; a forged current fingerprint
+            // still fails validation. Snapshot exposes null for retired sources.
+            return true;
+        }
+
+        private bool RetireOverflowedMap(string reason, double now)
+        {
+            RetireMapChoices(reason, now);
+            return false;
+        }
+
+        public bool TryTakeRemoteMapChoices(out MapChoiceSnapshot choices)
+        {
+            RequireRole(SessionRole.Guest);
+            choices = _incomingMapChoices; _incomingMapChoices = null;
+            return choices != null;
+        }
+
+        private void RefreshReceivedMapChoices()
+        {
+            MapChoiceSnapshot snapshot = MapCopy(() => _mapAssembler.Snapshot);
+            bool complete = snapshot.Route != null;
+            if (snapshot.Generation == _receivedMapGeneration && snapshot.LastChoiceRevision == _receivedMapRevision &&
+                snapshot.Retired == _receivedMapRetired && complete == _receivedMapRouteComplete) return;
+            _receivedMapGeneration = snapshot.Generation; _receivedMapRevision = snapshot.LastChoiceRevision;
+            _receivedMapFingerprint = snapshot.Retired ? null : snapshot.RouteFingerprint;
+            _receivedMapRetired = snapshot.Retired; _receivedMapRouteComplete = complete;
+            // Assembly consumes every FIFO revision. Only the latest owned state
+            // waits for the adapter; partial new routes revoke old usable state.
+            _incomingMapChoices = snapshot;
+        }
+
+        private static T MapCopy<T>(Func<T> copy)
+        {
+            try { return copy(); }
+            catch (ArgumentException error) { throw new ProtocolException("Invalid map choice data: " + error.Message); }
+        }
+
+        private static void ValidateOutgoingMapPacket(WirePacket packet)
+        {
+            packet.Sequence = 1;
+            try { PacketCodec.Encode(packet); }
+            finally { packet.Sequence = 0; }
+        }
+
+        private void ClearMapChoices()
+        {
+            _outgoingMap.Clear(); _publishedMapRoute = null; _publishedMapChoices.Clear();
+            _mapGeneration = 0; _mapRevision = 0; _mapFingerprint = null;
+            _mapAssembler = new MapChoiceAssembler(); _incomingMapChoices = null;
+            _receivedMapGeneration = 0; _receivedMapRevision = 0; _receivedMapFingerprint = null;
+            _receivedMapRetired = false; _receivedMapRouteComplete = false;
         }
 
         private void ReceiveFishActionResult(FishActionResult result)
@@ -399,7 +552,7 @@ namespace DaveCoop.Core.Session
         public void Close(string reason)
         {
             if (_phase == SessionPhase.Closed) return;
-            _controls.Clear(); ClearFrames(); _proposal = null; _localScene = null;
+            _controls.Clear(); ClearFrames(); ClearMapChoices(); _proposal = null; _localScene = null;
             ChangePhase(SessionPhase.Closed, reason ?? "Connection closed.");
         }
 

@@ -10,12 +10,13 @@ namespace DaveCoop.Core.Protocol
         Hello = 1, Welcome = 2, Reject = 3, PlayerFrame = 10,
         SceneChange = 20, SceneAck = 21, SceneCommit = 22, SceneSuspend = 23, ScenePause = 24,
         Ping = 30, Pong = 31, Leave = 40, WorldSlice = 50,
-        FishActionRequest = 60, FishActionResult = 61
+        FishActionRequest = 60, FishActionResult = 61,
+        MapRouteSlice = 70, MapIgpChoice = 71, MapChoiceRetire = 72
     }
 
     public sealed class PeerIdentity
     {
-        public int ProtocolVersion { get; set; } = 4;
+        public int ProtocolVersion { get; set; } = 5;
         public string ModVersion { get; set; }
         public string SteamBuildId { get; set; }
         public string UnityVersion { get; set; }
@@ -81,6 +82,9 @@ namespace DaveCoop.Core.Protocol
         public WorldSlice World { get; set; }
         public FishActionRequest ActionRequest { get; set; }
         public FishActionResult ActionResult { get; set; }
+        public MapRouteSlice MapRoute { get; set; }
+        public MapIgpChoice MapChoice { get; set; }
+        public MapChoiceRetire MapRetire { get; set; }
     }
 
     public sealed class ProtocolException : Exception

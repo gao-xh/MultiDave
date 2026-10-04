@@ -61,7 +61,8 @@ namespace DaveCoop.Core.Protocol
             int payloads = (packet.Hello == null ? 0 : 1) + (packet.Welcome == null ? 0 : 1) +
                 (packet.Reason == null ? 0 : 1) + (packet.Frame == null ? 0 : 1) +
                 (packet.Scene == null ? 0 : 1) + (packet.Clock == null ? 0 : 1) + (packet.World == null ? 0 : 1) +
-                (packet.ActionRequest == null ? 0 : 1) + (packet.ActionResult == null ? 0 : 1);
+                (packet.ActionRequest == null ? 0 : 1) + (packet.ActionResult == null ? 0 : 1) +
+                (packet.MapRoute == null ? 0 : 1) + (packet.MapChoice == null ? 0 : 1) + (packet.MapRetire == null ? 0 : 1);
             if (payloads != 1) throw new ProtocolException("Expected exactly one packet payload.");
             switch (packet.Kind)
             {
@@ -94,6 +95,15 @@ namespace DaveCoop.Core.Protocol
                 case PacketKind.FishActionResult:
                     RequireGuid(packet.RoomId); FishActions.ValidateResult(packet.ActionResult);
                     if (packet.ActionResult.PlayerId != 2) throw new ProtocolException("Fish action results must address the guest.");
+                    break;
+                case PacketKind.MapRouteSlice:
+                    RequireGuid(packet.RoomId); ValidateMapPayload(() => MapChoiceFrames.Validate(packet.MapRoute));
+                    break;
+                case PacketKind.MapIgpChoice:
+                    RequireGuid(packet.RoomId); ValidateMapPayload(() => MapChoiceFrames.Validate(packet.MapChoice));
+                    break;
+                case PacketKind.MapChoiceRetire:
+                    RequireGuid(packet.RoomId); ValidateMapPayload(() => MapChoiceFrames.Validate(packet.MapRetire));
                     break;
                 case PacketKind.SceneChange:
                 case PacketKind.SceneAck:
@@ -148,6 +158,12 @@ namespace DaveCoop.Core.Protocol
 
         private static bool Bound(float value, float limit) => Math.Abs(value) <= limit;
         private static bool ColorValue(float value) => float.IsFinite(value) && value >= 0 && value <= 4;
+
+        internal static void ValidateMapPayload(Action validate)
+        {
+            try { validate(); }
+            catch (ArgumentException error) { throw new ProtocolException("Invalid map choice payload: " + error.Message); }
+        }
 
         private static void ValidateIdentity(PeerIdentity identity)
         {

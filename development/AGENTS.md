@@ -1,6 +1,6 @@
 # 开发约定
 
-- M1 玩家发现与 M2 回放基础验收通过；当前源码为 0.1.13-dev、协议 4，编译与 112/112 项核心测试通过，本轮未部署/启动。当前安装及最近新鲜启动为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
+- M1 玩家发现与 M2 回放基础验收通过；当前源码为 0.1.14-dev、协议 5，Build 警告视为错误通过、Test-Core 134/134 通过，范围见 [地图选择传输构建摘要](logs/map-choice-transport-build-verification.json)；本轮未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
 - 继续工作前阅读 `docs/HANDOFF.md`、`docs/PLAN.md` 和当前阶段的 `docs/GAME_API.md` / `docs/MULTIPLAYER.md` / `docs/WORLD_SYNC.md`；配置别人电脑时使用仓库根目录的配置 Skill。
 - 0.1.11-dev 含房主目标反向查询、冻结的本地指针/代次 CLR 快照、完整收到的活动观察鱼群显示，以及 8 个原生交互入口的只读前后成对观察。鱼清单仅玩家当前场景，每鱼最多 16 帧；缺显示或离镜头不释放数字身份，原生 AI/碰撞/收益保持原样。
 - F11 的 Display received fish roster / Observe host harpoon and fish interactions 默认关闭，房主观察仍须启用 Transmit read-only fish observations。交互在 prefix 固定绑定，postfix 复用；bool 只是原返回，HpAtDrain 只是主线程消费时读数，不代表捕获结果或授权。只卸载自己的挂钩。
@@ -10,7 +10,12 @@
 - 用户当前不方便试玩，0.1.12-dev 的手动潜水 Probe、路线和返航验证已延后；保留主菜单启动通过，不催测、不把延后算作玩法通过。
 - Transmit 开启时 MapRouteObservation 独立在入海前后最多 1Hz 读取 cache/roadmap/first、候选 bSelected 层与加载场景，MAP_ROUTE_INPUTS 仅值变化记录。cache 缺失/roadmap 缺失/first 缺失/cache 太短分别报不可用并撤销旧稳定候选；候选层不是完整清单，未调用选图、加载或保存写入。
 - 0.1.13-dev 默认关闭的 Observe map selection calls 独立于 TCP/Transmit，观察路线 cache/restore、IGP 原 __result、Prefab IEnumerator 工厂和 SceneLoader.LoadSceneAsync prefix 五处自然边界。当次回调只在确认 Unity 线程冻结有界 CLR，非 main 跳过 native 读取；全进程 1024、队列 64，空/截断/读取错误明确记录，不保留 native wrapper。Disconnect 关闭并卸载自己的 Observer。
-- 新 MapRouteSelection 的 ValidateRoute/CopyRoute/FingerprintRoute 严格校验并复制路线；RouteFingerprint 不是完整 manifest，缺 IGP 不升格完整。IGP factory 不证明真实请求/完成，未证明所有选择在所有加载前已完成，未共享/采用地图；两处 IsInitDone 改读直接 backing field，不调用原 getter。当前新构建摘要为 `logs/map-selection-call-build-verification.json`，未实机。
+- MapRouteSelection 的 ValidateRoute/CopyRoute/FingerprintRoute 严格校验并复制路线；RouteFingerprint 不是完整 manifest，缺 IGP 不升格完整。IGP factory 不证明真实请求/完成，未证明所有选择在所有加载前已完成；两处 IsInitDone 改读直接 backing field，不调用原 getter。0.1.13 历史观察构建见 `logs/map-selection-call-build-verification.json`，未实机。
+- 0.1.14-dev 的 MapRouteSlice/MapIgpChoice/MapChoiceRetire 仅传输候选：host only publish、guest only receive，握手 Room 绑定；路线每片 8 场景/最多 4 片，独立 map FIFO 32 包，动作/角色/世界/地图四路公平，控制/心跳与 retire 优先。generation/revision 独立 scene epoch，WaitingForScene 可传输但不提高 Ready 或权限。
+- 新 generation 首片撤旧路线，完整路线才原子提交，再接连续 revision 的 IGP；同组按新修订更新。普通场景/帧清理保留 preload 候选，显式 Retire 清理本代次、保留高水位，Close 清所有 map/source/mailbox。队列满主动控制撤销后返回 false；合法旧/已退休选择取消不关房，未来/当前冲突或伪造 fail closed。
+- MapChoiceController 的 cache/restore 同指纹也创建新 generation，SceneLoader 同指纹去重；copy 错误/截断/丢失主动撤销，未绑定 IGP 丢弃且不缓存；已发布组再次空/unknown 撤销候选，未知新组空仍 Unbound。callbackFloor 仅排除已排队旧观察，DTO 无原生 context/controller 代次证明；新 cache 后迟到且同 scene/address 的旧 IGP 仍可附当前候选。日志 NativeGenerationBound=false，Snapshot 一律 ObservationOnly=true/HostSelectionApplied=false；补本地 origin/代次及跨机地址证据后才可采用。
+- Test-Core 与测试 csproj 编译实际 MapChoiceController/MapSelectionCallObservation，仅替代 logger；4 项源适配夹具用 synthetic DTO 与实际回环 TCP，不运行 NativeHook、不调用游戏入口，不算原生或双游戏验收。
+- 下一步实现实际加载前房主选择采用、客机临时进度/生成与 AI 隔离，再接房主原生捕鱼及返航收益账本；不要把 CLR TCP、布局指纹或单游戏显示当 M4/M5/M6 或双游戏完成。
 - 加载后的路线/IGP 清单要求每个选中场景至少一组、查找结果与原注册列表一致，并在两个不同 Unity 帧稳定。跨机地址未验证，尚未在加载前采用房主选择；M4 接管、M5 裁定及 M6 收益未实现。构建范围见 `logs/fish-world-interaction-build-verification.json`。
 - 0.1.11-dev 的 A03_01_02 本机 TCP 已记录 49 条 Ready 概要、53 条 FishWorld 状态，观察/绑定/可显示/可见最大 16、网格顶点 662，未知资源/缺 Visual/显示错误为零。8 个交互挂钩健康，42 条事件组成 21 对 CallId，覆盖 HarpoonFire、FishHookedByProjectile、FishDamage 和 SpecialDamage，两个原 bool 为 true；Win/Pickup 未见。回调/解析/未配对/查询错误为零，地图读取失败 Selected route incomplete。Local test 的成对鱼是原鱼加偏移诊断副本，同步消失不等于捕获副本。自己的挂钩卸载与 Disconnect 有标记；用户确认主动退出且未返航，正常返航保存未验证。
 - 每次改动记录日期、目的、修改文件、执行的验证、结果、遗留问题与下一步。

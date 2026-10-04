@@ -427,3 +427,34 @@
   新版未部署/启动/安装原生挂钩；实机最近启动保持0.1.12，最近完成潜水证据保持0.1.11。
 - 更新开发/接手/网络/世界文档、配置Skill和构建/核心摘要。默认发行包仍0.1.0。
   后续验证原调用顺序与临时缓存，再实现分阶段房主选择传输/采用、客机临时状态/AI隔离、实际捕鱼和返航账本及双游戏/冷安装验收。
+
+## 2026-10-04 — 分阶段房主地图选择候选传输
+
+- 前轮0.1.13-dev共享路线/自然调用观察、112项测试、日志和Skill已推送4691e5d；本轮继续目标开发。
+  用户当前暂不方便试玩，0.1.12-dev手动Probe/潜水路线/返航保持延后；本轮未启动或部署游戏。
+  已安装DLL复核仍8F90042C…，最新启动证据保持0.1.12，最近完成潜水证据保持0.1.11；未知退出不归因崩溃/保存。
+- 源码0.1.14-dev、协议5：新增MapRouteSlice/MapIgpChoice/MapChoiceRetire三个单载荷。
+  路线每片8场景、最多4片；全路线连续/唯一/有限字段及完整指纹校验后原子提交，首个新代次分片立即撤旧候选。
+  IGP按当前候选代次和连续revision发布，同组更新保留最新项，128组/128条历史，深复制隔离。
+- SessionMachine/SessionPeer新增房主发布、客机接收的独立地图通道，WaitingForScene/epoch0可传；不提升Ready/世界权限。
+  地图FIFO32包；控制/心跳优先，动作/移动/世界/地图四路公平。所有路线分片先复制并编码校验，再取消旧批并提交新代次。
+  溢出明确Retire，清未发地图包；控制撤销优先于后来新代次，inactive重复不同reason不发第二次冲突撤销。
+  合法旧候选发布false，未来代次/当前错指纹/方向/房间/坏schema拒绝；只Close清本房所有地图状态，普通scene切换保留候选。
+- MapChoiceController将已经复制的自然回调接入候选通道。cache/restore即使同hash也建立新代次；同hash普通SceneLoad去重。
+  无route/controller绑定的原始IGP与Factory事件只计Unbound，不缓冲到后来路线；原生wrapper不进入网络/队列。
+  callbackFloor与最高序号跨关闭/BindRoom/房间保留；复制丢失、非Unity回调、ReadError或selection截断主动撤销并抬屏障。
+  评审修复IGP/SceneLoad不可用时旧候选残留，以及已观察组后续null/unknown原结果仍保留旧prefab的问题；撤销后需新的自然route才能重开。
+  Guest关闭自己的本地observer保留收到的房主候选；房主Retire才撤销远端。NETWORK_STATE/F11状态及MAP_CHOICE日志提供进度。
+- DTO抽出为唯一MapSelectionCallObservation.cs；Test-Core和测试csproj编译生产MapChoiceController及DTO，仅使用测试logger。
+  新增8项schema/assembler、10项协议/会话/TCP、4项真实adapter/TCP用例；输入是合成的已复制CLR观察，不触发Unity或原生回调。
+  首次测试编译缺Pose命名空间引用已补正；最终134/134通过，覆盖回调屏障/跨房间、无预路线缓冲、同hash新代次、连续修订、
+  截断/读取失败/同组空结果撤销与同房恢复、guest本地observer关闭、源/方向/房间/复制所有权及FIFO/四路公平/旧协议拒绝。
+- 最终Build-Plugin警告视为错误通过，SHA256：
+  `AF3CB8BE38E0402ECBA173F86C3C458CC82D6248664E16A35E58FC08729766D0`。
+  摘要见map-choice-transport-build-verification.json和core-verification.json；原始编译/测试输出只留.local/verification。
+- 严格边界：MapChoiceSnapshot始终ObservationOnly/HostSelectionApplied=false，不构成完整IGP清单、scene epoch或世界采用许可。
+  callbackFloor只能排除已排队旧观察。新route边界后迟到的旧原生controller若同名/同地址，仍可能贴当前candidate generation；
+  NativeGenerationBound=false，需补本地来源代次与跨机地址证据才可用于采用；Factory不是资源请求/完成。
+  自然原生ABI/回调/卸载、新版画面、地图采用、客机AI/临时进度隔离、实际独立鱼叉/捕获/收益、正常返航及双游戏均待验证。
+- 已更新开发/接手/网络/世界文档、构建/核心摘要及配置Skill；Skill校验通过。默认发行包保持0.1.0。
+  下一步验证原生来源与自然选择顺序，再实现加载前房主选择采用/客机隔离和实际捕鱼/结算；用户方便后执行延后的实机验证。

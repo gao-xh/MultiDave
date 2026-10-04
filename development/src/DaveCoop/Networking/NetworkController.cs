@@ -41,6 +41,11 @@ namespace DaveCoop.Networking
         private string _mapHookWarning;
         private float _nextMapObserverLog;
         private readonly FishActionController _fishActions = new FishActionController();
+        private readonly MapChoiceController _mapChoices = new MapChoiceController();
+        private long _lastMapCopyDropped;
+        private long _lastMapUnexpectedThreads;
+        private long _lastMapReadErrors;
+        private long _lastMapHookDropped;
         private string _lastRouteInputTrace;
         private float _nextRouteInputs;
         private int _routeInputsLogged;
@@ -107,6 +112,7 @@ namespace DaveCoop.Networking
                 {
                     string reason = state.Reason; Disconnect(); _message = reason; NetworkDriver.Status = "Network: " + reason; return;
                 }
+                _mapChoices.Update(_peers.Main, _peers.Loopback);
                 UpdateLocalScene();
                 state = _peers.Main.Snapshot;
                 if (state.Role != SessionRole.Host || !NetworkDriver.TransmitFishObservations.Value) _fishLifecycle.Dispose();
@@ -187,6 +193,10 @@ namespace DaveCoop.Networking
                         MapSelectionFingerprint = _lastMapSelection, MapSelectionStatus = _mapSelectionStatus,
                         MapSelectionHooks = _mapSelectionHooks.Installed, MapSelectionHooksHealthy = _mapSelectionHooks.Healthy,
                         MapSelectionCallbackErrors = _mapSelectionHooks.CallbackErrors,
+                        MapChoicePublishedRoutes = _mapChoices.PublishedRoutes, MapChoicePublishedChoices = _mapChoices.PublishedChoices,
+                        MapChoiceReceivedSnapshots = _mapChoices.ReceivedSnapshots, MapChoiceUnboundChoices = _mapChoices.UnboundChoices,
+                        MapChoiceRemoteGeneration = _mapChoices.RemoteGeneration, MapChoiceRemoteRouteScenes = _mapChoices.RemoteRouteSceneCount,
+                        MapChoiceRemoteChoices = _mapChoices.RemoteChoiceCount, HostMapSelectionApplied = false,
                         FishActionQueued = _fishActions.PendingCount, FishActionHighestRequestId = _fishActions.HighestRequestId,
                         FishActionReceived = _fishActions.ReceivedRequests, FishActionResults = _fishActions.ReceivedResults,
                         FishActionNativeLookupErrors = _fishActions.NativeLookupErrors,
@@ -395,9 +405,17 @@ namespace DaveCoop.Networking
                 _mapSelectionHooks.Enable(_mapCalls.Capture);
                 _mapSelectionHooks.CheckHealthy();
                 if (!wasInstalled) NetworkDriver.Logger.LogInfo("DAVECOOP_MAP_SELECTION_HOOKS_READY: five read-only call observers installed; original arguments/results unchanged.");
+                if (_mapCalls.Dropped > _lastMapCopyDropped || _mapCalls.UnexpectedThreads > _lastMapUnexpectedThreads ||
+                    _mapCalls.ReadErrors > _lastMapReadErrors || _mapSelectionHooks.Dropped > _lastMapHookDropped)
+                    _mapChoices.Retire(_peers?.Main, _mapSelectionHooks.ProcessAccepted, "Map observation stream became incomplete.");
+                _lastMapCopyDropped = _mapCalls.Dropped; _lastMapUnexpectedThreads = _mapCalls.UnexpectedThreads;
+                _lastMapReadErrors = _mapCalls.ReadErrors; _lastMapHookDropped = _mapSelectionHooks.Dropped;
                 int drained = 0;
                 while (drained++ < 16 && _mapCalls.TryTake(out MapSelectionCallObservation observation))
+                {
                     NetworkDriver.Logger.LogInfo("DAVECOOP_MAP_SELECTION_CALL: " + JsonSerializer.Serialize(observation));
+                    _mapChoices.Observe(observation, _peers?.Main);
+                }
                 if (Time.unscaledTime >= _nextMapObserverLog)
                 {
                     _nextMapObserverLog = Time.unscaledTime + 2;
@@ -422,6 +440,11 @@ namespace DaveCoop.Networking
         private void StopMapSelectionCalls()
         {
             bool hadObserver = _mapCalls != null || _mapSelectionHooks.Installed;
+            if (hadObserver)
+            {
+                try { _mapChoices.Retire(_peers?.Main, _mapSelectionHooks.ProcessAccepted, "Map observation stopped."); }
+                catch (Exception error) { ReportMapHookError(error); }
+            }
             _mapCalls?.Stop(); _mapCalls = null;
             try
             {
@@ -574,7 +597,7 @@ namespace DaveCoop.Networking
             if (GUI.Button(new Rect(24, 530, 220, 26), "Check selected fish target")) _fishActions.SubmitProbe(guest, _fishPreview.SelectedEntity);
             GUI.enabled = originalEnabled;
             GUI.Label(new Rect(256, 530, 380, 26), _fishActions.Status);
-            GUI.Label(new Rect(24, 565, 612, 65), _message);
+            GUI.Label(new Rect(24, 565, 612, 65), _message + "\n" + _mapChoices.Status);
         }
 
         private void Start(string mode)
@@ -625,6 +648,7 @@ namespace DaveCoop.Networking
             Task<Peers> finished = _pending; _pending = null;
             _peers = finished.GetAwaiter().GetResult();
             _fishActions.BindRoom(_peers.Main);
+            _mapChoices.BindRoom(_peers.Main, _mapSelectionHooks.ProcessAccepted);
             RemotePreview.NetworkActive = true;
             _nextOwnerCheck = 0; _nextCapture = 0; _lastError = null;
             NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_CONNECTED: " + (_peers.Loopback == null ? _peers.Main.Snapshot.Role.ToString() : "local TCP diagnostic; one game process"));
@@ -669,6 +693,7 @@ namespace DaveCoop.Networking
             _fishWorld.Clear("Disconnected"); _fishWorldWarning = null; _fishInteractions.Dispose();
             _mapSelection?.Clear(); _lastMapSelection = null; _mapSelectionStatus = null;
             _fishActions.Clear();
+            _mapChoices.Clear(_mapSelectionHooks.ProcessAccepted);
             RemotePreview.NetworkActive = false;
             NetworkDriver.Status = "Network: offline (F11)"; _message = "Disconnected.";
             if (hadSession) NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_DISCONNECTED: peers disposed; own avatar/fish display cleared; local replay restored.");

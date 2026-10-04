@@ -6,7 +6,7 @@
 自定义插件加载、Unity Update 回调，以及 `DR_Start`、`DR_Logo`、`DR_Title` 场景读取。
 插件日志证据见 `../logs/bootstrap-verification.log`。
 
-开发在 `codex/player-discovery` 分支，当前源码为 `0.1.13-dev`、协议 4，编译及 112/112 项核心测试通过，本轮未部署/启动。
+开发在 `codex/player-discovery` 分支，当前源码为 `0.1.14-dev`、协议 5，Build 警告视为错误通过、Test-Core 134/134 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 最近完成潜水验证的是 `0.1.11-dev`。
 新版单游戏 TCP 偏移鱼群可见和原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
@@ -24,11 +24,11 @@
 旧 M1 会话完整日志最终为 1886 条快照，记录 Boss 返回潜水、返航大厅及主菜单，无探针错误。
 M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态中原生玩家数为 1，
 摄像机均绑定本地玩家，F10 停用/重建及返航清理有日志，无警告，基础验收通过。
-新增纯 CLR 姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询、鱼群缓冲、路线/IGP 清单、交互绑定观察、操作门禁及独立路线描述，当前 112 项测试通过。
+新增纯 CLR 姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询、鱼群缓冲、路线/IGP 清单、交互绑定观察、操作门禁、独立路线描述及分阶段地图选择传输；最终验证范围见 [地图选择传输构建摘要](../logs/map-choice-transport-build-verification.json)。
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
 0.1.4-dev 引入默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，0.1.5-dev 加入一条鱼的 Sprite/Spine 显示验证入口。
-当前源码协议版本为 4，拒绝旧协议 3；WorldSlice 保持每块最多 16 个实体，新增 FishActionRequest/FishActionResult 独立通道。
+当前源码协议版本为 5，拒绝旧协议 4；WorldSlice 保持每块最多 16 个实体，保留 FishActionRequest/FishActionResult 独立通道，新增 MapRouteSlice/MapIgpChoice/MapChoiceRetire。
 F11 的 Transmit read-only fish observations / Preview one received fish 均默认关闭。
 0.1.11-dev 另增默认关闭的 Display received fish roster / Observe host harpoon and fish interactions；
 本机显示及房主交互观察仍依赖 Transmit read-only fish observations。
@@ -111,7 +111,7 @@ BOOTSTRAP_OK（0.1.11-dev）、UPDATE_OK、NETWORK_READY 及 DR_Start/DR_Logo。
 这是主菜单启动与初始只读输入证据，尚无新版 Probe、潜水路线、场景切换或正常返航实机验收。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，暂不催测；继续开发时不能将这些条目标为通过。
 
-0.1.13-dev 当前构建见 [地图选择调用构建摘要](../logs/map-selection-call-build-verification.json)，Build 及 112/112 核心测试通过；本轮没有部署、启动或原生回调验证。
+0.1.13-dev 历史构建见 [地图选择调用构建摘要](../logs/map-selection-call-build-verification.json)，Build 及 112/112 核心测试通过；当轮没有部署、启动或原生回调验证。
 本次构建自写 DLL SHA256：`E5013FB314A17D618F50AF0D8FA3DFB35CCD161DF069703D2759D92FC0CFCCA3`，这不是安装/实机哈希证据。
 
 - F11 新增默认关闭的 Observe map selection calls (read-only)，独立于 TCP、Ready 和 Transmit，可在原游戏自然选择/加载边界观察。
@@ -124,6 +124,18 @@ BOOTSTRAP_OK（0.1.11-dev）、UPDATE_OK、NETWORK_READY 及 DR_Start/DR_Logo。
 - `MapSelectionCapture` 两处 IsInitDone 改为直接 backing field；加载后完整选择仍要求 Loaded、每场景 IGP、原注册集合一致和两帧稳定。
 - factory prefix 只证明枚举器工厂调用边界，不能证明真正资源请求、MoveNext 或加载完成。尚无所有 selected-before-all-loaded 的全局时序证据，未共享/采用地图或调用选图/load/save 写入。
 - Disconnect 关闭并卸载本 Observer，清理自己的有界队列；新挂钩安装/自然回调/卸载须在之后真实游戏验证，用户当前不方便试玩，不催测。
+
+0.1.14-dev 当前范围见 [地图选择传输构建摘要](../logs/map-choice-transport-build-verification.json)。核心及真实回环 TCP 夹具验证的是候选传输，本轮未部署/启动，没有新原生 ABI、双游戏、选择采用或正常返航证据。
+本轮构建自写 DLL SHA256：`AF3CB8BE38E0402ECBA173F86C3C458CC82D6248664E16A35E58FC08729766D0`；这不是安装或实机哈希。
+
+- 协议 5 的路线每片最多 8 场景、最多 4 片，map FIFO 最多 32 包，房主发布、客机接收且绑定握手 Room。控制/心跳和 MapChoiceRetire 优先，动作/角色/世界/地图四路公平；新路线先完整复制/校验全部分片再原子入队，取消旧未发批次。
+- generation/revision 独立于 scene epoch，WaitingForScene 可传输而不提升 Ready。新 generation 首片立即撤销旧路线，完整拼装后原子提交，再按连续 revision 记录 IGP；同组选择以新 revision 更新，不猜组集合已完整。
+- SessionSnapshot.MapChoiceGeneration/MapChoiceRevision/MapChoiceFingerprint 供房主在会话锁内发布；合法旧或已退休回调返回 false，未来代次/当前冲突及错误方向/Room 拒绝。溢出主动发控制撤销，重复 inactive Retire 返回 false；新代次在旧 Retire 后发送。
+- 普通场景/帧清理保留 preload 候选，显式 Retire 清本代次但保留房间高水位，Close 清 source/assembler/mailbox。cache/restore 的自然样本即使指纹相同也开启新 generation，SceneLoader 同指纹去重。
+- MapChoiceController 用 callbackFloor 排除绑定/撤销前已经排队的旧观察；copy 错误、丢失和 Truncated 主动撤销。未绑定 IGP 不缓存；已发布组再次空/unknown 时撤销候选，未知新组空值仍为 Unbound。
+- callbackFloor 无法证明原生来源：新 cache 后迟到、同 scene/address 的旧 controller 回调仍可能附当前候选。DTO 尚无 controller/context 代次，所有日志 NativeGenerationBound=false、CrossMachineAddressVerified=false；Snapshot 始终 ObservationOnly=true、HostSelectionApplied=false。
+- 后续补本地 origin/代次与跨机地址证据，在安全加载前边界采用房主实际选择并隔离客机临时进度/生成/AI，再推进原生捕鱼与返航账本。当前收到候选不能充当 MapAuthorityReady 或 GuestStateIsolated。
+- Test-Core 与测试 csproj 编译实际 MapChoiceController 和 MapSelectionCallObservation，仅替代 logger。134 项中包含 4 项实际源适配用例，使用 synthetic DTO 与实际回环 TCP；不运行 NativeHook、不调用游戏入口，不扩展为原生 ABI、双游戏或正常返航验收。
 
 首次安装记录在忽略的 `artifacts/framework-install.json`；
 原始 EXE、GameAssembly.dll、UnityPlayer.dll 的 SHA256 经复核未改变。
@@ -143,7 +155,7 @@ BOOTSTRAP_OK（0.1.11-dev）、UPDATE_OK、NETWORK_READY 及 DR_Start/DR_Logo。
 
 M3 游戏适配实机验证和真实双游戏验收尚未完成。
 真实双游戏连接验收、客机原生鱼群/拾取接管与临时进度恢复均未完成。
-0.1.11-dev 的活动鱼群可见与移除同步已获用户确认，Fire/Hook/Damage 观察已有单游戏日志；已安装 0.1.12-dev 仅主菜单启动及初始路线输入通过，新源码 0.1.13-dev 仅构建。自然地图调用、Probe/潜水路线/场景切换、动画、完整捕获链和路线完整读取仍待验证，不能据此标记 M4/M5 完成。
+0.1.11-dev 的活动鱼群可见与移除同步已获用户确认，Fire/Hook/Damage 观察已有单游戏日志；已安装 0.1.12-dev 仅主菜单启动及初始路线输入通过，新源码 0.1.14-dev 仅构建。自然地图调用、Probe/潜水路线/场景切换、动画、完整捕获链和路线完整读取仍待验证，不能据此标记 M4/M5 完成。
 服务器方案暂时搁置。当前包是验证开发入口的原型。
 
 ## 下一步
@@ -172,7 +184,7 @@ Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可�
 已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
 Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
 探针记录本机 ID 仅用于观察；网络数值实体已使用房主分配的 RoomId/epoch/EntityId。
-当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署 0.1.13-dev，核对新进程版本与加载，不以旧版启动证明新观察运行。
+当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.14-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
 在入海前开启独立 Observe map selection calls，核对 MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE、MAP_SELECTION_HOOKS_STOPPED 的五处自然边界、线程、路线候选、空/截断/读取错误及自己的卸载。
 随后按目标检查范围在 F11 / Local test 开启 Transmit read-only fish observations 后进入潜水。
 开启单鱼预览取得选中身份，点 Check selected fish target，核对 FISH_ACTION_SENT / ADMISSION / DECISION / RECEIVED 的请求元数据、指纹及 DryRunValidated/op0。
@@ -182,7 +194,7 @@ Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这�
 核对 FISH_INTERACTION_READY / INTERACTION / STOPPED 的前后成对 CallId、prefix 绑定、原 bool、消费时 HP 及错误/丢弃统计；
 地图独立观察核对 MAP_ROUTE_INPUTS / WARNING 的入海前后输入变化、截断/上限标记与缺失原因；MAP_SELECTION 仍须完整条件与 PostLoadObservationOnly，不把候选层当路线清单或加载前接管。
 显示仅创建自己的 SpriteRenderer 或 SkeletonAnimation；原鱼及其 AI 保持原样，不能当成共享鱼群。
-对照 F7 探针核实实际鱼值和生命周期，再接入原生生成/AI 接管和 M5 裁定。
+对照 F7 探针核实实际鱼值和生命周期。地图传输核对 MAP_CHOICE_* 的路线分批/修订/撤销与明确不可用，补 controller/context 原生 origin/代次及两机地址证据；随后实现加载前实际采用、客机临时状态/生成与 AI 隔离和 M5 裁定，而非仅继续显示候选。
 当前数值通道只覆盖玩家所在场景的已初始化鱼；新生命周期挂钩需验证实际启停/销毁与池复用，再扩大至完整世界事件。
 Spine 引用来自现有生成的 spine-unity.dll；资源键为名字/缩放/图集描述哈希，跨机稳定性待验证。
 Spine 暂只表达一条主动画/皮肤/颜色/缩放，混合、多轨、槽位材质和约束等未覆盖；非 Spine Mesh 鱼待研究。

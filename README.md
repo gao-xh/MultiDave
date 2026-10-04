@@ -52,7 +52,7 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 `distribution/` 是供自动安装使用的本项目插件包。
 本仓库不分发游戏、游戏接口程序集、存档或 BepInEx 运行库。
 
-`codex/player-discovery` 分支当前源码为 0.1.13-dev、协议 4，编译及 112/112 项核心测试通过，本轮仅构建，未部署或启动。
+`codex/player-discovery` 分支当前源码为 0.1.14-dev、协议 5；Build 警告视为错误通过，Test-Core 134/134 通过，本轮仅构建，未部署或启动。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试；该进程已确认插件加载、Unity Update、网络入口及 4 条初始路线输入日志，仅主菜单启动通过。
 目标检查、潜水路线、场景切换与正常返航仍待实机，用户当前不方便试玩，手动验证已延后。最近完成潜水验证的是 0.1.11-dev，单游戏 TCP 鱼群显示与发射/挂钩/伤害只读观察已运行。
 用户确认偏移鱼群可见、捕获原鱼时对应副本也消失，关闭鱼群显示后恢复正常，操作和镜头正常。
@@ -80,7 +80,13 @@ Transmit 开启后独立在入海前后读取路线输入，每秒最多一次�
 0.1.13-dev 新增默认关闭的 Observe map selection calls，独立于 TCP/Transmit，在原游戏 5 处自然调用中即时冻结有界 CLR 路线/IGP/加载参数。
 RouteFingerprint 只代表路线候选；IGP 枚举器工厂不证明加载请求或完成，未证明所有选择均先于所有加载，也未共享或采用房主地图。
 Mod 不持有原生包装器、不调用或改写选图/加载/存档入口；Disconnect 关闭并卸载自己的观察挂钩。新观察仅通过构建，尚无实机回调证据。
-当前构建边界见 [地图选择调用构建摘要](development/logs/map-selection-call-build-verification.json)；已安装版本见 [0.1.12-dev 操作门禁摘要](development/logs/fish-action-gate-build-verification.json)，历史鱼群与交互证据见 [0.1.11-dev 摘要](development/logs/fish-world-interaction-build-verification.json)。
+0.1.14-dev 将房主观察到的路线和 IGP 选择候选通过独立通道发送给客机：路线每片最多 8 场景、最多 4 片，地图 FIFO 最多 32 包；动作、角色、世界和地图四路公平发送，控制/心跳与撤销优先。
+地图 generation/revision 独立于场景 epoch，可在等待场景时传输；新 generation 首片撤销旧路线，整批完成才原子提供路线。普通场景切换保留候选，显式撤销或关房清理，队列溢出主动撤销。
+自然 cache/restore 即使指纹相同也创建新 generation，SceneLoader 同指纹仅去重；复制错误或截断主动撤销，未绑定 IGP 不缓存，已发布组再次空/unknown 也撤销候选。
+callbackFloor 排除已经排队的旧观察，但尚无原生控制器/上下文代次证明；同地址旧控制器迟到的回调仍可能附到当前候选，日志明确 NativeGenerationBound=false。全部快照为证据，HostSelectionApplied=false。
+下一步需验证原生来源代次、跨机地址和实际加载前选择采用，再实现客机临时进度及原生生成/AI 隔离。当前地图传输不等于统一海洋、双游戏或合作捕鱼验收。
+测试直接编译实际 MapChoiceController 与 MapSelectionCallObservation，仅替代 logger；4 项源适配用例用 synthetic DTO 和实际回环 TCP 验证候选，未运行 NativeHook。
+当前范围见 [地图选择传输构建摘要](development/logs/map-choice-transport-build-verification.json)；0.1.13 历史构建见 [地图选择调用摘要](development/logs/map-selection-call-build-verification.json)；已安装版本见 [0.1.12-dev 操作门禁摘要](development/logs/fish-action-gate-build-verification.json)，历史鱼群与交互证据见 [0.1.11-dev 摘要](development/logs/fish-world-interaction-build-verification.json)。
 同一海洋、鱼与互动的实现范围见 [WORLD_SYNC](development/docs/WORLD_SYNC.md)。
 开发时使用编译和部署脚本；默认玩家安装包保持 0.1.0。
 
