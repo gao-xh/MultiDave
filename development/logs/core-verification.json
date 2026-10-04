@@ -1,12 +1,11 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T14:11:35.097549+00:00",
-  "PluginVersion": "0.1.28-dev",
+  "RecordedUtc": "2026-10-04T14:30:16.903299+00:00",
+  "PluginVersion": "0.1.29-dev",
   "VerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1",
-    "development/scripts/Inspect-NativeCalls.ps1 (text off/on/low quota and weight)",
-    "development/scripts/Inspect-LootProductApi.ps1"
+    "development/scripts/Inspect-CaptureLineageApi.ps1"
   ],
   "CoreTestsPassed": 226,
   "CoreTestsTotal": 226,
@@ -239,7 +238,7 @@
     "TCP fish action protocol three rejection"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "17C60F94E17BE08001BB9E6984388C15ABC85640574CE3076B89616C1A3FE5EA",
+  "CompiledPluginSHA256": "A99DF3C237FEC536F66DE878559840043D7E97ED9041B58CC09DAC2BE3225BE1",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
@@ -248,7 +247,7 @@
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Four new production CLR decoder fixtures exercise literal signed boundary vectors, immutable inputs and candidates, unavailable initialization/key-zero branches and conservative fake-value checks. Static instruction evidence supports only the initialized nonzero-key XOR subpath, not complete native decoder equivalence or ABI. The default-off production observer compiles exact-class four-slot-field matching samples into CLR-only candidates at Before; native slots and callbacks are not executed. Three actual offline tool modes retain identical decoded instructions and edges while correctly limiting private text; a weight report retains leaf and dataflow uncertainty. No full selected yield, actual final quality/effective weight, member binding, diversion, receipt, storage, save, guest/world adoption or two-game gameplay runs. Full M3-M7, normal return and cold configuration remain required.",
+  "Scope": "The default-off production observer now declares 19 exact targets, adding three by-value ObscuredInt slot setters. Setter Before and After independently freeze four guarded slot-field candidate samples, with only a run/call sample identity and no durable slot lifetime identity. Original setter arguments become immutable CLR candidates; raw structs and encrypted values are not retained or logged. Finalizer reuses After, including unavailable After, otherwise Before, and never reads native slots. The two earlier slot boundaries still sample only Before. Two existing CLR lineage fixtures now exercise setter nesting, unknown-source masks, retained postfix scope and finalizer order. All 226 Core/TCP tests actually ran; they do not execute native observers or prove ABI. An actual offline Cecil run verifies 19 declarations without executing game code. No complete selected yield, terminal final quality, bag delta, member binding, employee capacity routing, storage/save, guest isolation, host world adoption or two-game gameplay is verified. Full M3-M7, actual normal return and cold configuration remain required.",
   "ProtocolVersion": 6,
   "MapChoiceTcpTransferVerified": true,
   "ProductionMapChoiceAdapterFixtureVerified": true,
@@ -295,7 +294,7 @@
   "IngameResourceGraphIsolated": false,
   "FullIngameCacheGraphVerified": false,
   "CoreTestsExecutedThisTurn": true,
-  "CoreTestRunRecordedUtc": "2026-10-04T14:11:35.097549+00:00",
+  "CoreTestRunRecordedUtc": "2026-10-04T14:30:16.903299+00:00",
   "NativeDictionaryComparerCompiled": true,
   "NativeDictionaryComparerExecuted": false,
   "NativeComparerEqualsAndHashVerified": false,
@@ -303,8 +302,7 @@
   "CurrentTurnVerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1",
-    "development/scripts/Inspect-NativeCalls.ps1 (text off/on/low quota and weight)",
-    "development/scripts/Inspect-LootProductApi.ps1"
+    "development/scripts/Inspect-CaptureLineageApi.ps1"
   ],
   "StartupTraceFixtureVerified": true,
   "StartupTraceFixtureTestsPassed": 6,
@@ -402,5 +400,11 @@
   "NativeSlotCopySourceCompiled": true,
   "NativeSlotCopyExecuted": false,
   "NativeObscuredDecoderCalled": false,
-  "RawEncryptedSlotFieldsQueuedOrLogged": false
+  "RawEncryptedSlotFieldsQueuedOrLogged": false,
+  "ExistingLineageFixturesExpanded": 2,
+  "LootHookDeclarations": 19,
+  "NativeSetterArgumentAbiVerified": false,
+  "NativeSetterCallbacksExecuted": false,
+  "SlotLifetimeVerified": false,
+  "SlotInventoryIdentityVerified": false
 }

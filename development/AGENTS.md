@@ -1,6 +1,6 @@
 # 开发约定
 
-当前源码为0.1.28-dev、协议6，插件构建警告视为错误通过；本轮实际Core/TCP226/226通过（新增4组CLR槽标量候选夹具）。[货槽观察](docs/LOOT_SLOT_OBSERVATION.md)仅在默认关闭的原边界复制字段，用受限本地算法形成候选；不调用原生解码、不能证明最终品质/有效重量或完整产物。范围见[当前摘要](logs/loot-slot-build-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。实际个人容量/分流与返航、客机隔离/房主世界、双端和冷配置仍待完成。
+当前源码为0.1.29-dev、协议6，插件构建警告视为错误通过；本轮实际Core/TCP226/226通过（扩展2个既有来源栈夹具）。[货槽观察](docs/LOOT_SLOT_OBSERVATION.md)新增总数量/品质/最终品质三个自然setter的前后候选采样，仍默认关闭，不调用setter或原生解码，不产生捕获/背包增量凭证。范围见[当前摘要](logs/loot-slot-mutation-build-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。个人容量/分流与返航、客机隔离/房主世界、双端和冷配置仍待完成。
 
 - M1 玩家发现与 M2 回放基础验收通过；0.1.22 历史源码为 0.1.22-dev、协议 5，插件 Build 警告视为错误通过，范围见 [comparer 摘要](logs/guest-comparer-build-verification.json)；0.1.22 该轮 Core 输入未改，复用 [0.1.21 实际 176/176 结果](logs/guest-ingame-cache-build-verification.json)，没有重跑测试。未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
 - 继续工作前阅读 `docs/HANDOFF.md`、`docs/PLAN.md` 和当前阶段的 `docs/GAME_API.md` / `docs/MULTIPLAYER.md` / `docs/WORLD_SYNC.md`；配置别人电脑时使用仓库根目录的配置 Skill。

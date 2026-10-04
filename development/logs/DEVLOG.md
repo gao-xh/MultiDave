@@ -725,3 +725,13 @@
 - 实际weight已知路径有lift类别/接口取值，超重参数用于阈值/debuff，新槽Add边界未给终局FinalGrade时刻；ApplyFinalGrade有类别/阈值/clamp，GetExchangeCount还走物料转换。不能用basegrade+bonus/count×baseweight直接填捕获/肉量；完整capture/成员/受控选择提交/个人容量分流及receipt仍需真实桥。
 - 本轮真实Core/TCP226/226通过，新增4组literal signed边界/immutable输入、未init/key0、fake/未知与无CargoPermission夹具；不执行native sampler/decoder或真实slot。Build警告视为错误通过，SHA256 `17C60F94E17BE08001BB9E6984388C15ABC85640574CE3076B89616C1A3FE5EA`；两名独立native/文档末审无阻断，Core与工具均另有非作者审查。126源/项目/验证输入已封存。
 - 新LOOT_SLOT_OBSERVATION、NATIVE_ANALYSIS及当前core/loot-slot摘要、交接/计划/Skill更新；保留0.1.27的复用222与旧构建/实机证据。官方Skill校验通过并同步，SHA256 `1544C800E23BBD97E5B68C6E41E3024D05FDA1DE050E9E91C8A9AF43FDEB645E`；两个Inspector AST错误0。新鲜进程0，安装DLL仍`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，实际回调、个人分流/逐项入仓、guest隔离/房主世界与双端/GitHub冷配置待完成。
+
+## 2026-10-04 — 0.1.29 已有货槽与品质更新观察
+
+- 前轮0.1.28已提交2868b82并远端核验。本轮继续每人独立袋/容量/负重、房主唯一长期进度与完整M3—M7；没有部署/启动、调用原游戏业务或读改存档。
+- 默认关闭的Loot观察新增17=set_TotalCount、18=set_Grade、19=set_FinalGrade，原16编号不变。三个public instance void setter参数为by-value ObscuredInt；原参数只在同步Before窗口复制五CLR标量并形成不可变候选，原结构/密钥/hidden不留Hook Context、prefix、queue或日志。不主动调用setter、解码、初始化或检测器。
+- 三个setter的Before/After分别核exactclass、四direct字段双样本与末pointer/class/store；After必须匹配本call prefix私有pointer/class。32reads/sample、最多64/call与65536/process不toggle归零；正常14/sample。RunId+CallId仅标本次样本，没有持久槽编号/寿命/库存身份。Finalizer复用After（含Unavailable），不存在After才复用Before；原两个槽边界仍Before-only。故障无条件清当前前后样本/参数并撤prefix，旧队列仅历史诊断带当前不健康。
+- 数量setter是新总数，不能当捕获增量；FinalGrade更新不证明捕获终局或主/追加整批完成。已知原重量更新可能早于这些setter，新增入口不是首次write前的容量/产物暂停桥；source仍只是同步包含，不提供员工/操作归属或receipt。所有槽寿命/ABI/最终品质/BagDelta/FullYield/native权限保持false。
+- 新Cecil实际一次成功：8types/19精确声明/5directfields/owner继承5层、missing0，三setterByReference=false，AST错误0，互操作输入SHA256 `F41167D67D226866B22EB76A239B796B0D1E40F57177E62FBAAFC2284471626E`。原报告只留.local，不执行game code。两名独立只读审查核对实际上游、回调/数据生命期、失效及文档，未见阻断。
+- 本轮实际Core/TCP226/226通过，扩展两个既有来源栈夹具覆盖17–19固定父链、未知来源遮蔽、postfix保留scope及finalizer LIFO；新增测试数为0，不执行native观察。Build警告视为错误通过，SHA256 `A99DF3C237FEC536F66DE878559840043D7E97ED9041B58CC09DAC2BE3225BE1`；124源/项目/runner输入在执行前封存、执行后相同。没有重复既已通过的测试。
+- 更新LOOT_SLOT_OBSERVATION、currentcore及新的loot-slot-mutation摘要、交接/计划与相关Skill；旧0.1.28实际226及0.1.27复用222证据保持。官方Skill校验通过并同步，SHA256 `CB1A9F5056B53620E9C0E15FA0B075969C068D4EC1B7B697C9A85A74619E9CF1`。新鲜进程0，安装DLL仍`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`；原生参数ABI/真实槽观察、完整捕获产物与个人容量分流、逐项入仓、guest隔离/房主世界、正常双端闭环与GitHub冷配置仍待完成。

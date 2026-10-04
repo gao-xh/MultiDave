@@ -25,22 +25,27 @@ try {
         @{ Type='SaveDataCaughtFishRouter'; Name='AddCaughtFish'; Return='System.Void'; Static=$true; Params=@('System.Int32','System.Int32','System.Boolean') },
         @{ Type='IngredientsStorage'; Name='AddFromLootBox'; Return='System.Void'; Static=$false; Params=@('LootBoxSlot','Il2CppSystem.Func`1<System.Int32>') },
         @{ Type='FishPlusItemPity'; Name='RollPlusItem'; Return='System.Int32'; Static=$false; Params=@('System.Int32','System.Int32') },
-        @{ Type='SaveData'; Name='AddLootBox'; Return='System.Void'; Static=$false; Params=@('SaveData/LootBoxType','System.String','LootBoxSlot') }
+        @{ Type='SaveData'; Name='AddLootBox'; Return='System.Void'; Static=$false; Params=@('SaveData/LootBoxType','System.String','LootBoxSlot') },
+        @{ Code=17; Type='LootBoxSlot'; Name='set_TotalCount'; Return='System.Void'; Static=$false; Public=$true; Params=@('CodeStage.AntiCheat.ObscuredTypes.ObscuredInt') },
+        @{ Code=18; Type='LootBoxSlot'; Name='set_Grade'; Return='System.Void'; Static=$false; Public=$true; Params=@('CodeStage.AntiCheat.ObscuredTypes.ObscuredInt') },
+        @{ Code=19; Type='LootBoxSlot'; Name='set_FinalGrade'; Return='System.Void'; Static=$false; Public=$true; Params=@('CodeStage.AntiCheat.ObscuredTypes.ObscuredInt') }
     )
     $declarations = foreach ($spec in $specs) {
         $type = $assembly.MainModule.GetType($spec.Type)
         if (!$type) { throw ('Capture type missing: ' + $spec.Type) }
         $matched = @($type.Methods | Where-Object {
             $_.Name -eq $spec.Name -and $_.ReturnType.FullName -eq $spec.Return -and $_.IsStatic -eq $spec.Static -and
+            (!$spec.ContainsKey('Public') -or $_.IsPublic -eq $spec.Public) -and
             !$_.HasGenericParameters -and $_.Parameters.Count -eq $spec.Params.Count -and
             ((@($_.Parameters | ForEach-Object { $_.ParameterType.FullName }) -join '|') -ceq ($spec.Params -join '|'))
         })
         if ($matched.Count -ne 1) { throw ('Capture declaration mismatch: ' + $spec.Type + '::' + $spec.Name) }
         $method = $matched[0]
         [pscustomobject]@{
-            Type=$type.FullName; Method=$method.Name; Static=$method.IsStatic; Virtual=$method.IsVirtual
+            Type=$type.FullName; Method=$method.Name; Static=$method.IsStatic; Virtual=$method.IsVirtual; Public=$method.IsPublic
+            ObserverMethodCode=if ($spec.ContainsKey('Code')) { $spec.Code } else { $null }
             Return=$method.ReturnType.FullName
-            Parameters=@($method.Parameters | ForEach-Object { [pscustomobject]@{Name=$_.Name; Type=$_.ParameterType.FullName} })
+            Parameters=@($method.Parameters | ForEach-Object { [pscustomobject]@{Name=$_.Name; Type=$_.ParameterType.FullName; ByReference=$_.ParameterType.IsByReference} })
             MetadataSignature=$method.FullName
         }
     }

@@ -61,9 +61,12 @@ namespace DaveCoop.Networking
                         ResourceReadLimitPerPrefix = LootObservationCapture.MaxResourceReadsPerPrefix,
                         ProcessResourceReadLimit = LootObservationCapture.MaxProcessResourceReads,
                         ResourceSampleStage = "Before", SupportedResourceClasses = new[] { "DR.Items", "IntegratedItem" },
-                        SlotReadLimitPerPrefix = LootObservationCapture.MaxSlotReadsPerPrefix,
+                        SlotReadLimitPerSample = LootObservationCapture.MaxSlotReadsPerSample,
                         ProcessSlotReadLimit = LootObservationCapture.MaxProcessSlotReads,
-                        SlotSampleStage = "Before", SupportedSlotClass = "LootBoxSlot", NoNativeDecodeCalls = true,
+                        BoundarySlotSampleStage = "Before", SetterSlotSampleStages = new[] { "Before", "After" },
+                        SlotFinalizerNativeRead = false, SlotSampleIdentity = "RunId + CallId; original call only",
+                        SupportedSlotClass = "LootBoxSlot", NoNativeDecodeCalls = true,
+                        SlotLifetimeVerified = false, SlotInventoryIdentityVerified = false,
                         SlotDataReadable = false, NativeFieldAbiVerified = false,
                         StateLogLimit = MaxStateLogs, LifecycleLogLimit = MaxLifecycleLogs,
                         ObservedSynchronousEnclosureOnly = true, DirectCallerVerified = false,
@@ -134,6 +137,7 @@ namespace DaveCoop.Networking
                 FullYield = false, YieldComplete = false, NativeGenerationVerified = false,
                 NativeHookAbiVerified = false, CaptureSuccess = false, StorageDeltaProven = false, NativeRewardsEnabled = false,
                 NoNativeDecodeCalls = true, SlotDataReadable = false, NativeFieldAbiVerified = false,
+                SlotLifetimeVerified = false, SlotInventoryIdentityVerified = false,
                 FinalGradeVerified = false, EffectiveWeightVerified = false, ResourceProductMappingVerified = false, CargoPermission = false
             }));
         }

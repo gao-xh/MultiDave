@@ -1,6 +1,6 @@
 # MultiDave 接手记录
 
-当前源码为0.1.28-dev、协议6，插件构建警告视为错误通过；本轮实际Core/TCP226/226通过（新增4组CLR槽标量候选夹具）。[货槽观察](LOOT_SLOT_OBSERVATION.md)仅在默认关闭的原边界复制字段，用受限本地算法形成候选；不调用原生解码、不能证明最终品质/有效重量或完整产物。范围见[当前摘要](../logs/loot-slot-build-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。实际个人容量/分流与返航、客机隔离/房主世界、双端和冷配置仍待完成。
+当前源码为0.1.29-dev、协议6，插件构建警告视为错误通过；本轮实际Core/TCP226/226通过（扩展2个既有来源栈夹具）。[货槽观察](LOOT_SLOT_OBSERVATION.md)新增总数量/品质/最终品质三个自然setter的前后候选采样，仍默认关闭，不调用setter或原生解码，不产生捕获/背包增量凭证。范围见[当前摘要](../logs/loot-slot-mutation-build-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。个人容量/分流与返航、客机隔离/房主世界、双端和冷配置仍待完成。
 
 ## 已完成
 
@@ -210,7 +210,7 @@ Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可�
 已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
 Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
 探针记录本机 ID 仅用于观察；网络数值实体已使用房主分配的 RoomId/epoch/EntityId。
-当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.28-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
+当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.29-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
 当前候选测试先建Host/Join或Local test，再开启Observe loading coroutine and scene ownership并进行新自然入海。旧Observe map selection calls仅可选诊断，不能发送候选；可核对 MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE、MAP_SELECTION_HOOKS_STOPPED 的五处自然边界、线程、路线候选、空/截断/读取错误及自己的卸载。
 随后按目标检查范围在 F11 / Local test 开启 Transmit read-only fish observations 后进入潜水。
 开启单鱼预览取得选中身份，点 Check selected fish target，核对 FISH_ACTION_SENT / ADMISSION / DECISION / RECEIVED 的请求元数据、指纹及 DryRunValidated/op0。
@@ -328,3 +328,7 @@ Build及实际Core/TCP222/222通过；新增11组生产账本夹具、2组实际
 ## 0.1.28 受限货槽候选
 
 Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的CLR标量解码夹具；原生slot仍仅编译未执行，16默认关闭入口保持。Before对exact槽四struct字段两次守卫采样，prefix仅存候选，After/Finalizer复用且不读原生槽；密钥/隐藏值不入队/日志。未init/key0/fake校验不符明确Unavailable，不补初始化/查静态key或检测器。离线新工具文本默认关闭，三模式原decode/edges不变，4无范围leaf不补猜。最终品质时刻、接口重量、肉量转换与完整产物/个人分流/入仓仍待实际桥。详见[货槽观察](LOOT_SLOT_OBSERVATION.md)及[本轮摘要](../logs/loot-slot-build-verification.json)。
+
+## 0.1.29 已有货槽与品质更新观察
+
+新增三处默认关闭的自然setter观察，覆盖新槽入口之外的总数量合并和品质更新候选。Before/After各自复制四字段，After固定同次prefix身份；Finalizer复用After（含Unavailable），没有After才复用Before。RunId+CallId仅标识本次样本，不能跨调用关联货槽或证明槽寿命/袋身份。数量setter传入的是新总数，不是捕获增量；FinalGrade setter不证明整批或捕获终局。Build和实际226/226 Core/TCP通过，扩展两个既有CLR来源栈夹具；原生回调/ABI未执行，个人产物分流仍待接通。详见[货槽观察](LOOT_SLOT_OBSERVATION.md)及[本轮摘要](../logs/loot-slot-mutation-build-verification.json)。

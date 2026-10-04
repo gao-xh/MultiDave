@@ -13,7 +13,8 @@ namespace DaveCoop.Networking
         FishPickup = 5, FishDropWithPlus = 6, FishDropPlus = 7, LootBoxAddIgnoreOverloaded = 8,
         LootBoxAddImpl = 9, LootBoxCheckOverloaded = 10, LootBoxRefreshOverweight = 11,
         SaveDataAddLooting = 12, FishBodySuccessInteract = 13, FishBodyCheckAvailable = 14,
-        FishPlusItemRoll = 15, SaveDataAddLootBox = 16
+        FishPlusItemRoll = 15, SaveDataAddLootBox = 16,
+        SlotSetTotalCount = 17, SlotSetGrade = 18, SlotSetFinalGrade = 19
     }
     internal enum LootObservationStage { Before = 1, After = 2, Finalizer = 3 }
 
@@ -56,9 +57,12 @@ namespace DaveCoop.Networking
         public LootBox Bag { get; }
         public IngredientsStorage Storage { get; }
         public SaveData Save { get; }
-        // Original slot argument is offered only to the synchronous prefix
-        // copier. Postfix/finalizer reuse its owned CLR candidates.
+        // Old boundaries offer a slot only at prefix; the three setters also
+        // offer their original instance at postfix. No context retains it.
         public LootBoxSlot Slot { get; }
+        // Original by-value argument exists only in this synchronous prefix
+        // view. Capture saves a decoded CLR candidate, never this raw struct.
+        public CodeStage.AntiCheat.ObscuredTypes.ObscuredInt? SetterArgument { get; }
         // The original Add_Impl argument is held only for this synchronous
         // prefix callback. It never enters CallContext or a diagnostic queue.
         public DR.IItemBase ItemResource { get; }
@@ -71,12 +75,13 @@ namespace DaveCoop.Networking
             LootObservationMethod method, LootObservationStage stage, LootObservationArguments arguments,
             FishAISystem fish, FishInteractionBody body, LootBox bag, IngredientsStorage storage,
             SaveData save, LootBoxSlot slot, string key, bool? originalReturn, int? originalIntReturn, bool originalException,
-            DR.IItemBase itemResource = null)
+            DR.IItemBase itemResource = null, CodeStage.AntiCheat.ObscuredTypes.ObscuredInt? setterArgument = null)
         {
             ProcessSequence = sequence; CallId = callId; ManagedThreadId = threadId;
             Method = method; Stage = stage; Arguments = arguments;
             Fish = fish; Body = body; Bag = bag; Storage = storage; Save = save; Slot = slot; Key = key;
             ItemResource = itemResource;
+            SetterArgument = setterArgument;
             OriginalReturn = originalReturn; OriginalIntReturn = originalIntReturn; OriginalException = originalException;
         }
     }
@@ -86,7 +91,7 @@ namespace DaveCoop.Networking
     internal sealed class LootObservationHooks : IDisposable
     {
         private const string Owner = Plugin.Id + ".loot-observation";
-        public const int TargetCount = 16;
+        public const int TargetCount = 19;
         public const int MaxProcessEvents = 8192;
         public const int MaxPendingCalls = 128;
         private static LootObservationHooks _active;
@@ -183,6 +188,10 @@ namespace DaveCoop.Networking
             Add(targets, typeof(FishInteractionBody), "CheckAvailableInteraction", false, typeof(bool), new[] { typeof(BaseCharacter) }, nameof(BodyAvailableBefore), nameof(BodyAvailableAfter));
             Add(targets, typeof(FishPlusItemPity), "RollPlusItem", false, typeof(int), new[] { typeof(int), typeof(int) }, nameof(RollBefore), nameof(RollAfter));
             Add(targets, typeof(SaveData), "AddLootBox", false, typeof(void), new[] { typeof(SaveData.LootBoxType), typeof(string), typeof(LootBoxSlot) }, nameof(SavedSlotBefore), nameof(SavedSlotAfter));
+            Type[] slotSetterArgs = { typeof(CodeStage.AntiCheat.ObscuredTypes.ObscuredInt) };
+            Add(targets, typeof(LootBoxSlot), "set_TotalCount", false, typeof(void), slotSetterArgs, nameof(SlotCountBefore), nameof(SlotCountAfter));
+            Add(targets, typeof(LootBoxSlot), "set_Grade", false, typeof(void), slotSetterArgs, nameof(SlotGradeBefore), nameof(SlotGradeAfter));
+            Add(targets, typeof(LootBoxSlot), "set_FinalGrade", false, typeof(void), slotSetterArgs, nameof(SlotFinalGradeBefore), nameof(SlotFinalGradeAfter));
             if (targets.Count != TargetCount) throw new InvalidOperationException("Loot target count mismatch.");
             return targets;
         }
@@ -262,12 +271,21 @@ namespace DaveCoop.Networking
         private static void SavedSlotBefore(SaveData __instance, SaveData.LootBoxType __0, string __1, LootBoxSlot __2, out long __state)
             => __state = Begin(LootObservationMethod.SaveDataAddLootBox, new LootObservationArguments { BagType = (int)__0 }, save: __instance, slot: __2, key: __1);
         private static void SavedSlotAfter(SaveData __instance, long __state) => Postfix(__state, LootObservationMethod.SaveDataAddLootBox, save: __instance);
+        private static void SlotCountBefore(LootBoxSlot __instance, CodeStage.AntiCheat.ObscuredTypes.ObscuredInt __0, out long __state)
+            => __state = Begin(LootObservationMethod.SlotSetTotalCount, new LootObservationArguments(), slot: __instance, setterArgument: __0);
+        private static void SlotCountAfter(LootBoxSlot __instance, long __state) => Postfix(__state, LootObservationMethod.SlotSetTotalCount, slot: __instance);
+        private static void SlotGradeBefore(LootBoxSlot __instance, CodeStage.AntiCheat.ObscuredTypes.ObscuredInt __0, out long __state)
+            => __state = Begin(LootObservationMethod.SlotSetGrade, new LootObservationArguments(), slot: __instance, setterArgument: __0);
+        private static void SlotGradeAfter(LootBoxSlot __instance, long __state) => Postfix(__state, LootObservationMethod.SlotSetGrade, slot: __instance);
+        private static void SlotFinalGradeBefore(LootBoxSlot __instance, CodeStage.AntiCheat.ObscuredTypes.ObscuredInt __0, out long __state)
+            => __state = Begin(LootObservationMethod.SlotSetFinalGrade, new LootObservationArguments(), slot: __instance, setterArgument: __0);
+        private static void SlotFinalGradeAfter(LootBoxSlot __instance, long __state) => Postfix(__state, LootObservationMethod.SlotSetFinalGrade, slot: __instance);
         private static void CallFinally(long __state, Exception __exception)
             => Complete(__state, LootObservationStage.Finalizer, null, null, null, null, null, null, null, !ReferenceEquals(__exception, null));
 
         private static long Begin(LootObservationMethod method, LootObservationArguments arguments,
             FishAISystem fish = null, FishInteractionBody body = null, LootBox bag = null, IngredientsStorage storage = null, SaveData save = null, LootBoxSlot slot = null, string key = null,
-            DR.IItemBase itemResource = null)
+            DR.IItemBase itemResource = null, CodeStage.AntiCheat.ObscuredTypes.ObscuredInt? setterArgument = null)
         {
             LootObservationHooks active = Volatile.Read(ref _active);
             if (active == null || active.Failed || !Volatile.Read(ref active._accepting)) return 0;
@@ -280,7 +298,7 @@ namespace DaveCoop.Networking
                     { Increment(ref _processDropped); throw new InvalidOperationException("Loot callback quota exhausted."); }
                     int threadId = Environment.CurrentManagedThreadId;
                     active._calls.Add(callId, new CallContext { Method = method, ThreadId = threadId, Arguments = arguments });
-                    active._copy(new LootObservationCallback(sequence, callId, threadId, method, LootObservationStage.Before, arguments, fish, body, bag, storage, save, slot, key, null, null, false, itemResource));
+                    active._copy(new LootObservationCallback(sequence, callId, threadId, method, LootObservationStage.Before, arguments, fish, body, bag, storage, save, slot, key, null, null, false, itemResource, setterArgument));
                     return callId;
                 }
             }

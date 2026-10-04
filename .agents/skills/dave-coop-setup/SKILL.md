@@ -248,8 +248,14 @@ description: Configure or continue development of the MultiDave prototype for Wi
   TID/ItemDataID与basegrade/baseweight只候选，不猜产品映射、bonus/count/weightParameter最终计算；ClassStore可能初始化，二次样本一致不证静止/原子/ABI。新Inspect-LootProductApi只离线metadata/wrapperIL，报告private.local；ObscuredInt解码纯度未证，不执行。
   无native callback/producer/分流/入仓/存档执行或新GUI授权；所有finalgrade/effectiveweight/full-yield/isolation/world/cargo权限false。未部署/启动，不催延后测试；每人独立容量/负重、捕获与正常逐项返航、真实双端和GitHub冷配置继续完整M3—M7。
 
-- 当前源码0.1.28-dev/协议6，Build与实际Core/TCP226/226通过（4新增纯CLR槽标量候选fixture）。继续槽/品质/个人袋先读development/docs/LOOT_SLOT_OBSERVATION.md及loot-slot-build-verification.json。
+- 历史源码0.1.28-dev/协议6，Build与实际Core/TCP226/226通过（4新增纯CLR槽标量候选fixture）。继续槽/品质/个人袋先读development/docs/LOOT_SLOT_OBSERVATION.md及loot-slot-build-verification.json。
   ObserveLootCalls仍defaultfalse/16targets；exactLootBoxSlot四directstruct字段仅Before两次copy、pointer/class/store守卫复核，prefix只存immutable候选、After/Finalizer不重读slot；raw密钥/隐藏值不入Context/queue/log。slot32reads/prefix、process65536不toggle归零。
   CLR decoder仅initedtrue/key非0，fakeactive要求一致；未知/null/key0/未init/不符返回Unavailable。不调用原解码、publicslot getter/setter/静态key/检测器；采样不证原子/ABI，最终grade字段Before不证捕获终局。
   Inspect-NativeCalls可显式-IncludeInstructions，默认false；text2048/method8192/report，硬8192/16384、256单条/1048576字符；整条省略不改原decode/edges/coverage。原asm/地址/立即数仅.local；真实3模式13/464/58一致、weight18/1687含4leaf不补猜。
   最终grade含条件/clamp，重量和超重参数分工、GetExchangeCount转换仍不能猜；全native/isolation/world/cargo/receipt权限false。未部署/启动，不催延后测试；每人独立容量/负重、真实捕获/逐项返航、双端与GitHub冷配置继续完整M3—M7。
+
+- 当前源码0.1.29-dev/协议6，Build与实际Core/TCP226/226通过；扩展2个既有CLR来源栈夹具，没有新增测试计数。继续已有槽合并/品质观察先读development/docs/LOOT_SLOT_OBSERVATION.md及loot-slot-mutation-build-verification.json。
+  ObserveLootCalls仍默认关闭，19精确声明含3个typed by-value ObscuredInt自然setter；仅观察，不主动调用原setter/解码。Before/After各32reads/sample、process65536不重置；prefix固定pointer/class，队列只不可变CLR候选与参数候选。
+  Finalizer不读原生槽，复用After即使Unavailable，否则Before；原两个槽边界仍Before-only。RunId+CallId只标本次样本，没有持久槽编号/寿命/袋身份；raw结构/密钥/hidden不进Context/queue/log。
+  数量参数是新总数，不是本次增量；FinalGrade更新不证明capture终局或完整yield。失败清当前样本/参数并撤链，旧queue带当前不健康；native ABI/来源操作绑定/receipt/个人分流权限全false。
+  离线Cecil实查19声明不执行game；安装0.1.12/最近潜水0.1.11/默认0.1.0保持。未部署启动，不催延后试玩；真实员工袋分流/返航、隔离/房主世界、双端与GitHub冷配置继续完整M3—M7。

@@ -14,9 +14,27 @@ internal static class LootCallLineageTests
         LootLineageToken roll = Begin(registry, 3, 15);
         Assert(registry.RecordPostfix(roll, null, 207) && registry.FinalizeCall(roll, false), "natural integer return did not pair");
         LootLineageToken bag = Begin(registry, 4, 2);
+        LootLineageToken setCount = Begin(registry, 5, 17);
+        LootLineageToken setGrade = Begin(registry, 6, 18);
+        LootLineageToken setFinalGrade = Begin(registry, 7, 19);
+        Assert(setCount.ParentCallId == bag.CallId && setGrade.ParentCallId == setCount.CallId &&
+            setFinalGrade.ParentCallId == setGrade.CallId && setCount.SourceRootCallId == drop.CallId &&
+            setGrade.SourceRootCallId == drop.CallId && setFinalGrade.SourceRootCallId == drop.CallId &&
+            !setCount.SourceShadowed && !setGrade.SourceShadowed && !setFinalGrade.SourceShadowed,
+            "non-fish slot callbacks changed the fixed main/plus synchronous enclosure");
+        Assert(registry.RecordPostfix(setFinalGrade, null), "slot setter postfix did not retain its fixed token");
+        // A later postfix callback can still enclose another natural call before
+        // finalizers run. Its source must remain the setter's fixed parent chain.
+        LootLineageToken postfixChild = Begin(registry, 8, 17);
+        Assert(postfixChild.ParentCallId == setFinalGrade.CallId && postfixChild.SourceRootCallId == drop.CallId &&
+            postfixChild.Source.EntityId == fish.EntityId && postfixChild.Depth == setFinalGrade.Depth + 1,
+            "postfix popped the setter before its finalizer or rebound a nested slot callback");
+        Finish(registry, postfixChild);
+        Assert(registry.FinalizeCall(setFinalGrade, false), "slot setter finalizer could not close after its child");
+        Finish(registry, setGrade); Finish(registry, setCount);
         Finish(registry, bag, true); Finish(registry, plus); Finish(registry, drop);
         List<LootLineageRecord> records = Drain(registry);
-        Assert(records.Count == 12 && registry.Healthy && registry.PendingCount == 0, "valid nested scopes did not close exactly once");
+        Assert(records.Count == 24 && registry.Healthy && registry.PendingCount == 0, "valid nested scopes did not close exactly once");
         Assert(drop.SourceRootCallId == 1 && plus.ParentCallId == 1 && plus.SourceRootCallId == 1 && plus.Depth == 1 &&
             roll.ParentCallId == 2 && roll.Depth == 2 && bag.ParentCallId == 2 && bag.SourceRootCallId == 1 && !bag.SourceShadowed,
             "same fish plus branch or nested bag was rebound to a new fish root");
@@ -31,6 +49,9 @@ internal static class LootCallLineageTests
         Assert(integer.OriginalReturn == null && integer.OriginalIntReturn == 207 &&
             records.Single(record => record.CallId == 3 && record.Stage == LootLineageStage.Finalizer).OriginalIntReturn == 207,
             "roll return was converted into bool, rerolled or lost at finalizer");
+        Assert(records.Where(record => record.Stage == LootLineageStage.Finalizer).Select(record => record.CallId)
+            .SequenceEqual(new long[] { 3, 8, 7, 6, 5, 4, 2, 1 }),
+            "new slot callbacks did not retain finalizer LIFO order within the original enclosure");
         NoAuthority(registry);
     }
 
@@ -46,15 +67,31 @@ internal static class LootCallLineageTests
         // There is no iterator ownership or late singleton source recovery.
         LootLineageToken unknown = Begin(registry, 4, 6, true, null);
         LootLineageToken unboundBag = Begin(registry, 5, 2);
+        LootLineageToken setCount = Begin(registry, 6, 17);
+        LootLineageToken setGrade = Begin(registry, 7, 18);
+        LootLineageToken setFinalGrade = Begin(registry, 8, 19);
         Assert(unknown.ParentCallId == 1 && unknown.SourceShadowed && !unknown.SourceKnown && unknown.SourceRootCallId == 0 &&
             unboundBag.SourceShadowed && unboundBag.Source == null && unboundBag.SourceRootCallId == 0,
             "unknown boundary or its descendants inherited a nearby/outer source");
+        foreach (LootLineageToken slot in new[] { setCount, setGrade, setFinalGrade })
+            Assert(slot.SourceShadowed && !slot.SourceKnown && slot.Source == null && slot.SourceRootCallId == 0,
+                "non-fish slot mutation recovered an outer source through an unknown boundary");
+        Assert(setCount.ParentCallId == unboundBag.CallId && setGrade.ParentCallId == setCount.CallId &&
+            setFinalGrade.ParentCallId == setGrade.CallId && registry.RecordPostfix(setFinalGrade, null),
+            "unknown slot callbacks lost fixed parent identity or their original postfix");
+        LootLineageToken postfixChild = Begin(registry, 9, 17);
+        Assert(postfixChild.ParentCallId == setFinalGrade.CallId && postfixChild.SourceShadowed &&
+            postfixChild.Source == null && postfixChild.SourceRootCallId == 0,
+            "unknown setter postfix removed its source mask before finalization");
+        Finish(registry, postfixChild);
+        Assert(registry.FinalizeCall(setFinalGrade, false), "unknown setter did not close in fixed LIFO order");
+        Finish(registry, setGrade); Finish(registry, setCount);
         Finish(registry, unboundBag); Finish(registry, unknown);
-        LootLineageToken restored = Begin(registry, 6, 2);
+        LootLineageToken restored = Begin(registry, 10, 2);
         Assert(restored.ParentCallId == 1 && restored.SourceRootCallId == 1 && restored.Source.EntityId == outer.Source.EntityId,
             "normal mask cleanup changed the still-active outer prefix source");
         Finish(registry, restored); Finish(registry, outer);
-        LootLineageToken standalone = Begin(registry, 7, 2);
+        LootLineageToken standalone = Begin(registry, 11, 2);
         Assert(!standalone.SourceKnown && standalone.ParentCallId == 0 && standalone.SourceRootCallId == 0 && !standalone.SourceShadowed,
             "standalone bag call guessed a previous fish from time or TID");
         Finish(registry, standalone); Assert(registry.Healthy, "unbound candidate was incorrectly treated as capture permission or fatal loss");

@@ -41,11 +41,12 @@ namespace DaveCoop.Networking
         internal static LootResourceObservation Unavailable(string reason) => new LootResourceObservation(reason);
     }
 
-    // Only decoded CLR candidates survive the callback. Encrypted snapshots,
-    // native wrappers and pointers never enter a prefix context or the queue.
+    // Encrypted snapshots and native wrappers never enter a prefix context.
+    // Private pointer/class scalars only match this original call; the queue
+    // contains decoded CLR candidates, not pointers or durable slot identity.
     internal sealed class LootSlotObservation
     {
-        public string SlotSampleStage => "Before";
+        public string SlotSampleStage { get; }
         public string ExactClassKind { get; }
         public LootObscuredIntCandidate ItemId { get; }
         public LootObscuredIntCandidate Grade { get; }
@@ -60,6 +61,8 @@ namespace DaveCoop.Networking
         public bool ObservationOnly => true;
         public bool NoNativeDecodeCalls => true;
         public bool NativeFieldAbiVerified => false;
+        public bool SlotLifetimeVerified => false;
+        public bool SlotInventoryIdentityVerified => false;
         public bool FinalGradeVerified => false;
         public bool EffectiveWeightVerified => false;
         public bool ResourceProductMappingVerified => false;
@@ -67,14 +70,14 @@ namespace DaveCoop.Networking
         public bool FullYield => false;
         public bool Permission => false;
 
-        internal LootSlotObservation(LootObscuredIntCandidate itemId, LootObscuredIntCandidate grade,
+        internal LootSlotObservation(string stage, LootObscuredIntCandidate itemId, LootObscuredIntCandidate grade,
             LootObscuredIntCandidate finalGrade, LootObscuredIntCandidate totalCount)
         {
-            ExactClassKind = "LootBoxSlot"; ItemId = itemId; Grade = grade;
+            SlotSampleStage = stage; ExactClassKind = "LootBoxSlot"; ItemId = itemId; Grade = grade;
             FinalGrade = finalGrade; TotalCount = totalCount; SamplesMatch = true;
         }
-        private LootSlotObservation(string reason) { UnavailableReason = reason; }
-        internal static LootSlotObservation Unavailable(string reason) => new LootSlotObservation(reason);
+        private LootSlotObservation(string stage, string reason) { SlotSampleStage = stage; UnavailableReason = reason; }
+        internal static LootSlotObservation Unavailable(string reason, string stage = "Before") => new LootSlotObservation(stage, reason);
     }
 
     // Owned CLR diagnostics only. A source is an observed synchronous enclosure,
@@ -114,9 +117,21 @@ namespace DaveCoop.Networking
         public LootResourceObservation Resource { get; internal set; }
         public string ResourceSampleStage => Resource?.ResourceSampleStage;
         public LootSlotObservation SlotCandidates { get; internal set; }
+        public LootSlotObservation SlotBefore { get; internal set; }
+        public LootSlotObservation SlotAfter { get; internal set; }
+        // RunId + this call ID identifies samples of one observed original call,
+        // not a persistent slot object, inventory key or native lifetime.
+        public long? SlotSampleId { get; internal set; }
         public string SlotSampleStage => SlotCandidates?.SlotSampleStage;
+        public string SlotDataSampleStage => SlotCandidates?.SlotSampleStage;
+        public bool SlotSnapshotReused { get; internal set; }
         public bool SlotCandidatesAvailable => SlotCandidates?.CandidatesAvailable == true;
+        public LootObscuredIntCandidate SetterArgumentCandidate { get; internal set; }
+        public bool SetterArgumentFrozenAtPrefix { get; internal set; }
+        public string SetterArgumentSampleStage => SetterArgumentFrozenAtPrefix ? "Before" : null;
         public bool NoNativeDecodeCalls => true;
+        public bool SlotLifetimeVerified => false;
+        public bool SlotInventoryIdentityVerified => false;
         public bool ActorArgumentPresent { get; internal set; }
         public bool InstanceWrapperPresent { get; internal set; }
         public bool SlotWrapperPresent { get; internal set; }
@@ -172,7 +187,7 @@ namespace DaveCoop.Networking
         public const int MaxProcessKeyUtf16 = 65536;
         public const int MaxResourceReadsPerPrefix = 32;
         public const int MaxProcessResourceReads = 65536;
-        public const int MaxSlotReadsPerPrefix = 32;
+        public const int MaxSlotReadsPerSample = 32;
         public const int MaxProcessSlotReads = 65536;
         private readonly object _gate = new object();
         private readonly Queue<LootCallObservation> _pending = new Queue<LootCallObservation>(MaxQueued);
@@ -197,7 +212,12 @@ namespace DaveCoop.Networking
             public string KeyHash;
             public bool InstancePresent, SlotPresent;
             public LootResourceObservation Resource;
-            public LootSlotObservation SlotCandidates;
+            public long? SlotSampleId;
+            public long SlotPointer;
+            public IntPtr SlotClass;
+            public LootSlotObservation SlotBefore, SlotAfter;
+            public LootObscuredIntCandidate SetterArgumentCandidate;
+            public bool SetterArgumentFrozenAtPrefix;
         }
         public Guid RunId => _lineage.RunId;
         public LootCallLineage Lineage => _lineage;
@@ -282,7 +302,20 @@ namespace DaveCoop.Networking
                         if (prefix.Token == null || !_lineage.Healthy) throw new InvalidOperationException("Loot prefix lineage rejected.");
                         if (call.Method == LootObservationMethod.LootBoxAddImpl)
                             prefix.Resource = FreezeResource(call.ItemResource);
-                        if (IsSlotBoundary(call.Method)) prefix.SlotCandidates = FreezeSlot(call.Slot);
+                        if (IsSlotBoundary(call.Method))
+                        {
+                            prefix.SlotSampleId = call.CallId;
+                            prefix.SlotBefore = FreezeSlot(call.Slot, "Before", out prefix.SlotPointer, out prefix.SlotClass);
+                            if (IsSlotSetter(call.Method))
+                            {
+                                CheckReadWindow();
+                                LootObscuredIntSnapshot argument = call.SetterArgument.HasValue ? CopyObscured(call.SetterArgument.Value) : null;
+                                CheckReadWindow();
+                                prefix.SetterArgumentCandidate = LootSlotSnapshot.DecodeInt(argument);
+                                prefix.SetterArgumentFrozenAtPrefix = argument != null;
+                                CheckReadWindow();
+                            }
+                        }
                         _prefixes.Add(call.CallId, prefix);
                     }
                     else
@@ -293,6 +326,12 @@ namespace DaveCoop.Networking
                         {
                             if (prefix.LocalInstancePointer != ReadInstancePointer(call))
                                 throw new InvalidOperationException("Loot original instance changed.");
+                            if (IsSlotSetter(call.Method))
+                            {
+                                // This is the same original call, not a lookup
+                                // of a new slot or a claim about object lifetime.
+                                prefix.SlotAfter = FreezeSlot(call.Slot, "After", out _, out _, true, prefix.SlotPointer, prefix.SlotClass);
+                            }
                             if (!_lineage.RecordPostfix(prefix.Token, call.OriginalReturn, call.OriginalIntReturn))
                                 throw new InvalidOperationException("Loot postfix lineage rejected.");
                         }
@@ -331,8 +370,12 @@ namespace DaveCoop.Networking
                     // failing event, including a previously queued finalizer.
                     observed.Resource = call.Method == LootObservationMethod.LootBoxAddImpl
                         ? LootResourceObservation.Unavailable("Resource candidate discarded after callback evidence failure.") : null;
+                    string failedSlotStage = observed.SlotDataSampleStage ??
+                        (call.Stage == LootObservationStage.After && IsSlotSetter(call.Method) ? "After" : "Before");
                     observed.SlotCandidates = IsSlotBoundary(call.Method)
-                        ? LootSlotObservation.Unavailable("Slot candidates discarded after callback evidence failure.") : null;
+                        ? LootSlotObservation.Unavailable("Slot candidates discarded after callback evidence failure.", failedSlotStage) : null;
+                    observed.SlotBefore = null; observed.SlotAfter = null;
+                    observed.SetterArgumentCandidate = null; observed.SetterArgumentFrozenAtPrefix = false;
                     if (!Failed)
                     {
                         observed.ReadError = observed.MainThread ? "Loot scalar/direct-field freezing rejected." : "Unbound callback thread; native fields were not read.";
@@ -395,7 +438,7 @@ namespace DaveCoop.Networking
             public T Read<T>(Func<T> read)
             {
                 _capture.CheckReadWindow();
-                if (_reads >= MaxSlotReadsPerPrefix || !ClaimSlotRead())
+                if (_reads >= MaxSlotReadsPerSample || !ClaimSlotRead())
                     throw new InvalidOperationException("Loot slot read quota exhausted.");
                 _reads++;
                 return _capture.Read(read);
@@ -410,20 +453,31 @@ namespace DaveCoop.Networking
                 if (Interlocked.CompareExchange(ref _processSlotReads, current + 1, current) == current) return true;
             }
         }
-        private LootSlotObservation FreezeSlot(LootBoxSlot slot)
+        private LootSlotObservation FreezeSlot(LootBoxSlot slot, string stage, out long pointer, out IntPtr actualClass,
+            bool requireOriginal = false, long originalPointer = 0, IntPtr originalClass = default)
         {
+            pointer = 0; actualClass = IntPtr.Zero;
             if (ReferenceEquals(slot, null))
-                return LootSlotObservation.Unavailable("Original slot argument is null.");
+            {
+                if (requireOriginal && (originalPointer != 0 || originalClass != IntPtr.Zero))
+                    throw new InvalidOperationException("Loot original slot instance changed.");
+                return LootSlotObservation.Unavailable("Original slot argument is null.", stage);
+            }
             var reader = new SlotReader(this);
-            long pointer = reader.Read(() => slot.Pointer.ToInt64());
+            pointer = reader.Read(() => slot.Pointer.ToInt64());
             if (pointer == 0) throw new InvalidOperationException("Loot slot identity unavailable.");
-            IntPtr actual = reader.Read(() => IL2CPP.il2cpp_object_get_class(new IntPtr(pointer)));
-            if (actual == IntPtr.Zero) throw new InvalidOperationException("Loot slot native class unavailable.");
+            // Capture local copies rather than capturing an out parameter in a
+            // lambda; neither value is exposed in the CLR diagnostic event.
+            long sampledPointer = pointer;
+            actualClass = reader.Read(() => IL2CPP.il2cpp_object_get_class(new IntPtr(sampledPointer)));
+            if (actualClass == IntPtr.Zero) throw new InvalidOperationException("Loot slot native class unavailable.");
+            if (requireOriginal && (pointer != originalPointer || actualClass != originalClass))
+                throw new InvalidOperationException("Loot original slot pointer or class changed.");
             // Class-store initialization may perform native work. Exact class
             // checks and all direct struct reads stay inside the same window.
             IntPtr expected = reader.Read(() => Il2CppClassPointerStore<LootBoxSlot>.NativeClassPtr);
-            if (expected == IntPtr.Zero || actual != expected)
-                return LootSlotObservation.Unavailable("Exact slot class is outside the supported LootBoxSlot schema.");
+            if (expected == IntPtr.Zero || actualClass != expected)
+                return LootSlotObservation.Unavailable("Exact slot class is outside the supported LootBoxSlot schema.", stage);
             LootObscuredIntSnapshot itemId = reader.Read(() => CopyObscured(slot.m_ItemID));
             LootObscuredIntSnapshot grade = reader.Read(() => CopyObscured(slot.m_Grade));
             LootObscuredIntSnapshot finalGrade = reader.Read(() => CopyObscured(slot.m_FinalGrade));
@@ -434,13 +488,13 @@ namespace DaveCoop.Networking
             LootObscuredIntSnapshot totalCountAgain = reader.Read(() => CopyObscured(slot.m_TotalCount));
             if (!SamplesEqual(itemId, itemIdAgain) || !SamplesEqual(grade, gradeAgain) ||
                 !SamplesEqual(finalGrade, finalGradeAgain) || !SamplesEqual(totalCount, totalCountAgain) ||
-                reader.Read(() => slot.Pointer.ToInt64()) != pointer ||
-                reader.Read(() => IL2CPP.il2cpp_object_get_class(new IntPtr(pointer))) != expected ||
+                reader.Read(() => slot.Pointer.ToInt64()) != sampledPointer ||
+                reader.Read(() => IL2CPP.il2cpp_object_get_class(new IntPtr(sampledPointer))) != expected ||
                 reader.Read(() => Il2CppClassPointerStore<LootBoxSlot>.NativeClassPtr) != expected)
                 throw new InvalidOperationException("Loot slot samples did not match.");
             // Decode only the copied CLR scalars. No getter, conversion,
             // initialization, detector query or static-key lookup is invoked.
-            var observed = new LootSlotObservation(LootSlotSnapshot.DecodeInt(itemId), LootSlotSnapshot.DecodeInt(grade),
+            var observed = new LootSlotObservation(stage, LootSlotSnapshot.DecodeInt(itemId), LootSlotSnapshot.DecodeInt(grade),
                 LootSlotSnapshot.DecodeInt(finalGrade), LootSlotSnapshot.DecodeInt(totalCount));
             CheckReadWindow(); GC.KeepAlive(slot);
             return observed;
@@ -513,7 +567,9 @@ namespace DaveCoop.Networking
             if (!ReferenceEquals(call.Bag, null)) return Read(() => call.Bag.Pointer.ToInt64());
             if (!ReferenceEquals(call.Storage, null)) return Read(() => call.Storage.Pointer.ToInt64());
             if (!ReferenceEquals(call.Save, null)) return Read(() => call.Save.Pointer.ToInt64());
-            return 0; // static/router or Roll: only CLR presence, no identity guess.
+            // Other instances are checked by their dedicated slot sampler;
+            // static/router or Roll callbacks do not guess an instance identity.
+            return 0;
         }
         private long FishOrdinal(long pointer)
         {
@@ -573,7 +629,9 @@ namespace DaveCoop.Networking
                 method == LootObservationMethod.FishDropWithPlus || method == LootObservationMethod.FishDropPlus ||
                 method == LootObservationMethod.FishBodySuccessInteract || method == LootObservationMethod.FishBodyCheckAvailable;
         private static bool IsSlotBoundary(LootObservationMethod method)
-            => method == LootObservationMethod.IngredientsAddFromLootBox || method == LootObservationMethod.SaveDataAddLootBox;
+            => method == LootObservationMethod.IngredientsAddFromLootBox || method == LootObservationMethod.SaveDataAddLootBox || IsSlotSetter(method);
+        private static bool IsSlotSetter(LootObservationMethod method)
+            => method == LootObservationMethod.SlotSetTotalCount || method == LootObservationMethod.SlotSetGrade || method == LootObservationMethod.SlotSetFinalGrade;
         private LootCallObservation CopyScalars(LootObservationCallback call)
         {
             LootObservationArguments args = call.Arguments;
@@ -592,10 +650,12 @@ namespace DaveCoop.Networking
                 GetTimesArgumentPresent = args.GetTimesArgumentPresent, ExchangeCallbackArgumentPresent = args.ExchangeCallbackArgumentPresent,
                 ItemDataArgumentPresent = args.ItemDataArgumentPresent, ActorArgumentPresent = args.ActorArgumentPresent,
                 InstanceWrapperPresent = !ReferenceEquals(call.Fish, null) || !ReferenceEquals(call.Body, null) || !ReferenceEquals(call.Bag, null) ||
-                    !ReferenceEquals(call.Storage, null) || !ReferenceEquals(call.Save, null) || args.OtherInstanceWrapperPresent,
+                    !ReferenceEquals(call.Storage, null) || !ReferenceEquals(call.Save, null) ||
+                    (IsSlotSetter(call.Method) && !ReferenceEquals(call.Slot, null)) || args.OtherInstanceWrapperPresent,
                 SlotWrapperPresent = !ReferenceEquals(call.Slot, null),
+                SlotSampleId = IsSlotBoundary(call.Method) ? call.CallId : (long?)null,
                 SlotDataUnavailableReason = IsSlotBoundary(call.Method)
-                    ? "Before scalar candidates only; native ABI, final quality, bag delta and full yield are not verified." : null
+                    ? "Scalar samples only; native ABI, slot lifetime, inventory identity, final quality, bag delta and full yield are not verified." : null
             };
         }
         private static void CopyPrefix(PrefixContext prefix, LootCallObservation observed)
@@ -604,7 +664,16 @@ namespace DaveCoop.Networking
             observed.UnityFrame = prefix.UnityFrame; observed.KeyLength = prefix.KeyLength; observed.KeyHash = prefix.KeyHash;
             observed.InstanceWrapperPresent = prefix.InstancePresent; observed.SlotWrapperPresent = prefix.SlotPresent;
             observed.Resource = prefix.Resource;
-            observed.SlotCandidates = prefix.SlotCandidates;
+            observed.SlotSampleId = prefix.SlotSampleId;
+            observed.SlotBefore = prefix.SlotBefore; observed.SlotAfter = prefix.SlotAfter;
+            // An After sample may be unavailable; never fall back to an older
+            // Before value simply because it was successfully decoded.
+            observed.SlotCandidates = prefix.SlotAfter ?? prefix.SlotBefore;
+            observed.SlotSnapshotReused = prefix.SlotSampleId.HasValue &&
+                (observed.Stage == nameof(LootObservationStage.Finalizer) ||
+                    (observed.Stage == nameof(LootObservationStage.After) && !IsSlotSetter(prefix.Method)));
+            observed.SetterArgumentCandidate = prefix.SetterArgumentCandidate;
+            observed.SetterArgumentFrozenAtPrefix = prefix.SetterArgumentFrozenAtPrefix;
             // No IsFishCaptured/ReactiveProperty.Value getter is invoked. The
             // terminal state is deliberately unavailable in this observation.
             observed.FishCapturedStateWrapperPresent = null;
@@ -636,6 +705,9 @@ namespace DaveCoop.Networking
                 case LootObservationMethod.FishBodyCheckAvailable: return "FishInteractionBody.CheckAvailableInteraction";
                 case LootObservationMethod.FishPlusItemRoll: return "FishPlusItemPity.RollPlusItem";
                 case LootObservationMethod.SaveDataAddLootBox: return "SaveData.AddLootBox";
+                case LootObservationMethod.SlotSetTotalCount: return "LootBoxSlot.set_TotalCount";
+                case LootObservationMethod.SlotSetGrade: return "LootBoxSlot.set_Grade";
+                case LootObservationMethod.SlotSetFinalGrade: return "LootBoxSlot.set_FinalGrade";
                 default: return "Unknown";
             }
         }

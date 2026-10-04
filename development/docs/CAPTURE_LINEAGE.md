@@ -60,3 +60,5 @@ Parent 是被观察方法之间的同步包含关系，不是原生直接 caller
 0.1.27 在既有入口增加[基础资源观察](LOOT_PRODUCT_OBSERVATION.md)，资源字段仍不能代替最终品质、有效重量、完整选择或原生分流凭证。
 
 0.1.28 另增加[受限货槽候选](LOOT_SLOT_OBSERVATION.md)，不调用原生解码或把Before的FinalGrade候选当捕获终局/入仓凭证。
+
+0.1.29 的[货槽前后观察](LOOT_SLOT_OBSERVATION.md)补三处setter；仅自然更新候选，不提供跨调用槽身份、完整产物或个人背包增量凭证。

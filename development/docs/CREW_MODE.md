@@ -1,6 +1,6 @@
 # 房主与员工模式
 
-当前源码为0.1.28-dev、协议6，插件构建警告视为错误通过；本轮实际Core/TCP226/226通过（新增4组CLR槽标量候选夹具）。[货槽观察](LOOT_SLOT_OBSERVATION.md)仅在默认关闭的原边界复制字段，用受限本地算法形成候选；不调用原生解码、不能证明最终品质/有效重量或完整产物。范围见[当前摘要](../logs/loot-slot-build-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。实际个人容量/分流与返航、客机隔离/房主世界、双端和冷配置仍待完成。
+当前源码为0.1.29-dev、协议6，插件构建警告视为错误通过；本轮实际Core/TCP226/226通过（扩展2个既有来源栈夹具）。[货槽观察](LOOT_SLOT_OBSERVATION.md)新增总数量/品质/最终品质三个自然setter的前后候选采样，仍默认关闭，不调用setter或原生解码，不产生捕获/背包增量凭证。范围见[当前摘要](../logs/loot-slot-mutation-build-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。个人容量/分流与返航、客机隔离/房主世界、双端和冷配置仍待完成。
 
 这是按用户提出的“房主掌主动权，第二人充当员工”确定的首版玩法方案。
 房主带队潜水，员工提供捕鱼和搬运协作，长期进度归房主。
@@ -228,3 +228,7 @@ Build及实际Core/TCP222/222通过；新增11组生产账本夹具、2组实际
 ## 0.1.28 受限货槽候选
 
 Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的CLR标量解码夹具；原生slot仍仅编译未执行，16默认关闭入口保持。Before对exact槽四struct字段两次守卫采样，prefix仅存候选，After/Finalizer复用且不读原生槽；密钥/隐藏值不入队/日志。未init/key0/fake校验不符明确Unavailable，不补初始化/查静态key或检测器。离线新工具文本默认关闭，三模式原decode/edges不变，4无范围leaf不补猜。最终品质时刻、接口重量、肉量转换与完整产物/个人分流/入仓仍待实际桥。详见[货槽观察](LOOT_SLOT_OBSERVATION.md)及[本轮摘要](../logs/loot-slot-build-verification.json)。
+
+## 0.1.29 已有货槽与品质更新观察
+
+新增三处默认关闭的自然setter观察，覆盖新槽入口之外的总数量合并和品质更新候选。Before/After各自复制四字段，After固定同次prefix身份；Finalizer复用After（含Unavailable），没有After才复用Before。RunId+CallId仅标识本次样本，不能跨调用关联货槽或证明槽寿命/袋身份。数量setter传入的是新总数，不是捕获增量；FinalGrade setter不证明整批或捕获终局。Build和实际226/226 Core/TCP通过，扩展两个既有CLR来源栈夹具；原生回调/ABI未执行，个人产物分流仍待接通。详见[货槽观察](LOOT_SLOT_OBSERVATION.md)及[本轮摘要](../logs/loot-slot-mutation-build-verification.json)。
