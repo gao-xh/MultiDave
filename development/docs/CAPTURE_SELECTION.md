@@ -8,7 +8,7 @@
 
 `EnterSelection` 在进入产物选择前把原操作标为 `EnteredUnknown`。这一步必须有新鲜的 `YieldSelectionIsolationVerified`，证明执行桥已准备好暂停整批产物的首次入袋和物化。现有原生桥不能提供这项证明，因此游戏中不会执行该路径。自然观察的 Parent、Roll 返回或最后一笔 Add 都不能补出这项进入权限。
 
-`LateSeal` 接收原操作已经选出的完整产物及真实最终品质、有效重量，要求 `CompleteSelectedYield`、`MaterializationBoundaryHeld` 和 `NoBagWriteYet`，再按对应个人袋的当前容量与修订预留重量。它仍然保留 `EnteredUnknown`，不重新进入选择、不重掷随机，也不自动确认捕获。后续仍要同一操作的真实捕获终态、房主原袋增量或员工分流凭证，才能调用 `ConfirmCapture`。
+`LateSeal` 接收原操作已经选出的完整捕获产物、原槽品质和有效重量，要求 `CompleteSelectedYield`、`MaterializationBoundaryHeld` 和 `NoBagWriteYet`，再按对应个人袋的当前容量与修订预留重量。返航入仓的 FinalGrade 与兑换数量由单独转换计划处理，不能覆盖捕获产品或其指纹。账本仍然保留 `EnteredUnknown`，不重新进入选择、不重掷随机，也不自动确认捕获。后续仍要同一操作的真实捕获终态、房主原袋增量或员工分流凭证，才能调用 `ConfirmCapture`。
 
 第一份身份与完整选择证明都通过的批次，在个人容量和袋修订检查之前固定。容量拒绝也保留该批次，不能换成更轻的物品、数量或品质再试；同一批次后续重新核对新鲜容量不等于重新执行选择。此时仍没有容量预约、袋增量或捕获凭证。
 
@@ -39,3 +39,5 @@
 后续原生执行按[员工选择与提交桥](FISH_YIELD_BRIDGE.md)补齐多tier/主随机、一次追加、进度及终态；槽观察不提供整批暂停或可信成员绑定。
 
 0.1.30已新增[员工一次性选择编排和typed backend](EMPLOYEE_FISH_SELECTION.md)，实际使用同ledger EnterSelection；raw IDs/参数/资源不等于已验证CargoProduct，尚不生成LateSeal或捕获receipt。10个新production-coordinator夹具加入总计236项真实Core/TCP执行，不执行native。
+
+0.1.31增加[捕获产品归一化](EMPLOYEE_FISH_PRODUCTS.md)，同一选择桥缓存产品并调用既有LateSeal；捕获原品质与返航最终品质分开。夹具事实不授予实际source/actor/isolation能力；仍不自动ConfirmCapture。

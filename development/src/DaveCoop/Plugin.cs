@@ -17,7 +17,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.30-dev";
+        public const string Version = "0.1.31-dev";
 
         public override void Load()
         {

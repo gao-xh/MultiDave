@@ -758,3 +758,13 @@
 - 本轮实际Core/TCP236/236，新增10个真实coordinator＋ledger夹具：顺序/同lease/partial business及guard异常/freshfacts/tier/哨兵/线程重入/重复resource与synthetic容量挂起；只CLR，不证明GC、资源或native权限。Build警告视为错误通过，SHA256 `36A362401478FC9C66BD5EE7F11B2C3D7D9475C3B5818007A7493AE88A9902AE`；130输入执行前封存、执行后相同。独立native/interface审查无阻断，发现生命周期健康围栏与注释过宽后已修正，再封存验证。
 - 新EMPLOYEE_FISH_SELECTION与构建摘要/currentcore/交接/计划/Skill同步；旧0.1.29研究与226构建保持。下一步正面接真实host-owned employee actor、完整product/品质/个人重量、LateSeal、单次分流/共享进度/终态receipt与逐项返航；host世界/guest隔离、武器生存、正常双端与GitHub冷配置仍待完整实现，未声称可合作捕鱼。
 - 两名独立只读末审最终READY；已把旧研究段标为0.1.29历史并纠正未证装备算法措辞，新0.1.30实际236不与历史复用混淆。正式Skill校验通过并同步，SHA256 `179CE534888A30AF254185BE0995C0190AAD5B9CDB1ABEF2502141E615A0078F`；纯文档修正后130验证输入仍相同，无需重复测试。新鲜游戏进程0；安装DLL保持8F90042C…E5F5B，原binary/metadata及两个interop最终hash与研究输入一致。
+
+## 2026-10-04 — 0.1.31 员工捕获产品与同批个人容量
+
+- 前轮e9c6f6b已推送并核远端；本轮继续每人独立袋/容量/负重，房主唯一长期进度。未部署/启动或执行游戏业务，未读改存档。
+- 新Core FishYieldProducts把既有已进入选择归一化为缓存批次：四getter一次、原TID与lookup分开、checked原品质、原float乘法再转double；员工袋double累加明确为Mod规则。snapshot owned copy，部分异常保留标量与未知，全-1不造空receipt。TrySeal只用内部同批产品与外部真实freshfacts，容量拒绝不重选、不读getter。
+- 新NativeEmployeeFishProducts仅typed编译，支持exact DR.Items、四gettermask顺序/attempt前标记、source/lifecycle/strongrefs原守卫；不增加lookup/handles，不补fake capability或网络调用。IntegratedItem原metadata不实现IItemBase。
+- 原metadata新成功报告3类14getter，前次PowerShell字段重载访问失败未写报告，修正为CLR reflection后成功；原文件hash一致。新AddFromLootBox私有PE研究1方法112指令/1间接call，无截断/配额；入仓FinalGrade、兑换数量与捕获rawGrade分开。完整方法/分类叶/additive/实际native语义未证，原指令地址不发布。
+- 实际Core/TCP246/246，新增10 production coordinator+ledger产品夹具；只synthetic backend，不执行native。Build警告视为错误通过，SHA256 `D5C9D930C17EBEB991C1DA26FF3723287E52C919C1F07426FE75A529F2EC6078`；133输入执行前封存、后相同。
+- 新EMPLOYEE_FISH_PRODUCTS与实际构建摘要/currentcore/交接/计划/Skill同步；修正CAPTURE_SELECTION最终品质歧义，旧.30选择236摘要保持。下一步接真实员工actor/分流/共享进度/鱼终态，再接独立返航转换与逐项实际入仓/保存。资源须先冻结返航metadata或转移ownership再free。guest隔离/房主世界、双端正常闭环及冷配置继续完整M3—M7。
+- 两名独立只读源/文档末审READY，正式Skill校验/复制hash匹配，SHA256 `04B0EEAD11D05EC83EB6202B1DFD8B1B92ED3A82326287E5BECC4C0891AB810B`。最终133验证输入相同，无新代码变更不重复测试；新鲜游戏进程0，安装DLL保持8F90042C…E5F5B，原binary/metadata与两个interop最终hash匹配。

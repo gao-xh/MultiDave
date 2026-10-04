@@ -1,6 +1,6 @@
 # 员工的一次性产物选择
 
-0.1.30-dev 开始实现实际 typed 选择原语及调用编排。房主的原生袋只归房主；本桥选择员工捕获批次，不调用房主袋暂存。尚未接到网络或 GUI，也不生成完整 CargoProduct、捕获凭证或员工入袋记录。
+0.1.30-dev 开始实现实际 typed 选择原语及调用编排；0.1.31-dev 增加[捕获产品归一化与个人容量入口](EMPLOYEE_FISH_PRODUCTS.md)。房主的原生袋只归房主；本桥选择员工捕获批次，不调用房主袋暂存。尚未接到网络或 GUI，也不生成真实捕获凭证或员工入袋记录。
 
 ## 实际代码
 
@@ -31,12 +31,12 @@
 
 RawPlanHeld仅表示原选择及资源保留阶段完成，账本仍为 EnteredUnknown。快照明确 FinalProductsVerified=false、CaptureConfirmed=false，不等于容量接受、捕获终态、任务奖励或入袋。原选择会消耗随机；Plus也可能写房主保底/dirty进度。
 
-已知 Add_Impl 路径的原槽品质为基础品质加奖励品质，入袋重量用单精度计算；后续 ApplyFinalGrade再按类别、additive和上下界改变返航品质。基础字段不能代替最终品质，WeightParameter也不能猜作重量乘数。本桥不调用房主袋 ApplyFinalGrade/RefreshWeight，也不以 raw ID/品质伪造 CargoProduct。
+已知 Add_Impl 路径的原槽品质为基础品质加奖励品质，入袋重量用单精度计算；后续 ApplyFinalGrade再按类别、additive和上下界改变返航品质。0.1.31将已保留资源的产品编号、原槽品质和重量冻结为捕获产品；基础字段仍不能代替返航 FinalGrade，WeightParameter也不能猜作重量乘数。本桥不调用房主袋 ApplyFinalGrade/RefreshWeight，不把仅 raw ID 当产品。
 
-下一步须建立房主维护的真实员工身份、空间/存活/装备事实；确定完整产品映射、个人重量和品质政策后，接同一租约 LateSeal。容量拒绝保持原批次及资源，只重核容量；随后还需单次员工分流、共享进度、鱼终态和真实 receipt 才能 ConfirmCapture。员工逐项返航入仓、客机隔离、房主世界采用、武器/生存状态、双端正常闭环与 GitHub 冷配置仍属于完整目标。
+下一步须建立房主维护的真实员工身份、空间/存活/装备事实，把已编译的选择、归一化和同一租约 LateSeal 接到真实 producer。容量拒绝保持原批次及资源，只重核容量；随后还需单次员工分流、共享进度、鱼终态和真实 receipt 才能 ConfirmCapture。员工逐项返航转换/入仓、客机隔离、房主世界采用、武器/生存状态、双端正常闭环与 GitHub 冷配置仍属于完整目标。
 
 ## 验证
 
 新增夹具运行实际生产 coordinator 与既有 ledger，通过 synthetic backend检查派发顺序、重复租约、部分异常、来源失效、哨兵、线程/重入以及容量拒绝后不重选；它们不调用上述游戏方法或运行 GC/native callback。
 
-精确接口另经离线元数据核对；原 PE 报告与地址/指令只保存在 `.local`。实际 Core/TCP、编译和研究计数以 [构建摘要](../logs/employee-fish-selection-build-verification.json) 为准。当前没有部署或启动0.1.30，安装0.1.12、最近潜水0.1.11、默认发行包0.1.0保持原验证范围。
+精确接口另经离线元数据核对；原 PE 报告与地址/指令只保存在 `.local`。0.1.30选择阶段的实际 Core/TCP、编译和研究计数以 [历史构建摘要](../logs/employee-fish-selection-build-verification.json) 为准；0.1.31当前范围见产品文档及其摘要。没有部署或启动这两个版本，安装0.1.12、最近潜水0.1.11、默认发行包0.1.0保持原验证范围。

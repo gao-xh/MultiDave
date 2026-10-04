@@ -46,6 +46,8 @@ namespace DaveCoop.Core.Cargo
     public sealed class CargoProduct
     {
         public int ProductId { get; set; }
+        // Captured raw slot grade. Return/storage quality is a separate plan;
+        // it must not replace the grade in this capture's fixed fingerprint.
         public int Grade { get; set; }
         public int Count { get; set; }
         public double? UnitWeight { get; set; }

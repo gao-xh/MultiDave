@@ -1,6 +1,6 @@
 # MultiDave 开发计划
 
-当前插件源码0.1.30-dev、协议6；本轮实际Core/TCP236/236与Build警告视为错误通过（新增10项选择编排夹具）。[员工一次性选择桥](EMPLOYEE_FISH_SELECTION.md)已实现typed品质/主/追加选择与强资源保留，经既有来源租约进入，异常不重选；尚无网络/可信actor producer、完整产品或捕获提交。证据见[构建摘要](../logs/employee-fish-selection-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；真实个人容量/入袋/返航、客机隔离/房主世界、双端和冷配置仍待完成。
+当前插件源码0.1.31-dev、协议6；本轮实际Core/TCP246/246与Build警告视为错误通过（新增10项产品归一化夹具）。[员工捕获产品](EMPLOYEE_FISH_PRODUCTS.md)在一次性选择后固定产品TID、原槽品质与float重量，仅用缓存批次接既有LateSeal；容量复核不重读/重选。尚无网络/可信actor producer、真实分流或捕获凭证。证据见[构建摘要](../logs/employee-fish-products-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕获/返航、客机隔离/房主世界、双端与冷配置仍待完成。
 
 目标：Windows Steam 版双人潜水合作 MVP，先做局域网房主/客户端。
 房主负责游戏世界和结算。服务器方案暂缓。
@@ -222,3 +222,5 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 该研究阶段插件保持0.1.29；该轮只执行新离线研究工具，不重复原226测试或插件Build。普通拾取按CarvableCount逐tier，死鱼身体为另一个tier1配方；主选择也会随机，追加只一次并改保底/dirty。原Add的成功返回在实际Add_Impl之后，槽前已经有负重效果，原容量并非整批预期重量检查。SuccessInteract的UnityEvent转发不提供已证actor归属，回收/尸体状态也非捕获凭证。按[员工选择与提交桥](FISH_YIELD_BRIDGE.md)实现明确合作批次规则；不再增加镜像Core Gate，先接实际成员、选择/分流producer与现账本。完整M3—M7和实机闭环继续必需。
 
 0.1.30已落地一次性员工选择编排与typed原生原语，详见[EMPLOYEE_FISH_SELECTION](EMPLOYEE_FISH_SELECTION.md)。236项Core/TCP与Build实际通过；先登记既有租约，再一次品质、多tier主与一次Plus，保留未知及强资源。下一步建立真实host-owned员工actor事实与完整grade/weight/product映射，接LateSeal、单次分流/共享进度/终态receipt及逐项返航；typed helper未接网络，不放开玩法。完整M3—M7继续。
+
+0.1.31已固定捕获产品并提供同批LateSeal入口，详见[EMPLOYEE_FISH_PRODUCTS](EMPLOYEE_FISH_PRODUCTS.md)。下一步接真实host-owned员工actor与实际分流/共享进度/鱼终态凭证；返航另固定原品质兑换数量与FinalGrade计划。完整M3—M7继续，不把字段完成当玩法授权。

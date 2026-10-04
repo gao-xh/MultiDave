@@ -63,6 +63,10 @@ namespace DaveCoop.Core.Cargo
             TrySourceLease(lease, out Capture capture, out _) &&
             capture.Stage == CargoCaptureStage.Reserved && capture.Request == null;
 
+        internal bool IsSelectionEntered(CargoSourceLease lease) =>
+            TrySourceLease(lease, out Capture capture, out _) && capture.SelectionIsolationEntered &&
+            capture.Stage == CargoCaptureStage.EnteredUnknown;
+
         public ExpeditionCargoLedger(string expeditionId, CargoMemberSetup[] members)
         {
             _expedition = CargoValues.GuidKey(expeditionId);

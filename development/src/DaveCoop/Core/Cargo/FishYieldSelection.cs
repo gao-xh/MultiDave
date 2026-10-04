@@ -73,7 +73,7 @@ namespace DaveCoop.Core.Cargo
     // Call sequencing on the existing ledger, not another authorization gate.
     // EnterSelection is the single arbitration point even if two coordinators
     // refer to the same lease. This object never invents facts or a receipt.
-    public sealed class FishYieldSelection
+    public sealed partial class FishYieldSelection
     {
         private readonly ExpeditionCargoLedger _ledger;
         private readonly CargoSourceLease _lease;

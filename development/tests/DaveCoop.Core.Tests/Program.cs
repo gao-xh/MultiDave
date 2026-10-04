@@ -8,6 +8,16 @@ internal static class Program
     {
         var tests = new (string Name, Action Run)[]
         {
+            ("fish product original TID capture grade and float weights", FishYieldProductTests.OriginalTidCaptureGradeAndFloatWeightsStayFixed),
+            ("fish product lift policy raw values and owned snapshots", FishYieldProductTests.LiftPolicyAndSnapshotsPreserveRawValuesAndOwnedProducts),
+            ("fish product getter failures retain partial results without retry", FishYieldProductTests.GetterFailuresRetainEveryReturnedScalarWithoutRetry),
+            ("fish product source loss preserves returned getter prefix", FishYieldProductTests.SourceLossStopsGettersAndPreservesTheReturnedPrefix),
+            ("fish product invalid scalars and grade overflow remain unknown", FishYieldProductTests.InvalidScalarsAndGradeOverflowRemainUnknown),
+            ("fish product empty sentinels cannot prove empty capture", FishYieldProductTests.EmptyOriginalResultsCannotBecomeAnEmptyCaptureReceipt),
+            ("fish product creator thread and reentry cannot duplicate normalization", FishYieldProductTests.CreatorThreadAndReentryCannotDuplicateNormalization),
+            ("fish product absent backend and preselection do not consume attempt", FishYieldProductTests.MissingBackendAndPreselectionCallsDoNotConsumeAnAttempt),
+            ("fish product capacity retry uses cached plan without getters", FishYieldProductTests.CapacityRetryUsesOneCachedPlanAndNeverReadsResourcesAgain),
+            ("fish product fresh late facts seal without capture receipt", FishYieldProductTests.FreshLateFactsSealProductsWithoutGrantingAReceipt),
             ("fish yield grade main and plus are ordered once after ledger entry", FishYieldSelectionTests.GradeMainAndPlusAreOrderedOnceAfterLedgerEntry),
             ("fish yield competing coordinators cannot reselect one lease", FishYieldSelectionTests.CompetingCoordinatorsOnOneLeaseCannotRunAnotherSelection),
             ("fish yield partial business failures retain unknown results", FishYieldSelectionTests.PartialBusinessFailuresKeepUnknownResultsAndNeverRetry),

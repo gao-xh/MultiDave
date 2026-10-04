@@ -265,7 +265,12 @@ description: Configure or continue development of the MultiDave prototype for Wi
   SuccessInteract仅UnityEvent转发，不由actor参数存在推绑定；DestroySelf/尸体/隐藏不证明捕获终态。新员工合作批次不宣称保持单机交错随机顺序；必须固定成员、单次全选择、独立容量/分流、共享进度和真实receipt。
   现19观察不能提供held yield，原Add成功不能伪造、临时LootBox仍引用全局状态；原容量不是整批预期重量。保持native/个人袋/world/guest权限false，继续真实producer、实际双端正常返航与冷配置，不催延后测试。
 
-- 当前源码0.1.30-dev/协议6，实际Core/TCP236/236与Build警告视为错误通过；新增10项真实coordinator+ledger夹具，仍为synthetic backend，不执行native。继续员工选择先读development/docs/EMPLOYEE_FISH_SELECTION.md、FISH_YIELD_BRIDGE.md及employee-fish-selection-build-verification.json。
+- 历史源码0.1.30-dev/协议6，实际Core/TCP236/236与Build警告视为错误通过；新增10项真实coordinator+ledger夹具，仍为synthetic backend，不执行native。继续员工选择先读development/docs/EMPLOYEE_FISH_SELECTION.md、FISH_YIELD_BRIDGE.md及employee-fish-selection-build-verification.json。
   直接使用既有exact source lease/EnterSelection；品质随机先登记后一次选择，多tier主与一次Plus/保底固定，raw IDs/资源/参数不等于最终CargoProduct或receipt。最多7主预留8项，至少tier1，-1不补选；容量失败/异常/断线不重Roll、不clear unknown。
   typed helper仅编译，无network/GUI生产调用。NativeEmployeeFishSelectionBridge.TryPrepare需实际健康active lifecycle owner和capture same tracker、existing profile/provider；业务必须Core Selecting窗口，业务尝试先单次标记，末代次复核。最多13显式reference/handle尝试与256未释放桥；只有同ledger Confirmed/NativeNotEntered才release，unknown free不retry。partial native allocation retention/ABI/field invariants未证。
   不能把Body actor参数、显示pose、Room2、rawgrade/weight或fixture flags当可信员工/完整产物/权限。现缺host-owned actor空间/存活事实及complete grade/weight/product映射，随后接LateSeal、员工分流/共享进度/terminal receipt/逐项返航。全部真实native/guest/world/cargo能力未验；未部署启动，不催延后测试，安装0.1.12/潜水0.1.11/default0.1.0保持。完整M3—M7/真实双端正常返航/GitHub冷配置继续。
+
+- 当前源码0.1.31-dev/协议6，实际Core/TCP246/246与Build警告视为错误通过；10新产品夹具仅synthetic backend。继续个人袋产品/返航先读development/docs/EMPLOYEE_FISH_PRODUCTS.md及employee-fish-products-build-verification.json；.30选择236摘要保留历史。
+  同exact已进入选择四getter一次冻结TID/raw captureGrade/float-derived重量/ItemType；lookup ID可不同TID，IntegratedItem不是IItemBase，native当前仅exact DR.Items。getter attempt先标记，partial失败/全-1不重读不造receipt。员工袋double累加是Mod规则，非host float总值。
+  TrySeal只cache批次与fresh existing facts，容量拒绝不重选；无producer/network/GUI接线，不补true、不Confirm。捕获Grade/指纹不被返航FinalGrade覆盖，兑换数量与品质政策另冻结。返航还需资源时先freeze metadata/transfer ownership再release，Confirmed不是return done。
+  全native ABI/实际分流/receipt/入仓保存/guest隔离/world权限未验，安装.12/潜水.11/default.0保持。未部署启动，不催延后测试，完整M3—M7/真实双端正常返航/GitHub冷配置继续。

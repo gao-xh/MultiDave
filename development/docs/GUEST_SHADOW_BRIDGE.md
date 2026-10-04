@@ -1,6 +1,6 @@
 # 客机原生根影子桥
 
-当前插件源码0.1.30-dev、协议6；本轮实际Core/TCP236/236与Build警告视为错误通过（新增10项选择编排夹具）。[员工一次性选择桥](EMPLOYEE_FISH_SELECTION.md)已实现typed品质/主/追加选择与强资源保留，经既有来源租约进入，异常不重选；尚无网络/可信actor producer、完整产品或捕获提交。证据见[构建摘要](../logs/employee-fish-selection-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；真实个人容量/入袋/返航、客机隔离/房主世界、双端和冷配置仍待完成。
+当前插件源码0.1.31-dev、协议6；本轮实际Core/TCP246/246与Build警告视为错误通过（新增10项产品归一化夹具）。[员工捕获产品](EMPLOYEE_FISH_PRODUCTS.md)在一次性选择后固定产品TID、原槽品质与float重量，仅用缓存批次接既有LateSeal；容量复核不重读/重选。尚无网络/可信actor producer、真实分流或捕获凭证。证据见[构建摘要](../logs/employee-fish-products-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕获/返航、客机隔离/房主世界、双端与冷配置仍待完成。
 
 0.1.18-dev 新增 [NativeGuestShadowBridge](../src/DaveCoop/Networking/NativeGuestShadowBridge.cs) 和纯 CLR 的 [GuestShadowTransaction](../src/DaveCoop/Core/Guest/GuestShadowTransaction.cs)。桥包含实际的原生序列化、强引用、直接根交换、回读及恢复代码；当前没有接入 Network、GUI 或游戏生命周期，未调用这些原生操作。接口研究及其静态证据见 [GUEST_ISOLATION](GUEST_ISOLATION.md)，已枚举输出的围栏范围见 [GUEST_OUTPUT_FENCE](GUEST_OUTPUT_FENCE.md)。
 

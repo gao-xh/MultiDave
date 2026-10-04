@@ -13,7 +13,7 @@ namespace DaveCoop.Networking
     // trusted member/actor/world facts must come from the future host producer.
     // No direct LootBox/AddDrop/reward-commit/terminal calls. Grade/drop/pity
     // selection itself can consume RNG and write pending pity/dirty progress.
-    internal sealed class NativeEmployeeFishSelectionBridge : IFishYieldSelectionBackend
+    internal sealed partial class NativeEmployeeFishSelectionBridge : IFishYieldSelectionBackend
     {
         private sealed class OwnedReference
         {
