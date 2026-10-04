@@ -27,7 +27,7 @@ foreach ($runtimeName in @('mscorlib.dll', 'netstandard.dll', 'Microsoft.CSharp.
 foreach ($coreName in @('BepInEx.Core.dll', 'BepInEx.Unity.IL2CPP.dll', 'Il2CppInterop.Runtime.dll')) {
     $references += Join-Path $coreRoot $coreName
 }
-foreach ($interopName in @('Il2Cppmscorlib.dll', 'UnityEngine.CoreModule.dll', 'UnityEngine.InputLegacyModule.dll', 'UnityEngine.IMGUIModule.dll')) {
+foreach ($interopName in @('Il2Cppmscorlib.dll', 'Assembly-CSharp.dll', 'UnityEngine.CoreModule.dll', 'UnityEngine.AnimationModule.dll', 'UnityEngine.InputLegacyModule.dll', 'UnityEngine.IMGUIModule.dll')) {
     $references += Join-Path $interopRoot $interopName
 }
 foreach ($reference in $references) {
@@ -39,7 +39,7 @@ $outputDll = Join-Path $outputRoot 'DaveCoop.dll'
 $responsePath = Join-Path $outputRoot 'compile.rsp'
 $compilerArguments = @('-nostdlib+', '-target:library', '-langversion:9.0', '-deterministic+', '-debug:portable', '-optimize+', '-warnaserror+', ('-out:"' + $outputDll + '"'))
 $compilerArguments += $references | ForEach-Object { '-reference:"' + $_ + '"' }
-$compilerArguments += Get-ChildItem -LiteralPath (Join-Path $projectRoot 'src\DaveCoop') -Filter '*.cs' -File | Sort-Object Name | ForEach-Object { '"' + $_.FullName + '"' }
+$compilerArguments += Get-ChildItem -LiteralPath (Join-Path $projectRoot 'src\DaveCoop') -Filter '*.cs' -File -Recurse | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } | Sort-Object FullName | ForEach-Object { '"' + $_.FullName + '"' }
 $compilerArguments | Set-Content -LiteralPath $responsePath -Encoding utf8
 & $dotnetCommand $compilerPath '-noconfig' ('@' + $responsePath)
 if ($LASTEXITCODE -ne 0) { throw "Plugin compilation failed ($LASTEXITCODE)." }

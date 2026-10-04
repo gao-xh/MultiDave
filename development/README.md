@@ -1,6 +1,7 @@
 # 潜水员戴夫联机原型
 
-当前阶段：验证 BepInEx 插件加载、Unity 组件运行、场景读取和状态面板。
+当前阶段：M1 玩家、输入、动画与摄像机发现，计划见 [PLAN](docs/PLAN.md)。
+已完成插件加载验证，正在以只读探针采集实际游戏对象。
 尚未实现第二角色、网络连接、捕鱼同步或存档同步。
 
 ## 本机环境
@@ -10,7 +11,7 @@
 - 检查时的 Steam Build ID：`25315876`
 - Unity：`6000.0.52f1`，Windows x64 IL2CPP
 - BepInEx：官方 `6.0.0-be.788+5b766a3`
-- 插件：`local.davecoop.prototype`，版本 `0.1.0`
+- 插件：`local.davecoop.prototype`，源码 `0.1.1-dev`，发布包 `0.1.0`
 
 ## 编译与安装
 
@@ -33,7 +34,7 @@
 
 ## 运行验证
 
-游戏左上角显示 `DaveCoop Prototype 0.1.0`、加载状态和当前场景。
+游戏左上角显示 `DaveCoop Prototype 0.1.1-dev`、加载状态、当前场景和发现的玩家数量。
 按 F8 显示或隐藏面板，设置保存在
 `BepInEx/config/local.davecoop.prototype.cfg`。
 
@@ -42,6 +43,11 @@
 - `DAVECOOP_BOOTSTRAP_OK`：插件加载成功。
 - `DAVECOOP_UPDATE_OK`：Unity 正在调用自定义组件。
 - `DAVECOOP_SCENE`：已读到活动场景。
+- `DAVECOOP_PROBE_READY`：只读玩家/摄像机探针开始运行。
+- `DAVECOOP_OBJECTS` / `DAVECOOP_PLAYER_SNAPSHOT`：对象关系变化与玩家采样。
+
+F9 立即采样。离线接口读取、潜水验收和日志汇总流程见
+[玩家与摄像机发现](docs/GAME_API.md)。
 
 ## 框架安装记录
 
@@ -60,6 +66,8 @@
 2. 生成仅用于观察的第二角色，并确保不会改变任务或存档。
 3. 加入局域网房主/客户端连接和角色移动同步。
 4. 在房主统一裁决下实现鱼、伤害、拾取和返航结算。
+
+具体阶段与验收条件按 [开发计划](docs/PLAN.md) 执行。
 
 ## 官方资料
 

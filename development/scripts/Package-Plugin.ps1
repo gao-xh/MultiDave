@@ -9,6 +9,22 @@ if ($environment.UnityVersion -ne $dependencies.testedUnityVersion -or $environm
 }
 $sourceDll = Join-Path $projectRoot 'artifacts\plugin\DaveCoop.dll'
 if (!(Test-Path -LiteralPath $sourceDll)) { throw 'Build the plugin first.' }
+# Read the compiled attribute without executing the plugin. A development build
+# must not accidentally be packaged with the older release's manifest version.
+Add-Type -Path (Join-Path $environment.GamePath 'BepInEx\core\Mono.Cecil.dll')
+$assembly = [Mono.Cecil.AssemblyDefinition]::ReadAssembly($sourceDll)
+try {
+    $pluginAttributes = @($assembly.MainModule.Types | ForEach-Object {
+        $_.CustomAttributes | Where-Object { $_.AttributeType.FullName -eq 'BepInEx.BepInPlugin' }
+    })
+    if ($pluginAttributes.Count -ne 1) { throw 'Expected exactly one BepInPlugin attribute in the compiled plugin.' }
+    $compiledVersion = [string]$pluginAttributes[0].ConstructorArguments[2].Value
+    if ($compiledVersion -ne $dependencies.pluginVersion) {
+        throw "Compiled plugin version $compiledVersion differs from release metadata $($dependencies.pluginVersion). Validate and update dependencies.json before packaging."
+    }
+} finally {
+    $assembly.Dispose()
+}
 $packageRoot = Join-Path $projectRoot ('artifacts\packages\' + [Guid]::NewGuid().ToString('N'))
 $dllRelativePath = 'BepInEx/plugins/DaveCoop/DaveCoop.dll'
 $destinationDll = Join-Path $packageRoot $dllRelativePath

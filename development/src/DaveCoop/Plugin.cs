@@ -14,14 +14,20 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.0";
+        public const string Version = "0.1.1-dev";
 
         public override void Load()
         {
             Diagnostics.Logger = Log;
             Diagnostics.ShowOverlay = Config.Bind("Diagnostics", "ShowOverlay", true,
                 "Show the development status panel. Press F8 to hide/show it.");
+            PlayerProbe.Logger = Log;
+            PlayerProbe.Enabled = Config.Bind("Discovery", "EnablePlayerProbe", true,
+                "Read player/camera state on the Unity thread; write bounded discovery logs. F9 captures a snapshot.");
+            PlayerProbe.MaxSnapshots = Config.Bind("Discovery", "MaxSnapshots", 9000,
+                "Maximum snapshots per game launch, clamped to 1..18000 (two samples per second).");
             AddComponent<Diagnostics>();
+            AddComponent<PlayerProbe>();
             Log.LogInfo($"DAVECOOP_BOOTSTRAP_OK: {Name} {Version}; Unity {Application.unityVersion}");
         }
     }
@@ -75,8 +81,8 @@ namespace DaveCoop
             if (ShowOverlay == null || !ShowOverlay.Value)
                 return;
 
-            GUI.Box(new Rect(12, 12, 300, 82),
-                $"DaveCoop Prototype {Plugin.Version}\nPlugin loaded | Scene: {_scene}\nF8: hide/show | Network: not implemented");
+            GUI.Box(new Rect(12, 12, 440, 106),
+                $"DaveCoop Prototype {Plugin.Version}\nPlugin loaded | Scene: {_scene}\n{PlayerProbe.Status}\nF8: hide/show | F9: snapshot | Network: not implemented");
         }
     }
 }

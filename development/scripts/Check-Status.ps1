@@ -22,5 +22,6 @@ if ($gameProcess -and (Test-Path -LiteralPath $logPath)) {
     PluginInstalled = Test-Path -LiteralPath $assemblyPath
     PluginLoadVerified = $currentProcessLogFresh -and $logText -match 'DAVECOOP_BOOTSTRAP_OK:'
     UnityUpdateVerified = $currentProcessLogFresh -and $logText -match 'DAVECOOP_UPDATE_OK:'
+    PlayerProbeReady = $currentProcessLogFresh -and $logText -match 'DAVECOOP_PROBE_READY:'
     LogPath = $logPath
 } | ConvertTo-Json

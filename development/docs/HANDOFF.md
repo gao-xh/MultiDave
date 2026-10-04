@@ -6,6 +6,13 @@
 自定义插件加载、Unity Update 回调，以及 `DR_Start`、`DR_Logo`、`DR_Title` 场景读取。
 插件日志证据见 `../logs/bootstrap-verification.log`。
 
+已进入 `codex/player-discovery` 分支的 M1 开发，源码为 `0.1.1-dev`。
+加入只读玩家、输入、动画和摄像机探针，离线元数据检查工具及 JSONL 汇总工具。
+真实潜水 `A01_01_01` 已读到 `PlayerGroup(Clone)/DaveCharacter`，
+`InGameManager.playerCharacter` 与该实例一致，`CameraManager` 跟随其根 Transform。
+玩家位置、旋转、朝向、非零移动输入和动画状态已成功采样。
+当前默认安装包仍为 0.1.0；根入口不部署开发分支的源码构建。
+
 首次安装记录在忽略的 `artifacts/framework-install.json`；
 原始 EXE、GameAssembly.dll、UnityPlayer.dll 的 SHA256 经复核未改变。
 
@@ -21,9 +28,9 @@
 
 ## 下一步
 
-通过已生成的 `BepInEx/interop/Assembly-CSharp.dll` 检查玩家对象、
-创建流程、输入入口和摄像机绑定。先做只读观察和记录，确认生命周期，
-再验证第二角色不会夺取输入/摄像机或触发单例、任务和存档副作用。
+按 `PLAN.md` 和 `GAME_API.md` 继续。先完成本次潜水返航/退出的生命周期检查，
+再推进 M2 仅显示的第二角色；研究显示组件/姿态复制，避免完整克隆角色触发
+输入、摄像机、单例、任务和存档逻辑。成员签名仍不能证明创建流程的具体行为。
 
 ## 已遇到的问题
 
@@ -35,6 +42,8 @@
   基础插件仍通过加载和 Update 验证。这不代表所有游戏函数均可挂钩。
 - 当前沙箱内窗口枚举无法取得用户桌面窗口，视觉结果需另行确认；
   加载验证以当前游戏日志为证据。
+- 首轮玩家探针的托管辅助方法被 IL2CPP 注册器尝试导出，产生不支持类型警告；
+  已加 `HideFromIl2Cpp` 并真实重启验证，修正版不再出现这些警告。
 
 ## 发行边界
 
