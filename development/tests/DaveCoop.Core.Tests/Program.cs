@@ -318,7 +318,19 @@ internal static class Program
             ("fish action native entry is not capture success", FishActionTransportTests.NativeEntryCannotBecomeCaptureSuccess),
             ("TCP fish action request result round trip", () => FishActionTransportTests.TcpRequestResultRoundTrip().GetAwaiter().GetResult()),
             ("TCP fish action scene change between take and publication", () => FishActionTransportTests.TcpSceneChangeBetweenTakeAndPublication().GetAwaiter().GetResult()),
-            ("TCP fish action protocol three rejection", () => FishActionTransportTests.RejectProtocolThree().GetAwaiter().GetResult())
+            ("TCP fish action protocol three rejection", () => FishActionTransportTests.RejectProtocolThree().GetAwaiter().GetResult()),
+            ("TCP host fish interest bound receipt and copied position", () => HostFishInterestTests.TcpReceiptCarriesBoundIdentityAndOwnsInterestPosition().GetAwaiter().GetResult()),
+            ("TCP host fish interest take then pause resume and close", () => HostFishInterestTests.TcpTakenReceiptCannotSurvivePauseSameSceneResumeOrClose().GetAwaiter().GetResult()),
+            ("TCP host fish interest room and role cannot be borrowed", () => HostFishInterestTests.TcpDifferentRoomAndGuestRoleCannotBorrowHostInterest().GetAwaiter().GetResult()),
+            ("host fish interest uses receipt age and permanent sequence fence", HostFishInterestTests.ReceiptClockAndSequenceBoundTheLatestObservation),
+            ("host fish interest invalid identity position and scene", HostFishInterestTests.InvalidIdentityPositionAndSceneNeverBecomeAnInterest),
+            ("host fish LOD separated regions preserve the inactive corridor", FishInterestLodMathTests.SeparateRegionsKeepBothCentersWithoutActivatingTheCorridor),
+            ("host fish LOD size custom and world projection inputs", FishInterestLodMathTests.SizeCustomAndWorldPaddingUseTheFixedProjectionInputs),
+            ("host fish LOD unsupported projection depth and invalid inputs", FishInterestLodMathTests.UnsupportedProjectionDepthAndNonfiniteInputsDoNotInventAUnion),
+            ("host fish allocator exact zero observation input", FishAllocatorInterestMathTests.ObservationAtAllocatorCenterHasExactZeroDistanceInput),
+            ("host fish allocator nearer conservative transient distance", FishAllocatorInterestMathTests.NearerObservationProducesConservativeTransientDistance),
+            ("host fish allocator equal farther and near ties keep original", FishAllocatorInterestMathTests.EqualFartherAndNearTieKeepOriginalCenter),
+            ("host fish allocator cancellation and nonfinite keep original", FishAllocatorInterestMathTests.CancellationAndNonfiniteInputsCannotInventNearDistance)
         };
         int failures = 0;
         foreach (var test in tests)

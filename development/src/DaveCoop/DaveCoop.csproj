@@ -2,9 +2,10 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>DaveCoop</AssemblyName>
-    <Version>0.1.41-dev</Version>
+    <Version>0.1.42-dev</Version>
     <LangVersion>9.0</LangVersion>
     <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GamePath Condition="'$(GamePath)' == ''">$(DAVE_GAME_PATH)</GamePath>
   </PropertyGroup>
   <ItemGroup>
@@ -16,6 +17,8 @@
     <Reference Include="Il2CppSystem.Core"><HintPath>$(GamePath)\BepInEx\interop\Il2CppSystem.Core.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Assembly-CSharp"><HintPath>$(GamePath)\BepInEx\interop\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UniRx"><HintPath>$(GamePath)\BepInEx\interop\UniRx.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="AutoActivatorJobAD"><HintPath>$(GamePath)\BepInEx\interop\AutoActivatorJobAD.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.Mathematics"><HintPath>$(GamePath)\BepInEx\interop\Unity.Mathematics.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Sirenix.Serialization"><HintPath>$(GamePath)\BepInEx\interop\Sirenix.Serialization.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.CoreModule"><HintPath>$(GamePath)\BepInEx\interop\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.AnimationModule"><HintPath>$(GamePath)\BepInEx\interop\UnityEngine.AnimationModule.dll</HintPath><Private>false</Private></Reference>

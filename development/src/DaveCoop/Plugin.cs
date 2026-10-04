@@ -17,7 +17,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.41-dev";
+        public const string Version = "0.1.42-dev";
 
         public override void Load()
         {
@@ -74,6 +74,8 @@ namespace DaveCoop
                 "Observe natural loot, bag, caught-fish and return-storage calls on the Unity thread; bounded read-only diagnostics, no rewards or bag/save writes.");
             NetworkDriver.ObserveMapOrigins = Config.Bind("Network", "ObserveMapOrigins", false,
                 "Track natural loading coroutine ownership and exact resource-operation scene results on the Unity thread; bounded read-only diagnostics, no map adoption or game/save writes.");
+            NetworkDriver.ExperimentalHostFishAreas = Config.Bind("Network", "ExperimentalHostFishAreas", false,
+                "Experimental same-scene host fish spawning and activity around both members. Read at first network Update; restart to change. Requires real Host/Join frames; native behavior and distant gameplay remain unverified.");
             AddComponent<Diagnostics>();
             AddComponent<PlayerProbe>();
             AddComponent<RemotePreview>();

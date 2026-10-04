@@ -20,6 +20,7 @@ namespace DaveCoop.Networking
         internal static ConfigEntry<bool> ObserveMapSelectionCalls;
         internal static ConfigEntry<bool> ObserveLootCalls;
         internal static ConfigEntry<bool> ObserveMapOrigins;
+        internal static ConfigEntry<bool> ExperimentalHostFishAreas;
         internal static string Status = "Network: offline (F11)";
         private readonly NetworkController _controller;
 

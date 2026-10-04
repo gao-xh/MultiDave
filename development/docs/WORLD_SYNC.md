@@ -1,6 +1,6 @@
 # 同一海洋、鱼与互动
 
-当前源码0.1.41-dev（协议8），本轮实际Core/TCP311/311及插件Build警告视为错误通过，封存输入执行前后相同。新增[客机鱼隔离与自动观察](GUEST_FISH_QUARANTINE.md)：原鱼出生冻结真实场景来源，隔离记录与引用先于停用；握手只请求房主鱼清单，客机显示仍核实际当前来源。见[本轮验证记录](../logs/guest-fish-isolation-build-verification.json)。未部署/启动或执行native，安装.12/最近潜水.11/默认包.0保持；完整原生生命周期覆盖未证。完整生成/AI/持久隔离、每人独立袋分流/容量/负重、员工命中、远距离活跃区域、双端正常返航保存与GitHub冷配置仍待完成。
+当前源码0.1.42-dev（协议8），本轮实际Core/TCP323/323及插件Build警告视为错误通过，执行输入前后相同。新增[房主双成员鱼区域](HOST_FISH_INTEREST.md)：真实接收来源绑定到默认关闭的普通allocator距离与原LOD结果消费者，保原生成/生命周期、独立计算两区域后合并。见[本轮记录](../logs/host-fish-interest-build-verification.json)。原生ABI、普通与group鱼完整覆盖、远处避让及双游戏未验证；不能称远距离探索完成。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、Guest隔离、可信员工命中、每人独立袋/容量/负重、逐项返航保存与GitHub冷配置仍待完成。
 
 对应 PLAN 的 M4、M5 和 M6。这里区分设计、已确认的接口签名和待实机验证的行为。
 已验证第二角色本地回放；0.1.5-dev 在真实潜水中运行只读鱼探针、经本机 TCP 传输实际鱼清单并执行单鱼显示组件。
@@ -479,3 +479,7 @@ cacheSelectedScenePath与IGP.Init还含持久缓存/实例保存目标，地图�
 
 验收时两人留在同一海层并拉开距离：房主镜头外、客机附近仍有正确生成且持续游动的鱼；返回原区域不重复出生或发放物品。
 继续验证捕获后的双方移除、重新靠近后的同一实体，以及断线和正常返航清理。上述条件尚未实机通过；自由跨层还需多场景模拟。
+
+## 0.1.42 房主双成员鱼区域
+
+见[HOST_FISH_INTEREST](HOST_FISH_INTEREST.md)。成功接收帧固定实际Room/member/sequence；主线程来源只接当前真实Host/Ready同场景peer，原接收时间过期、暂停/断线/本地源变更即撤，插值节点不当原生员工。默认关闭入口只在首次Network Update读取。普通typedMove内一次原玩家位置→同allocator中心查询代理距离，原getter/cache/真实中心/RNG/body保持；仅minDistance0窄路径，Wave/force/未知来源保原。自然鱼LOD请求冻结target/returneddata，原Complete匹配job正常完成后只合并已绑定鱼newLayer；原迟滞/Z/Behaviour/生命周期保持，不造两人间大矩形。group/早于确认线程的注册、其他激活writer/避让、原生值类型与NativeArray ABI未证。实际323/323 CLR/TCP与插件Build通过，不是原生远距离验证；World/Cargo/GuestStateIsolated仍false。自由跨层、可信employee actor/装备/生存/命中、每人产物/前置容量/独立重量/负重、逐项返航和真实双端/冷配置仍按完整M3—M7推进。

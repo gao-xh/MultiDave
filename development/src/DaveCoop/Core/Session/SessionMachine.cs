@@ -231,6 +231,8 @@ namespace DaveCoop.Core.Session
                     _lastFrameTime = packet.Frame.SampleTime;
                     _incomingFrame = new ReceivedFrame
                     {
+                        RoomId = _identity.RoomId, BoundPlayerId = _identity.RemotePlayerId,
+                        PacketSequence = packet.Sequence,
                         Frame = CopyFrame(packet.Frame), ReceivedAt = now,
                         LocalSampleTime = _hasClock ? packet.Frame.SampleTime - _offset : now
                     };

@@ -1,6 +1,6 @@
 # MultiDave 接手记录
 
-当前源码0.1.41-dev（协议8），本轮实际Core/TCP311/311及插件Build警告视为错误通过，封存输入执行前后相同。新增[客机鱼隔离与自动观察](GUEST_FISH_QUARANTINE.md)：原鱼出生冻结真实场景来源，隔离记录与引用先于停用；握手只请求房主鱼清单，客机显示仍核实际当前来源。见[本轮验证记录](../logs/guest-fish-isolation-build-verification.json)。未部署/启动或执行native，安装.12/最近潜水.11/默认包.0保持；完整原生生命周期覆盖未证。完整生成/AI/持久隔离、每人独立袋分流/容量/负重、员工命中、远距离活跃区域、双端正常返航保存与GitHub冷配置仍待完成。
+当前源码0.1.42-dev（协议8），本轮实际Core/TCP323/323及插件Build警告视为错误通过，执行输入前后相同。新增[房主双成员鱼区域](HOST_FISH_INTEREST.md)：真实接收来源绑定到默认关闭的普通allocator距离与原LOD结果消费者，保原生成/生命周期、独立计算两区域后合并。见[本轮记录](../logs/host-fish-interest-build-verification.json)。原生ABI、普通与group鱼完整覆盖、远处避让及双游戏未验证；不能称远距离探索完成。未部署/启动，安装.12/最近潜水.11/默认包.0保持。完整M3—M7、Guest隔离、可信员工命中、每人独立袋/容量/负重、逐项返航保存与GitHub冷配置仍待完成。
 
 ## 已完成
 
@@ -44,7 +44,7 @@ M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态�
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
 0.1.4-dev 引入默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，0.1.5-dev 加入一条鱼的 Sprite/Spine 显示验证入口。
-当前源码协议版本为 7，拒绝旧协议 6；WorldSlice 保持每块最多 16 个实体，保留 FishActionRequest/FishActionResult、MapRouteSlice/MapIgpChoice/MapChoiceRetire 与 CargoInventorySlice。协议7补齐路线原生输入并要求 wire 字段实际存在。
+当前源码协议版本为 8，拒绝旧协议 7 及更早版本；WorldSlice 保持每块最多 16 个实体，保留 FishActionRequest/FishActionResult、MapRouteSlice/MapIgpChoice/MapChoiceRetire 与 CargoInventorySlice。历史协议7补齐路线原生输入并要求 wire 字段实际存在；协议8保留路线schema2并要求Hello/Welcome显式鱼观察请求。
 F11 的 Transmit read-only fish observations / Preview one received fish 均默认关闭。
 0.1.11-dev 另增默认关闭的 Display received fish roster / Observe host harpoon and fish interactions；
 本机显示及房主交互观察仍依赖 Transmit read-only fish observations。
@@ -384,3 +384,7 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 ## 0.1.41 客机鱼隔离与自动房主观察
 
 见[GUEST_FISH_QUARANTINE](GUEST_FISH_QUARANTINE.md)和[真实验证摘要](../logs/guest-fish-isolation-build-verification.json)。实验Guest在原鱼Awake前登记不可复用birth，冻结已有op/当次call及实际Scene；actor/root引用与inert记录先于单次停用。精确受管root生命周期和已核交互入口阻断，未知顺序/重新启用/外部响应撤source，不补造初始化/Observable。完整子组件顺序与全部鱼型覆盖未证。协议8显式bool仅请求Host自动观察；Guest每次Receive/Render前后核实际startup、samepeer、隔离scene与fish来源，失源清自己的显示。原生World/Cargo/GuestStateIsolated仍false；每人独立袋与返航规则保持，员工捕鱼尚未接入。远距离需Host维护两人周围生成/LOD区域，当前名单仅Host当前场景活动鱼；自由跨层未实现。继续完整M3—M7，不自动部署/启动或催延后测试。
+
+## 0.1.42 房主双成员鱼区域
+
+见[HOST_FISH_INTEREST](HOST_FISH_INTEREST.md)。成功接收帧固定实际Room/member/sequence；主线程来源只接当前真实Host/Ready同场景peer，原接收时间过期、暂停/断线/本地源变更即撤，插值节点不当原生员工。默认关闭入口只在首次Network Update读取。普通typedMove内一次原玩家位置→同allocator中心查询代理距离，原getter/cache/真实中心/RNG/body保持；仅minDistance0窄路径，Wave/force/未知来源保原。自然鱼LOD请求冻结target/returneddata，原Complete匹配job正常完成后只合并已绑定鱼newLayer；原迟滞/Z/Behaviour/生命周期保持，不造两人间大矩形。group/早于确认线程的注册、其他激活writer/避让、原生值类型与NativeArray ABI未证。实际323/323 CLR/TCP与插件Build通过，不是原生远距离验证；World/Cargo/GuestStateIsolated仍false。自由跨层、可信employee actor/装备/生存/命中、每人产物/前置容量/独立重量/负重、逐项返航和真实双端/冷配置仍按完整M3—M7推进。

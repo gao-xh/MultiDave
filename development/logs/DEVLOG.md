@@ -905,3 +905,16 @@
 - 三份新私有报告对应相对路径/hash/UTC及各自counts；PE为8roots/9methods/3106decoded=text、14间接调用、327未解析精确入口边/7别名截断边，UnresolvedFlowInstructions=0是另一指标，不混作0未知边。已知unwind解码不证明完整body/脚本顺序；此前未保留的不完整96声明统计已废弃，fresh实际21types/118targets/error0。仅补记录/文档，不修改已验证源码或重复测试。
 
 - 原生源码链、文档/证据/Skill与发布边界三项非作者末审READY；38份公开自写文本，157最终编译/执行输入不变。完整PE计数已补入两当前摘要，未知入口边与方法完整性未证明确保留；补入同层远距离联合两成员活动区的实施和验收条件，尚未实现。按既有授权公开源码/文档/摘要，游戏二进制、存档、原metadata/IL/PE指令与机器日志仍只留本机。
+
+## 2026-10-04 — 0.1.42-dev：房主双成员鱼区域
+
+- 用户询问主客相距很远时的显示，继续同层两独立兴趣区域；没有把两人间所有海域启用，也不将观察坐标当可信员工或捕鱼许可。
+- 新actual TCP receipt Room/member/sequence和Unity-thread source；失去current Host/Ready/samepeer/epoch/scene/本地identity或原接收时间过期立即撤源，Local test排除，插值显示不作来源。默认关闭实验入口首次Update读取，未改游戏配置。
+- 普通生成器固定原typedMove同步来源、实际Transform.position/同allocator中心一次配对，min0/!force限定；只代理距离查询返回值，原getter缓存、真实中心、随机、保存身份、原body保持。未知/嵌套来源遮断，Wave保原，StopAlloc未用作区域开关。
+- 中央LOD保自然RequestManagement实际fish/target/data寿命，原Complete等待匹配原job正常返回后、消费前只改绑定鱼newLayer，合并独立两区域并保迟滞/Z/Behaviour/原生命周期。typedNativeArray仅实际buffer身份转换需unsafe；不猜offset/未join写数组/强改GO。group和线程前注册不补猜；原生时序/ABI、完整fish覆盖与远处Renderer.isVisible避让仍未证。
+- 实际Core/TCP 323/323通过，UTC `2026-10-04T21:18:16.9413064Z` → `2026-10-04T21:18:22.4146304Z`；完整PASS逐一对应Program；12新增兴趣来源/数学夹具，只有CLR与实际回环TCP。实际Core源码97份、插件源码114份、联合输入166份执行前封存并保自写bytes、Core/Build后同hash。
+- 插件Build警告视为错误通过，UTC `2026-10-04T21:18:24.0118168Z` → `2026-10-04T21:18:26.3555546Z`，SHA256 `F26172ADF5074D30E81792C36C557C011CF289B5C9EAB7B2E82BCFDC46EF4E60`；摘要见[本轮记录](host-fish-interest-build-verification.json)。显式新interop引用仅编译，不公开依赖DLL；所选工具/reference不是完整OS/SDK闭包。旧.41/.40/.39/.38/.37摘要保持历史，不把新验证追补旧轮。
+- HOST_FISH_INTEREST、当前入口、接手与PLAN/WORLD和配置Skill同步；原生远距离、Guest完整隔离、World/Cargo权限仍false。未部署/启动或读写存档，不催延后测试；完整M3—M7、个人袋/负重、原生员工命中、逐项正常返航保存、真实双端和GitHub冷配置仍待完成，goal保持active。
+
+- 初次统一验证实际Core323/323通过但插件两处接口编译失败；私有完整stdout/stderr与seal保留。仅修Harmony.Patch命名新重载和真实Il2CppArrayBase类型后重新封存，最终Core323/323和Build通过；未为失败轮写成功摘要。
+- 配置Skill官方draft/protected校验均通过，目标与draft同SHA256 `248508A0506CA6DC9A60ACBD3EA60A79013186B4CB6EAD0F61E82258FCB894F9`。LOD4/allocator30仅预期声明，不是运行安装或ABI证据；LOD最多512rows/batch、4096records/32managers/24576显式handles及1retained owner/process，primitive/guard steps不含source复合getter内部全部native调用。实际性能与完整远处AI仍待验。

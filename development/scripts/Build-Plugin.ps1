@@ -27,7 +27,7 @@ foreach ($runtimeName in @('mscorlib.dll', 'netstandard.dll', 'Microsoft.CSharp.
 foreach ($coreName in @('BepInEx.Core.dll', 'BepInEx.Unity.IL2CPP.dll', 'Il2CppInterop.Runtime.dll', '0Harmony.dll')) {
     $references += Join-Path $coreRoot $coreName
 }
-foreach ($interopName in @('Il2Cppmscorlib.dll', 'Il2CppSystem.Core.dll', 'Assembly-CSharp.dll', 'UniRx.dll', 'Sirenix.Serialization.dll', 'UnityEngine.CoreModule.dll', 'UnityEngine.AnimationModule.dll', 'UnityEngine.Physics2DModule.dll', 'UnityEngine.TerrainModule.dll', 'UnityEngine.InputLegacyModule.dll', 'UnityEngine.IMGUIModule.dll', 'Unity.ResourceManager.dll', 'Unity.Addressables.dll', 'spine-unity.dll')) {
+foreach ($interopName in @('Il2Cppmscorlib.dll', 'Il2CppSystem.Core.dll', 'Assembly-CSharp.dll', 'UniRx.dll', 'AutoActivatorJobAD.dll', 'Unity.Mathematics.dll', 'Sirenix.Serialization.dll', 'UnityEngine.CoreModule.dll', 'UnityEngine.AnimationModule.dll', 'UnityEngine.Physics2DModule.dll', 'UnityEngine.TerrainModule.dll', 'UnityEngine.InputLegacyModule.dll', 'UnityEngine.IMGUIModule.dll', 'Unity.ResourceManager.dll', 'Unity.Addressables.dll', 'spine-unity.dll')) {
     $references += Join-Path $interopRoot $interopName
 }
 foreach ($reference in $references) {
@@ -37,7 +37,7 @@ $outputRoot = Join-Path $projectRoot 'artifacts\plugin'
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
 $outputDll = Join-Path $outputRoot 'DaveCoop.dll'
 $responsePath = Join-Path $outputRoot 'compile.rsp'
-$compilerArguments = @('-nostdlib+', '-target:library', '-langversion:9.0', '-deterministic+', '-debug:portable', '-optimize+', '-warnaserror+', ('-out:"' + $outputDll + '"'))
+$compilerArguments = @('-nostdlib+', '-target:library', '-langversion:9.0', '-unsafe+', '-deterministic+', '-debug:portable', '-optimize+', '-warnaserror+', ('-out:"' + $outputDll + '"'))
 $compilerArguments += $references | ForEach-Object { '-reference:"' + $_ + '"' }
 $compilerArguments += Get-ChildItem -LiteralPath (Join-Path $projectRoot 'src\DaveCoop') -Filter '*.cs' -File -Recurse | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } | Sort-Object FullName | ForEach-Object { '"' + $_.FullName + '"' }
 $compilerArguments | Set-Content -LiteralPath $responsePath -Encoding utf8

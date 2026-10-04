@@ -84,6 +84,10 @@ namespace DaveCoop.Core.Session
 
     public sealed class ReceivedFrame
     {
+        // Frozen by the successful ingress, not supplied by an avatar renderer.
+        public string RoomId { get; internal set; }
+        public int BoundPlayerId { get; internal set; }
+        public long PacketSequence { get; internal set; }
         public PlayerFrame Frame { get; internal set; }
         public double ReceivedAt { get; internal set; }
         public double LocalSampleTime { get; internal set; }

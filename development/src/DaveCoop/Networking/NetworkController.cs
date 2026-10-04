@@ -43,6 +43,10 @@ namespace DaveCoop.Networking
         private readonly FishActionController _fishActions = new FishActionController();
         private readonly MapChoiceController _mapChoices = new MapChoiceController();
         private readonly CargoInventoryController _cargoInventory = new CargoInventoryController();
+        private HostFishInterestSource _hostFishInterest;
+        private NativeHostFishAllocatorArea _hostFishAllocatorArea;
+        private NativeHostFishLodArea _hostFishLodArea;
+        private bool _hostFishAreasFailed;
         private float _nextCargoObservation;
         private LootObservationController _lootObserver;
         private MapOriginController _mapOrigins;
@@ -99,6 +103,16 @@ namespace DaveCoop.Networking
                     _mapSelection = new MapSelectionCapture(Environment.CurrentManagedThreadId);
                     _lootObserver = new LootObservationController(Environment.CurrentManagedThreadId, ResolveHealthyFish);
                     _mapOrigins = new MapOriginController(Environment.CurrentManagedThreadId);
+                    if (NetworkDriver.ExperimentalHostFishAreas.Value && NativeGuestInitializationController.Current == null)
+                    {
+                        _hostFishInterest = new HostFishInterestSource(() => _peers?.Main,
+                            () => _peers?.Loopback != null, _local, Environment.CurrentManagedThreadId);
+                        _hostFishInterest.ConfirmUnityUpdate();
+                        _hostFishAllocatorArea = new NativeHostFishAllocatorArea(_hostFishInterest, NetworkDriver.Logger);
+                        _hostFishLodArea = new NativeHostFishLodArea(_hostFishInterest, NetworkDriver.Logger);
+                        try { _hostFishAllocatorArea.Install(); _hostFishLodArea.Install(); }
+                        catch (Exception error) { StopHostFishAreas(error); }
+                    }
                     NetworkDriver.Logger.LogInfo(NativeGuestInitializationController.Current == null
                         ? "DAVECOOP_NETWORK_READY: F11 opens LAN movement test panel; no automatic connection."
                         : "DAVECOOP_NETWORK_READY: Guest startup mode is automatically joining the configured host.");
@@ -111,6 +125,7 @@ namespace DaveCoop.Networking
                     _savedCursorVisible = Cursor.visible; _savedCursorLock = Cursor.lockState; _panelActive = true;
                 }
                 if (!NetworkDriver.ShowPanel.Value) RestoreCursor();
+                _hostFishInterest?.ConfirmUnityUpdate();
                 ObserveMapSelectionCalls();
                 ObserveRouteInputs();
                 _lootObserver.Update(NetworkDriver.ObserveLootCalls.Value, Time.unscaledTime);
@@ -122,7 +137,7 @@ namespace DaveCoop.Networking
                 // by the independent read-only origin observer.
                 _mapOrigins.Update(!temporaryGuest && (NetworkDriver.ObserveMapOrigins.Value || hostMapSource), Time.unscaledTime);
                 FinishAttempt();
-                if (_peers == null) return;
+                if (_peers == null) { _hostFishInterest?.Clear("NoCurrentPeer"); return; }
                 SessionSnapshot state = _peers.Main.Snapshot;
                 while (_peers.Main.TryTakeEvent(out SessionEvent item))
                     NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_EVENT: " + JsonSerializer.Serialize(item));
@@ -156,8 +171,13 @@ namespace DaveCoop.Networking
                 {
                     _display.Clear(); _displayEpoch = state.Phase == SessionPhase.Ready ? state.SceneEpoch : 0;
                 }
-                if (_peers.Main.TryTakeRemoteFrame(out ReceivedFrame received) && state.Phase == SessionPhase.Ready &&
-                    received.Frame.SceneEpoch == state.SceneEpoch) _display.Receive(received);
+                if (_peers.Main.TryTakeRemoteFrame(out ReceivedFrame received))
+                {
+                    if (!_hostFishAreasFailed) _hostFishInterest?.Accept(_peers.Main, received);
+                    if (state.Phase == SessionPhase.Ready && received.Frame.SceneEpoch == state.SceneEpoch)
+                        _display.Receive(received);
+                }
+                UpdateHostFishAreas();
                 // The internal peer is also pure CLR. Drain its mailbox so the
                 // diagnostic exercises both directions without touching Unity there.
                 if (_peers.Loopback != null) _peers.Loopback.TryTakeRemoteFrame(out _);
@@ -200,6 +220,20 @@ namespace DaveCoop.Networking
                     {
                         Mode = mode, state.Phase, state.SceneEpoch, state.SceneKey, state.HasClockEstimate,
                         state.RemoteRequestsHostFishDisplay,
+                        HostFishAreasEnabled = _hostFishInterest != null,
+                        HostFishAreasFailed = _hostFishAreasFailed,
+                        HostFishInterestStatus = _hostFishInterest?.Status,
+                        HostFishInterestAccepted = _hostFishInterest?.AcceptedReceipts ?? 0,
+                        HostFishInterestRejected = _hostFishInterest?.RejectedReceipts ?? 0,
+                        HostFishAllocatorAreaStatus = _hostFishAllocatorArea?.Status,
+                        HostFishAllocatorProxyReturns = _hostFishAllocatorArea?.ProxyReturns ?? 0,
+                        HostFishLodAreaStatus = _hostFishLodArea?.Status,
+                        HostFishLodBoundRecords = _hostFishLodArea?.BoundRecords ?? 0,
+                        HostFishLodJoinedBatches = _hostFishLodArea?.JoinedBatches ?? 0,
+                        HostFishLodAppliedRows = _hostFishLodArea?.AppliedRows ?? 0,
+                        HostFishLodUnsupportedTargets = _hostFishLodArea?.UnsupportedTargets ?? 0,
+                        HostFishLodUnsupportedRows = _hostFishLodArea?.UnsupportedRows ?? 0,
+                        HostFishLodUnknownWriteOutcomes = _hostFishLodArea?.UnknownWriteOutcomes ?? 0,
                         AutomaticHostFishObservation = state.Role == SessionRole.Host && state.RemoteRequestsHostFishDisplay,
                         GuestQuarantinedFish = NativeGuestInitializationController.Current?.QuarantinedFishCount ?? 0,
                         GuestFishStatus = NativeGuestInitializationController.Current?.GuestFishStatus,
@@ -403,6 +437,7 @@ namespace DaveCoop.Networking
 
         private void ClearLocal()
         {
+            _hostFishInterest?.Clear("LocalPlayerChanged");
             _scene = null; _layoutMessage = null; SetScene(null); _local.Clear(); _catalog.Clear(); _display.Clear(); _displayEpoch = 0;
             _fish.Clear(); _fishLifecycle.ClearObserved(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0;
             _fishPreview.Clear(); _spines.Clear();
@@ -800,6 +835,7 @@ namespace DaveCoop.Networking
 
         private void Disconnect()
         {
+            _hostFishInterest?.Clear("Disconnected");
             NativeGuestInitializationController.Current?.NetworkDisconnected();
             if (NetworkDriver.ObserveMapOrigins != null) NetworkDriver.ObserveMapOrigins.Value = false;
             _mapOrigins?.Stop();
@@ -840,6 +876,34 @@ namespace DaveCoop.Networking
             Cursor.visible = _savedCursorVisible; Cursor.lockState = _savedCursorLock; _panelActive = false;
         }
 
-        public void Dispose() { StopMapSelectionCalls(); Disconnect(); RestoreCursor(); }
+        private void UpdateHostFishAreas()
+        {
+            if (_hostFishInterest == null || _hostFishAreasFailed) return;
+            try
+            {
+                _hostFishInterest.TryRead(out _);
+                if (_hostFishInterest.Failed)
+                    throw new InvalidOperationException("Host fish interest source became unavailable.");
+                _hostFishAllocatorArea.CheckHealthy();
+                _hostFishLodArea.Update();
+                if (!_hostFishAllocatorArea.Healthy || !_hostFishLodArea.Healthy)
+                    StopHostFishAreas(new InvalidOperationException("Host fish area adapter became unavailable."));
+            }
+            catch (Exception error) { StopHostFishAreas(error); }
+        }
+
+        private void StopHostFishAreas(Exception error)
+        {
+            _hostFishAreasFailed = true;
+            _hostFishInterest?.Clear("AdapterFailed");
+            try { NetworkDriver.Logger.LogWarning("DAVECOOP_HOST_FISH_AREAS_UNAVAILABLE: " + error.GetType().Name + ": " + error.Message); }
+            catch { /* Area diagnostics must not interrupt the movement session. */ }
+        }
+
+        public void Dispose()
+        {
+            StopMapSelectionCalls(); Disconnect(); RestoreCursor();
+            _hostFishAllocatorArea?.Dispose(); _hostFishLodArea?.Dispose();
+        }
     }
 }
