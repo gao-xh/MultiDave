@@ -1,7 +1,7 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T13:35:08.243492+00:00",
-  "PluginVersion": "0.1.26-dev",
+  "RecordedUtc": "2026-10-04T13:52:53.815386+00:00",
+  "PluginVersion": "0.1.27-dev",
   "VerificationCommands": [
     "development/scripts/Build-Plugin.ps1",
     "development/scripts/Test-Core.ps1"
@@ -233,7 +233,7 @@
     "TCP fish action protocol three rejection"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "B176F3346119311C29A7A4A4CA1C82B4BE4EA110B7130BC3FC76471B60371E1A",
+  "CompiledPluginSHA256": "687C8F6959163C33B85C026C05D2F645D0900BE12328761BB2CDFC64158BCD60",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
@@ -242,7 +242,7 @@
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Actual production ExpeditionCargoLedger source leases and delayed selected-yield binding are exercised by eleven new pure CLR fixtures and two new production CargoInventoryController/IPv4 loopback TCP fixtures. Synthetic host-local facts supply all identity, selection isolation, complete yield, capacity, receipt and storage proofs; no game adapter supplies them. Shared ledger capture IDs, source/request fences, pre-entry isolation, null unselected requests, individual capacities, late original return batches and disconnect retention are tested. The first verified selected batch stays fixed even when capacity rejects it. The fixed native observer pointer/Unity-ID check compiles only. No native selection, random reroll, capture, bag diversion, effective weight, storage, save, shadow isolation, map adoption or two-game gameplay runs. Full M3-M7, normal return and GitHub cold setup remain required.",
+  "Scope": "Default-off production LootBox.Add_Impl observation synchronously freezes direct resource fields for two exact known native classes into CLR-only prefix context and diagnostics. Native callbacks are compiled only, not executed; the offline Cecil inspector reads declarations and generated wrapper IL only. Resource IDs/base grade/base weight are candidates, not final product identity, slot quality, effective personal weight or complete selected yield. Unchanged Core/TCP inputs retain the exact SHA256 values of prior verified input bytes; Git content is also unchanged after accounting for CRLF representation. They reuse the prior actual 222/222 result without rerunning tests. No native selection, diversion, storage, save, guest isolation, world adoption or two-game gameplay executes. Full M3-M7 and cold configuration remain required.",
   "ProtocolVersion": 6,
   "MapChoiceTcpTransferVerified": true,
   "ProductionMapChoiceAdapterFixtureVerified": true,
@@ -288,7 +288,7 @@
   "NativeIngameCacheRestored": false,
   "IngameResourceGraphIsolated": false,
   "FullIngameCacheGraphVerified": false,
-  "CoreTestsExecutedThisTurn": true,
+  "CoreTestsExecutedThisTurn": false,
   "CoreTestRunRecordedUtc": "2026-10-04T13:35:08.243492+00:00",
   "NativeDictionaryComparerCompiled": true,
   "NativeDictionaryComparerExecuted": false,
@@ -296,7 +296,7 @@
   "PartialConstructorAllocationRetentionVerified": false,
   "CurrentTurnVerificationCommands": [
     "development/scripts/Build-Plugin.ps1",
-    "development/scripts/Test-Core.ps1"
+    "development/scripts/Inspect-LootProductApi.ps1"
   ],
   "StartupTraceFixtureVerified": true,
   "StartupTraceFixtureTestsPassed": 6,
@@ -379,5 +379,15 @@
   "GameCaptureOperationIdsUnified": false,
   "NativeYieldSelectionExecuted": false,
   "NativeYieldSelectionIsolationVerified": false,
-  "NativeCompleteYieldVerified": false
+  "NativeCompleteYieldVerified": false,
+  "ReusedCoreTestsFromVersion": "0.1.26-dev",
+  "ReusedCoreTestsFromCommit": "e9d36e61f0cfe00385c34da65b88bdc32d2dce13",
+  "CoreTestInputsCompared": 75,
+  "CoreTestInputsByteIdentical": true,
+  "CoreInputsGitContentUnchanged": true,
+  "CoreInputComparison": "Prior actual validation SHA256 seal; Git blobs checked with CRLF normalization only.",
+  "NativeResourceCallbacksExecuted": false,
+  "ResourceProductMappingVerified": false,
+  "FinalGradeVerified": false,
+  "EffectiveWeightVerified": false
 }

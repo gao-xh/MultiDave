@@ -56,3 +56,5 @@ Parent 是被观察方法之间的同步包含关系，不是原生直接 caller
 用户暂不方便试玩时继续实现桥及隔离；不自动部署、启动或重复催测。后续实机核对 LOOT_HOOKS_READY、LOOT_CALL、调用来源记录、LOOT_OBSERVER_STATE 及自己的卸钩，验证自然拾取、追加物和容量检查，再核对每人独立负重及正常返航。本机 CLR 测试不替代真实双游戏捕鱼或返航验收。
 
 0.1.26 已把来源预约、统一捕获编号与延后产物绑定接入真实CLR账本，详见[CAPTURE_SELECTION](CAPTURE_SELECTION.md)。原生完整选择和受控首次写入阶段仍待实现；不能据此升级本观察的SourceOperationBound或Receipt。另修复LocalToken是Unity实例ID而不是nativepointer的错误比较；此处原生执行仍待实机。
+
+0.1.27 在既有入口增加[基础资源观察](LOOT_PRODUCT_OBSERVATION.md)，资源字段仍不能代替最终品质、有效重量、完整选择或原生分流凭证。

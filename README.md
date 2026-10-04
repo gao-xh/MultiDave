@@ -1,6 +1,6 @@
 # MultiDave
 
-当前源码为 0.1.26-dev、协议 6，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 222/222 通过。[捕获两阶段账本](development/docs/CAPTURE_SELECTION.md)先固定玩家/鱼来源及潜水级捕获编号，再绑定已选完整产物和个人容量；未选产物保持未知并阻止返航完成，真实原生选择/分流仍未接通。范围见[当前摘要](development/logs/capture-selection-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。实际个人容量/负重、返航入仓、客机隔离、房主世界采用与双端/冷配置仍待完成。
+当前源码为 0.1.27-dev、协议 6，插件构建警告视为错误通过；Core/TCP输入与前commit逐文件一致，复用0.1.26实际222/222，本轮未重跑。[入袋资源观察](development/docs/LOOT_PRODUCT_OBSERVATION.md)在既有默认关闭入口复制两种精确资源类的基础字段；最终品质、有效重量与完整产物仍待原生核实，不能授予个人分流权限。范围见[当前摘要](development/logs/loot-product-build-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。实际个人容量/负重、返航入仓、客机隔离、房主世界与双端/冷配置仍待完成。
 
 《潜水员戴夫》Windows Steam 版的联机 Mod 开发项目。
 

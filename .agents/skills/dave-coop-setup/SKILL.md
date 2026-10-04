@@ -234,7 +234,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   SourceOperationBound/MemberOwnership/FullYield/CaptureSuccess/BagDelta/ABI等全false，没有CargoFacts producer；9fixture只运行synthetic CLR，不等于native调用/员工归属。
   下一桥需潜水级operation/source lease与原游戏已经选产物后的受控阶段，不能提前Roll/retry、把事后Add当完整预计划或只跳Add_Impl/新槽写入。保留每人独立袋/容量/负重及逐产物返航；本轮未部署/启动，完整M3—M7/双端/冷配置继续。
 
-- 当前源码0.1.26-dev/协议6，Build与实际Core/TCP222/222通过；继续每人独立袋先读development/docs/CAPTURE_SELECTION.md和capture-selection-build-verification.json。
+- 历史源码0.1.26-dev/协议6，Build与实际Core/TCP222/222通过；继续每人独立袋先读development/docs/CAPTURE_SELECTION.md和capture-selection-build-verification.json。
   同一真实CLR ledger的SourceReserve统一capture ID/opaque lease，不用两Gate各自operation或Unity player/fish instanceID当session身份；旧Reserve仍预verified完整products。
   EnterSelection必须preexisting YieldSelectionIsolationVerified且一次性EnteredUnknown；LateSeal需complete/heldbeforewrite/NoBagWriteYet＋个人currentcapacity，仍不是capture或nativeentry。
   未选Request=null/Intent有值，weight0只是unknown；return未有items也阻complete。LateSeal在offline/Returning/Aborted只填原capture原batch，不恢复dispatch。
@@ -242,3 +242,8 @@ description: Configure or continue development of the MultiDave prototype for Wi
   取消只reserved+notenteredproof；进入后不能retry/重Roll/改owner/清unknown，新Room不自动迁移。11CLR＋2生产controller/TCP使用synthetic facts，native权限全false、无游戏producer。
   已修Loot观察LocalToken(可负UnityID)与pointer独立键，resolver有pointer/generation前后围栏；编译不等于native观察已跑。
   接真实业务须拆开main/plus选择和commit，核finalgrade/effectiveweight/Obscuredslot合并/任务/鱼终态及个人分流；未部署启动，不催用户延后试玩，完整M3—M7、隔离/世界/返航/双端/冷配置继续。
+
+- 当前源码0.1.27-dev/协议6，Build警告视为错误通过；Core/TCP输入逐文件与前commit一致，复用0.1.26实际222/222，未重跑。继续产物/个人袋先读development/docs/LOOT_PRODUCT_OBSERVATION.md及loot-product-build-verification.json。
+  ObserveLootCalls仍默认false/16targets；Add_Impl仅Before读两exactclass四direct字段，prefix只CLR，After/Finalizer不重读资源。未知class/null明示不可用，失败清资源候选/撤链；线程、读取窗口、重入、quota与owncleanup沿用现规则。
+  TID/ItemDataID与basegrade/baseweight只候选，不猜产品映射、bonus/count/weightParameter最终计算；ClassStore可能初始化，二次样本一致不证静止/原子/ABI。新Inspect-LootProductApi只离线metadata/wrapperIL，报告private.local；ObscuredInt解码纯度未证，不执行。
+  无native callback/producer/分流/入仓/存档执行或新GUI授权；所有finalgrade/effectiveweight/full-yield/isolation/world/cargo权限false。未部署/启动，不催延后测试；每人独立容量/负重、捕获与正常逐项返航、真实双端和GitHub冷配置继续完整M3—M7。

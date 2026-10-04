@@ -1,6 +1,6 @@
 # 玩家与摄像机发现
 
-当前源码为 0.1.26-dev、协议 6，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 222/222 通过。[捕获两阶段账本](CAPTURE_SELECTION.md)先固定玩家/鱼来源及潜水级捕获编号，再绑定已选完整产物和个人容量；未选产物保持未知并阻止返航完成，真实原生选择/分流仍未接通。范围见[当前摘要](../logs/capture-selection-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。实际个人容量/负重、返航入仓、客机隔离、房主世界采用与双端/冷配置仍待完成。
+当前源码为 0.1.27-dev、协议 6，插件构建警告视为错误通过；Core/TCP输入与前commit逐文件一致，复用0.1.26实际222/222，本轮未重跑。[入袋资源观察](LOOT_PRODUCT_OBSERVATION.md)在既有默认关闭入口复制两种精确资源类的基础字段；最终品质、有效重量与完整产物仍待原生核实，不能授予个人分流权限。范围见[当前摘要](../logs/loot-product-build-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。实际个人容量/负重、返航入仓、客机隔离、房主世界与双端/冷配置仍待完成。
 
 对应开发计划 M1。发布包仍为 0.1.0 加载原型；本页 M1 运行证据来自 0.1.1-dev。
 当前源码与后续阶段见 HANDOFF 和 MULTIPLAYER。
@@ -132,3 +132,7 @@ M2 先研究只复制显示组件/姿态的方式。直接克隆完整 `PlayerCh
 [有限comparer候选](GUEST_DICTIONARY_COMPARERS.md)只接受int/string/InGameSaveType(int32)精确Generic/Object与该enum专用Enum同class独立副本，source pointer/class/kind和aux纳入审计，Ingredients同规则。null原可Capture但Prepare拒，不调用Default/CreateComparer/getter、不share/清空，custom/文化/hash-salt未知拒。explicit(capacity,comparer)先于Add；普通constructor抛时assignment未发生，PartialConstructorAllocationRetentionVerified=false，不证明全部未知allocation已Hold。
 
 历史0.1.22-dev/协议5，[0.1.22 历史摘要](../logs/guest-comparer-build-verification.json)的插件Build警告视为错误通过；0.1.22 该轮 Core 输入未改，复用0.1.21实际176/176，未重跑。七步/21explicit handles/4Data stamps不扩，ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动入口。[冷档候选](GUEST_COLD_PROFILE.md)只研究首load/slot/output而未采用；剩余资源/actor/cache/output、房主地图、每人独立袋/容量/负重的真实捕获与逐产物返航、实际双端/冷配置及完整M3—M7继续必需。
+
+## 0.1.27 原参数基础资源观察
+
+既有默认关闭16入口在Add_Impl Before同步读取两种精确类的四个资源direct backing fields，After/Finalizer复用owned CLR候选。未知类/null明示不可用，不调用业务getter、主动抽随机或解码货槽。TID/ItemDataID、basegrade/baseweight不代替最终产品映射/品质/有效重量；原生调用、ABI、整批产物与个人分流权限仍false。Build通过；纯CLR/TCP输入与前commit逐文件一致，复用0.1.26实际222/222，本轮未重跑。详见[资源观察](LOOT_PRODUCT_OBSERVATION.md)与[本轮摘要](../logs/loot-product-build-verification.json)。未部署/启动，继续真实选择/提交桥、个人容量/捕获/逐项返航、客机隔离/房主世界及双端冷配置。

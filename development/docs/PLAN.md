@@ -1,6 +1,6 @@
 # MultiDave 开发计划
 
-当前源码为 0.1.26-dev、协议 6，插件构建警告视为错误通过，本轮实际 Core/TCP 测试 222/222 通过。[捕获两阶段账本](CAPTURE_SELECTION.md)先固定玩家/鱼来源及潜水级捕获编号，再绑定已选完整产物和个人容量；未选产物保持未知并阻止返航完成，真实原生选择/分流仍未接通。范围见[当前摘要](../logs/capture-selection-build-verification.json)；新版未部署/启动，安装 0.1.12、最近潜水 0.1.11、默认发行包 0.1.0 保持。实际个人容量/负重、返航入仓、客机隔离、房主世界采用与双端/冷配置仍待完成。
+当前源码为 0.1.27-dev、协议 6，插件构建警告视为错误通过；Core/TCP输入与前commit逐文件一致，复用0.1.26实际222/222，本轮未重跑。[入袋资源观察](LOOT_PRODUCT_OBSERVATION.md)在既有默认关闭入口复制两种精确资源类的基础字段；最终品质、有效重量与完整产物仍待原生核实，不能授予个人分流权限。范围见[当前摘要](../logs/loot-product-build-verification.json)；未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。实际个人容量/负重、返航入仓、客机隔离、房主世界与双端/冷配置仍待完成。
 
 目标：Windows Steam 版双人潜水合作 MVP，先做局域网房主/客户端。
 房主负责游戏世界和结算。服务器方案暂缓。
@@ -204,3 +204,7 @@ F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房
 ## 0.1.26 来源预约与延后完整产物
 
 Build及实际Core/TCP222/222通过；新增11组生产账本夹具、2组实际清单适配器/TCP。详见[CAPTURE_SELECTION](CAPTURE_SELECTION.md)与[本轮摘要](../logs/capture-selection-build-verification.json)。SourceReserve共享潜水账本捕获编号与来源围栏，EnterSelection在native业务前须已有整批隔离能力，LateSeal仅绑定已选完整且仍未写袋的产物和个人容量。未选Request=null、Intent保留；EnteredUnknown不重新执行/取消，return或断线不把它当零产物完成；晚绑定只补原capture的返航条目。第一份完整已核选择在容量检查之前固定，容量拒绝也不能改成较轻产物；同批次可以新鲜容量再核，不重Roll。旧Reserve仍需已核完整计划，Gate局部编号与Unity实例编号不能当潜水operation或会话player身份。真实native证明全部false，无producer attach、选择/分流/入仓/save执行；下一步显式原选择与提交桥、最终grade/effectiveweight/slot/任务与鱼终态、客机隔离及双端/冷配置。
+
+## 0.1.27 原参数基础资源观察
+
+既有默认关闭16入口在Add_Impl Before同步读取两种精确类的四个资源direct backing fields，After/Finalizer复用owned CLR候选。未知类/null明示不可用，不调用业务getter、主动抽随机或解码货槽。TID/ItemDataID、basegrade/baseweight不代替最终产品映射/品质/有效重量；原生调用、ABI、整批产物与个人分流权限仍false。Build通过；纯CLR/TCP输入与前commit逐文件一致，复用0.1.26实际222/222，本轮未重跑。详见[资源观察](LOOT_PRODUCT_OBSERVATION.md)与[本轮摘要](../logs/loot-product-build-verification.json)。未部署/启动，继续真实选择/提交桥、个人容量/捕获/逐项返航、客机隔离/房主世界及双端冷配置。

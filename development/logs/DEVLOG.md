@@ -705,3 +705,13 @@
 - 首轮221/Build通过，末审发现首次完整选定产物因容量拒绝后仍可换轻批次；修为容量检查前固定首份fullvalid选择，拒换weight/grade，但同批可fresh capacity再核。新增专门fixture后重跑两套检查，最终Core/TCP222/222、Build警告视为错误通过，SHA256 `B176F3346119311C29A7A4A4CA1C82B4BE4EA110B7130BC3FC76471B60371E1A`；11生产账本＋2生产controller/TCP新增fixtures。全部能力来自synthetic facts，不执行native或声明玩家实际归属。
 - 新CAPTURE_SELECTION、currentcore/capture-selection摘要及交接/计划/相关Skill同步；旧0.1.25的209、观察摘要与安装0.1.12/潜水0.1.11/default0.1.0保留。实际原生整批选择/首次write暂停桥、finalgrade/effectiveweight/Obscuredslot/副作用/终态、员工分流和逐项入仓、guest隔离/房主世界与双端冷配置仍必需。
 - 独立只读末审确认产物固定缺口已修复；正式Skill校验通过并同步。最终新鲜游戏进程为0，已安装DLL仍为`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，未部署或启动本轮源码。
+
+## 2026-10-04 — 0.1.27 原入袋参数的基础资源观察
+
+- 继续用户确定的每人独立背包/容量/负重，房主唯一长期进度；前轮已提交e9d36e6，完整M3—M7保持active。本轮不部署/启动，不运行原生业务，不读改存档，用户延后试玩期间继续独立开发。
+- 既有默认关闭16个Loot观察入口中，Add_Impl仅Before同步传原IItemBase到复制器；按DR.Items或IntegratedItem精确native class读取四backing fields两次，末核pointer/class/store。原wrapper不入Hook Context、复制队列或日志；immutable CLR Resource随prefix保存，After/Finalizer复用Before结果，Finalizer不重读资源。unknown/null所有数字null，读取失败无条件清资源候选再撤链。
+- 每个资源prefix最多32次读取、进程65536且开关不清计数；线程、重入、前后窗口与已有512queue/128context/8192event及owncleanup沿用。ClassStore/typedwrap可能初始化native类，两次样本一致不证明原子静止或ABI。TID/ItemDataID及basegrade/baseweight只候选，不猜产品ID、bonus/count/重量参数公式，不产生CargoFacts或最终品质/有效重量/完整产物/员工分流权限。
+- 新Inspector实际离线1assembly/4types/2资源类/8directfields/8publicgetterdecl/4slotdirectfields，输入前后hash一致F41167D67D226866B22EB76A239B796B0D1E40F57177E62FBAAFC2284471626E，AST错误0。当前ObscuredInt是CLR struct，slotgetter用ldobj且无value_box；5instancefields、13所选原生方法声明与2整数转换均有runtime_invoke，解码副作用未知且未执行。原报告/封装IL仅.local，槽合并及最终计算仍待核实。
+- Build警告视为错误通过，SHA256 `687C8F6959163C33B85C026C05D2F645D0900BE12328761BB2CDFC64158BCD60`。75个Core/TCP源和runner输入核对前commit内容，并核对上一轮实际验证输入SHA256；一个历史文件的Git blob与工作区换行表示不同，实际验证字节hash仍一致。复用0.1.26真实222/222，本轮未重跑；这些测试不编译/执行新原生复制器。两名独立只读末审无阻断。
+- 新LOOT_PRODUCT_OBSERVATION、当前core/loot-product摘要与交接/计划/Skill草稿同步；历史0.1.26选择摘要、实际测试时间及安装0.1.12/潜水0.1.11/default0.1.0保留。实际整批选择/首次写入暂停、最终grade/effectiveweight/Obscured槽、个人容量分流与鱼终态、员工逐项返航入仓、客机隔离/房主世界与双端/GitHub冷配置仍需完成。
+- 正式Skill校验通过并同步到仓库，SHA256 `4C2A47E506D6FB0E41C77B0AF961BA0C4333C83D728EC14A33AE1307654CE3D7`；Inspector解析错误0。新鲜进程检查0，安装DLL仍`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`，本轮没有部署或启动。

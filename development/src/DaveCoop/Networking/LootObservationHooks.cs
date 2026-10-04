@@ -57,6 +57,9 @@ namespace DaveCoop.Networking
         public IngredientsStorage Storage { get; }
         public SaveData Save { get; }
         public LootBoxSlot Slot { get; }
+        // The original Add_Impl argument is held only for this synchronous
+        // prefix callback. It never enters CallContext or a diagnostic queue.
+        public DR.IItemBase ItemResource { get; }
         public string Key { get; }
         public bool? OriginalReturn { get; }
         public int? OriginalIntReturn { get; }
@@ -65,11 +68,13 @@ namespace DaveCoop.Networking
         internal LootObservationCallback(long sequence, long callId, int threadId,
             LootObservationMethod method, LootObservationStage stage, LootObservationArguments arguments,
             FishAISystem fish, FishInteractionBody body, LootBox bag, IngredientsStorage storage,
-            SaveData save, LootBoxSlot slot, string key, bool? originalReturn, int? originalIntReturn, bool originalException)
+            SaveData save, LootBoxSlot slot, string key, bool? originalReturn, int? originalIntReturn, bool originalException,
+            DR.IItemBase itemResource = null)
         {
             ProcessSequence = sequence; CallId = callId; ManagedThreadId = threadId;
             Method = method; Stage = stage; Arguments = arguments;
             Fish = fish; Body = body; Bag = bag; Storage = storage; Save = save; Slot = slot; Key = key;
+            ItemResource = itemResource;
             OriginalReturn = originalReturn; OriginalIntReturn = originalIntReturn; OriginalException = originalException;
         }
     }
@@ -236,7 +241,7 @@ namespace DaveCoop.Networking
             => __state = Begin(LootObservationMethod.LootBoxAddIgnoreOverloaded, BagArguments(__0, __1, __2, __3, __4, __5), bag: __instance);
         private static void BagIgnoreAfter(LootBox __instance, long __state, bool __result) => Postfix(__state, LootObservationMethod.LootBoxAddIgnoreOverloaded, bag: __instance, originalReturn: __result);
         private static void BagImplBefore(LootBox __instance, DR.IItemBase __0, int __1, int __2, LootBox.AutoLiftedType __3, Il2CppSystem.Collections.Generic.List<string> __4, bool __5, out long __state)
-            => __state = Begin(LootObservationMethod.LootBoxAddImpl, new LootObservationArguments { ItemDataArgumentPresent = !ReferenceEquals(__0, null), Count = __1, BonusGrade = __2, LiftType = (int)__3, GetTimesArgumentPresent = !ReferenceEquals(__4, null), UpdateMissionCount = __5 }, bag: __instance);
+            => __state = Begin(LootObservationMethod.LootBoxAddImpl, new LootObservationArguments { ItemDataArgumentPresent = !ReferenceEquals(__0, null), Count = __1, BonusGrade = __2, LiftType = (int)__3, GetTimesArgumentPresent = !ReferenceEquals(__4, null), UpdateMissionCount = __5 }, bag: __instance, itemResource: __0);
         private static void BagImplAfter(LootBox __instance, long __state) => Postfix(__state, LootObservationMethod.LootBoxAddImpl, bag: __instance);
         private static void CapacityBefore(LootBox __instance, int __0, out long __state) => __state = Begin(LootObservationMethod.LootBoxCheckOverloaded, new LootObservationArguments { ItemId = __0 }, bag: __instance);
         private static void CapacityAfter(LootBox __instance, long __state, bool __result) => Postfix(__state, LootObservationMethod.LootBoxCheckOverloaded, bag: __instance, originalReturn: __result);
@@ -259,7 +264,8 @@ namespace DaveCoop.Networking
             => Complete(__state, LootObservationStage.Finalizer, null, null, null, null, null, null, null, !ReferenceEquals(__exception, null));
 
         private static long Begin(LootObservationMethod method, LootObservationArguments arguments,
-            FishAISystem fish = null, FishInteractionBody body = null, LootBox bag = null, IngredientsStorage storage = null, SaveData save = null, LootBoxSlot slot = null, string key = null)
+            FishAISystem fish = null, FishInteractionBody body = null, LootBox bag = null, IngredientsStorage storage = null, SaveData save = null, LootBoxSlot slot = null, string key = null,
+            DR.IItemBase itemResource = null)
         {
             LootObservationHooks active = Volatile.Read(ref _active);
             if (active == null || active.Failed || !Volatile.Read(ref active._accepting)) return 0;
@@ -272,7 +278,7 @@ namespace DaveCoop.Networking
                     { Increment(ref _processDropped); throw new InvalidOperationException("Loot callback quota exhausted."); }
                     int threadId = Environment.CurrentManagedThreadId;
                     active._calls.Add(callId, new CallContext { Method = method, ThreadId = threadId, Arguments = arguments });
-                    active._copy(new LootObservationCallback(sequence, callId, threadId, method, LootObservationStage.Before, arguments, fish, body, bag, storage, save, slot, key, null, null, false));
+                    active._copy(new LootObservationCallback(sequence, callId, threadId, method, LootObservationStage.Before, arguments, fish, body, bag, storage, save, slot, key, null, null, false, itemResource));
                     return callId;
                 }
             }
