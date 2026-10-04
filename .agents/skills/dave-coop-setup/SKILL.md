@@ -5,45 +5,50 @@ description: Configure or continue development of the MultiDave prototype for Wi
 
 # MultiDave 配置与开发
 
-仓库目标为 https://github.com/gao-xh/MultiDave。当前 0.1.0 是插件加载原型，
-尚未支持双人联机。仓库根目录是此 SKILL.md 路径向上三级。
-先读根目录 AGENTS.md 和 development/logs/DEVLOG.md，避免重复已完成工作。
+仓库目标为 https://github.com/gao-xh/MultiDave。仓库根目录是此文件路径向上三级。
+先读根目录 AGENTS.md 和 development/logs/DEVLOG.md，确定当前实现与验证范围。
+默认发行包是 0.1.0 插件加载原型。开发源码进度以 HANDOFF 和 PLAN 为准；
+本机 TCP 测试通过不能代替真实双游戏联机验收。
 
-## 用户只给 GitHub 链接并要求配置
+## 用户给 GitHub 链接并要求配置
 
-1. 将用户指定的仓库克隆到可写的新目录，读取其 README、AGENTS 和本 Skill。
-   已有检出时检查来源和本地修改，不覆盖别人工作。
-2. 在仓库根目录运行 `setup.ps1 -InspectOnly`，自动读取 Steam 注册表和库清单。
-   找不到或找到多份时才询问游戏目录；不要沿用开发者本机 F 盘路径。
-3. 用户要求配置 Mod 已包含安装依赖和插件的授权。游戏正在运行时请其保存退出，
-   继续准备文件；不要强制结束进程。网络及游戏目录写入使用环境提供的权限机制。
-4. 运行 `setup.ps1 -LaunchGame`。默认使用仓库 distribution 下经 SHA256
-   校验的自写插件包；BepInEx 从官方固定 URL 下载并校验。玩家无需 .NET SDK。
-   只有明确需要最新 GitHub Release 时才用 `-UseLatestRelease`。
-5. 首次启动会生成互操作接口，可等待数分钟并继续给用户进度。
-   保持在主菜单，运行 `development/scripts/Check-Status.ps1`。
-   验证当前启动进程的日志时间，以及 `DAVECOOP_BOOTSTRAP_OK`、
-   `DAVECOOP_UPDATE_OK`、`DAVECOOP_SCENE`。安装文件存在不等于加载成功。
-6. 报告已配置内容、真实验证结果、运行日志位置及当前原型范围。
-   不声称服务器、第二角色或完整联机已经完成。
+1. 克隆用户指定仓库到可写的新目录，读取 README、AGENTS 和本 Skill。
+   已有检出时检查来源和本地修改，保留别人工作。
+2. 在根目录运行 `setup.ps1 -InspectOnly`，自动读取 Steam 注册表和库清单。
+   找不到或找到多份时才询问游戏目录，不沿用开发者本机路径。
+3. 配置 Mod 包含安装依赖和插件的授权。游戏运行时请用户保存退出并继续准备文件；
+   安装脚本会拒绝覆盖运行中的插件。网络及目录写入使用环境的权限机制。
+4. 运行 `setup.ps1 -LaunchGame`。默认安装 distribution 下经 SHA256 校验的
+   自写插件包；框架从官方固定 URL 下载并校验，玩家不需要 .NET SDK。
+   明确要求最新 GitHub Release 时才使用 `-UseLatestRelease`。
+5. 首次启动会生成互操作接口，期间给用户进度。保持主菜单，运行
+   `development/scripts/Check-Status.ps1`，验证当前进程日志的新鲜度与
+   `DAVECOOP_BOOTSTRAP_OK`、`DAVECOOP_UPDATE_OK`、`DAVECOOP_SCENE`。
+6. 报告版本、实际加载证据、日志位置和支持范围。安装文件存在不能证明加载成功。
 
 ## 继续开发
 
-读 `development/docs/HANDOFF.md`。源文件在 `development/src/DaveCoop/`。
-按需要修改后运行 `development/scripts/Build-Plugin.ps1`，退出游戏后运行
-`Deploy-Plugin.ps1`，再启动并验证。编译脚本使用已有 SDK 的 Roslyn 和
-BepInEx 自带 .NET 6 库，也可在支持 net6.0 的 SDK 中使用 csproj。
-若无编译器，玩家安装仍可用发布包；开发则先准备合适工具并检查磁盘空间。
+读 `development/docs/HANDOFF.md`、`PLAN.md`；研究游戏接口时读 `GAME_API.md`，
+研究显示/协议/会话时读 `MULTIPLAYER.md`。源码在 `development/src/DaveCoop/`。
 
-每次有意义的修改，将实际改动、验证结果、限制和下一步追加到
-`development/logs/DEVLOG.md`。机器安装日志为 `development/.local/logs/*.jsonl`。
+- C# 修改后运行 `development/scripts/Build-Plugin.ps1`。
+  纯 CLR 姿态、协议或会话修改后另运行 `development/scripts/Test-Core.ps1`。
+  现有脚本使用已安装 SDK 的 Roslyn 与框架 .NET 6 库；测试运行需要 .NET 6 runtime。
+  支持 net6.0 的 SDK 也可使用项目文件，按当前机器的真实结果记录验证路径。
+- 游戏正常退出后运行 `development/scripts/Deploy-Plugin.ps1`；
+  再启动，并从本次进程日志验证。缺少编译器时玩家配置仍可使用发行包。
+- 第二角色的本地回放由 F10 切换；潜水时验证显示、转向、输入、镜头及返航清理。
+  用户不方便试玩时记录待验证项，继续独立开发，不把主菜单启动当成画面验收。
+- 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
+  真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 
-## 版本与失败处理
+每次有意义的修改追加 `development/logs/DEVLOG.md`，同步接手文档和真实验证摘要。
+机器运行日志放在忽略的 `development/.local/`，历史会话与新构建的证据分别记录。
 
-- 未验证的游戏或框架版本：解释检测到的版本，先研究兼容性；不要绕过检查。
-- 下载失败：保留失败日志，清理本次临时下载；不把未知来源 DLL 混入已验证环境。
-- 插件失败：检查 BepInEx 日志和游戏 Player.log，将问题记入开发日志。
-- 停用方式见根 README；不删游戏或用户存档。
-- 调整版本后更新依赖清单，重新真实验证，再打包到 distribution。
+## 版本与发行
 
-仓库只发布本项目源码、自写 DLL 和元数据；不发布游戏、互操作程序集或存档。
+未验证的游戏或框架版本先研究兼容性；下载及插件失败保留本次错误记录。
+停用办法见根 README，不删除游戏或存档。发行前更新依赖清单、重新验证并打包；
+打包器会检查 DLL 与发布版本一致。开发构建不自动替换默认发行包。
+
+仓库只发布本项目源码、自写 DLL 和元数据，不发布游戏、互操作程序集或存档。

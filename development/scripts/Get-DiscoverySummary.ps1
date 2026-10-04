@@ -84,7 +84,11 @@ try {
 $process = Get-Process -Name DaveTheDiver -ErrorAction SilentlyContinue | Select-Object -First 1
 $currentProcessSession = $false
 if ($process) {
-    $sessionStart = [DateTimeOffset]::Parse($session.StartedUtc).UtcDateTime
+    # PowerShell 7.5+ parses ISO JSON dates as DateTime. Re-parsing its localized
+    # string would discard Kind=Utc and misidentify an older game session.
+    $sessionStart = if ($session.StartedUtc -is [DateTime]) {
+        $session.StartedUtc.ToUniversalTime()
+    } else { [DateTimeOffset]::Parse($session.StartedUtc).UtcDateTime }
     $currentProcessSession = $sessionStart -ge $process.StartTime.ToUniversalTime()
 }
 $playerReports = @($players.Values | Sort-Object Id | ForEach-Object {

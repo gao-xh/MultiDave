@@ -1,0 +1,16 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-04T04:17:06.3670881Z",
+  "PluginVersion": "0.1.2-dev",
+  "SourceLog": "discovery-20261004-041049-626.jsonl",
+  "DeployedPluginSHA256": "E2A7DEC29ACB894F72A2D8528C099E82AB867DDE00F82DC739707BAA8EBB5AB9",
+  "CurrentSessionBootVerified": true,
+  "UnityUpdateVerified": true,
+  "PreviewComponentReady": true,
+  "DiveDisplayVerified": false,
+  "F10Verified": false,
+  "InputAndCameraVerified": false,
+  "ReturnCleanupVerified": false,
+  "UserGameplayStatus": "Requested; user now available, awaiting results.",
+  "Scope": "Fresh native game launch and main menu only; does not verify the subsequently added CLR session source or dive graphics."
+}

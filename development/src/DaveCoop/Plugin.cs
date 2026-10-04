@@ -5,6 +5,7 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using DaveCoop.Rendering;
 
 namespace DaveCoop
 {
@@ -14,7 +15,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.1-dev";
+        public const string Version = "0.1.2-dev";
 
         public override void Load()
         {
@@ -26,8 +27,16 @@ namespace DaveCoop
                 "Read player/camera state on the Unity thread; write bounded discovery logs. F9 captures a snapshot.");
             PlayerProbe.MaxSnapshots = Config.Bind("Discovery", "MaxSnapshots", 9000,
                 "Maximum snapshots per game launch, clamped to 1..18000 (two samples per second).");
+            RemotePreview.Logger = Log;
+            RemotePreview.Enabled = Config.Bind("Preview", "Enabled", true,
+                "Display a sprite-only delayed local replay actor for M2 testing. F10 toggles it.");
+            RemotePreview.Delay = Config.Bind("Preview", "DelaySeconds", 1f,
+                "Visual replay delay in seconds, clamped to 0.1..2.5.");
+            RemotePreview.OffsetX = Config.Bind("Preview", "OffsetX", 3f,
+                "Horizontal replay offset in world units, clamped to -10..10.");
             AddComponent<Diagnostics>();
             AddComponent<PlayerProbe>();
+            AddComponent<RemotePreview>();
             Log.LogInfo($"DAVECOOP_BOOTSTRAP_OK: {Name} {Version}; Unity {Application.unityVersion}");
         }
     }
@@ -81,8 +90,8 @@ namespace DaveCoop
             if (ShowOverlay == null || !ShowOverlay.Value)
                 return;
 
-            GUI.Box(new Rect(12, 12, 440, 106),
-                $"DaveCoop Prototype {Plugin.Version}\nPlugin loaded | Scene: {_scene}\n{PlayerProbe.Status}\nF8: hide/show | F9: snapshot | Network: not implemented");
+            GUI.Box(new Rect(12, 12, 520, 130),
+                $"DaveCoop Prototype {Plugin.Version}\nPlugin loaded | Scene: {_scene}\n{PlayerProbe.Status}\n{RemotePreview.Status}\nF8: panel | F9: snapshot | F10: replay | Network: not implemented");
         }
     }
 }

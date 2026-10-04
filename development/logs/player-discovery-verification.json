@@ -3,9 +3,9 @@
   "SourceLog": "discovery-20261004-032129-425.jsonl",
   "PluginVersion": "0.1.1-dev",
   "StartedUtc": "2026-10-04T03:21:29.4256174Z",
-  "LastSnapshotUtc": "2026-10-04T03:35:05.1060945Z",
-  "CurrentProcessSession": true,
-  "SnapshotCount": 1604,
+  "LastSnapshotUtc": "2026-10-04T03:37:27.7538216Z",
+  "CurrentProcessSession": false,
+  "SnapshotCount": 1886,
   "ParseFailures": 0,
   "IncompleteTail": false,
   "ProbeErrors": [],
@@ -64,9 +64,61 @@
       "Utc": "2026-10-04T03:32:47.4022876Z",
       "Scene": "Boss_000",
       "Handle": -329150
+    },
+    {
+      "Utc": "2026-10-04T03:36:07.0826762Z",
+      "Scene": "A01_01_01",
+      "Handle": -396314
+    },
+    {
+      "Utc": "2026-10-04T03:36:36.3206381Z",
+      "Scene": "DR_Lobby_Entry",
+      "Handle": -550232
+    },
+    {
+      "Utc": "2026-10-04T03:36:38.886415Z",
+      "Scene": "Empty",
+      "Handle": -550264
+    },
+    {
+      "Utc": "2026-10-04T03:36:39.9138746Z",
+      "Scene": "DR_Lobby",
+      "Handle": -550268
+    },
+    {
+      "Utc": "2026-10-04T03:37:19.2536859Z",
+      "Scene": "DR_Title",
+      "Handle": -655994
     }
   ],
   "Players": [
+    {
+      "Id": -519524,
+      "GameObjectId": -519520,
+      "Name": "DaveCharacter",
+      "Path": "PlayerGroup(Clone)/DaveCharacter",
+      "Scenes": [
+        "A01_01_01"
+      ],
+      "FirstSeenUtc": "2026-10-04T03:36:09.860837Z",
+      "LastSeenUtc": "2026-10-04T03:36:33.5071316Z",
+      "Samples": 48,
+      "ManagerBoundSamples": 48,
+      "PositionSamples": 48,
+      "LookSamples": 48,
+      "NonzeroInputSamples": 28,
+      "AnimatorSamples": 48,
+      "CameraFollowSamples": 48,
+      "LastPosition": [
+        -16.626656,
+        -70.049904,
+        0
+      ],
+      "LastLook": [
+        -1,
+        0
+      ]
+    },
     {
       "Id": -354326,
       "GameObjectId": -354322,
@@ -76,22 +128,22 @@
         "Boss_000"
       ],
       "FirstSeenUtc": "2026-10-04T03:32:49.923377Z",
-      "LastSeenUtc": "2026-10-04T03:35:05.1060945Z",
-      "Samples": 271,
-      "ManagerBoundSamples": 271,
-      "PositionSamples": 271,
-      "LookSamples": 271,
-      "NonzeroInputSamples": 206,
-      "AnimatorSamples": 271,
-      "CameraFollowSamples": 271,
+      "LastSeenUtc": "2026-10-04T03:36:06.3694579Z",
+      "Samples": 393,
+      "ManagerBoundSamples": 393,
+      "PositionSamples": 393,
+      "LookSamples": 393,
+      "NonzeroInputSamples": 293,
+      "AnimatorSamples": 393,
+      "CameraFollowSamples": 393,
       "LastPosition": [
-        28.772655,
-        -11.202713,
+        -16.307173,
+        17.596945,
         0
       ],
       "LastLook": [
-        -0.037718892,
-        0.9992884
+        1,
+        0
       ]
     },
     {
@@ -124,12 +176,27 @@
   ],
   "ManagerBoundPlayerObserved": true,
   "CameraFollowObserved": true,
-  "RecordedUtc": "2026-10-04T03:35:05.6144445Z",
   "TestedSteamBuildId": "25315876",
   "TestedUnityVersion": "6000.0.52f1",
   "CompiledPluginSHA256": "190292CA79C6DE5AF8765A7A77A1F28975C82FE6A444BD2B669C9A5EB89D3FC8",
   "ManagedHelperRegistrationWarnings": false,
   "CrossScenePlayerReplacementVerified": true,
-  "ReturnLifecycleVerified": false,
-  "Scope": "Read-only discovery on one local Windows game process; no multiplayer or second actor."
+  "Scope": "Read-only discovery on one local Windows game process; no multiplayer or second actor.",
+  "RecordedUtc": "2026-10-04T04:17:06.3090594Z",
+  "SessionCompleted": true,
+  "ReturnLifecycleVerified": true,
+  "ReturnCleanupObservations": [
+    {
+      "Scene": "DR_Lobby",
+      "Samples": 72,
+      "PlayerSamples": 0,
+      "ManagerSamples": 0
+    },
+    {
+      "Scene": "DR_Title",
+      "Samples": 18,
+      "PlayerSamples": 0,
+      "ManagerSamples": 0
+    }
+  ]
 }

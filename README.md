@@ -44,13 +44,15 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 - [阶段记录与下一步](development/docs/HANDOFF.md)
 - [分阶段开发计划](development/docs/PLAN.md)
 - [玩家与摄像机发现](development/docs/GAME_API.md)
+- [第二角色与传输层](development/docs/MULTIPLAYER.md)
 - [Codex 配置技能](.agents/skills/dave-coop-setup/SKILL.md)
 
 源代码和重复使用的配置工具位于 `development/`；
 `distribution/` 是供自动安装使用的本项目插件包。
 本仓库不分发游戏、游戏接口程序集、存档或 BepInEx 运行库。
 
-`codex/player-discovery` 分支正在开发 0.1.1-dev 的只读玩家/摄像机探针，
+`codex/player-discovery` 分支源码为 0.1.2-dev：玩家探针已真实验证，
+第二角色回放已编译/主菜单启动，实际入海显示待验收，传输层基础有本机测试。
 开发时使用编译和部署脚本；默认玩家安装包保持 0.1.0。
 
 ## 暂时停用
