@@ -1,6 +1,6 @@
 # MultiDave 接手记录
 
-当前插件源码0.1.34-dev、协议6；实际Core/TCP269/269与Build警告视为错误通过，新增2项返航来源夹具。[返航品质与数量自然观察](RETURN_GRADE_OBSERVATION.md)补3默认关闭入口，保留原additive、实例阈值、分类bool与兑换int，整袋范围不借单鱼来源；集合/员工政策和数量委托目标、真实捕鱼入仓保存仍未验。证据见[构建摘要](../logs/return-grade-observation-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、客机隔离/房主世界、真实双端正常返航与冷配置仍待完成。
+当前源码0.1.35-dev（协议6），编译通过。已接[远端鱼叉头显示](HARPOON_VISUAL.md)；Core输入未改，复用0.1.34的269/269，本轮未重跑。[返航数量来源](RETURN_COUNT_POLICY.md)查清自动委托和UI肉量转换。见[验证摘要](../logs/harpoon-visual-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立背包的真实分流、员工武器命中、客机隔离、房主世界、双端正常返航和冷配置仍待完成。
 
 ## 已完成
 
@@ -346,3 +346,9 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 0.1.33先读[EMPLOYEE_RETURN_MAPPING](EMPLOYEE_RETURN_MAPPING.md)与摘要：实际267测试/最终Build；11新mapping夹具只synthetic。Map必须产品完整后、捕获Confirm前；原source13free现在需要MappingReady且whole Map已退栈。17owner独立保留bridge/ledger/selection，全部同批同输出plan SaveConfirmed才free；unknown不retry。源码Native-only末审修后Core84输入相同不重跑，141最终Build输入freshseal。真实类别/品质/内部公式/ABI/游戏捕获入仓保存仍未验，不补权限。
 
 0.1.34先读[RETURN_GRADE_OBSERVATION](RETURN_GRADE_OBSERVATION.md)及摘要：269实际测试/Build/144执行前后sameinputs，2新真实Core lineage夹具；3naturalhook代码20–22，共22目标默认off。prefix原additive/3receiverfield双读，21bool22int各自原返回，wholebag未知scope/After固定slot/Finalizer CLR。新品质read12/2不含原帧/身份/四weight诊断。两PE2scope quota/invalid不省略；原automatic nonnull目标未唯一、UI null输入已处理CellData上游未证，native政策/ABI/集合绑定/employee适用false，不补能力。
+
+## 0.1.35 接手增量
+
+优先读[鱼叉显示](HARPOON_VISUAL.md)、[数量来源](RETURN_COUNT_POLICY.md)和[本轮摘要](../logs/harpoon-visual-build-verification.json)。LocalHarpoonVisualCapture通过当前manager玩家、m_InstanceItemInven、handler与projectile直接关系采一枚原头，追加既有PlayerFrame；不要把显示当成原生员工武器。只有Local test偏移回放；真人Host/Guest用各自采样，但严格世界指纹/场景Ready条件仍在。
+
+自动delegate静态target已唯一解析为GetExchangeCount；UI鱼TotalCount已转换且可能累计。数量使用槽rawGrade，入仓另取FinalGrade；不能重复兑换UI数或用rawCount替代所有路径。完整UI闭型mapping/类别、员工政策及真实返航绑定仍待核。安装.12/潜水.11/default.0保持；本轮Build通过，Core269为旧实际结果复用，未运行游戏。

@@ -1,6 +1,6 @@
 # 房主与员工模式
 
-当前插件源码0.1.34-dev、协议6；实际Core/TCP269/269与Build警告视为错误通过，新增2项返航来源夹具。[返航品质与数量自然观察](RETURN_GRADE_OBSERVATION.md)补3默认关闭入口，保留原additive、实例阈值、分类bool与兑换int，整袋范围不借单鱼来源；集合/员工政策和数量委托目标、真实捕鱼入仓保存仍未验。证据见[构建摘要](../logs/return-grade-observation-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、客机隔离/房主世界、真实双端正常返航与冷配置仍待完成。
+当前源码0.1.35-dev（协议6），编译通过。已接[远端鱼叉头显示](HARPOON_VISUAL.md)；Core输入未改，复用0.1.34的269/269，本轮未重跑。[返航数量来源](RETURN_COUNT_POLICY.md)查清自动委托和UI肉量转换。见[验证摘要](../logs/harpoon-visual-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立背包的真实分流、员工武器命中、客机隔离、房主世界、双端正常返航和冷配置仍待完成。
 
 这是按用户提出的“房主掌主动权，第二人充当员工”确定的首版玩法方案。
 房主带队潜水，员工提供捕鱼和搬运协作，长期进度归房主。
@@ -246,3 +246,5 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 0.1.33[返航映射与数量缓存](EMPLOYEE_RETURN_MAPPING.md)按员工原产品index关联ingredient/parent/rank/实际一次兑换候选。各自背包、容量和重量继续独立；rawGrade不改FinalGrade，兑换数不改原capture count。容量拒后重验和鱼回收后pure计划沿同一缓存，不重复roll/lookup/exchange；类别与最终品质producer、入仓增量/保存及实际两袋玩法仍待接。
 
 0.1.34[自然返航规则](RETURN_GRADE_OBSERVATION.md)保原additive/阈值与槽分类/兑换返回，不把整袋归给一条捕获鱼。自动返航非null数量delegate与UI null/CellData输入分开；UI上游转换未证，不直接用原count入仓。Apply读取host save集合，禁temp员工袋调用。员工真实政策/捕鱼分流/个人容量、仓库增量/保存仍需绑定，两个袋各自容量/负重继续。
+
+0.1.35鱼叉头显示只补远端外观，不建立原生员工武器或共享容量。后续数量解析已确认自动委托与UI鱼预先转换，见[RETURN_COUNT_POLICY](RETURN_COUNT_POLICY.md)。员工原捕获grade/count/weight/指纹与返航品质、肉量转换保持分开；实际员工返航producer与独立袋分流仍待接，每个人的容量和负重规则保持。

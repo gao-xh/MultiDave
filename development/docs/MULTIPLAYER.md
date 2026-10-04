@@ -1,6 +1,6 @@
 # 第二角色与传输层
 
-当前插件源码0.1.34-dev、协议6；实际Core/TCP269/269与Build警告视为错误通过，新增2项返航来源夹具。[返航品质与数量自然观察](RETURN_GRADE_OBSERVATION.md)补3默认关闭入口，保留原additive、实例阈值、分类bool与兑换int，整袋范围不借单鱼来源；集合/员工政策和数量委托目标、真实捕鱼入仓保存仍未验。证据见[构建摘要](../logs/return-grade-observation-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、客机隔离/房主世界、真实双端正常返航与冷配置仍待完成。
+当前源码0.1.35-dev（协议6），编译通过。已接[远端鱼叉头显示](HARPOON_VISUAL.md)；Core输入未改，复用0.1.34的269/269，本轮未重跑。[返航数量来源](RETURN_COUNT_POLICY.md)查清自动委托和UI肉量转换。见[验证摘要](../logs/harpoon-visual-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立背包的真实分流、员工武器命中、客机隔离、房主世界、双端正常返航和冷配置仍待完成。
 
 0.1.22 历史源码 `0.1.22-dev`、协议 5，插件 Build 警告视为错误通过；未部署/启动。0.1.22 该轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重跑测试。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
@@ -267,3 +267,5 @@ M4 下一步是本地来源/代次与跨机地址确认后的实际选择采用�
 ## 0.1.26 来源预约与延后完整产物
 
 Build及实际Core/TCP222/222通过；新增11组生产账本夹具、2组实际清单适配器/TCP。详见[CAPTURE_SELECTION](CAPTURE_SELECTION.md)与[本轮摘要](../logs/capture-selection-build-verification.json)。SourceReserve共享潜水账本捕获编号与来源围栏，EnterSelection在native业务前须已有整批隔离能力，LateSeal仅绑定已选完整且仍未写袋的产物和个人容量。未选Request=null、Intent保留；EnteredUnknown不重新执行/取消，return或断线不把它当零产物完成；晚绑定只补原capture的返航条目。第一份完整已核选择在容量检查之前固定，容量拒绝也不能改成较轻产物；同批次可以新鲜容量再核，不重Roll。旧Reserve仍需已核完整计划，Gate局部编号与Unity实例编号不能当潜水operation或会话player身份。真实native证明全部false，无producer attach、选择/分流/入仓/save执行；下一步显式原选择与提交桥、最终grade/effectiveweight/slot/任务与鱼终态、客机隔离及双端/冷配置。
+
+0.1.35新增自然鱼叉头显示接线见[HARPOON_VISUAL](HARPOON_VISUAL.md)。沿现有双向PlayerFrame，协议6不变；Host/Guest各自本机采样，Local test仍偏移。实际两端随机地图的WorldFingerprint可能不匹配而停在Waiting；本轮没有绕过Ready条件或采用房主地图。只显示一枚head，不产生投射物/碰撞/伤害，外观和真人双端仍待实机。

@@ -37,3 +37,5 @@ DirectCount 使用冻结的原 count，不调用数量辅助函数。ExchangeWho
 接下来需固定实际类别/数量模式来源及 FinalGrade 政策，再接真实员工 actor、捕鱼分流、仓库 bucket 增量和保存。客机隔离、房主世界采用、实际双实例正常返航及 GitHub 冷配置继续属于完整 M3—M7。本版未部署或启动；安装0.1.12、最近潜水0.1.11、默认发行包0.1.0的实机范围保持。
 
 0.1.34研究确认数量模式需更强来源：UI null只用已处理CellData.TotalCount，原capture是否已转换尚unknown；自动非nulldelegate的target未唯一解析。先看[自然规则观察](RETURN_GRADE_OBSERVATION.md)，.33 mapping保持候选/权限false，不据delegate presence补Exchange或把UI null补raw Direct。后续固定真实policy/绑定后沿既有不变原产品与一次缓存接plan。
+
+0.1.35后续离线解析见[数量来源](RETURN_COUNT_POLICY.md)：自动non-null委托的具体目标是原槽GetExchangeCount；UI鱼CellData.TotalCount已经转换并可能累计。这项具体静态证据替代0.1.34的目标未决，但不证明完整类别、员工政策、运行时公式或ABI。未来生产接线须在真实返航上下文固定数量输入与政策，早期资源映射/模式缓存不能冒充该producer。

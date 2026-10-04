@@ -1,6 +1,6 @@
 # MultiDave
 
-当前插件源码0.1.34-dev、协议6；实际Core/TCP269/269与Build警告视为错误通过，新增2项返航来源夹具。[返航品质与数量自然观察](development/docs/RETURN_GRADE_OBSERVATION.md)补3默认关闭入口，保留原additive、实例阈值、分类bool与兑换int，整袋范围不借单鱼来源；集合/员工政策和数量委托目标、真实捕鱼入仓保存仍未验。证据见[构建摘要](development/logs/return-grade-observation-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、客机隔离/房主世界、真实双端正常返航与冷配置仍待完成。
+当前源码0.1.35-dev（协议6），编译通过。已接[远端鱼叉头显示](development/docs/HARPOON_VISUAL.md)；Core输入未改，复用0.1.34的269/269，本轮未重跑。[返航数量来源](development/docs/RETURN_COUNT_POLICY.md)查清自动委托和UI肉量转换。见[验证摘要](development/logs/harpoon-visual-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立背包的真实分流、员工武器命中、客机隔离、房主世界、双端正常返航和冷配置仍待完成。
 
 《潜水员戴夫》Windows Steam 版的联机 Mod 开发项目。
 

@@ -1,6 +1,6 @@
 # 开发约定
 
-当前插件源码0.1.34-dev、协议6；实际Core/TCP269/269与Build警告视为错误通过，新增2项返航来源夹具。[返航品质与数量自然观察](docs/RETURN_GRADE_OBSERVATION.md)补3默认关闭入口，保留原additive、实例阈值、分类bool与兑换int，整袋范围不借单鱼来源；集合/员工政策和数量委托目标、真实捕鱼入仓保存仍未验。证据见[构建摘要](logs/return-grade-observation-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、客机隔离/房主世界、真实双端正常返航与冷配置仍待完成。
+当前源码0.1.35-dev（协议6），编译通过。已接[远端鱼叉头显示](docs/HARPOON_VISUAL.md)；Core输入未改，复用0.1.34的269/269，本轮未重跑。[返航数量来源](docs/RETURN_COUNT_POLICY.md)查清自动委托和UI肉量转换。见[验证摘要](logs/harpoon-visual-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立背包的真实分流、员工武器命中、客机隔离、房主世界、双端正常返航和冷配置仍待完成。
 
 - M1 玩家发现与 M2 回放基础验收通过；0.1.22 历史源码为 0.1.22-dev、协议 5，插件 Build 警告视为错误通过，范围见 [comparer 摘要](logs/guest-comparer-build-verification.json)；0.1.22 该轮 Core 输入未改，复用 [0.1.21 实际 176/176 结果](logs/guest-ingame-cache-build-verification.json)，没有重跑测试。未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
 - 继续工作前阅读 `docs/HANDOFF.md`、`docs/PLAN.md` 和当前阶段的 `docs/GAME_API.md` / `docs/MULTIPLAYER.md` / `docs/WORLD_SYNC.md`；配置别人电脑时使用仓库根目录的配置 Skill。

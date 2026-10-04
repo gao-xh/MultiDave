@@ -286,9 +286,18 @@ description: Configure or continue development of the MultiDave prototype for Wi
   新17explicitref/256owner独立保同bridge/ledger/selection上下文；原13free需Confirmed+Ready且wholeMap退栈，成功clear5wrapper，unknown保留。全部sameledger products匹配fixedplan SaveConfirmed才free17，unknownfree不retry。cached结果/纯candidate计划在鱼失效后可读、不Bind/不授权，不造FinalGrade/ReturnConversionVerified。
   实际离线Cecil4types/2lookupdecls/2pointerctors/5intproxies/4classinit、新PE1method48instr7directedges0indirect1range，只.private原指令，fullbody/ABI/内部公式/分类模式/品质/入仓保存未知。installed.12/dive.11/default.0保持，未部署启动不催延后测试；员工actor/实际两袋/客机隔离/房主世界/真实双端正常返航/GitHub冷配置继续完整M3—M7。
 
-- 当前源码0.1.34-dev/协议6，实际Core/TCP269/269及Build警告视为错误通过，2新return-lineage夹具；144执行前后sameinputs、86实际Core源。继续先读development/docs/RETURN_GRADE_OBSERVATION.md与return-grade-observation-build-verification.json，.33/.32摘要保历史。
+- 历史源码0.1.34-dev/协议6，实际Core/TCP269/269及Build警告视为错误通过，2新return-lineage夹具；144执行前后sameinputs、86实际Core源。继续先读development/docs/RETURN_GRADE_OBSERVATION.md与return-grade-observation-build-verification.json，.33/.32摘要保历史。
   原默认off Observe loot and return calls扩20ApplyFinalGrade/21IsInInvenType/22GetExchangeCount，共22exact targets旧code1–19保持。20原additive+3instance k字段两读，immutable候选无grade计算/PolicyFP，BoundsOrdered独立；20全袋source=null范围遮singlefish来源，正常finalize才恢复仍live外层，standalone不借历史。
   21bool22int保各自原返回，getter槽Before/After固定sameprefix ptr/class，FinalizerCLR复用After即使Unavailable不回退Before；失败清gradecandidate/同步撤lineage，unknown卸钩不retry。品质新read16/sample、65536/process跨开关不reset，prefix12/after2不含既有frame/identity及4weight诊断；exactLootBox/Slot profile，CellData派生slot未知不补布局。
   不主动Apply/分类/数量或GetGameSave/GetLootBox业务；原Apply集合来自host save、this只是3k字段，不能用于temp员工bag。receiver fields不是collection/root/member/employee政策，全部Native/ReturnConversion/FinalGrade等权限false；不把同TID/帧或某鱼scope给整袋。
   自动返航当前slot nonnulldelegate未唯一MethodInfo；UI null只用输入CellData.TotalCount，上游Convert/OnPostProcessMapping未知，不将rawCount判Direct，不据nonnull判Exchange。IsIngredient不是IsInInvenType。两PE96methods6212instr(3invalid/quota)与14methods2513instr(2invalid)，6209/2511文本无省略不是fullbody，原IL/地址/text只.local。
   后续解析真实上游数量/委托和原SaveData集合/Exp/Return/Member，接employee政策与既有不变capture/plan/cache；员工actor/捕鱼分流/各自容量、warehouse delta/save、guest隔离/host世界/实际双端正常返航/GitHub冷配置继续M3—M7。installed.12/dive.11/default.0保持，未部署/启动、不催延后试玩。
+
+- 当前源码0.1.35-dev/协议6，Build警告视为错误通过；86实际Core输入未改，复用0.1.34实际269/269，本轮未重跑。
+  继续先读development/docs/HARPOON_VISUAL.md、RETURN_COUNT_POLICY.md和harpoon-visual-build-verification.json。
+  自然head生产接线用manager._playerCharacter_k__BackingField/currentPlayer→m_InstanceItemInven→harpoonHandler→harpoonProjectile/projectileRenderer direct链，后核m_HarpoonHandler/Owner/scene/identity；不用两个业务getter补源。
+  每帧最多1head沿既有PlayerFrame，ownhead body排除/动态去重，reserved revision槽不含nativeID；DTO/key前后守卫，限额或unknown只omit当前head/清template，head显示error不关房。模板只匹配仍活ownhead的SpriteKey，失配恢复默认。绳子/粒子/枪弹/实际命中不在此实现。
+  真人Host/Guest发布各自帧，只有Local test加offset；实际Ready仍要求同Scene/WorldFingerprint，未绕地图守卫。射出head外观必须实机验，不把代码/编译当角色武器或两游戏完成。
+  自动返航当前IngredientStorage原槽的nonnull delegate已静态唯一target=GetExchangeCount，数量原ItemID/TotalCount/rawGrade，入仓另FinalGrade。UI fish副本已兑换并可能按ID/lift累计；null不代表原rawCount的Direct，不再Exchange UI数。Convert含SetOldLooting进度，Roe早退/鱼场流程另区分，不主动当纯helper。
+  新静态2globals/4slotfields及UI16methods1298instr不证明完整闭型mapping/virtual/category/formula/ABI或employee政策；原指令/地址/报告只.local，公开仅自写文字/count/time/hash。
+  installed.12/dive.11/default.0保持，本轮未部署/启动、不催延后试玩；每人独立容量/负重、实际employee actor/原生武器、鱼产物分流/返航delta/save、guest隔离、房主地图采用、真实双端正常返航和GitHub冷配置继续完整M3—M7。

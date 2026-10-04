@@ -10,7 +10,7 @@ using Pose = DaveCoop.Core.Pose;
 
 namespace DaveCoop.Networking
 {
-    internal sealed class LocalAvatarCapture
+    internal sealed partial class LocalAvatarCapture
     {
         private sealed class Part { public string Slot; public SpriteRenderer Source; }
         private readonly List<Part> _parts = new List<Part>();
@@ -50,19 +50,19 @@ namespace DaveCoop.Networking
 
         public bool VisualPartsMatch()
         {
-            var sprites = Player.GetComponentsInChildren<SpriteRenderer>(true);
-            if (sprites.Length != _parts.Count) return false;
-            for (int i = 0; i < sprites.Length; i++)
+            var sprites = CollectBodySprites();
+            if (sprites.Count != _parts.Count) return false;
+            for (int i = 0; i < sprites.Count; i++)
                 if (_parts[i].Source == null || sprites[i].GetInstanceID() != _parts[i].Source.GetInstanceID()) return false;
             return true;
         }
 
         public void RefreshVisualParts()
         {
-            var sprites = Player.GetComponentsInChildren<SpriteRenderer>(true);
-            if (sprites.Length == 0 || sprites.Length > PacketCodec.MaxParts) throw new InvalidOperationException("Unsupported avatar sprite count: " + sprites.Length);
+            var sprites = CollectBodySprites();
+            if (sprites.Count == 0 || sprites.Count > PacketCodec.MaxParts) throw new InvalidOperationException("Unsupported avatar sprite count: " + sprites.Count);
             _parts.Clear(); _templates.Clear();
-            for (int i = 0; i < sprites.Length; i++)
+            for (int i = 0; i < sprites.Count; i++)
             {
                 int componentIndex = 0;
                 var nodeRenderers = sprites[i].GetComponents<SpriteRenderer>();
@@ -79,6 +79,7 @@ namespace DaveCoop.Networking
             Transform origin = Player.transform;
             Quaternion inverse = Quaternion.Inverse(origin.rotation);
             Vector3 rootScale = origin.lossyScale;
+            Pose rootPose = PoseOf(origin.position, origin.rotation, rootScale);
             var parts = new List<SpritePartFrame>(_parts.Count);
             UnkeyedVisibleParts = 0; SkippedDestroyedParts = 0;
             for (int i = 0; i < _parts.Count; i++)
@@ -103,15 +104,17 @@ namespace DaveCoop.Networking
                     SortingLayer = source.sortingLayerID, SortingOrder = source.sortingOrder
                 });
             }
+            CaptureHarpoonHead(now, rootPose, origin, inverse, rootScale, parts, catalog);
             return new PlayerFrame
             {
                 PlayerId = 1, SceneEpoch = 1, SceneKey = Player.gameObject.scene.name, SampleTime = now,
-                Root = PoseOf(origin.position, origin.rotation, rootScale), Parts = parts.ToArray()
+                Root = rootPose, Parts = parts.ToArray()
             };
         }
 
-        public SpriteRenderer Template(string slot)
+        public SpriteRenderer Template(string slot, string spriteKey = null)
         {
+            if (IsHarpoonSlot(slot)) return HarpoonTemplate(spriteKey);
             if (_templates.TryGetValue(slot, out SpriteRenderer matched) && matched != null) return matched;
             foreach (Part part in _parts) if (part.Source != null) return part.Source;
             return null;
@@ -121,6 +124,7 @@ namespace DaveCoop.Networking
         {
             Manager = null; Player = null; PlayerId = 0; SceneHandle = 0;
             _parts.Clear(); _templates.Clear(); UnkeyedVisibleParts = 0; SkippedDestroyedParts = 0;
+            ClearHarpoonVisual();
         }
 
         internal static Pose PoseOf(Vector3 position, Quaternion rotation, Vector3 scale) => new Pose

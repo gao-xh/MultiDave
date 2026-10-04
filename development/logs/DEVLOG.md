@@ -802,3 +802,14 @@
 - 本轮实际Core/TCP269/269，2新lineage夹具验证unknown全袋遮源、independentbool/int、postfix仍scope/正常Final恢复、exception丢parent/queued历史不授权/旧Run和replay。编译警告视为错误通过，SHA256 `048382538EBF2348AB83711861121C4C0E40FCA903FB5AE261B1D10A92EEB950`；144执行前seal输入后same，86actualCore源。
 - 新RETURN_GRADE_OBSERVATION、真实构建/currentCore摘要、计划/接手/log/Skill同步；.33 mapping和.32 plan历史保持。下一步UI上游数量/automatic delegate MethodInfo、真实返航根/Exp/Return/Member绑定，接employee政策/实际捕鱼分流/仓库delta/save；guest/world/员工actor与双实例正常闭环/GitHub冷配置继续必需。
 - 两名独立源码/配对只读复核及最终文档审查READY，正式Skill校验/protected copy与hash匹配，SHA256 `E2FF0272428DB08C51DEA9B6C21BFD20BE4D2BEAFA994A8DDA8A2850F356CBE9`。144执行前后输入和86实际Core源相同，原binary/metadata/两个interop/安装DLL最终hash匹配；新鲜Get-Process game进程0、不终止进程。明确品质12/2额外不包含原weight读取，UI null不推raw模式；历史摘要保持，原指令不发布。
+
+## 2026-10-04 — 0.1.35 自然鱼叉头显示与数量来源
+
+- 前轮3d2b72c已推送；用户询问进度，本轮明确仍未达到完整双人捕鱼/返航入仓可玩阶段。保持每人独立容量/负重、房主长期进度与完整M3—M7目标；未部署/启动或读写存档。
+- 新LocalHarpoonVisualCapture以manager当前玩家、m_InstanceItemInven、handler→projectile/renderer direct链及反向handler/Owner/scene/identity前后核对，冻结1枚头追加现有PlayerFrame真实TCP/Renderer。ownhead排除身体集合并动态去重，reserved显示代次不传nativeID；超限/读错只omit，清当前template，未知不借旧头。两dict部分登记回滚，template每帧SpriteKey活匹配/失配恢复默认，不套身体材质；新增8诊断。无Core/协议/射击碰撞/收益权限改动。
+- 真实Host/Guest发布各自本机角色帧，只有Local test偏移；Ready仍严格Scene/WorldFingerprint，相异随机地图会Waiting。本轮接线不替代客机隔离/房主世界或可信员工actor/武器；自然头Owner/scene窄profile、跨端素材、发射/收回/换装备和正常返航清理仍待实机。
+- 实际新Cecil核4请求types/6properties(5direct+1业务getter)/2inventory候选，使用inventory direct而非业务getter；另1type/6properties窄核manager玩家backing，新检查不主动用playerCharacter getter。原Assembly输入hash匹配，原报告只.local，不执行native/game。
+- 数量新解析2encodedmetadata globals/4slotfields，唯一绑定IngredientStorage原槽GetExchangeCount委托；原ItemID/TotalCount/rawGrade兑换，入仓另FinalGrade。复用旧GetExchangeCount48指令不计新PE执行。UI新Cecil1assembly/15types/16decl，新PE16methods1298instr190edges18ranges10indirectcalls，无invalid/quota/rootomit/textomit，1leaf无已知range。鱼UI已兑换再按ID/lift累计、分组不比品质；Roe按FinalGrade分档且走鱼场。Convert链含SetOldLooting，不能主动当纯helper；完整mapping/virtual/category/formula/ABI/员工政策仍未知。
+- 实际Build警告视为错误通过，DLL SHA256 `00295B8B0E56F86C84B265F632F9388239878A0D46A830C2FF334FD53C602E34`。145源/项目/runner输入在Build前seal、后同；86实际Core输入与0.1.34一致，复用其269/269原执行与时间，本轮未重跑/无新测试。两名非作者只读源码及文档审查READY；原指令/字段偏移/地址/报告不发布。
+- HARPOON_VISUAL、RETURN_COUNT_POLICY、新构建摘要/currentCore/12入口状态/计划/接手/Skill同步；旧.34自然观察与.33/.32结算证据保留历史。Skill官方校验、protected copy及hash匹配，SHA256 `1F7B827F563815A5EE88BFDCA588973F19D567E779FCCD27702503539F1259B2`。最终145/86输入同，原game/metadata/两个interop/安装DLLhash保持，新鲜Get-Process进程0、不终止进程；安装.12/潜水.11/default.0保持。
+- 下一步实际加载前房主地图采用与guest隔离、可信员工actor/装备、命中与个人完整产物分流，再用真实Expedition/Return/Member上下文固定数量/最终品质政策及逐项仓库delta/save。真实双游戏正常返航、武器生存与GitHub冷配置仍必需；不将鱼叉显示、CLR测试或静态数量解析算作完整玩法。

@@ -35,3 +35,5 @@ ApplyFinalGrade 处理整袋，在既有 LootCallLineage 中开启 source=null �
 下一步追踪 CellData 上游数量转换与自动返航委托 MethodInfo，并把实际返航根、ExpeditionId / ReturnId / MemberId 与员工固定捕获产品关联，才可接真实品质/数量政策和既有逐项入仓计划。原捕获 grade/count/weight/指纹、数量转换结果与 FinalGrade继续分开。可信员工 actor/捕获分流、仓库增量/保存、客机隔离、房主世界、真实双端正常返航及 GitHub 冷配置仍属于完整 M3—M7。
 
 本版未部署或启动，观察默认关闭；安装0.1.12、最近潜水0.1.11、默认发行包0.1.0保持原实机范围。
+
+0.1.35后续离线研究已解析自动委托及UI数量上游，详见[RETURN_COUNT_POLICY](RETURN_COUNT_POLICY.md)。上述0.1.34报告的未决范围保留其历史含义；新具体target不是运行时ABI、完整公式或员工政策。ApplyFinalGrade的additive/原存档集合和实际返航绑定仍须核实。

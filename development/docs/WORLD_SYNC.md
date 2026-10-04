@@ -1,6 +1,6 @@
 # 同一海洋、鱼与互动
 
-当前插件源码0.1.34-dev、协议6；实际Core/TCP269/269与Build警告视为错误通过，新增2项返航来源夹具。[返航品质与数量自然观察](RETURN_GRADE_OBSERVATION.md)补3默认关闭入口，保留原additive、实例阈值、分类bool与兑换int，整袋范围不借单鱼来源；集合/员工政策和数量委托目标、真实捕鱼入仓保存仍未验。证据见[构建摘要](../logs/return-grade-observation-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、客机隔离/房主世界、真实双端正常返航与冷配置仍待完成。
+当前源码0.1.35-dev（协议6），编译通过。已接[远端鱼叉头显示](HARPOON_VISUAL.md)；Core输入未改，复用0.1.34的269/269，本轮未重跑。[返航数量来源](RETURN_COUNT_POLICY.md)查清自动委托和UI肉量转换。见[验证摘要](../logs/harpoon-visual-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立背包的真实分流、员工武器命中、客机隔离、房主世界、双端正常返航和冷配置仍待完成。
 
 对应 PLAN 的 M4、M5 和 M6。这里区分设计、已确认的接口签名和待实机验证的行为。
 已验证第二角色本地回放；0.1.5-dev 在真实潜水中运行只读鱼探针、经本机 TCP 传输实际鱼清单并执行单鱼显示组件。
@@ -443,3 +443,5 @@ cacheSelectedScenePath与IGP.Init还含持久缓存/实例保存目标，地图�
 七步/21explicit handles/4Data stamps未扩，全部ABI/fullisolation/entry/quiet/native/guest/world/bag权限false，无GUI/Network自动native入口。[0.1.22 历史摘要](../logs/guest-comparer-build-verification.json)的Build警告视为错误通过；0.1.22 该轮 Core 输入未改，复用0.1.21实际176/176，未新跑。[冷档候选](GUEST_COLD_PROFILE.md)只研究首load/slot/output而未采用。继续资源/actor/cache/output与实际边界、房主加载前地图采用、每人独立袋/容量/负重下的真实捕获及逐产物返航、实际双端和冷配置，完整M3—M7不变。
 
 当前entry/quiet/native/guest/world/bag权限均false。M4仍需真实房主选择采用与客机生成/AI/资源/actor/余下cache和输出隔离；M5/M6仍需按个人袋容量分流、完整真实捕获产物及正常返航一次入仓。每人独立容量/负重和完整M3—M7、真实双端与冷配置验收继续保留。
+
+0.1.35把自然鱼叉头追加现有角色显示帧，详见[显示边界](HARPOON_VISUAL.md)。静态解出的[返航数量路径](RETURN_COUNT_POLICY.md)没有开放鱼世界或收益权限。主线仍需客机隔离和加载前房主地图采用，真实host-owned employee actor/武器，再接个人产物分流与入仓保存；显示节点不能命中鱼，实际双端正常返航仍待验。
