@@ -61,6 +61,7 @@ namespace DaveCoop.Core.World
         public int SceneHandle { get; }
         public string SceneName { get; }
         public string LoadKey { get; }
+        public bool IsFishBirth { get; }
         public bool ObservationOnly => true;
         public bool NativeGenerationBound => false;
         public bool HostSelectionApplied => false;
@@ -69,11 +70,12 @@ namespace DaveCoop.Core.World
 
         internal MapOriginControllerSource(long controllerLife, long controllerPointer, long ownerLife,
             long operationLife, long operationPointer, int operationVersion, long sceneLife,
-            int sceneHandle, string sceneName, string loadKey)
+            int sceneHandle, string sceneName, string loadKey, bool isFishBirth)
         {
             ControllerLife = controllerLife; ControllerPointer = controllerPointer; OwnerLife = ownerLife;
             OperationLife = operationLife; OperationPointer = operationPointer; OperationVersion = operationVersion;
             SceneLife = sceneLife; SceneHandle = sceneHandle; SceneName = sceneName; LoadKey = loadKey;
+            IsFishBirth = isFishBirth;
         }
     }
 
@@ -88,6 +90,7 @@ namespace DaveCoop.Core.World
         public const int MaxLoadCalls = 128;
         public const int MaxScenes = 128;
         public const int MaxControllers = 256;
+        public const int MaxFishBirths = 4096;
         public const int MaxManagers = 32;
         public const int MaxChoices = 128;
         public const int MaxScopes = 32;
@@ -114,6 +117,8 @@ namespace DaveCoop.Core.World
         private long _nextLife;
         private long _activeOwnerLife;
         private int _sceneHandleCount;
+        private int _controllerCount;
+        private int _fishBirthCount;
         private string _fault;
         private long _unboundChoices;
 
@@ -133,7 +138,8 @@ namespace DaveCoop.Core.World
         public int PendingLoadCallCount { get { lock (_gate) return _openLoadCalls.Count; } }
         public int SceneCount { get { lock (_gate) return _scenes.Count; } }
         public int SceneHandleCount { get { lock (_gate) return _sceneHandleCount; } }
-        public int ControllerCount { get { lock (_gate) return _controllers.Count; } }
+        public int ControllerCount { get { lock (_gate) return _controllerCount; } }
+        public int FishBirthCount { get { lock (_gate) return _fishBirthCount; } }
         public int ManagerCount { get { lock (_gate) return _managers.Count; } }
         public int PendingManagerCount
         {
@@ -499,6 +505,16 @@ namespace DaveCoop.Core.World
 
         public MapOriginStatus RegisterControllerBirth(long pointer, int sceneHandle, string sceneName,
             out long controllerLife)
+            => RegisterBirth(pointer, sceneHandle, sceneName, false, out controllerLife);
+
+        // Natural fish births share the fixed op/call/Scene chain, but never
+        // consume IGP slots or become an IGP selection/Init iterator witness.
+        public MapOriginStatus RegisterFishBirth(long pointer, int sceneHandle, string sceneName,
+            out long fishLife)
+            => RegisterBirth(pointer, sceneHandle, sceneName, true, out fishLife);
+
+        private MapOriginStatus RegisterBirth(long pointer, int sceneHandle, string sceneName,
+            bool isFishBirth, out long controllerLife)
         {
             lock (_gate)
             {
@@ -509,6 +525,8 @@ namespace DaveCoop.Core.World
                 if (_controllerPointers.TryGetValue(pointer, out Controller previous))
                 {
                     controllerLife = previous.Life;
+                    if (previous.IsFishBirth != isFishBirth)
+                        return Fail(MapOriginStatus.Conflict, "Birth pointer cannot change kind.");
                     if (previous.Retired) return MapOriginStatus.Retired;
                     if (previous.SceneHandle != sceneHandle || previous.SceneName != sceneName)
                         return Fail(MapOriginStatus.Conflict, "Controller birth cannot change.");
@@ -516,15 +534,17 @@ namespace DaveCoop.Core.World
                         HasControllerCandidates(previous) ? MapOriginStatus.Pending : MapOriginStatus.Unbound;
                 }
                 if (_retiredSceneHandles.Contains(sceneHandle)) return MapOriginStatus.Retired;
-                if (_controllers.Count == MaxControllers) return Fail(MapOriginStatus.LimitExceeded, "Controller quota.");
+                if (isFishBirth ? _fishBirthCount == MaxFishBirths : _controllerCount == MaxControllers)
+                    return Fail(MapOriginStatus.LimitExceeded, isFishBirth ? "Fish birth quota." : "Controller quota.");
                 if (!Next(out controllerLife)) return MapOriginStatus.LimitExceeded;
                 // Freeze already registered operations and only outstanding
                 // calls enclosing this actual birth. Duplicate Init cannot
                 // expand either set with later loads or another call scope.
                 var item = new Controller { Life = controllerLife, Pointer = pointer, SceneHandle = sceneHandle,
-                    SceneName = sceneName, BirthBoundary = _activeOwnerLife,
+                    SceneName = sceneName, BirthBoundary = _activeOwnerLife, IsFishBirth = isFishBirth,
                     EligibleOperations = FreezeOperations(), EligibleLoadCalls = FreezeLoadCalls(sceneHandle) };
                 _controllers.Add(controllerLife, item); _controllerPointers.Add(pointer, item);
+                if (isFishBirth) _fishBirthCount++; else _controllerCount++;
                 BindController(item);
                 if (item.Retired) return MapOriginStatus.Retired;
                 return item.OwnerLife != 0 ? MapOriginStatus.Accepted :
@@ -542,6 +562,7 @@ namespace DaveCoop.Core.World
             {
                 iteratorLife = 0; MapOriginStatus status = Guard(); if (status != MapOriginStatus.Accepted) return status;
                 if (!_controllers.TryGetValue(controllerLife, out Controller controller)) return MapOriginStatus.Unbound;
+                if (controller.IsFishBirth) return MapOriginStatus.Unbound;
                 if (controller.Pointer != controllerPointer || iteratorPointer == 0)
                     return Fail(MapOriginStatus.Conflict, "Controller iterator identity differs from birth.");
                 if (controller.Retired || (controller.BirthBoundary != 0 && !Active(controller.BirthBoundary))) return MapOriginStatus.Retired;
@@ -569,6 +590,7 @@ namespace DaveCoop.Core.World
             {
                 MapOriginStatus status = Guard(); if (status != MapOriginStatus.Accepted) return status;
                 if (!_controllers.TryGetValue(controllerLife, out Controller controller)) return UnboundChoice();
+                if (controller.IsFishBirth) return UnboundChoice();
                 if (controller.Retired || !Active(controller.BirthBoundary)) return MapOriginStatus.Retired;
                 if (callbackSequence <= 0 || !ValidChoice(choice)) return Fail(MapOriginStatus.Invalid, "Invalid selection copy.");
                 if (callbackSequence < controller.LastSequence) return MapOriginStatus.Retired;
@@ -607,12 +629,14 @@ namespace DaveCoop.Core.World
                     snapshot = new MapOriginSourceSnapshot { Choices = Array.Empty<MapOriginChoiceEvidence>() };
                     return true;
                 }
-                if (_controllers.Count > MaxControllers)
+                if (_controllerCount > MaxControllers || _fishBirthCount > MaxFishBirths)
                 { Fail(MapOriginStatus.LimitExceeded, "Source controller quota."); return false; }
                 Owner owner = _owners[_activeOwnerLife];
                 // Resolve may fail closed and retire records. Traverse a bounded
                 // owned list, and never FlushPending or iterate its mutable queue.
-                var controllers = new List<Controller>(_controllers.Values);
+                var controllers = new List<Controller>(_controllerCount);
+                foreach (Controller controller in _controllers.Values)
+                    if (!controller.IsFishBirth) controllers.Add(controller);
                 controllers.Sort((first, second) => first.Life.CompareTo(second.Life));
                 var choices = new List<MapOriginChoiceEvidence>();
                 foreach (Controller controller in controllers)
@@ -651,7 +675,13 @@ namespace DaveCoop.Core.World
         public bool TryGetControllerLife(long pointer, out long life)
         {
             lock (_gate) { life = 0; if (Guard() != MapOriginStatus.Accepted ||
-                !_controllerPointers.TryGetValue(pointer, out Controller item)) return false; life = item.Life; return true; }
+                !_controllerPointers.TryGetValue(pointer, out Controller item) || item.IsFishBirth) return false; life = item.Life; return true; }
+        }
+
+        public bool TryGetFishBirthLife(long pointer, out long life)
+        {
+            lock (_gate) { life = 0; if (Guard() != MapOriginStatus.Accepted ||
+                !_controllerPointers.TryGetValue(pointer, out Controller item) || !item.IsFishBirth) return false; life = item.Life; return true; }
         }
 
         public bool TryGetControllerSource(long controllerLife, out MapOriginControllerSource source)
@@ -664,7 +694,7 @@ namespace DaveCoop.Core.World
                 Operation operation = _operations[controller.OperationLife];
                 source = new MapOriginControllerSource(controller.Life, controller.Pointer, controller.OwnerLife,
                     operation.Life, operation.Pointer, operation.Version, controller.SceneLife, controller.SceneHandle,
-                    controller.SceneName, operation.LoadKey);
+                    controller.SceneName, operation.LoadKey, controller.IsFishBirth);
                 return true;
             }
         }
@@ -937,7 +967,7 @@ namespace DaveCoop.Core.World
         private bool ControllerIteratorLive(Iterator iterator)
         {
             if (iterator.ControllerLife == 0) return true;
-            if (!_controllers.TryGetValue(iterator.ControllerLife, out Controller controller) || controller.Retired ||
+            if (!_controllers.TryGetValue(iterator.ControllerLife, out Controller controller) || controller.IsFishBirth || controller.Retired ||
                 controller.IteratorLife != iterator.Life || controller.OwnerLife != iterator.OwnerLife) return false;
             return controller.OwnerLife == 0 ? controller.BirthBoundary == 0 || Active(controller.BirthBoundary) : ControllerHasSource(controller);
         }
@@ -1052,6 +1082,7 @@ namespace DaveCoop.Core.World
         private MapOriginStatus Resolve(Selection selection, out MapOriginChoiceEvidence evidence)
         {
             evidence = null; Controller controller = _controllers[selection.ControllerLife];
+            if (controller.IsFishBirth) return MapOriginStatus.Unbound;
             if (controller.Retired || !Active(controller.BirthBoundary)) return MapOriginStatus.Retired;
             if (controller.OwnerLife == 0) return HasControllerCandidates(controller) ? MapOriginStatus.Pending : MapOriginStatus.Unbound;
             if (!ControllerHasSource(controller)) return MapOriginStatus.Retired;
@@ -1149,7 +1180,7 @@ namespace DaveCoop.Core.World
         private sealed class Controller
         {
             public long Life, Pointer, BirthBoundary, OwnerLife, SceneLife, OperationLife, LastSequence, IteratorLife;
-            public int SceneHandle; public string SceneName; public bool Retired; public MapGroupSelection LastChoice;
+            public int SceneHandle; public string SceneName; public bool Retired, IsFishBirth; public MapGroupSelection LastChoice;
             public long[] EligibleOperations, EligibleLoadCalls;
         }
         private sealed class LoadCall

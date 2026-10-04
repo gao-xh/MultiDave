@@ -59,6 +59,7 @@ namespace DaveCoop.Core.Session
         public string Reason { get; internal set; }
         public int LocalPlayerId { get; internal set; }
         public int RemotePlayerId { get; internal set; }
+        public bool RemoteRequestsHostFishDisplay { get; internal set; }
         public long SceneEpoch { get; internal set; }
         public string SceneKey { get; internal set; }
         public bool HasClockEstimate { get; internal set; }

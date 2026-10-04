@@ -103,7 +103,11 @@ namespace DaveCoop.Core.Session
                 identity.RemotePlayerId != (role == SessionRole.Host ? 2 : 1))
                 throw new ArgumentException("Handshake identities do not match the session role.");
             PacketCodec.RequireRoom(new WirePacket { RoomId = identity.RoomId }, identity.RoomId);
-            _identity = new HandshakeResult { RoomId = identity.RoomId, LocalPlayerId = identity.LocalPlayerId, RemotePlayerId = identity.RemotePlayerId };
+            _identity = new HandshakeResult
+            {
+                RoomId = identity.RoomId, LocalPlayerId = identity.LocalPlayerId, RemotePlayerId = identity.RemotePlayerId,
+                Peer = identity.Peer == null ? null : PacketCodec.CopyIdentity(identity.Peer)
+            };
             _role = role; _options = (options ?? new SessionOptions()).CopyValidated();
             _cargoAssembler = new CargoInventoryAssembler(_identity.RoomId);
             CheckTime(now); _lastReceive = now; _nextPing = now;
@@ -114,6 +118,7 @@ namespace DaveCoop.Core.Session
         {
             Role = _role, Phase = _phase, RoomId = _identity.RoomId, Reason = _reason,
             LocalPlayerId = _identity.LocalPlayerId, RemotePlayerId = _identity.RemotePlayerId,
+            RemoteRequestsHostFishDisplay = _identity.Peer?.RequestsHostFishDisplay ?? false,
             SceneEpoch = _epoch, SceneKey = _proposal?.SceneKey, HasClockEstimate = _hasClock,
             RemoteClockOffsetSeconds = _offset, RoundTripSeconds = _rtt,
             MapChoiceGeneration = _role == SessionRole.Host ? _mapGeneration : _receivedMapGeneration,

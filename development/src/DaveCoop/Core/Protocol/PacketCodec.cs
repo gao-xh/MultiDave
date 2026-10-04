@@ -38,7 +38,32 @@ namespace DaveCoop.Core.Protocol
             catch (JsonException) { throw new ProtocolException("Invalid packet JSON."); }
             Validate(packet);
             if (packet.Kind == PacketKind.MapRouteSlice) RequireRouteWireFields(bytes);
+            if (packet.Kind == PacketKind.Hello && packet.Hello.ProtocolVersion >= 8)
+                RequireObservationRequestWireField(bytes, false);
+            if (packet.Kind == PacketKind.Welcome && packet.Welcome.Identity.ProtocolVersion >= 8)
+                RequireObservationRequestWireField(bytes, true);
             return packet;
+        }
+
+        private static void RequireObservationRequestWireField(ReadOnlySpan<byte> bytes, bool welcome)
+        {
+            using JsonDocument document = JsonDocument.Parse(bytes.ToArray());
+            JsonElement identity = RequiredWireProperty(document.RootElement, welcome ? "welcome" : "hello");
+            if (welcome) identity = RequiredWireProperty(identity, "identity");
+            JsonElement request = RequiredWireProperty(identity, "requestsHostFishDisplay");
+            if (request.ValueKind != JsonValueKind.True && request.ValueKind != JsonValueKind.False)
+                throw new ProtocolException("Invalid host fish display observation request.");
+        }
+
+        public static PeerIdentity CopyIdentity(PeerIdentity identity)
+        {
+            ValidateIdentity(identity);
+            return new PeerIdentity
+            {
+                ProtocolVersion = identity.ProtocolVersion, ModVersion = identity.ModVersion,
+                SteamBuildId = identity.SteamBuildId, UnityVersion = identity.UnityVersion,
+                Name = identity.Name, RequestsHostFishDisplay = identity.RequestsHostFishDisplay
+            };
         }
 
         // Protocol 7 requires the native route inputs to be present on the
@@ -69,11 +94,11 @@ namespace DaveCoop.Core.Protocol
 
         private static JsonElement RequiredWireProperty(JsonElement value, string name)
         {
-            if (value.ValueKind != JsonValueKind.Object) throw new ProtocolException("Invalid route JSON object.");
+            if (value.ValueKind != JsonValueKind.Object) throw new ProtocolException("Invalid required wire JSON object.");
             JsonElement result = default; int count = 0;
             foreach (JsonProperty property in value.EnumerateObject())
                 if (string.Equals(property.Name, name, StringComparison.Ordinal)) { result = property.Value; count++; }
-            if (count != 1) throw new ProtocolException("Missing or duplicate native route field: " + name);
+            if (count != 1) throw new ProtocolException("Missing or duplicate required wire field: " + name);
             return result;
         }
 

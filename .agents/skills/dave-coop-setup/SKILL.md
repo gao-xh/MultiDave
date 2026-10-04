@@ -33,7 +33,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
 研究捕获、背包、员工及返航时另读 `CREW_MODE.md`，按用户确定的每人独立背包方案开发。
 源码在 `development/src/DaveCoop/`。
 
-当前源码0.1.40-dev/协议7：继续同一海洋先读development/docs/GUEST_SCENE_LOAD_LIFECYCLE.md及实际摘要。301/301真实CLR/TCP与Build警告视为错误通过，9新Registry夹具只跑CLR，旧套含实际回环TCP；执行输入前封存且后相同，native未执行，installed.12/dive.11/default.0保持。默认关闭实验Guest依真实自然五根/六路线根/source及samepeer，真实Addressables prefix只fixedMove登记call，出生冻结当次call或已存在op；同call原typed返回__runOriginal=true+ptr/version与actual成功Scenehandle才绑定。专用pendingManager owner0仅同Scene子birth且已冻结同call可继承候选，不能创建新load/operation/一般权限；generic/unknown孙scope0遮父。IGP birth先于其factorymask，Host factory pairedmask同样在实际birth后。exact自然Context退休后健康/正确线程/无inflight与无fixedscope才保原普通loads；自产unknown masks可配对退出，旧initial/scene/controller迭代器即使新entry也拒复用。断线/换代/失败不冒充自然退休，refs/fence/roots保留。全Native/GuestStateIsolated/World/Cargo/完整HostSelectionApplied与正常返航验收仍false，不自动部署/启动、不催延后测试。静态metadata/已知PE片段不证明脚本出生/Unity引擎回调顺序；完整生成/AI/持久隔离、可信员工actor/装备/生存/投射物/命中、每人产物/前置容量/独立重量/负重与逐项返航delta/save、真实双端闭环/GitHub冷配置及测试发行继续M3—M7。同层两端各自镜头的远区域维护与自由跨层尚未接入。
+当前源码0.1.41-dev/协议8：继续同一海洋先读development/docs/GUEST_FISH_QUARANTINE.md及实际摘要。311/311实际CLR/TCP与Build警告视为错误通过；新增6个Registry、4个codec/TCP夹具，执行输入前封存且后相同，native未执行，installed.12/dive.11/default.0保持。默认关闭实验Guest保留自然五根/六路线根与真实加载call/op来源；原鱼Awake前实际birth冻结已有op/ancestor在途call与原Scene，IGP256/fish4096独立配额与共享pointer/life墓碑。隔离actor/root实际引用与inert记录先于一次SetActive(false)，只限fish自身GO子树；精确生命周期/已核交互入口按受管root阻断，未知顺序/重新启用/外部异步更新撤source，不造空Observable/IEnumerator或跑原Awake取renderer。协议8Hello/Welcome显式唯一bool与owned identity只请求Host观察，普通诊断仍手动；Guest自动显示每次Receive/Render前后核真实startup/samepeer/current场景及fish来源，失源清owned显示节点。自然unload/context退休保留墓碑/refs/fence；断线/失败不hotrestore/unpatch/free/retry。全部子组件Awake顺序、DLC/boss/未知类、原生ABI与完整隔离未证；Native/GuestStateIsolated/World/Cargo/完整HostSelectionApplied仍false。不自动部署/启动、不催延后测试；普通配置保持default发行包，不能把CLR/TCP通过写成双游戏玩法完成。继续完整M3—M7：可信员工actor/装备/生存/投射物/命中、每人完整产物/前置容量/独立重量/负重、逐项返航delta/save、真实双端正常闭环/GitHub冷配置及测试发行。同层各自镜头远区域维护/Host两玩家生成与LOD联合区域及自由跨层尚未接入。
 
 
 - C# 修改后运行 `development/scripts/Build-Plugin.ps1`。
@@ -59,7 +59,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   请用户确认标签下方的鱼可见及动画/转向正常，并核对捕获后移除、断线与返航清理、本地输入/镜头。
   组件启用、镜头内、网格顶点和标签分别是不同证据，仅有标签不能证明鱼网格可见。
   0.1.7-dev 用户确认鱼可见但会突然消失；0.1.8-dev 无旧异常但标签换鱼；0.1.9-dev 已获用户确认不再突然消失；单游戏显示不能证明客机地图/鱼群/AI 接管或合作捕获。
-  当前协议为 7，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
+  当前协议为 8，双方源码/版本应匹配；原生资源只能在 Unity 线程解析。
   `development/scripts/Inspect-FishRenderApi.ps1` 可复现游戏/Spine 显示与生命周期接口签名研究。
 - 0.1.6-dev 在房主开启鱼诊断且发布状态时安装自己的生命周期观察挂钩。
   核对 FISH_LIFECYCLE_READY 及 NETWORK_STATE 中 FishLifecycleHooks/Tracked/Transitions/CallbackErrors；

@@ -1,6 +1,6 @@
 # 第二角色与传输层
 
-当前源码0.1.40-dev（协议7），本轮实际Core/TCP301/301及插件Build警告视为错误通过，封存输入执行前后相同。新增[原加载调用与自然退休](GUEST_SCENE_LOAD_LIFECYCLE.md)：出生冻结真实在途调用，配对typed返回与actualScene才绑定；精确自然退休后普通加载保原，旧固定协程仍拒。见[本轮验证记录](../logs/scene-load-lifecycle-build-verification.json)。未部署/启动或执行native，安装.12/最近潜水.11/默认包.0保持。完整生成/AI/持久隔离、每人独立袋分流/容量/负重、员工命中、远距离活跃区域、双端正常返航保存与GitHub冷配置仍待完成。
+当前源码0.1.41-dev（协议8），本轮实际Core/TCP311/311及插件Build警告视为错误通过，封存输入执行前后相同。新增[客机鱼隔离与自动观察](GUEST_FISH_QUARANTINE.md)：原鱼出生冻结真实场景来源，隔离记录与引用先于停用；握手只请求房主鱼清单，客机显示仍核实际当前来源。见[本轮验证记录](../logs/guest-fish-isolation-build-verification.json)。未部署/启动或执行native，安装.12/最近潜水.11/默认包.0保持；完整原生生命周期覆盖未证。完整生成/AI/持久隔离、每人独立袋分流/容量/负重、员工命中、远距离活跃区域、双端正常返航保存与GitHub冷配置仍待完成。
 
 0.1.22 历史源码 `0.1.22-dev`、协议 5，插件 Build 警告视为错误通过；未部署/启动。0.1.22 该轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重跑测试。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
@@ -56,7 +56,7 @@ F10 停用/重建与返航清理有日志，用户确认可见并正常模仿动
 游戏适配器在主线程处理已验证的数据，0.1.5-dev 已实际执行本机 TCP 路径；跨机器运行验证待完成。
 
 - Hello/Welcome 验证协议、Mod、Steam Build 和 Unity 版本，分配房主 1 / 客机 2。
-  历史0.1.14源码的协议版本 5 新增 MapRouteSlice/MapIgpChoice/MapChoiceRetire，保留协议 4 的 FishActionRequest/FishActionResult 和协议 3 的 WorldSlice/鱼显示描述，当时握手拒绝旧协议 4。当前源码协议7，拒绝旧协议6，并保留后续Cargo通道与完整路线字段。
+  历史0.1.14源码的协议版本 5 新增 MapRouteSlice/MapIgpChoice/MapChoiceRetire，保留协议 4 的 FishActionRequest/FishActionResult 和协议 3 的 WorldSlice/鱼显示描述，当时握手拒绝旧协议 4。当前源码协议8，握手拒绝旧协议7，并保留后续Cargo通道与完整路线字段；Hello/Welcome的显式RequestsHostFishDisplay只请求观察，不授予捕鱼或世界权限。
 - 房间使用会话 GUID；每个方向使用连续序号，重复或跳号关闭连接。
 - 使用 4 字节小端长度前缀，消息最大 128 KiB，循环读取支持 TCP 拆包。
 - 发送互斥，避免并发消息字节交错；无效出站消息不占用序号。

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using DaveCoop.Core.Session;
 using DaveCoop.Core.World;
+using DR.AI;
 using HarmonyLib;
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes;
@@ -16,6 +17,29 @@ using SceneHandle = UnityEngine.ResourceManagement.AsyncOperations.AsyncOperatio
 
 namespace DaveCoop.Networking
 {
+    internal sealed class NativeGuestFishBirth
+    {
+        internal NativeGuestSceneController Producer { get; }
+        internal object Entry { get; }
+        internal IntPtr NativeClass { get; }
+        public FishAISystem Actor { get; }
+        public GameObject Root { get; }
+        public long ActorPointer { get; }
+        public IntPtr UnityPointer { get; }
+        public long RootPointer { get; }
+        public IntPtr RootUnityPointer { get; }
+        public int SceneHandle { get; }
+        public string SceneName { get; }
+        public long BirthLife { get; }
+        public long OwnerBoundary { get; }
+        internal NativeGuestFishBirth(NativeGuestSceneController producer, object entry, FishAISystem actor,
+            GameObject root, long pointer, IntPtr unity, IntPtr nativeClass, long rootPointer,
+            IntPtr rootUnity, int handle, string name, long life, long owner)
+        { Producer = producer; Entry = entry; Actor = actor; Root = root; ActorPointer = pointer;
+            UnityPointer = unity; NativeClass = nativeClass; RootPointer = rootPointer; RootUnityPointer = rootUnity;
+            SceneHandle = handle; SceneName = name; BirthLife = life; OwnerBoundary = owner; }
+    }
+
     // Native objects remain in this process-owned producer, never in Core/wire.
     // Construction alone is no capability: every use requires this exact token
     // to remain registered with its actual entry, native birth and iterator.
@@ -55,6 +79,7 @@ namespace DaveCoop.Networking
         private readonly Dictionary<long, Iterator> _iterators = new Dictionary<long, Iterator>();
         private readonly Dictionary<long, Operation> _operations = new Dictionary<long, Operation>();
         private readonly Dictionary<long, NativeGuestControllerBirth> _controllers = new Dictionary<long, NativeGuestControllerBirth>();
+        private readonly Dictionary<long, NativeGuestFishBirth> _fishBirths = new Dictionary<long, NativeGuestFishBirth>();
         private readonly Dictionary<int, long> _roads = new Dictionary<int, long>();
         private readonly Dictionary<int, SceneProof> _sceneRecords = new Dictionary<int, SceneProof>();
         private readonly List<Il2CppObjectBase> _references = new List<Il2CppObjectBase>();
@@ -285,6 +310,102 @@ namespace DaveCoop.Networking
                 _controllers.Add(life, token);
                 if (!ValidateBirth(token)) throw Revoke("Controller birth changed during registration.");
                 return token;
+            });
+        }
+        internal NativeGuestFishBirth RegisterFishBirth(FishAISystem actor)
+        {
+            if (!VerifyGenerationWindow()) return null;
+            return Execute(() =>
+            {
+                Poll();
+                long pointer = Read(() => Pointer(actor)); IntPtr unity = Read(() => actor.m_CachedPtr);
+                IntPtr nativeClass = Read(() => IL2CPP.il2cpp_object_get_class(actor.Pointer));
+                GameObject root = Read(() => actor.gameObject);
+                long rootPointer = Read(() => Pointer(root)); IntPtr rootUnity = Read(() => root.m_CachedPtr);
+                Scene scene = Read(() => root.scene); string name = Read(() => scene.name);
+                if (pointer == 0 || unity == IntPtr.Zero || rootPointer == 0 || rootUnity == IntPtr.Zero ||
+                    scene.m_Handle == 0 || string.IsNullOrEmpty(name) || name.Length > MapSelections.MaxSceneName)
+                    throw Revoke("Fish birth has no live original actor and root scene.");
+                MapOriginStatus status = _registry.RegisterFishBirth(pointer, scene.m_Handle, name, out long life);
+                RequireStatus(status, pending: true);
+                if (_fishBirths.TryGetValue(life, out NativeGuestFishBirth previous))
+                { if (!ValidateFishBirthCore(previous)) throw Revoke("Fish birth cannot revive another actor."); return previous; }
+                if (_fishBirths.Count >= MapOriginRegistry.MaxFishBirths) throw Revoke("Guest fish birth retention quota exceeded.");
+                var token = new NativeGuestFishBirth(this, _entry, actor, root, pointer, unity, nativeClass,
+                    rootPointer, rootUnity, scene.m_Handle, name, life, _ownerLife);
+                _fishBirths.Add(life, token);
+                if (!ValidateFishBirthCore(token)) throw Revoke("Fish birth changed before isolation.");
+                return token;
+            });
+        }
+        internal bool ValidateFishBirth(NativeGuestFishBirth token)
+        {
+            if (token == null || !VerifyGenerationWindow()) return false;
+            return Execute(() => ValidateFishBirthCore(token));
+        }
+        internal bool IsRetiredFishBirth(NativeGuestFishBirth token) => token != null &&
+            ReferenceEquals(token.Producer, this) && _fishBirths.TryGetValue(token.BirthLife, out NativeGuestFishBirth known) &&
+            ReferenceEquals(known, token) && _registry != null && _registry.IsControllerRetired(token.BirthLife);
+        internal void RetireFishBirth(NativeGuestFishBirth token)
+        {
+            if (token == null || !ReferenceEquals(token.Producer, this) || _registry == null) return;
+            if (Environment.CurrentManagedThreadId != UnityThreadId)
+            { SourceFailure("Fish retirement changed its confirmed thread."); return; }
+            if (!_fishBirths.TryGetValue(token.BirthLife, out NativeGuestFishBirth known) || !ReferenceEquals(known, token))
+            { SourceFailure("Fish retirement does not match its registered native birth."); return; }
+            MapOriginStatus status = _registry.RetireController(token.BirthLife);
+            if (status != MapOriginStatus.Accepted && status != MapOriginStatus.Duplicate)
+                SourceFailure("Fish retirement failed its retained lifecycle boundary.");
+        }
+        private bool ValidateFishBirthCore(NativeGuestFishBirth token)
+        {
+            if (token == null || !ReferenceEquals(token.Producer, this) || !ReferenceEquals(token.Entry, _entry) ||
+                token.OwnerBoundary != _ownerLife || !_fishBirths.TryGetValue(token.BirthLife, out NativeGuestFishBirth known) ||
+                !ReferenceEquals(known, token) || _registry.IsControllerRetired(token.BirthLife)) return false;
+            if (Read(() => Pointer(token.Actor)) != token.ActorPointer || Read(() => token.Actor.m_CachedPtr) != token.UnityPointer ||
+                Read(() => IL2CPP.il2cpp_object_get_class(token.Actor.Pointer)) != token.NativeClass ||
+                Read(() => Pointer(token.Root)) != token.RootPointer || Read(() => token.Root.m_CachedPtr) != token.RootUnityPointer ||
+                Read(() => Pointer(token.Actor.gameObject)) != token.RootPointer) return false;
+            Scene scene = Read(() => token.Root.scene);
+            return scene.m_Handle == token.SceneHandle && Read(() => scene.name) == token.SceneName &&
+                Read(() => token.Actor.m_CachedPtr) == token.UnityPointer && Read(() => token.Root.m_CachedPtr) == token.RootUnityPointer;
+        }
+        internal bool TryReadFishSource(NativeGuestFishBirth token, out MapOriginControllerSource source)
+        {
+            source = null;
+            if (token == null || !VerifyGenerationWindow()) return false;
+            MapOriginControllerSource copied = null;
+            bool accepted = Execute(() =>
+            {
+                if (!ValidateFishBirthCore(token)) return false;
+                Poll();
+                if (!_registry.TryGetControllerSource(token.BirthLife, out copied)) return false;
+                if (!copied.IsFishBirth || copied.ControllerPointer != token.ActorPointer || copied.OwnerLife != _ownerLife ||
+                    copied.SceneHandle != token.SceneHandle || copied.SceneName != token.SceneName ||
+                    !_operations.TryGetValue(copied.OperationLife, out Operation operation) || !operation.Completed ||
+                    !ReferenceEquals(operation.Entry, _entry) || operation.Pointer != copied.OperationPointer ||
+                    operation.Version != copied.OperationVersion || !ReadOperation(operation, out int handle) || handle != token.SceneHandle)
+                    throw Revoke("Fish source lost its exact original operation and scene.");
+                SceneInstance result = Read(() => operation.Native._Result_k__BackingField);
+                Scene scene = Read(() => result.m_Scene);
+                return Read(() => scene.name) == token.SceneName && ValidateFishBirthCore(token) &&
+                    ReadOperation(operation, out int after) && after == token.SceneHandle;
+            });
+            if (accepted) source = copied;
+            return accepted;
+        }
+        internal bool HasFishIsolationScene(int handle)
+        {
+            if (handle == 0 || !VerifyGenerationWindow()) return false;
+            return Execute(() =>
+            {
+                Poll();
+                if (!_registry.TryGetSceneOwner(handle, out long owner) || owner != _ownerLife) return false;
+                var matches = _operations.Values.Where(operation => ReferenceEquals(operation.Entry, _entry) &&
+                    operation.OwnerLife == _ownerLife && operation.Completed && operation.SceneHandle == handle).ToArray();
+                if (matches.Length != 1) throw Revoke("Fish display scene has no unique original completed operation.");
+                return ReadOperation(matches[0], out int actual) && actual == handle &&
+                    ReadOperation(matches[0], out int after) && after == handle;
             });
         }
         public void RegisterControllerIterator(NativeGuestControllerBirth token, Il2CppSystem.Collections.IEnumerator iterator)

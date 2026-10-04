@@ -25,6 +25,7 @@ namespace DaveCoop.Core.Session
 
         public async Task<SessionPeer> AcceptOneAsync(PeerIdentity identity, CancellationToken cancellation, SessionOptions options = null)
         {
+            PeerIdentity local = PacketCodec.CopyIdentity(identity);
             if (Interlocked.Exchange(ref _started, 1) != 0) throw new InvalidOperationException("This room has already accepted a peer.");
             TcpClient client = null;
             try
@@ -32,7 +33,7 @@ namespace DaveCoop.Core.Session
                 client = await _listener.AcceptTcpClientAsync(cancellation).ConfigureAwait(false);
                 client.NoDelay = true;
                 // The framed connection owns the NetworkStream and its socket after handshake.
-                return await SessionPeer.AcceptAsync(new FramedConnection(client.GetStream()), identity,
+                return await SessionPeer.AcceptAsync(new FramedConnection(client.GetStream()), local,
                     RoomId, cancellation, options).ConfigureAwait(false);
             }
             catch { client?.Dispose(); throw; }
@@ -48,6 +49,7 @@ namespace DaveCoop.Core.Session
             CancellationToken cancellation, SessionOptions options = null)
         {
             if (string.IsNullOrWhiteSpace(address) || port < 1 || port > 65535) throw new ArgumentException("Invalid host endpoint.");
+            PeerIdentity local = PacketCodec.CopyIdentity(identity);
             var client = new TcpClient { NoDelay = true };
             try
             {
@@ -55,7 +57,7 @@ namespace DaveCoop.Core.Session
                 using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
                 timeout.CancelAfter(TimeSpan.FromSeconds(validated.HandshakeTimeoutSeconds));
                 await client.ConnectAsync(address, port, timeout.Token).ConfigureAwait(false);
-                return await SessionPeer.JoinAsync(new FramedConnection(client.GetStream()), identity,
+                return await SessionPeer.JoinAsync(new FramedConnection(client.GetStream()), local,
                     cancellation, validated).ConfigureAwait(false);
             }
             catch { client.Dispose(); throw; }

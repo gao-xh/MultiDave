@@ -18,11 +18,14 @@ namespace DaveCoop.Core.Protocol
 
     public sealed class PeerIdentity
     {
-        public int ProtocolVersion { get; set; } = 7;
+        public int ProtocolVersion { get; set; } = 8;
         public string ModVersion { get; set; }
         public string SteamBuildId { get; set; }
         public string UnityVersion { get; set; }
         public string Name { get; set; }
+        // Requests the existing read-only fish observation channel. This is
+        // neither permission to run native effects nor evidence of isolation.
+        public bool RequestsHostFishDisplay { get; set; }
     }
 
     public sealed class Welcome

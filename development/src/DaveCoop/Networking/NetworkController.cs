@@ -139,7 +139,8 @@ namespace DaveCoop.Networking
                 }
                 UpdateLocalScene();
                 state = _peers.Main.Snapshot;
-                if (state.Role != SessionRole.Host || !NetworkDriver.TransmitFishObservations.Value) _fishLifecycle.Dispose();
+                if (!FishPreviewDisplayEnabled(state)) _fishPreview.Clear("PreviewDisplayUnavailable");
+                if (!HostFishObservationsEnabled(state)) _fishLifecycle.Dispose();
                 if (state.Role != SessionRole.Host || state.Phase != SessionPhase.Ready ||
                     !NetworkDriver.TransmitFishObservations.Value || !NetworkDriver.ObserveFishInteractions.Value) _fishInteractions.Dispose();
                 if (state.Phase != SessionPhase.Ready || state.SceneEpoch != _worldEpoch)
@@ -164,8 +165,18 @@ namespace DaveCoop.Networking
                 if (worldReceiver.TryTakeRemoteWorld(out WorldSnapshot world) && world.SceneEpoch == state.SceneEpoch && state.Phase == SessionPhase.Ready)
                 {
                     _lastRemoteWorldRevision = world.Revision; _lastRemoteFishCount = world.Entities.Length;
-                    if (NetworkDriver.ShowFishPreview.Value) _fishPreview.Receive(world, worldReceiver.Now, _local, _peers.Loopback != null);
-                    if (NetworkDriver.ShowFishWorld.Value) _fishWorld.Receive(world, worldReceiver.Now);
+                    if (FishPreviewDisplayEnabled(state))
+                    {
+                        _fishPreview.Receive(world, worldReceiver.Now, _local, _peers.Loopback != null);
+                        if (!FishPreviewDisplayEnabled(_peers.Main.Snapshot)) _fishPreview.Clear("GuestFishSourceChanged");
+                    }
+                    else _fishPreview.Clear("PreviewDisplayUnavailable");
+                    if (FishWorldDisplayEnabled(state))
+                    {
+                        _fishWorld.Receive(world, worldReceiver.Now);
+                        if (!FishWorldDisplayEnabled(_peers.Main.Snapshot)) _fishWorld.Clear("GuestFishSourceChanged");
+                    }
+                    else _fishWorld.Clear("WorldDisplayUnavailable");
                     if (Time.unscaledTime >= _nextWorldLog)
                     {
                         _nextWorldLog = Time.unscaledTime + 2f;
@@ -188,6 +199,10 @@ namespace DaveCoop.Networking
                     NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_STATE: " + JsonSerializer.Serialize(new
                     {
                         Mode = mode, state.Phase, state.SceneEpoch, state.SceneKey, state.HasClockEstimate,
+                        state.RemoteRequestsHostFishDisplay,
+                        AutomaticHostFishObservation = state.Role == SessionRole.Host && state.RemoteRequestsHostFishDisplay,
+                        GuestQuarantinedFish = NativeGuestInitializationController.Current?.QuarantinedFishCount ?? 0,
+                        GuestFishStatus = NativeGuestInitializationController.Current?.GuestFishStatus,
                         state.RoundTripSeconds, LocalPlayer = _local.PlayerId, LocalParts = _local.PartCount,
                         UnkeyedLocalParts = _local.UnkeyedVisibleParts, SkippedDestroyedLocalParts = _local.SkippedDestroyedParts, RemoteVisibleParts = _display.VisibleParts,
                         RemoteUnknownAssets = _display.UnknownAssets, RemoteHistoryCount = _display.HistoryCount,
@@ -293,11 +308,12 @@ namespace DaveCoop.Networking
                 float delay = NetworkDriver.RenderDelay.Value;
                 if (!float.IsFinite(delay)) delay = 0.12f;
                 _display.Render(_peers.Main.Now, Math.Clamp(delay, 0.05f, 0.5f), _local, _catalog);
-                if (NetworkDriver.ShowFishPreview.Value)
+                if (FishPreviewDisplayEnabled(state))
                 {
                     try
                     {
                         _fishPreview.Render((_peers.Loopback ?? _peers.Main).Now, Math.Clamp(delay, 0.05f, 0.5f), _local, _catalog, _spines, _peers.Loopback != null);
+                        if (!FishPreviewDisplayEnabled(_peers.Main.Snapshot)) _fishPreview.Clear("GuestFishSourceChanged");
                         _fishPreviewWarning = null;
                     }
                     catch (Exception error)
@@ -307,13 +323,14 @@ namespace DaveCoop.Networking
                         _fishPreviewWarning = message; _fishPreview.Clear("Exception");
                     }
                 }
-                else _fishPreview.Clear("PreviewDisabled");
+                else _fishPreview.Clear("PreviewDisplayUnavailable");
                 _fishPreview.Trace();
-                if (NetworkDriver.ShowFishWorld.Value)
+                if (FishWorldDisplayEnabled(state))
                 {
                     try
                     {
                         _fishWorld.Render((_peers.Loopback ?? _peers.Main).Now, Math.Clamp(delay, 0.05f, 0.5f), _local, _catalog, _spines, _peers.Loopback != null);
+                        if (!FishWorldDisplayEnabled(_peers.Main.Snapshot)) _fishWorld.Clear("GuestFishSourceChanged");
                         _fishWorldWarning = null;
                     }
                     catch (Exception error)
@@ -323,7 +340,7 @@ namespace DaveCoop.Networking
                         _fishWorldWarning = message; _fishWorld.Clear("Exception");
                     }
                 }
-                else _fishWorld.Clear("WorldDisplayDisabled");
+                else _fishWorld.Clear("WorldDisplayUnavailable");
             }
             catch (Exception error) { Fail(error); }
         }
@@ -577,7 +594,7 @@ namespace DaveCoop.Networking
 
         private void ObserveWorld(SessionSnapshot state)
         {
-            if (state.Role != SessionRole.Host || !NetworkDriver.TransmitFishObservations.Value || Time.unscaledTime < _nextWorldCapture) return;
+            if (!HostFishObservationsEnabled(state) || Time.unscaledTime < _nextWorldCapture) return;
             _nextWorldCapture = Time.unscaledTime + 0.2f;
             try
             {
@@ -597,17 +614,42 @@ namespace DaveCoop.Networking
             }
         }
 
+        private static bool HostFishObservationsEnabled(SessionSnapshot state) => state != null &&
+            state.Role == SessionRole.Host && state.Phase != SessionPhase.Closed &&
+            (NetworkDriver.TransmitFishObservations.Value || state.RemoteRequestsHostFishDisplay);
+
+        private bool FishWorldDisplayEnabled(SessionSnapshot state) =>
+            (NativeGuestInitializationController.Current != null || NetworkDriver.ShowFishWorld.Value) && FishDisplaySourceCurrent(state);
+
+        private bool FishPreviewDisplayEnabled(SessionSnapshot state) =>
+            NetworkDriver.ShowFishPreview != null && NetworkDriver.ShowFishPreview.Value && FishDisplaySourceCurrent(state);
+
+        private bool FishDisplaySourceCurrent(SessionSnapshot state)
+        {
+            var startup = NativeGuestInitializationController.Current;
+            if (startup == null) return true;
+            // The Hello flag only asks the host for numbers. Rendering in a
+            // temporary guest also needs the actual current quarantine source.
+            if (_peers == null || _peers.Loopback != null || state == null ||
+                state.Role != SessionRole.Guest || state.Phase != SessionPhase.Ready) return false;
+            SessionSnapshot current = _peers.Main.Snapshot;
+            return current.Role == SessionRole.Guest && current.Phase == SessionPhase.Ready &&
+                current.RoomId == state.RoomId && current.SceneEpoch == state.SceneEpoch && current.SceneKey == state.SceneKey &&
+                _local.IsAvailable && startup.CanDisplayHostFish(_peers.Main, _local.Player.gameObject.scene.handle);
+        }
+
         public void Draw()
         {
-            if (NetworkDriver.ShowFishPreview != null && NetworkDriver.ShowFishPreview.Value)
+            try
             {
-                try { _fishPreview.DrawMarker(); }
-                catch (Exception error)
-                {
-                    string message = error.GetType().Name + ": " + error.Message;
-                    if (_fishPreviewWarning != message) NetworkDriver.Logger.LogWarning("DAVECOOP_FISH_PREVIEW_WARNING: " + message);
-                    _fishPreviewWarning = message;
-                }
+                if (FishPreviewDisplayEnabled(_peers?.Main.Snapshot)) _fishPreview.DrawMarker();
+                else _fishPreview.Clear("PreviewDisplayUnavailable");
+            }
+            catch (Exception error)
+            {
+                string message = error.GetType().Name + ": " + error.Message;
+                if (_fishPreviewWarning != message) NetworkDriver.Logger.LogWarning("DAVECOOP_FISH_PREVIEW_WARNING: " + message);
+                _fishPreviewWarning = message; _fishPreview.Clear("Exception");
             }
             if (NetworkDriver.ShowPanel == null || !NetworkDriver.ShowPanel.Value) return;
             Matrix4x4 originalMatrix = GUI.matrix;
@@ -679,7 +721,7 @@ namespace DaveCoop.Networking
                     throw new ArgumentException("Port must be 1..65535.");
                 if (mode == "guest" && (!IPAddress.TryParse(NetworkDriver.HostAddress.Value, out IPAddress host) || host.AddressFamily != AddressFamily.InterNetwork))
                     throw new ArgumentException("Enter the host's LAN IPv4 address.");
-                PeerIdentity identity = Identity();
+                PeerIdentity identity = Identity(mode == "guest" && startupGuest != null);
                 NetworkDriver.Port.Value = port;
                 string address = NetworkDriver.HostAddress.Value;
                 _attempt = new CancellationTokenSource(); CancellationToken token = _attempt.Token;
@@ -732,7 +774,7 @@ namespace DaveCoop.Networking
             NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_CONNECTED: " + (_peers.Loopback == null ? _peers.Main.Snapshot.Role.ToString() : "local TCP diagnostic; one game process"));
         }
 
-        private static PeerIdentity Identity()
+        private static PeerIdentity Identity(bool requestsHostFishDisplay)
         {
             string root = Path.GetFullPath(Path.Combine(Paths.GameRootPath, "..", ".."));
             string manifest = Path.Combine(root, "appmanifest_1868140.acf");
@@ -742,7 +784,11 @@ namespace DaveCoop.Networking
             if (match.Groups[1].Value != "25315876" || Application.unityVersion != "6000.0.52f1")
                 throw new InvalidOperationException("This game build has not been verified for the movement prototype.");
             string name = NetworkDriver.PlayerName.Value.Trim();
-            return new PeerIdentity { ModVersion = Plugin.Version, SteamBuildId = match.Groups[1].Value, UnityVersion = Application.unityVersion, Name = name.Length == 0 ? "Dave" : name };
+            return new PeerIdentity
+            {
+                ModVersion = Plugin.Version, SteamBuildId = match.Groups[1].Value, UnityVersion = Application.unityVersion,
+                Name = name.Length == 0 ? "Dave" : name, RequestsHostFishDisplay = requestsHostFishDisplay
+            };
         }
 
         private void Fail(Exception error)

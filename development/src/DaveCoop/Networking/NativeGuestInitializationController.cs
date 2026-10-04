@@ -20,6 +20,7 @@ namespace DaveCoop.Networking
         private readonly GuestOutputFence _fence;
         private readonly NativeGuestInitializationHooks _hooks;
         private readonly NativeGuestMapController _maps;
+        private readonly NativeGuestFishQuarantine _fishQuarantine;
         private readonly List<IntPtr> _sourceHandles = new List<IntPtr>();
         private readonly List<Il2CppObjectBase> _sourceReferences = new List<Il2CppObjectBase>();
         private int _unityThread, _candidateThread, _traces;
@@ -50,6 +51,8 @@ namespace DaveCoop.Networking
         internal GuestOutputFence Fence => _fence;
         internal int ConfirmedUnityThreadId => _unityThread;
         internal NativeGuestMapController MapController => _maps;
+        internal int QuarantinedFishCount => _fishQuarantine.Count;
+        internal string GuestFishStatus => _fishQuarantine.Status;
 
         private NativeGuestInitializationController(ManualLogSource logger, int installationThread)
         {
@@ -57,6 +60,7 @@ namespace DaveCoop.Networking
             _fence = new GuestOutputFence(installationThread, Guid.NewGuid(), GuestOutputFenceProfile.NaturalInitialization);
             _hooks = new NativeGuestInitializationHooks(this);
             _maps = new NativeGuestMapController(this, logger);
+            _fishQuarantine = new NativeGuestFishQuarantine(this, logger);
         }
 
         public static void Start(ManualLogSource logger, int installationThread)
@@ -71,6 +75,7 @@ namespace DaveCoop.Networking
                 if (!controller._fence.Install()) throw new Rejected("Initial output fence is not healthy.");
                 controller._hooks.Install();
                 controller._maps.Install();
+                controller._fishQuarantine.Install();
                 controller.Trace("ARMED", "Guest startup mode armed; restart is required to return to personal progress.");
             }
             catch (Exception error) { controller.Fail("Startup installation failed: " + error.GetType().Name); }
@@ -88,6 +93,12 @@ namespace DaveCoop.Networking
                 GuestShadowResult result = _transaction.ValidateActive();
                 if (!result.Accepted) Fail("Temporary root validation failed: " + result.Reason);
             }
+            if (!_failed) _fishQuarantine.Update();
+        }
+        internal bool CanDisplayHostFish(SessionPeer peer, int sceneHandle)
+        {
+            if (_failed || !_nativeReleased || !ReferenceEquals(peer, _peer) || !ActiveSource()) return false;
+            return _fishQuarantine.CanDisplayHostFish(sceneHandle);
         }
 
         public bool BindPeer(SessionPeer peer)

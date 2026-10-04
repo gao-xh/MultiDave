@@ -1,6 +1,6 @@
 # 同一海洋、鱼与互动
 
-当前源码0.1.40-dev（协议7），本轮实际Core/TCP301/301及插件Build警告视为错误通过，封存输入执行前后相同。新增[原加载调用与自然退休](GUEST_SCENE_LOAD_LIFECYCLE.md)：出生冻结真实在途调用，配对typed返回与actualScene才绑定；精确自然退休后普通加载保原，旧固定协程仍拒。见[本轮验证记录](../logs/scene-load-lifecycle-build-verification.json)。未部署/启动或执行native，安装.12/最近潜水.11/默认包.0保持。完整生成/AI/持久隔离、每人独立袋分流/容量/负重、员工命中、远距离活跃区域、双端正常返航保存与GitHub冷配置仍待完成。
+当前源码0.1.41-dev（协议8），本轮实际Core/TCP311/311及插件Build警告视为错误通过，封存输入执行前后相同。新增[客机鱼隔离与自动观察](GUEST_FISH_QUARANTINE.md)：原鱼出生冻结真实场景来源，隔离记录与引用先于停用；握手只请求房主鱼清单，客机显示仍核实际当前来源。见[本轮验证记录](../logs/guest-fish-isolation-build-verification.json)。未部署/启动或执行native，安装.12/最近潜水.11/默认包.0保持；完整原生生命周期覆盖未证。完整生成/AI/持久隔离、每人独立袋分流/容量/负重、员工命中、远距离活跃区域、双端正常返航保存与GitHub冷配置仍待完成。
 
 对应 PLAN 的 M4、M5 和 M6。这里区分设计、已确认的接口签名和待实机验证的行为。
 已验证第二角色本地回放；0.1.5-dev 在真实潜水中运行只读鱼探针、经本机 TCP 传输实际鱼清单并执行单鱼显示组件。
@@ -206,7 +206,7 @@ Core/World 的 HostEntityRegistry 将本机对象 token 映射为房主分配的
 同种鱼不同 ID；明确释放后复用 token 分配新 ID，同 epoch 清空也不会复用旧 ID。
 新 epoch 清空绑定；房间和 epoch 来自已确认的会话，不发送 Native 指针或本机实例 ID。
 
-当前协议 7 保留历史协议 3 引入的 WorldSlice：最多每块 16 个实体、每快照 4096 个实体。
+当前协议 8 保留历史协议 3 引入的 WorldSlice：最多每块 16 个实体、每快照 4096 个实体。
 快照携带 epoch、场景、递增修订和采样时间，含类型/TID、姿态、HP/MaxHP、死亡与捕获状态及可选显示描述。
 每块降至 16 个实体以容纳显示字段的合法最大值，保持 128 KiB 消息限制；双方版本必须匹配。
 检查数值、种类、数量、唯一 ID、分块顺序和一致的头部；完整收齐后才移交客机主线程。
@@ -465,3 +465,17 @@ cacheSelectedScenePath与IGP.Init还含持久缓存/实例保存目标，地图�
 ## 0.1.40 原加载调用与退休增量
 
 见[GUEST_SCENE_LOAD_LIFECYCLE](GUEST_SCENE_LOAD_LIFECYCLE.md)及新验证摘要。真实prefix登记固定Move加载调用，出生冻结同调用或已登记operation，配对原typed返回/实际成功Scene才绑定；专用pending manager仅为同场景子出生保留该call，未知0仍遮断且不授权加载。原IGP birth先于factory mask；Host typed返回核__runOriginal，异常/skip/finalizer失配撤证。精确自然退休后普通加载保原，仅自产unknown masks可留至配对退出，所有旧fixed tombstones拒恢复；refs/fence/临时根不释放。实际301/301与Build通过，native和正常返航未验证。下一步继续完整M3—M7、生成AI/持久隔离、员工actor/命中、每人完整产物/容量/负重与逐项返航、真实双端/GitHub冷配置，远区域与自由跨层仍待实现。
+
+## 0.1.41 客机鱼隔离与自动房主观察
+
+见[GUEST_FISH_QUARANTINE](GUEST_FISH_QUARANTINE.md)和[真实验证摘要](../logs/guest-fish-isolation-build-verification.json)。实验Guest在原鱼Awake前登记不可复用birth，冻结已有op/当次call及实际Scene；actor/root引用与inert记录先于单次停用。精确受管root生命周期和已核交互入口阻断，未知顺序/重新启用/外部响应撤source，不补造初始化/Observable。完整子组件顺序与全部鱼型覆盖未证。协议8显式bool仅请求Host自动观察；Guest每次Receive/Render前后核实际startup、samepeer、隔离scene与fish来源，失源清自己的显示。原生World/Cargo/GuestStateIsolated仍false；每人独立袋与返航规则保持，员工捕鱼尚未接入。远距离需Host维护两人周围生成/LOD区域，当前名单仅Host当前场景活动鱼；自由跨层未实现。继续完整M3—M7，不自动部署/启动或催延后测试。
+
+### 同层远距离探索的实施条件
+
+当前鱼采集没有按房主镜头过滤，但只取房主玩家同一Scene内的活动鱼；原游戏尚未生成、停用或停止AI更新的远处鱼不能靠扩大客机镜头恢复。
+下一步使用房主认可的两名成员位置，维护两人附近活动区域的并集，逐项接入原allocator的生成/保活与LOD更新条件。
+客机按自己的镜头裁剪收到的显示；离镜头只隐藏自己的节点，不把停用或清单缺席当作死亡或捕获。
+区域维护必须保留原出生/销毁代次和来源，不能用强制SetActive或复用旧池ID冒充房主裁定。
+
+验收时两人留在同一海层并拉开距离：房主镜头外、客机附近仍有正确生成且持续游动的鱼；返回原区域不重复出生或发放物品。
+继续验证捕获后的双方移除、重新靠近后的同一实体，以及断线和正常返航清理。上述条件尚未实机通过；自由跨层还需多场景模拟。

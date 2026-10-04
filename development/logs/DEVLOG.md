@@ -889,3 +889,19 @@
 - Skill草稿及protected目标官方校验通过并同SHA256 `2DFDE65B10512F6C841E062BCCFDEDA4A966BE180DEB70E6490450D5DB2E4A1D`；最终154份编译输入保持，旧.39/.38/.37摘要与HEAD归一换行内容一致，未重复运行Core/Build。非作者源码、文档/证据/Skill与发布边界末审完成后只提交自写文件；原生加载、正常返航及完整双端验收仍未执行。
 
 - 三项末审最终READY，公开28份自写文本：源码/测试/项目、文档与Skill、相对路径/count/hash/UTC摘要。修正Host原执行标志字段为CaptureImplemented，未把源码已实现写成原生已执行；153→154联合输入来自新增实际fixture源码，Core89/Plugin107及94/112验证输入均与实际编译清单匹配。原metadata/IL/PE指令/地址/报告与机器日志不提交。
+
+## 2026-10-04 — 0.1.41 客机鱼隔离与自动房主观察
+
+- 上轮.40公开4d904c3，继续完整M3—M7；未部署/启动、执行native或读写存档，安装.12/潜水.11/default.0保持。
+- 实际FishAwake出生复用固定op/call/Scene来源，IGP256与fish4096独立配额、共享不可复用pointer/life；鱼不能获IGP choice/Inititerator权限。隔离root与actor引用/inert记录先于单次停用，精确受管root生命周期/已核交互入口阻断；异步外部更新/未知类型或子组件先Awake/重新启用撤source，不假造Observable/IEnumerator成功。完整覆盖及native执行顺序仍未证。
+- 协议8Hello/Welcome必须显式唯一bool，身份在首await前owned复制并保会话；仅请求Host自动活动鱼观察。Guest自动显示Receive/Render前后核actualstartup/samepeer/source；失源清自己节点，refs/fence/墓碑保留、无hotrestore。普通诊断沿原手动，World/Cargo/GuestStateIsolated等仍false。
+- 最终实际Core编译与测试UTC `2026-10-04T20:28:06.2511555Z`→`2026-10-04T20:28:12.0309763Z`，311/311，完整PASS顺序与Program吻合（新增6 Registry＋4 codec/TCP，原套全执行）。Core实际91源码/Plugin108源码，联合157输入执行前保自写bytes并封存，Core/Build后相同；所选工具与显式引用另hash，不称完整OS/SDK closure。
+- Build警告视为错误UTC `2026-10-04T20:28:13.7377344Z`→`2026-10-04T20:28:16.4838335Z`通过；插件SHA `A095D878B1C38416A65DB875544EC13903034CF56C02AD631F6F57C035622E4A`，测试DLLSHA `62DDDFA7470CED0BB8C87619EB93C1A1610C94B1E5A6D2F77FE0FE26485A606C`。新摘要guest-fish-isolation-build-verification/currentcore；旧.40/.39/.38/.37不回填。
+- Fresh离线metadata与一次bounded PE只.local，公开相对路径/count/UTC/hash与自写说明；间接调用/共享alias/未知edges保留，不声称完整body、自然同步出生或全部Unity脚本顺序通过。
+- 用户再次询问远距离显示：同层各自镜头方案仍需Host联合两人活动区域与allocator/LOD接线；当前仅Host当前场景活动鱼，不保证远处未生成/停更鱼或自由跨层。每人独立袋/容量/重量/负重保持，可信员工actor/捕鱼/产物分流/逐项返航delta/save及真实双端/GitHub冷配置仍待完成，goal保持active。
+
+- Skill草稿及protected目标官方校验通过并同SHA256 `88BCF335D673E2B7F4F8B48255E8843E0FB6CF4353CDCE0BAAF3C317B0A46A0F`；最终157份编译输入保持，旧.40/.39/.38/.37摘要与HEAD归一换行内容一致，未重复运行Core/Build。原生鱼隔离/完整覆盖、远区域/两玩家联合LOD及正常返航/完整双端验收仍未执行。
+
+- 三份新私有报告对应相对路径/hash/UTC及各自counts；PE为8roots/9methods/3106decoded=text、14间接调用、327未解析精确入口边/7别名截断边，UnresolvedFlowInstructions=0是另一指标，不混作0未知边。已知unwind解码不证明完整body/脚本顺序；此前未保留的不完整96声明统计已废弃，fresh实际21types/118targets/error0。仅补记录/文档，不修改已验证源码或重复测试。
+
+- 原生源码链、文档/证据/Skill与发布边界三项非作者末审READY；38份公开自写文本，157最终编译/执行输入不变。完整PE计数已补入两当前摘要，未知入口边与方法完整性未证明确保留；补入同层远距离联合两成员活动区的实施和验收条件，尚未实现。按既有授权公开源码/文档/摘要，游戏二进制、存档、原metadata/IL/PE指令与机器日志仍只留本机。
