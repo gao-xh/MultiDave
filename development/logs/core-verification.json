@@ -1,13 +1,13 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T04:46:29.9034426Z",
-  "PluginVersion": "0.1.3-dev",
+  "RecordedUtc": "2026-10-04T05:20:10.9151391Z",
+  "PluginVersion": "0.1.4-dev",
   "VerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1"
   ],
-  "CoreTestsPassed": 35,
-  "CoreTestsTotal": 35,
+  "CoreTestsPassed": 44,
+  "CoreTestsTotal": 44,
   "TestNames": [
     "timeline boundaries and interpolation",
     "timeline capacity, ordering and reset",
@@ -43,15 +43,27 @@
     "layout invalid and excessive input rejection",
     "remote motion clock anchoring and staleness",
     "remote motion epoch, capacity and reset",
-    "remote motion malformed data rejection"
+    "remote motion malformed data rejection",
+    "host entity identity and pool reuse",
+    "host entity capacity and replacement",
+    "world codec and malformed entity rejection",
+    "world atomic assembly and DTO ownership",
+    "world slice ordering, replacement and empty roster",
+    "world session authority and epoch cleanup",
+    "world mailbox capacity and player fairness",
+    "TCP world bootstrap, update and removal",
+    "TCP legacy world protocol rejection"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "1E2264723B799150033C55F0754E73DA9F33AFEF5C61FEE5A5030A7DECB8064D",
+  "CompiledPluginSHA256": "76225076A95982E8A43D24E62C79607A680D67752B95CE8239CE7E164FF163D0",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
+  "NumericEntitySnapshotTransferVerified": true,
   "NativeGameNetworkingVerified": false,
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
-  "Scope": "Pure CLR math, packet/transport/session, metadata resource keys, canonical layout fingerprints and motion buffer; fixture worlds only. Native network adapter is compiled but not yet deployed/runtime verified."
+  "CooperativeFishingVerified": false,
+  "Scope": "Pure CLR math, protocol/transport/session, resource keys, layout/motion, host entity IDs and atomic bounded world snapshot transfer. World bootstrap, HP update and roster removal tested over real loopback TCP with fixtures. Native fish capture compiled, not deployed or runtime-verified; no guest fish control or rewards.",
+  "ProtocolVersion": 2
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DaveCoop.Core.World;
 
 namespace DaveCoop.Core.Protocol
 {
@@ -58,7 +59,7 @@ namespace DaveCoop.Core.Protocol
             if (packet.Sequence < 1) throw new ProtocolException("Invalid packet sequence.");
             int payloads = (packet.Hello == null ? 0 : 1) + (packet.Welcome == null ? 0 : 1) +
                 (packet.Reason == null ? 0 : 1) + (packet.Frame == null ? 0 : 1) +
-                (packet.Scene == null ? 0 : 1) + (packet.Clock == null ? 0 : 1);
+                (packet.Scene == null ? 0 : 1) + (packet.Clock == null ? 0 : 1) + (packet.World == null ? 0 : 1);
             if (payloads != 1) throw new ProtocolException("Expected exactly one packet payload.");
             switch (packet.Kind)
             {
@@ -80,6 +81,9 @@ namespace DaveCoop.Core.Protocol
                     break;
                 case PacketKind.PlayerFrame:
                     RequireGuid(packet.RoomId); ValidateFrame(packet.Frame);
+                    break;
+                case PacketKind.WorldSlice:
+                    RequireGuid(packet.RoomId); WorldFrames.ValidateSlice(packet.World);
                     break;
                 case PacketKind.SceneChange:
                 case PacketKind.SceneAck:
@@ -125,7 +129,7 @@ namespace DaveCoop.Core.Protocol
             }
         }
 
-        private static void ValidatePose(Pose pose)
+        public static void ValidatePose(Pose pose)
         {
             if (!pose.IsValid() || !Bound(pose.Position.X, 100000) || !Bound(pose.Position.Y, 100000) ||
                 !Bound(pose.Position.Z, 100000) || !Bound(pose.Scale.X, 64) || !Bound(pose.Scale.Y, 64) || !Bound(pose.Scale.Z, 64))
@@ -147,7 +151,7 @@ namespace DaveCoop.Core.Protocol
                 throw new ProtocolException("Invalid Steam build identity.");
         }
 
-        private static void RequireText(string text, int maxLength, string name)
+        internal static void RequireText(string text, int maxLength, string name)
         {
             if (string.IsNullOrWhiteSpace(text) || text.Length > maxLength) throw new ProtocolException("Invalid " + name + ".");
             foreach (char c in text) if (char.IsControl(c)) throw new ProtocolException("Control character in " + name + ".");

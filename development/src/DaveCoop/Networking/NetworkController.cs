@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using BepInEx;
 using DaveCoop.Core.Protocol;
 using DaveCoop.Core.Session;
+using DaveCoop.Core.World;
 using DaveCoop.Rendering;
 using UnityEngine;
 
@@ -27,6 +28,13 @@ namespace DaveCoop.Networking
         private readonly LocalAvatarCapture _local = new LocalAvatarCapture();
         private readonly SpriteCatalog _catalog = new SpriteCatalog();
         private readonly NetworkAvatarRenderer _display = new NetworkAvatarRenderer();
+        private readonly FishStateCapture _fish = new FishStateCapture();
+        private long _worldEpoch;
+        private long _lastRemoteWorldRevision;
+        private int _lastRemoteFishCount;
+        private float _nextWorldCapture;
+        private float _nextWorldLog;
+        private string _worldWarning;
         private CancellationTokenSource _attempt;
         private Task<Peers> _pending;
         private Peers _peers;
@@ -71,6 +79,11 @@ namespace DaveCoop.Networking
                 }
                 UpdateLocalScene();
                 state = _peers.Main.Snapshot;
+                if (state.Phase != SessionPhase.Ready || state.SceneEpoch != _worldEpoch)
+                {
+                    _fish.Clear(); _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0;
+                    _worldEpoch = state.Phase == SessionPhase.Ready ? state.SceneEpoch : 0;
+                }
                 if (state.Phase != SessionPhase.Ready || state.SceneEpoch != _displayEpoch)
                 {
                     _display.Clear(); _displayEpoch = state.Phase == SessionPhase.Ready ? state.SceneEpoch : 0;
@@ -80,6 +93,20 @@ namespace DaveCoop.Networking
                 // The internal peer is also pure CLR. Drain its mailbox so the
                 // diagnostic exercises both directions without touching Unity there.
                 if (_peers.Loopback != null) _peers.Loopback.TryTakeRemoteFrame(out _);
+                SessionPeer worldReceiver = _peers.Loopback ?? _peers.Main;
+                if (worldReceiver.TryTakeRemoteWorld(out WorldSnapshot world) && world.SceneEpoch == state.SceneEpoch && state.Phase == SessionPhase.Ready)
+                {
+                    _lastRemoteWorldRevision = world.Revision; _lastRemoteFishCount = world.Entities.Length;
+                    if (Time.unscaledTime >= _nextWorldLog)
+                    {
+                        _nextWorldLog = Time.unscaledTime + 2f;
+                        NetworkDriver.Logger.LogInfo("DAVECOOP_WORLD_RECEIVED: " + JsonSerializer.Serialize(new
+                        {
+                            world.SceneEpoch, world.SceneKey, world.Revision, world.SampleTime,
+                            FishCount = world.Entities.Length, DiagnosticOnly = true
+                        }));
+                    }
+                }
                 string mode = _peers.Loopback == null ? state.Role.ToString() : "Loopback";
                 _message = _scene == null && _layoutMessage != null ? _layoutMessage : state.Reason;
                 NetworkDriver.Status = $"Network: {mode} / {state.Phase} | RTT {state.RoundTripSeconds * 1000:F0} ms";
@@ -91,7 +118,9 @@ namespace DaveCoop.Networking
                         Mode = mode, state.Phase, state.SceneEpoch, state.SceneKey, state.HasClockEstimate,
                         state.RoundTripSeconds, LocalPlayer = _local.PlayerId, LocalParts = _local.PartCount,
                         UnkeyedLocalParts = _local.UnkeyedVisibleParts, RemoteVisibleParts = _display.VisibleParts,
-                        RemoteUnknownAssets = _display.UnknownAssets, RemoteHistoryCount = _display.HistoryCount
+                        RemoteUnknownAssets = _display.UnknownAssets, RemoteHistoryCount = _display.HistoryCount,
+                        ObservedHostFish = _fish.ObservedFish, _fish.UninitializedFish,
+                        RemoteWorldRevision = _lastRemoteWorldRevision, RemoteFishCount = _lastRemoteFishCount
                     }));
                 }
             }
@@ -106,6 +135,7 @@ namespace DaveCoop.Networking
             {
                 SessionSnapshot state = _peers.Main.Snapshot;
                 if (state.Phase != SessionPhase.Ready) return;
+                ObserveWorld(state);
                 if (Time.unscaledTime >= _nextCapture)
                 {
                     _nextCapture = Time.unscaledTime + 1f / 30;
@@ -184,12 +214,30 @@ namespace DaveCoop.Networking
         private void ClearLocal()
         {
             _scene = null; _layoutMessage = null; SetScene(null); _local.Clear(); _catalog.Clear(); _display.Clear(); _displayEpoch = 0;
+            _fish.Clear(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0;
+        }
+
+        private void ObserveWorld(SessionSnapshot state)
+        {
+            if (state.Role != SessionRole.Host || !NetworkDriver.TransmitFishObservations.Value || Time.unscaledTime < _nextWorldCapture) return;
+            _nextWorldCapture = Time.unscaledTime + 0.2f;
+            try
+            {
+                WorldSnapshot snapshot = _fish.Capture(_local.Player.gameObject.scene, state.SceneEpoch, state.SceneKey, _peers.Main.Now);
+                _peers.Main.PublishWorld(snapshot); _worldWarning = null;
+            }
+            catch (Exception error)
+            {
+                string message = error.GetType().Name + ": " + error.Message;
+                if (message != _worldWarning) NetworkDriver.Logger.LogWarning("DAVECOOP_WORLD_CAPTURE_WARNING: " + message);
+                _worldWarning = message;
+            }
         }
 
         public void Draw()
         {
             if (NetworkDriver.ShowPanel == null || !NetworkDriver.ShowPanel.Value) return;
-            GUI.Box(new Rect(12, 170, 640, 245), "MultiDave LAN movement test — F11");
+            GUI.Box(new Rect(12, 170, 640, 280), "MultiDave LAN movement test — F11");
             GUI.Label(new Rect(24, 194, 616, 28), "Movement display only. Fish, items and results are not synchronized.");
             bool idle = _pending == null && _peers == null;
             bool originalEnabled = GUI.enabled;
@@ -209,7 +257,9 @@ namespace DaveCoop.Networking
             if (GUI.Button(new Rect(480, 264, 156, 30), "Disconnect")) Disconnect();
             GUI.enabled = originalEnabled;
             GUI.Label(new Rect(24, 304, 612, 28), NetworkDriver.Status);
-            GUI.Label(new Rect(24, 337, 612, 65), _message);
+            bool observe = GUI.Toggle(new Rect(24, 336, 612, 25), NetworkDriver.TransmitFishObservations.Value, "Transmit read-only fish observations (diagnostic)");
+            if (observe != NetworkDriver.TransmitFishObservations.Value) NetworkDriver.TransmitFishObservations.Value = observe;
+            GUI.Label(new Rect(24, 369, 612, 65), _message);
         }
 
         private void Start(string mode)
@@ -292,6 +342,7 @@ namespace DaveCoop.Networking
             _peers?.Dispose(); _peers = null;
             _attempt?.Dispose(); _attempt = null;
             _scene = null; _layoutMessage = null; _local.Clear(); _catalog.Clear(); _display.Clear(); _displayEpoch = 0;
+            _fish.Clear(); _worldEpoch = 0; _lastRemoteWorldRevision = 0; _lastRemoteFishCount = 0; _worldWarning = null;
             RemotePreview.NetworkActive = false;
             NetworkDriver.Status = "Network: offline (F11)"; _message = "Disconnected.";
         }

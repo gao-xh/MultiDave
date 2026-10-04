@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DaveCoop.Core.Protocol;
+using DaveCoop.Core.World;
 
 namespace DaveCoop.Core.Session
 {
@@ -35,6 +36,13 @@ namespace DaveCoop.Core.Session
         private double _lastLocalFrameTime = -1;
         private WirePacket _outgoingFrame;
         private ReceivedFrame _incomingFrame;
+        private readonly WorldAssembler _worldAssembler = new WorldAssembler();
+        private WorldSlice[] _outgoingWorld;
+        private int _nextWorldSlice;
+        private long _worldRevision;
+        private double _lastLocalWorldTime = -1;
+        private WorldSnapshot _incomingWorld;
+        private bool _preferWorld;
 
         public SessionMachine(SessionRole role, HandshakeResult identity, double now, SessionOptions options = null)
         {
@@ -161,6 +169,14 @@ namespace DaveCoop.Core.Session
                         LocalSampleTime = _hasClock ? packet.Frame.SampleTime - _offset : now
                     };
                     break;
+                case PacketKind.WorldSlice:
+                    RequireRole(SessionRole.Guest);
+                    if (packet.World.SceneEpoch < _epoch) break;
+                    if (packet.World.SceneEpoch != _epoch || packet.World.SceneKey != _proposal?.SceneKey)
+                        throw new ProtocolException("World snapshot does not match the current scene.");
+                    if (_phase != SessionPhase.Ready) break;
+                    if (_worldAssembler.Accept(packet.World, out WorldSnapshot completed)) _incomingWorld = completed;
+                    break;
                 case PacketKind.Leave:
                     Close("Peer left: " + packet.Reason);
                     break;
@@ -187,8 +203,40 @@ namespace DaveCoop.Core.Session
         public bool TryTakePacket(out WirePacket packet)
         {
             if (_controls.Count > 0) { packet = _controls.Dequeue(); return true; }
+            if (_outgoingWorld != null && (_preferWorld || _outgoingFrame == null))
+            {
+                packet = new WirePacket { Kind = PacketKind.WorldSlice, RoomId = _identity.RoomId, World = _outgoingWorld[_nextWorldSlice++] };
+                if (_nextWorldSlice == _outgoingWorld.Length) { _outgoingWorld = null; _nextWorldSlice = 0; }
+                _preferWorld = false; return true;
+            }
             packet = _outgoingFrame; _outgoingFrame = null;
+            _preferWorld = true;
             return packet != null;
+        }
+
+        public bool PublishWorld(WorldSnapshot source, double now)
+        {
+            CheckTime(now); RequireRole(SessionRole.Host);
+            if (_phase != SessionPhase.Ready) return false;
+            if (source == null || source.SceneEpoch != _epoch || source.SceneKey != _proposal.SceneKey || source.SampleTime > now + 1)
+                throw new ProtocolException("Local world snapshot does not match the active scene or clock.");
+            if (_worldRevision == long.MaxValue) throw new ProtocolException("World revision exhausted.");
+            var copy = new WorldSnapshot
+            {
+                SceneEpoch = _epoch, SceneKey = source.SceneKey, Revision = _worldRevision + 1,
+                SampleTime = source.SampleTime, Entities = source.Entities
+            };
+            WorldSlice[] slices = WorldFrames.Split(copy);
+            if (source.SampleTime <= _lastLocalWorldTime) return false;
+            _worldRevision++; _lastLocalWorldTime = source.SampleTime;
+            // Replacing a partial unsent snapshot starts a newer revision at index 0.
+            // The receiver retains its last complete world until the new one commits.
+            _outgoingWorld = slices; _nextWorldSlice = 0; return true;
+        }
+
+        public bool TryTakeRemoteWorld(out WorldSnapshot snapshot)
+        {
+            snapshot = _incomingWorld; _incomingWorld = null; return snapshot != null;
         }
 
         public bool TryTakeRemoteFrame(out ReceivedFrame frame)
@@ -235,6 +283,8 @@ namespace DaveCoop.Core.Session
         private void ClearFrames()
         {
             _outgoingFrame = null; _incomingFrame = null; _lastFrameTime = -1; _lastLocalFrameTime = -1;
+            _outgoingWorld = null; _nextWorldSlice = 0; _incomingWorld = null;
+            _worldRevision = 0; _lastLocalWorldTime = -1; _worldAssembler.Clear(); _preferWorld = false;
         }
 
         private void RequireCurrentScene(SceneNotice notice)

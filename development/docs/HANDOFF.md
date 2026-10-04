@@ -19,10 +19,12 @@
 旧 M1 会话完整日志最终为 1886 条快照，记录 Boss 返回潜水、返航大厅及主菜单，无探针错误。
 M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态中原生玩家数为 1，
 摄像机均绑定本地玩家，F10 停用/重建及返航清理有日志，无警告，基础验收通过。
-新增纯 CLR 姿态时间线、协议/握手/TCP 分帧与校验、会话、资源键、布局指纹及插值，35 项测试通过。
+新增纯 CLR 姿态、协议/TCP、会话、资源键、布局指纹/插值及实体身份/原子快照，44 项测试通过。
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
-0.1.4-dev 新增默认关闭的 F7 世界只读探针，已编译，尚未部署或实机运行。
+0.1.4-dev 新增默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，已编译，尚未部署或实机运行。
+协议版本为 2，拒绝旧协议；WorldSlice 通过场景确认后的 TCP 通道传输有界数值快照。
+F11 可勾选 Transmit read-only fish observations，实际鱼捕获/客机显示/AI 接管仍未实现。
 地图/鱼/互动方案及可复现接口研究见 `WORLD_SYNC.md`、`scripts/Inspect-WorldApi.ps1`。
 细节见 `MULTIPLAYER.md`，最新测试证据见 `../logs/core-verification.json`。
 
@@ -46,7 +48,7 @@ M3 游戏适配实机验证和真实双游戏验收尚未完成。
 M2 历史验证构建 SHA256 为 `E2A7DEC29ACB894F72A2D8528C099E82AB867DDE00F82DC739707BAA8EBB5AB9`。
 用户保存退出后部署并启动 0.1.3-dev，SHA256 为 `1E2264723B799150033C55F0754E73DA9F33AFEF5C61FEE5A5030A7DECB8064D`。
 当前游戏运行这一版本，DAVECOOP_NETWORK_READY 已确认；已请用户按 F11 / Local test 执行潜水。
-新源码 0.1.4-dev 编译 SHA256 为 `587D4D5B4FA602783B5E7DDCC2FB6DF9657B3EE3AD1CACC6FD32799741481A05`。
+新源码 0.1.4-dev 编译 SHA256 为 `76225076A95982E8A43D24E62C79607A680D67752B95CE8239CE7E164FF163D0`。
 正常保存退出后再部署世界探针，先核对新进程加载，F7 开启观察入海/捕鱼/返航生命周期。
 不要把新探针的编译证据或旧版本启动证据当成它已运行。
 对照 NETWORK_STATE 的 Ready/角色帧/资源及 LAYOUT_READY 或 WARNING，修复实际问题。
@@ -56,7 +58,10 @@ Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可�
 后续游戏交互仍需研究真实控制流和原角色组件副作用。
 已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
 Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
-探针记录本机 ID 仅用于观察，后续网络实体使用房主分配的 RoomId/epoch/EntityId。
+探针记录本机 ID 仅用于观察；网络数值实体已使用房主分配的 RoomId/epoch/EntityId。
+下一版部署后，F11 / Local test 勾选鱼状态诊断，检查 WORLD_RECEIVED 与 NETWORK_STATE 的数量/版本，
+对照 F7 探针核实实际鱼值和生命周期，再接入远程鱼显示、原生生成/AI 接管和 M5 裁定。
+当前数值通道只覆盖玩家所在场景的已初始化鱼，对象池在两次轮询之间重启仍需要生命周期挂钩。
 
 ## 已遇到的问题
 

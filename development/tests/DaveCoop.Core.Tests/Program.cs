@@ -42,7 +42,16 @@ internal static class Program
             ("layout invalid and excessive input rejection", WorldAndMotionTests.LayoutRejectsInvalidInput),
             ("remote motion clock anchoring and staleness", WorldAndMotionTests.MotionClockAndInterpolation),
             ("remote motion epoch, capacity and reset", WorldAndMotionTests.MotionEpochCapacityAndReset),
-            ("remote motion malformed data rejection", WorldAndMotionTests.MotionRejectsInvalidData)
+            ("remote motion malformed data rejection", WorldAndMotionTests.MotionRejectsInvalidData),
+            ("host entity identity and pool reuse", EntityWorldTests.EntityIdentityAndReuse),
+            ("host entity capacity and replacement", EntityWorldTests.RegistryCapacity),
+            ("world codec and malformed entity rejection", EntityWorldTests.CodecAndInvalidEntities),
+            ("world atomic assembly and DTO ownership", EntityWorldTests.AtomicAssemblyAndOwnership),
+            ("world slice ordering, replacement and empty roster", EntityWorldTests.AssemblyRejectionAndReplacement),
+            ("world session authority and epoch cleanup", EntityWorldTests.SessionAuthorityAndEpoch),
+            ("world mailbox capacity and player fairness", EntityWorldTests.SnapshotFairnessAndBounds),
+            ("TCP world bootstrap, update and removal", () => EntityWorldTests.TcpWorldLifecycle().GetAwaiter().GetResult()),
+            ("TCP legacy world protocol rejection", () => EntityWorldTests.RejectLegacyProtocol().GetAwaiter().GetResult())
         };
         int failures = 0;
         foreach (var test in tests)

@@ -46,6 +46,9 @@ description: Configure or continue development of the MultiDave prototype for Wi
 - 0.1.4-dev 新增 F7 世界只读探针，默认关闭，已编译但实机验证状态以 HANDOFF 为准。
   正常退出后部署、验证新版本启动，再观察地图选择、鱼 HP/捕获和返航生命周期。
   `development/scripts/Inspect-WorldApi.ps1` 可复现接口签名研究；元数据不能证明挂钩副作用。
+- 同版源码的 F11 可开启 Transmit read-only fish observations，在 Host/Local test 潜水时
+  核对 WORLD_RECEIVED 与 NETWORK_STATE 的数量/修订；这是实际鱼数据的只读通道，
+  尚不创建远程鱼或裁定捕获。协议为 2，双方源码/版本应匹配。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

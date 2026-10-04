@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DaveCoop.Core.Protocol;
 using DaveCoop.Core.Transport;
+using DaveCoop.Core.World;
 
 namespace DaveCoop.Core.Session
 {
@@ -79,6 +80,21 @@ namespace DaveCoop.Core.Session
         public bool TryTakeRemoteFrame(out ReceivedFrame frame)
         {
             lock (_gate) return _machine.TryTakeRemoteFrame(out frame);
+        }
+
+        public bool PublishWorld(WorldSnapshot snapshot)
+        {
+            lock (_gate)
+            {
+                bool accepted = _machine.PublishWorld(snapshot, Now);
+                if (accepted) SignalWriter();
+                return accepted;
+            }
+        }
+
+        public bool TryTakeRemoteWorld(out WorldSnapshot snapshot)
+        {
+            lock (_gate) return _machine.TryTakeRemoteWorld(out snapshot);
         }
 
         public bool TryTakeEvent(out SessionEvent item)

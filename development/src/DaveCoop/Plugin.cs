@@ -47,6 +47,8 @@ namespace DaveCoop
             NetworkDriver.Port = Config.Bind("Network", "Port", 27182, "TCP listen/connect port.");
             NetworkDriver.PlayerName = Config.Bind("Network", "PlayerName", "Dave", "Room display name, up to 32 characters.");
             NetworkDriver.RenderDelay = Config.Bind("Network", "RenderDelaySeconds", 0.12f, "Remote interpolation delay, clamped to 0.05..0.5 seconds.");
+            NetworkDriver.TransmitFishObservations = Config.Bind("Network", "TransmitFishObservations", false,
+                "Send bounded read-only initialized fish state from the host; diagnostic only, does not control fish.");
             AddComponent<Diagnostics>();
             AddComponent<PlayerProbe>();
             AddComponent<RemotePreview>();
