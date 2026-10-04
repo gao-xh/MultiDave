@@ -31,7 +31,12 @@ internal static class Program
             ("LAN session scene, movement and graceful leave", () => SessionTests.LanSessionLifecycle().GetAwaiter().GetResult()),
             ("LAN scene mismatch timeout", () => SessionTests.SceneMismatchTimeout().GetAwaiter().GetResult()),
             ("LAN silent handshake timeout", () => SessionTests.SilentHandshakeTimeout().GetAwaiter().GetResult()),
-            ("LAN listening and connected cancellation", () => SessionTests.CancelListeningAndConnected().GetAwaiter().GetResult())
+            ("LAN listening and connected cancellation", () => SessionTests.CancelListeningAndConnected().GetAwaiter().GetResult()),
+            ("sprite asset key culture and signed zero stability", AssetTests.StableKeys),
+            ("sprite asset key descriptor identity", AssetTests.DistinctDescriptors),
+            ("sprite asset invalid descriptor rejection", AssetTests.InvalidDescriptors),
+            ("sprite asset metadata collision rejection", AssetTests.RegistryCollisions),
+            ("sprite asset capacity and scene reset", AssetTests.RegistryBoundsAndClear)
         };
         int failures = 0;
         foreach (var test in tests)

@@ -1,13 +1,13 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T04:17:06.3599578Z",
+  "RecordedUtc": "2026-10-04T04:21:43.3393433Z",
   "PluginVersion": "0.1.2-dev",
   "VerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1"
   ],
-  "CoreTestsPassed": 24,
-  "CoreTestsTotal": 24,
+  "CoreTestsPassed": 29,
+  "CoreTestsTotal": 29,
   "TestNames": [
     "timeline boundaries and interpolation",
     "timeline capacity, ordering and reset",
@@ -32,15 +32,20 @@
     "LAN session scene, movement and graceful leave",
     "LAN scene mismatch timeout",
     "LAN silent handshake timeout",
-    "LAN listening and connected cancellation"
+    "LAN listening and connected cancellation",
+    "sprite asset key culture and signed zero stability",
+    "sprite asset key descriptor identity",
+    "sprite asset invalid descriptor rejection",
+    "sprite asset metadata collision rejection",
+    "sprite asset capacity and scene reset"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "86140902B4E252AF98EBBBE0880270500BE4D69F965E904773DCD43ED1E2BBB2",
+  "CompiledPluginSHA256": "C367E21422E9F27C933E1B4E269CFE81B65BDF2455CBE89A3DF2AFF207754C93",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
   "NativeGameNetworkingVerified": false,
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
-  "Scope": "Pure CLR math, packet codec, TCP framing, handshake, session state, bounded mailboxes, timeouts and teardown; fixture worlds only. Native display is tracked separately."
+  "Scope": "Pure CLR math, packets, TCP handshake/session, bounded mailboxes, timeouts, metadata asset keys and collisions; fixture worlds only. Native SpriteCatalog is compiled, not runtime tested."
 }
