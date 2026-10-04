@@ -114,3 +114,5 @@ M2 先研究只复制显示组件/姿态的方式。直接克隆完整 `PlayerCh
 实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。
 
 交互缓存的实际typed准备、字段映射和已知图验证见[GUEST_INTERACTION_SHADOW](GUEST_INTERACTION_SHADOW.md)；新增离线Cecil工具可复现对应元数据。其它运行缓存及entry签名见[GUEST_RUNTIME_CACHES](GUEST_RUNTIME_CACHES.md)、[GUEST_ENTRY_BOUNDARIES](GUEST_ENTRY_BOUNDARIES.md)。这些声明和可编译源码不代替native ABI、输出或运行隔离验证。
+
+食材缓存的SingletonNoMono真实direct backing、11条目字段、13资源实例字段和Parent/static未知图见[GUEST_INGREDIENT_API](GUEST_INGREDIENT_API.md)；typed准备与逐字段恢复源码见[GUEST_INGREDIENT_CACHE](GUEST_INGREDIENT_CACHE.md)。离线元数据和可编译字段代理不证明native构造/数组/Entry ABI或整个资源无共享。

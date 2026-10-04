@@ -1,6 +1,6 @@
 # 开发约定
 
-- M1 玩家发现与 M2 回放基础验收通过；当前源码为 0.1.19-dev、协议 5，Build 警告视为错误通过、Test-Core 170/170 通过，范围见 [原生影子桥构建摘要](logs/guest-interaction-build-verification.json)；本轮未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
+- M1 玩家发现与 M2 回放基础验收通过；当前源码为 0.1.20-dev、协议 5，Build 警告视为错误通过、Test-Core 174/174 通过，范围见 [客机食材缓存构建摘要](logs/guest-ingredient-cache-build-verification.json)；本轮未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
 - 继续工作前阅读 `docs/HANDOFF.md`、`docs/PLAN.md` 和当前阶段的 `docs/GAME_API.md` / `docs/MULTIPLAYER.md` / `docs/WORLD_SYNC.md`；配置别人电脑时使用仓库根目录的配置 Skill。
 - 用户确定首版房主＋员工且每人独立背包，继续捕获/库存/结算开发先读 `docs/CREW_MODE.md`。房主自己的原生LootBox，员工由房主Mod持有的独立会话袋，各自容量/重量/负重；产物与前置容量检查都需正确分流，不能先入房主袋再复制。房主唯一长期进度；返航房主袋原链不重复Add、员工未入仓物料需新桥逐项确认一次。员工断线不清潜水账本，未知原生结果不重试/补奖；隔离客机全部自动持久写。同层带队、独立员工生存/装备/投射物及上述袋/结算仍待实现。
 - 0.1.11-dev 含房主目标反向查询、冻结的本地指针/代次 CLR 快照、完整收到的活动观察鱼群显示，以及 8 个原生交互入口的只读前后成对观察。鱼清单仅玩家当前场景，每鱼最多 16 帧；缺显示或离镜头不释放数字身份，原生 AI/碰撞/收益保持原样。
@@ -49,6 +49,10 @@
 - GuestOutputTargetManifest冻结194精确声明（130declared除22open-base/2service-interface再加88closed），8typed out设null/false，Injected输入ref保持；Steam stream invalid=MaxValue、async=0，Toolbox Save/Delete失败2/1，不以default成功。只卸自己owner，unknown/其它线程/partial安装失健康仍阻断；194不是唯一原生地址或完整覆盖。
 - 0.1.18的167项含7组instrumented synthetic backend，用write前/后错误与未知恢复验证一次补偿/释放；不执行nativebackend/hooks。强managed backend在首次真实fence attempt时保留，precheck拒绝不占global slot。先原根/manager/readback＋真实静止边界确认再卸fence/free，未知不重试。JSON限额是UTF16代码单元，native返回后检查，不约束内部初始分配。
 
-- 当前0.1.19继续先读docs/GUEST_INTERACTION_SHADOW.md、GUEST_ENTRY_BOUNDARIES.md与GUEST_RUNTIME_CACHES.md。typed十组绑定+new IGP hash已接PrepareDetached，single-use/source/thread窗口核对不变，禁止把Invoke Init/Load/Build当纯clone。
+- 0.1.19版继续先读docs/GUEST_INTERACTION_SHADOW.md、GUEST_ENTRY_BOUNDARIES.md与GUEST_RUNTIME_CACHES.md。typed十组绑定+new IGP hash已接PrepareDetached，single-use/source/thread窗口核对不变，禁止把Invoke Init/Load/Build当纯clone。
 - 原10dirty拒绝、已知baseline逐值/版本及mutable graph审计；4096每侧含重复计数，两侧8192，0长数组不含可变元素可共享，非空数组/7record/嵌套货槽另查。KnownReferencesDisjoint只针对已读图；comparer/cache/其它Player字段与native array/Entry ABI等仍未知，SourceBaseline/CompleteGraph及全部权限false。
 - 新增Il2CppSystem.Core build引用供native HashSet，未复制依赖DLL。170项只新增3组实际CLR引用审计，不执行nativehelper；新两个Cecil工具及Depth1 cache native分析只留.local原报告。不自动部署或催测试，完整实际边界/缓存/输出恢复及两袋玩法仍必须完成。
+
+- 当前0.1.20先读docs/GUEST_INGREDIENT_CACHE.md和GUEST_INGREDIENT_API.md；缓存singleton只读实际SingletonNoMono<IngredientsStorage>._s_Instance_k__BackingField，不用不存在的_instance或runtime getter补实例。Capture两份原known baseline均先于serializer。
+- GuestShadowTransaction新增第六IngredientsCache与仅此step合法OwnedMixed；五SaveRoots准备窗口与六步最终核对分开，cacheguard不能递归自身graph。最多18explicit strong handles，DataStamps仍4；全部原/native资源与玩法权限false，无Network/GUI调用。
+- 174项包含4组双字段CLR cache夹具，不执行nativehelper；相同loaded按storage身份区分，原storage null拒绝Prepare，unknown/foreign不盲写或retry。Entity仅复制13已知instance fields，Parent/static及任务/其它cache仍未知，不调用Init/Load/Reset修复。

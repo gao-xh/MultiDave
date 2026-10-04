@@ -629,3 +629,14 @@
 - 新GUEST_INTERACTION_SHADOW/GUEST_ENTRY_BOUNDARIES/GUEST_RUNTIME_CACHES及可复现Inspector；更新当前验证摘要/core、README/AGENTS/PLAN/HANDOFF/相关接口/玩法和Skill。两个新Inspector及修改后的Build脚本解析错误0，Skill草稿校验通过。新鲜游戏进程检查0，已安装DLL哈希仍为`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`；旧0.1.18的167/hash及installed0.1.12/dive0.1.11/distribution0.1.0历史保留。
   两次独立只读源码评审无本轮阻断，确认序列化前baseline、严格/活动验证分离、baseline失败撤销缓存的KnownDisjoint，以及卸fence后的原图确认路径；不把评审或编译当原生运行证据。
   下一步必须证明真实进入/静止、其它typed运行缓存与旧引用、完整writer/在途工作以及native clone/恢复ABI，再接房主实际地图采用、员工容量/捕获分流、逐产物入仓、双端玩法与冷配置发布。已知绑定/别名不升完整baseline/graph或GuestStateIsolated，手动验证继续延后。
+
+## 2026-10-04 — 0.1.20 食材缓存准备与六步补偿
+
+- 前一goal turn为实际进展：0.1.19 typed交互/已知图检查已提交8e53865且远端核验。完整M3—M7保持active；每人独立袋/容量/负重、房主长期收益及用户手动延后规则保持。本轮源码0.1.20-dev、协议5，未部署/启动/native调用或读改存档。
+- 新NativeGuestIngredientCache实际typed捕获/准备/逐字段readback与恢复，接rootbridge第六步。两原known基线均在任何serializer前，独立dictionary/IngredientsData/counts与Entity13实例字段副本；保真原key/loaded/data，原Storage=null拒绝Prepare，不用Storage.Init/Load/Reset或Parent业务getter补值。Parent/static资源与完整cache仍unknown。
+- Core新增IngredientsCache/OwnedMixed（仅6th），原五SaveRoots与六步最终确认分离；snapshot/attempt扩六、四Data标量仍4，explicit强handle上限18。partialpair先逆序处理cache，foreign/unknown不覆盖，已进入unknown恢复仅read不retry；缺cache确认不能free/unfence。默认CanEnter/Quiescent仍false，未接Network/GUI。
+- Test-Core首次CS0649：fixture OriginalLoaded没有显式初始化，改false后174/174通过。四新增生产事务夹具用双独立CLR字段模拟partial install/restore、未知不retry、foreign/替换singleton、相同bool/knownnull与single-root拒Mixed；不执行nativehelper/setter/constructor或图扫描，不能证明原生逐字段行为/ABI。
+- 实际Build警告视为错误通过，SHA256：`4FAA8DA75579A59CFCF113676BAFCFCED651C3C3D15D97C091DD8E5A42170B61`。新Inspector实际离线4程序集/24类型/5继承层/13实例字段/3static资源/3Parent mutable候选/5closed声明，无missingtypes；没有运行constructor/getter/save，原报告只留.local。
+- 更新README/开发AGENTS/HANDOFF/PLAN/相关文档、core及guest-ingredient-cache-build-verification，Skill正式校验通过并同步；0.1.19历史170/hash与installed0.1.12/dive0.1.11/default0.1.0保留。validator首次缺PyYAML、补现有缓存模块后默认GBK读取失败，使用现有模块及Python -X utf8后通过，无下载或安装依赖。Inspector PowerShell解析错误0。
+  两次独立只读末审无本轮阻断，确认字段/18显式handles预算、非递归窗口、faultserial每读写前后即时停止、null/loaded保真及全六步确认；不作为native运行证据。新鲜进程检查0，安装DLL仍为`8F90042C1177CB6861A7D86ED9768AE1B1966C52B7768BA6E32CBD38D54E5F5B`。已枚举字段/共享引用审计不授完整baseline/资源/caches权限。
+  下一步真实自然边界/其它typedcache/旧引用/全输出，随后房主地图采用、个人产物与容量分流、逐产物返航和双端/冷配置完整闭环；完整goal保持active。

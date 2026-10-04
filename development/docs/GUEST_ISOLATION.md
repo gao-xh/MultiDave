@@ -125,3 +125,5 @@ var playerShadow = DR.Save.SaveDataBase.Deserialize<DR.Save.SavePlayerData>(
 实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。
 
 0.1.19已实现[十组typed交互绑定](GUEST_INTERACTION_SHADOW.md)并接入根桥源码；实际进入仍关闭。其它缓存与副作用见[GUEST_RUNTIME_CACHES](GUEST_RUNTIME_CACHES.md)，原入口保护时机见[GUEST_ENTRY_BOUNDARIES](GUEST_ENTRY_BOUNDARIES.md)。已知字段等值和别名检查是必要条件，完整基线/深复制/所有旧引用仍未证。
+
+0.1.20 将[typed食材缓存](GUEST_INGREDIENT_CACHE.md)接入六步捕获/准备/恢复。实际SingletonNoMono字段与Entity实例/共享资源边界见[精确API](GUEST_INGREDIENT_API.md)；已编译、174项CLR/TCP测试通过，未执行native，GuestStateIsolated仍false。原五个Save根、Interaction基线及Data标量不由第六缓存替代。

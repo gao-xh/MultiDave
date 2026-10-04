@@ -1,6 +1,6 @@
 # 客机运行缓存的类型与恢复边界
 
-五个 manager 根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。本轮仅做离线研究，定位第一个可实施的 typed 缓存部分；没有安装、切换、清空或恢复任何游戏缓存，没有调用 Init、Load、Build、克隆或存档。已有桥的真实进入和静止边界仍关闭，`GuestStateIsolated`、`RuntimeCachesIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority` 均不能因此开放。
+五个 manager 根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。0.1.19仅做离线研究，定位第一个可实施的 typed 缓存部分；没有安装、切换、清空或恢复任何游戏缓存，没有调用 Init、Load、Build、克隆或存档。已有桥的真实进入和静止边界仍关闭，`GuestStateIsolated`、`RuntimeCachesIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority` 均不能因此开放。
 
 [Inspect-GuestRuntimeCacheApi.ps1](../scripts/Inspect-GuestRuntimeCacheApi.ps1) 用 Cecil 读取已生成的游戏、Il2Cppmscorlib 和 Interop.Runtime 元数据与包装器 IL。运行命令：
 
@@ -119,3 +119,5 @@ LootBox 的 direct 会话状态另有 `m_CharacterStatus`、`m_LootBoxEventListe
 已有元数据还包含 IngredientsDetailPanel.m_NowData、IngredientsSellPanel.m_Data、ManagementIngredientDetailPanel 闭包 data、Mission UI/闭包等条目引用；PlayerCharacter 的 charm closure 持有 SavePlayerData，InitSunangEmitterSystem iterator 持有 SaveData，InteriorStorage 持有 GameDataManager。这些旧引用需要实际生命周期/回调边界隔离，不能凭改 current singleton 抹掉。
 
 Dictionary.Entry 包装器继承 Il2CppSystem.ValueType，但本机 CLR `IsValueType=false`；与真正 CLR struct DateTime 不同。别名检查必须展开 Entry 的 key/value 等可变引用，不能将所有 IL2CPP 值类型 wrapper 一律视为无引用 leaf。direct proxy 仍属于原生内存访问，只读元数据和可编译 typed 签名不能代替实际 ABI、深复制、线程、完整 writer 或静止验证。边界未证明之前不连接游戏入口，也不授予客机世界和收益权限。
+
+0.1.20 已实现首个[typed食材缓存合同](GUEST_INGREDIENT_CACHE.md)并接入六步源码，精确字段补充见[GUEST_INGREDIENT_API](GUEST_INGREDIENT_API.md)。原Entry/Entity已知实例图准备独立副本，不把Parent/static目录当只读；实际native、完整缓存和消费者旧引用隔离仍未证。

@@ -1,7 +1,7 @@
 # 潜水员戴夫联机原型
 
 当前进度：M1 已通过潜水、场景切换与返航读取验证，M2 回放基础验收通过。
-当前源码为 0.1.19-dev、协议 5，Build 警告视为错误通过，Test-Core 170/170 通过，本轮未部署或启动新版本。
+当前源码为 0.1.20-dev、协议 5，Build 警告视为错误通过，Test-Core 174/174 通过，本轮未部署或启动新版本。
 当前安装仍为 0.1.12-dev，仅主菜单加载/Update/网络入口及初始路线输入通过；最近完成潜水验证的是 0.1.11-dev。
 用户目前不方便试玩，Probe、自然地图回调、路线/场景切换及正常返航验证延后。
 0.1.5/0.1.6-dev 已在真实潜水确认鱼探针、本机 TCP 收发、显示组件及生命周期回调运行。
@@ -11,7 +11,7 @@
 完整计划见 [PLAN](docs/PLAN.md)，移动实现见 [MULTIPLAYER](docs/MULTIPLAYER.md)，
 地图、鱼与互动方案见 [WORLD_SYNC](docs/WORLD_SYNC.md)。
 尚未完成真实双游戏移动验收、同一地图生成、捕鱼同步或存档同步。
-当前构建与最终验证范围见 [原生影子桥摘要](logs/guest-interaction-build-verification.json)；
+当前构建与最终验证范围见 [原生影子桥摘要](logs/guest-ingredient-cache-build-verification.json)；
 0.1.13 历史观察构建见 [地图选择调用摘要](logs/map-selection-call-build-verification.json)。
 
 ## 本机环境
@@ -103,3 +103,5 @@ Test-Core直接编译实际Core登记器、MapChoiceController与DTO，仅替代
 0.1.18的根桥与已枚举输出围栏仅源码准备，实际进入/静止边界恒false；没有GUI/Network调用，源事务拒绝后不安装围栏或捕获根。范围见[根桥](docs/GUEST_SHADOW_BRIDGE.md)与[当前摘要](logs/guest-shadow-build-verification.json)，不能据167项synthetic事务测试描述实际存档隔离完成。
 
 0.1.19把typed交互准备接入根桥，原玩家缓存尚未同步或已知可变子引用仍共享则拒绝；完整baseline/graph和native ABI仍未证。见[交互缓存](docs/GUEST_INTERACTION_SHADOW.md)、[更早的进入时机](docs/GUEST_ENTRY_BOUNDARIES.md)、[其它运行缓存](docs/GUEST_RUNTIME_CACHES.md)及[当前摘要](logs/guest-interaction-build-verification.json)。
+
+0.1.20 将[typed食材缓存](docs/GUEST_INGREDIENT_CACHE.md)接入原生根桥第六步，原图在serializer前捕获；[精确API](docs/GUEST_INGREDIENT_API.md)核对真实SingletonNoMono backing及Entity字段。Build及174项测试通过，原生进入/静止仍关闭，见[当前摘要](logs/guest-ingredient-cache-build-verification.json)。

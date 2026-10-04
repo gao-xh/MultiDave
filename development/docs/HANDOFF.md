@@ -6,7 +6,7 @@
 自定义插件加载、Unity Update 回调，以及 `DR_Start`、`DR_Logo`、`DR_Title` 场景读取。
 插件日志证据见 `../logs/bootstrap-verification.log`。
 
-开发在 `codex/player-discovery` 分支，当前源码为 `0.1.19-dev`、协议 5，Build 警告视为错误通过、Test-Core 170/170 通过；本轮未部署/启动。
+开发在 `codex/player-discovery` 分支，当前源码为 `0.1.20-dev`、协议 5，Build 警告视为错误通过、Test-Core 174/174 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 最近完成潜水验证的是 `0.1.11-dev`。
 
@@ -38,7 +38,7 @@ NativeGenerationBound/HostSelectionApplied/WorldAuthority/CargoAuthority始终fa
 旧 M1 会话完整日志最终为 1886 条快照，记录 Boss 返回潜水、返航大厅及主菜单，无探针错误。
 M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态中原生玩家数为 1，
 摄像机均绑定本地玩家，F10 停用/重建及返航清理有日志，无警告，基础验收通过。
-新增纯CLR姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询、鱼群缓冲、路线/IGP清单、操作门禁、个人Cargo账本和固定来源候选传输；当前验证范围见[原生影子桥构建摘要](../logs/guest-interaction-build-verification.json)。
+新增纯CLR姿态、协议/TCP、会话、资源键、布局指纹/插值、实体身份/原子快照、鱼显示缓冲及生命周期代次、房主目标查询、鱼群缓冲、路线/IGP清单、操作门禁、个人Cargo账本和固定来源候选传输；当前验证范围见[客机食材缓存构建摘要](../logs/guest-ingredient-cache-build-verification.json)。
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
 0.1.4-dev 引入默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，0.1.5-dev 加入一条鱼的 Sprite/Spine 显示验证入口。
@@ -174,7 +174,7 @@ BOOTSTRAP_OK（0.1.11-dev）、UPDATE_OK、NETWORK_READY 及 DR_Start/DR_Logo。
 
 M3 游戏适配实机验证和真实双游戏验收尚未完成。
 真实双游戏连接验收、客机原生鱼群/拾取接管与临时进度恢复均未完成。
-0.1.11-dev 的活动鱼群可见与移除同步已获用户确认，Fire/Hook/Damage 观察已有单游戏日志；已安装 0.1.12-dev 仅主菜单启动及初始路线输入通过，后续源码至0.1.19-dev仅构建。自然地图调用、Probe/潜水路线/场景切换、动画、完整捕获链和路线完整读取仍待验证，不能据此标记 M4/M5 完成。
+0.1.11-dev 的活动鱼群可见与移除同步已获用户确认，Fire/Hook/Damage 观察已有单游戏日志；已安装 0.1.12-dev 仅主菜单启动及初始路线输入通过，后续源码至0.1.20-dev仅构建。自然地图调用、Probe/潜水路线/场景切换、动画、完整捕获链和路线完整读取仍待验证，不能据此标记 M4/M5 完成。
 服务器方案暂时搁置。当前包是验证开发入口的原型。
 
 ## 下一步
@@ -208,7 +208,7 @@ Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可�
 已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
 Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
 探针记录本机 ID 仅用于观察；网络数值实体已使用房主分配的 RoomId/epoch/EntityId。
-当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.19-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
+当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.20-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
 当前候选测试先建Host/Join或Local test，再开启Observe loading coroutine and scene ownership并进行新自然入海。旧Observe map selection calls仅可选诊断，不能发送候选；可核对 MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE、MAP_SELECTION_HOOKS_STOPPED 的五处自然边界、线程、路线候选、空/截断/读取错误及自己的卸载。
 随后按目标检查范围在 F11 / Local test 开启 Transmit read-only fish observations 后进入潜水。
 开启单鱼预览取得选中身份，点 Check selected fish target，核对 FISH_ACTION_SENT / ADMISSION / DECISION / RECEIVED 的请求元数据、指纹及 DryRunValidated/op0。
@@ -280,3 +280,11 @@ M1 源码与计划已推送至 `codex/player-discovery` 分支。自动审批首
 NativeGuestShadowBridge.PrepareDetached已改为调用typed Interaction helper，保持15个显式强handle，仍拒绝真实进入。十组Player容器/新IGP hash、dirty与已知baseline比较、bounded alias检查和读回源码已编译；三组引用审计测试使总数170/170。它们不执行native helper，也不证明完整原缓存或深图隔离。
 
 继续先读[交互缓存](GUEST_INTERACTION_SHADOW.md)、[进入边界](GUEST_ENTRY_BOUNDARIES.md)、[运行缓存](GUEST_RUNTIME_CACHES.md)及[本轮摘要](../logs/guest-interaction-build-verification.json)。GoToInGameEntry自身已有进度操作，不能等ChangeSceneAsync才保护；Ingredients.Init/Mission.Build会触及当前保存，不作纯clone。实际边界、全writer/在途回调、缓存恢复、房主地图采用、员工捕获/入仓和双游戏仍待接。用户手动测试继续延后，不自动启动。
+
+## 0.1.20 食材缓存与六步恢复
+
+新增NativeGuestIngredientCache，接入原根桥Capture/Prepare/第六步安装与逆序恢复；原singleton/storage/loaded与已知条目在任何Serialize前冻结。新dictionary、每条新IngredientsData、counts和Entity十三实例字段候选，原值/原key/原loaded保真；不调用Storage.Init/Load/Reset或业务getter。最多18显式strong handles是源码上限，未实机获取。
+
+Core增加IngredientsCache与仅此步允许的OwnedMixed。四项新增夹具使用两个独立CLR字段，覆盖部分写入/恢复、unknown不重试、foreign/单例换代、相同bool及known null，174/174通过；不执行nativehelper/field setter。实际原/新loaded保真时same值不产生OwnedMixed，异值不猜身份；原storage=null只能捕获/确认，Prepare拒绝。
+
+先读[GUEST_INGREDIENT_CACHE](GUEST_INGREDIENT_CACHE.md)、[API](GUEST_INGREDIENT_API.md)及[本轮摘要](../logs/guest-ingredient-cache-build-verification.json)。Entity的Parent/static资源、旧UI/closures、Mission/Ingame/LootBox缓存与全部writer/静止仍未证，全部权限false；下一步继续实际自然边界及余下缓存，再接房主地图采用、员工个人产物/容量分流和逐产物返航。用户试玩继续延后，不自动部署/启动。

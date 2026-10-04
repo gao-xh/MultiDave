@@ -30,7 +30,7 @@ bridge 从 `Singleton<SaveSystem>._instance` 及 SaveSystem 的四个直接 mana
 
 临时 JSON 只在内存保留，不进入日志、网络或文件。限额按照 `string.Length`，即每根最多 8 Mi 个 UTF-16 代码单元、单租约累计最多 16 Mi 个 UTF-16 代码单元，四次克隆不重置预算。没有按 UTF-8 bytes 计量；若转成 UTF-8，其上界可按每代码单元三 bytes 估算，但桥不执行此编码。native Serialize 返回之后才能检查长度，这不能限制其内部临时分配或超限返回字符串的初始分配。
 
-bridge 最多独立拥有 15 个 native 强 GC handle：SaveSystem 加四个 manager、五个原根、五个 detached 根。使用已安装 Il2CppInterop 的 `IL2CPP.il2cpp_gchandle_new(pointer,false)`；handle 是 `IntPtr`，不是 uint。获取后先记录所有权，再以 `il2cpp_gchandle_get_target` 回读，不以普通数字指针证明存活。`false` 表示不 pin，仍是强 handle。
+0.1.18 bridge 最多独立拥有 15 个 native 强 GC handle：SaveSystem 加四个 manager、五个原根、五个 detached 根。使用已安装 Il2CppInterop 的 `IL2CPP.il2cpp_gchandle_new(pointer,false)`；handle 是 `IntPtr`，不是 uint。获取后先记录所有权，再以 `il2cpp_gchandle_get_target` 回读，不以普通数字指针证明存活。`false` 表示不 pin，仍是强 handle。
 
 生成 wrapper 本身也有强 GC handle；桥额外拥有的 handle 用于明确 lease 生命周期，只释放自己的句柄，不接触 wrapper 私有 `myGcHandle`。本机 IL 与同 commit 官方源码已核对：[Il2CppObjectBase](https://github.com/BepInEx/Il2CppInterop/blob/dbda1cb353b0f4253345dc45136d170b9e50a5a0/Il2CppInterop.Runtime/InteropTypes/Il2CppObjectBase.cs)、[IL2CPP GC API](https://github.com/BepInEx/Il2CppInterop/blob/dbda1cb353b0f4253345dc45136d170b9e50a5a0/Il2CppInterop.Runtime/IL2CPP.cs)。这项框架证据不证明四个 closed generic 克隆的游戏行为或 ABI 已通过实测。
 
@@ -57,3 +57,11 @@ bridge 捕获四个 manager 的 `IsNewData` backing field，以及四个原 Data
 空的临时Interaction已改为[typed helper](GUEST_INTERACTION_SHADOW.md)：拒原dirty，比较十组已知Player/Interaction内容，绑定detachedPlayer、新建IGP hash，并审计已核对的可变容器/数组/记录。准备及逐根安装/验证再次核对已知绑定；恢复原Interaction仍只按保存的原引用，不调用Sync或Load。
 
 完整source baseline/可变图、泛型数组/Entry ABI、其它运行缓存与输出/静止未验证。准备窗口仍恒false，未执行此helper或任何native；总170项中的三项新测试只执行生产CLR引用审计，不执行native图读取或容器构造。
+
+## 0.1.20 第六步食材缓存
+
+原五个Save manager根保持原顺序，新增独立的IngredientsCache组合步，详见[GUEST_INGREDIENT_CACHE](GUEST_INGREDIENT_CACHE.md)。Capture在原serializer前捕获两field和已知条目；Prepare创建独立typed副本；安装最后处理cache，恢复先处理cache。原四Data scalar stamps仍四份。RootIndex/attempt/readback扩六，不能机械把四Data变六Data。
+
+显式strong handle上限为18：既有15加IngredientsStorage singleton、原storage和新storage；原storage=null不Keep(null)，且拒绝准备。临时构造graph由helper强持有，unknown时整backend保留；wrapped Entry读取仍可分配native box，18不包括框架内部wrapper handles或所有临时分配。
+
+AllSaveRoots只查五根，cache读guard只查lease/thread/refs/managers/scalars，不要求自己的baseline就绪或递归读图。最终AllRoots、Confirm及free检查六步；卸fence后known原图读不要求fence仍active。OwnedMixed只允许cache组合，未知/外来不写，已进入结果不重派发。实际helper/ABI/静止及全部资源缓存尚未运行或验证。

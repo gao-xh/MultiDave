@@ -184,7 +184,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
   sharedgeneric/typedABI/在途输出/具体service实现及全writer仍未证；检查自己owner并且失败保持阻断，不Patch任意System.IO全局。新脚本Inspect-GuestOutputApi.ps1只读取Cecil元数据/框架IL，报告仅.local，不运行native或读存档。
   7组新事务测试合成backend不执行native bridge/fence；RootShadowInstalled也不升级GuestStateIsolated。原根/manager、强handle及真实静止边界确认前不卸围栏/free；未知恢复/free不重复，尚未有实际原生恢复验证。
   未部署/启动，用户手动验证继续延后；安装0.1.12/潜水0.1.11/默认包0.1.0保持原范围。新source初次调用须先可信native边界/cache与全输出隔离，不能锁住正常保存冒充诊断。
-- 当前源码0.1.19-dev、协议5、Build警告视为错误通过、170/170核心测试通过，见development/docs/GUEST_INTERACTION_SHADOW.md、GUEST_ENTRY_BOUNDARIES.md、GUEST_RUNTIME_CACHES.md及guest-interaction-build-verification.json。
+- 上一版源码0.1.19-dev、协议5、Build警告视为错误通过、170/170核心测试通过，见development/docs/GUEST_INTERACTION_SHADOW.md、GUEST_ENTRY_BOUNDARIES.md、GUEST_RUNTIME_CACHES.md及guest-interaction-build-verification.json。
   typed Interaction从detached Player十组容器绑定并新IGP hash，拒原dirty/已知baseline不同或共享mutable引用；不调用manager Sync/SetLoadedData/Load，已接根桥准备/安装/验证。
   KnownReferencesDisjoint仅已读图；0长数组可不含可变元素，非空arrays/records仍须查。comparer/其它Player/旧UI和coroutine、native泛型array/Entry布局、完整baseline/cache/output均未证，不授GuestStateIsolated或收益权限。
   原生进入/静止仍恒false，helper未执行，不能拿170项CLR/TCP（新增3引用审计）当native或双游戏验收。GameAssembly唯一staticedge不证运行顺序；GoToInGameEntry自身可改Player/Mission，下游ChangeSceneAsync不能覆盖它前部，Init/Build也不作无副作用clone。
@@ -203,3 +203,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
 打包器会检查 DLL 与发布版本一致。开发构建不自动替换默认发行包。
 
 仓库只发布本项目源码、自写 DLL 和元数据，不发布游戏、互操作程序集或存档。
+
+- 当前源码0.1.20-dev、协议5，Build警告视为错误通过、174/174核心测试通过，见development/docs/GUEST_INGREDIENT_CACHE.md、GUEST_INGREDIENT_API.md及guest-ingredient-cache-build-verification.json。独立Ingredients dictionary/records/counts/13 Entity实例字段候选已接六步源码，原缓存与Interaction均在serializer前捕获；最多18显式strong handle不是框架/临时box总数。
+- 第六cache OwnedMixed仅表示每field已证original/detached组合，单个Save根不得接受；foreign/unknown不覆盖，进入后未知不重新派发。原loaded保真，不强制true；null原storage可捕获但准备拒绝。SingletonNoMono真实字段为_s_Instance_k__BackingField；不要调用Storage.Init/Load/Reset/Entity.Parent重建或补实例。
+- Entity Parent/static目录、旧UI/closures、Mission/Ingame/LootBox、全输出及native静止/ABI仍未证；typed副本/174 CLR测试不授GuestStateIsolated或个人捕鱼/入仓权限。用户测试继续延后，不自动部署/启动；完成房主世界、每人独立容量/捕获分流、逐产物返航与真实双端/冷配置后才算完整目标。

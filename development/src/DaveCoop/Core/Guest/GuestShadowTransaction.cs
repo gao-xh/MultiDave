@@ -2,8 +2,11 @@ using System;
 
 namespace DaveCoop.Core.Guest
 {
-    public enum GuestShadowRoot { GameData = 1, PlayerData = 2, PlayerInteraction = 3, PhotoData = 4, UserOption = 5 }
-    public enum GuestShadowRootReadback { Unknown = 0, Original = 1, Detached = 2, Foreign = 3 }
+    public enum GuestShadowRoot { GameData = 1, PlayerData = 2, PlayerInteraction = 3, PhotoData = 4, UserOption = 5, IngredientsCache = 6 }
+    // OwnedMixed applies only to the composite IngredientsCache step: every
+    // field is proven original or detached, but the pair is incomplete. The
+    // backend must inspect/restore individual fields; never rewrite a pair blind.
+    public enum GuestShadowRootReadback { Unknown = 0, Original = 1, Detached = 2, Foreign = 3, OwnedMixed = 4 }
     public enum GuestShadowStage { Created, Installing, ShadowInstalled, Restoring, RestoredFenced, Released, Failed }
     public enum GuestShadowReason
     {
@@ -72,12 +75,12 @@ namespace DaveCoop.Core.Guest
     public sealed class GuestShadowTransaction
     {
         private static readonly GuestShadowRoot[] Order = { GuestShadowRoot.GameData, GuestShadowRoot.PlayerData,
-            GuestShadowRoot.PlayerInteraction, GuestShadowRoot.PhotoData, GuestShadowRoot.UserOption };
+            GuestShadowRoot.PlayerInteraction, GuestShadowRoot.PhotoData, GuestShadowRoot.UserOption, GuestShadowRoot.IngredientsCache };
         private readonly IGuestShadowBackend _backend;
         private readonly Guid _hostBinding, _lease;
         private readonly int _thread;
-        private readonly bool[] _restoreDispatched = new bool[5];
-        private readonly GuestShadowRootReadback[] _roots = new GuestShadowRootReadback[5];
+        private readonly bool[] _restoreDispatched = new bool[Order.Length];
+        private readonly GuestShadowRootReadback[] _roots = new GuestShadowRootReadback[Order.Length];
         private bool _claimed, _installAttempted, _captureAttempted, _fenceAttempted, _fenceRetained;
         private bool _fenceIntegrityLost, _referencesRetained, _originalsRestored, _installed;
         private bool _removeAttempted, _releaseAttempted, _busy;
@@ -283,7 +286,8 @@ namespace DaveCoop.Core.Guest
             for (int i = Order.Length - 1; i >= 0; i--)
             {
                 GuestShadowResult failure = Read(i);
-                if (failure == null && _roots[i] == GuestShadowRootReadback.Detached)
+                if (failure == null && (_roots[i] == GuestShadowRootReadback.Detached ||
+                    Order[i] == GuestShadowRoot.IngredientsCache && _roots[i] == GuestShadowRootReadback.OwnedMixed))
                 {
                     if (_restoreDispatched[i]) failure = Latch(GuestShadowReason.RestoreFailed, "A restore is unresolved and will not be dispatched again.");
                     else
@@ -330,7 +334,8 @@ namespace DaveCoop.Core.Guest
             {
                 long before = _faultSerial;
                 GuestShadowRootReadback value = _backend.ReadRoot(Order[index]);
-                if (value != GuestShadowRootReadback.Original && value != GuestShadowRootReadback.Detached && value != GuestShadowRootReadback.Foreign)
+                if (value != GuestShadowRootReadback.Original && value != GuestShadowRootReadback.Detached && value != GuestShadowRootReadback.Foreign &&
+                    !(Order[index] == GuestShadowRoot.IngredientsCache && value == GuestShadowRootReadback.OwnedMixed))
                 { _roots[index] = GuestShadowRootReadback.Unknown; return Latch(GuestShadowReason.ReadbackUnknown, "Root readback is unknown."); }
                 _roots[index] = value;
                 return _faultSerial == before ? null : Result(GuestShadowReason.Faulted, "Readback callback invalidated the transaction.");

@@ -1,6 +1,6 @@
 # 第二角色与传输层
 
-当前源码 `0.1.19-dev`、协议 5，Build 警告视为错误通过、Test-Core 170/170 通过；本轮未部署/启动。
+当前源码 `0.1.20-dev`、协议 5，Build 警告视为错误通过、Test-Core 174/174 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 `0.1.11-dev`。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，主菜单启动通过不扩展为玩法验收。
@@ -13,7 +13,7 @@ M2 在 0.1.2-dev 的真实潜水中通过基础验收。M3 会话/资源键/布�
 0.1.7-dev 用户确认预览鱼可见但会突然消失；日志定位到角色临时部件销毁触发自动断开。
 0.1.8-dev 已修复该失败路径但仍自动换鱼。0.1.9-dev 锁定目标，用户确认不再突然消失；动画、Disconnect/返航及两游戏验收待完成。
 启动证据见 `../logs/network-bootstrap-verification.json`，海洋同步、探针和一条鱼显示诊断见 [WORLD_SYNC](WORLD_SYNC.md)。
-当前边界见[原生影子桥构建摘要](../logs/guest-interaction-build-verification.json)，0.1.14历史传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，已安装0.1.12-dev见[操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史0.1.11-dev潜水边界见[鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
+当前边界见[客机食材缓存构建摘要](../logs/guest-ingredient-cache-build-verification.json)，0.1.14历史传输见[地图选择传输摘要](../logs/map-choice-transport-build-verification.json)，已安装0.1.12-dev见[操作门禁摘要](../logs/fish-action-gate-build-verification.json)，历史0.1.11-dev潜水边界见[鱼群与交互摘要](../logs/fish-world-interaction-build-verification.json)。
 
 ## M2 显示对象
 
@@ -241,3 +241,5 @@ M4 下一步是本地来源/代次与跨机地址确认后的实际选择采用�
 当前生产进入与静止边界恒false，事务在围栏安装前拒绝；startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。全部GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority保持false，未部署或启动。
 
 实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。
+
+0.1.20 已将[独立食材缓存准备/恢复](GUEST_INGREDIENT_CACHE.md)接入第六步源码，174项测试仅覆盖CLR控制及此前范围；[当前摘要](../logs/guest-ingredient-cache-build-verification.json)不证明原生运行。每人独立容量/负重及房主唯一长期收益规则保持；完整资源、缓存、真实地图、捕鱼分流、返航和双游戏仍待验收。
