@@ -75,6 +75,8 @@ internal static class Program
             ("loot lineage high water foreign run and LIFO reject rebinding", LootCallLineageTests.HighWaterForeignRunAndLifoChecksRejectRebinding),
             ("loot lineage queue depth and run quota loss cannot heal", LootCallLineageTests.QueueDepthAndRunQuotaLossNeverHealAfterDrain),
             ("loot lineage stop counts pending and queued without restart", LootCallLineageTests.StopCountsPendingAndQueuedEvidenceWithoutRestart),
+            ("loot return bag scope masks fish and preserves original scalar results", LootReturnLineageTests.ReturnScopeMasksFishAndKeepsIndependentOriginalScalars),
+            ("loot return exception and historical replay cannot restore ownership", LootReturnLineageTests.ReturnExceptionsAndHistoricalReplayCannotRestoreOwnership),
             ("cargo transport ledger pending and historical weight projection", CargoTransportTests.LedgerProjectionKeepsPendingAndHistoricalWeights),
             ("cargo transport returned ledger floating reservation residue", CargoTransportTests.ReturnedLedgerRetainsFloatingReservationResidue),
             ("cargo transport canonical fingerprints and deep copies", CargoTransportTests.CanonicalFingerprintAndDeepCopiesOwnTheirData),

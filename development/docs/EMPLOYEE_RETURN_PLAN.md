@@ -41,3 +41,5 @@ ItemType 枚举值不能代替未证明的 IsInInvenType 谓词，原 ApplyFinal
 本版未部署或启动，安装0.1.12、最近潜水0.1.11、默认发行包0.1.0保持原验证范围。
 
 0.1.33另接[返航映射与数量缓存原语](EMPLOYEE_RETURN_MAPPING.md)：计划的ingredient/parent/rank/count可从固定结果纯CLR组成，不重算、不Bind。原rawGrade保持，FinalGrade/Place/policy及模式producer仍须真实证明；本页0.1.32构建摘要保持历史。
+
+0.1.34另补[自然返航规则观察](RETURN_GRADE_OBSERVATION.md)，固定原additive和3receiverfield、原槽谓词/数量返回供后续policy生产。原Apply集合是host save，禁temp员工bag；UI/自动数量来源分开、上游Convert/精确delegate/employee适用仍未证，不能仅这些候选Bind或入仓。

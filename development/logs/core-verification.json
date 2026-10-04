@@ -1,15 +1,15 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T16:16:29.152586+00:00",
-  "PluginVersion": "0.1.33-dev",
+  "RecordedUtc": "2026-10-04T16:35:54.875692+00:00",
+  "PluginVersion": "0.1.34-dev",
   "VerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1",
-    "private offline Cecil verification of exact mapping declarations and direct proxies",
-    "development/scripts/Inspect-NativeCalls.ps1 -Depth 0 (exact count helper, private instruction output)"
+    "private offline Cecil verification of three natural return hooks and direct receiver fields",
+    "development/scripts/Inspect-NativeCalls.ps1 (two exact private return-policy groups)"
   ],
-  "CoreTestsPassed": 267,
-  "CoreTestsTotal": 267,
+  "CoreTestsPassed": 269,
+  "CoreTestsTotal": 269,
   "TestNames": [
     "fish return mapping preserves ordered inputs and explicit count modes",
     "fish return no-drop sentinels preserve compact product mode identity",
@@ -78,6 +78,8 @@
     "loot lineage high water foreign run and LIFO reject rebinding",
     "loot lineage queue depth and run quota loss cannot heal",
     "loot lineage stop counts pending and queued without restart",
+    "loot return bag scope masks fish and preserves original scalar results",
+    "loot return exception and historical replay cannot restore ownership",
     "cargo transport ledger pending and historical weight projection",
     "cargo transport returned ledger floating reservation residue",
     "cargo transport canonical fingerprints and deep copies",
@@ -280,7 +282,7 @@
     "TCP fish action protocol three rejection"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "651D26DB75C4B098178DFE7C94D5CE99BED507C8FA2D9793D6F2ABDDDAE43003",
+  "CompiledPluginSHA256": "048382538EBF2348AB83711861121C4C0E40FCA903FB5AE261B1D10A92EEB950",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
@@ -289,7 +291,7 @@
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "The actual selection/product coordinator now maps each fixed positive employee product once using immutable raw inputs and explicit frozen count modes. Each returned scalar is retained before source/ledger postguards; partial failures remain unknown without repeated lookup or exchange. Complete results publish atomically, preserve raw capture grade/count/weight/fingerprints, and generate CLR candidate return plans without binding or permissions. Typed native GetItems/GetIngredients/direct-field/count primitives compile; a separate owner retains up to seventeen explicit references plus the original managed bridge/ledger/selection. Source release requires MappingReady and mapping exit; return release requires all matching product plans SaveConfirmed and never retries unknown free. All 267 Core/TCP tests actually ran with eleven new synthetic mapping fixtures. Native-only managed owner retention changed after Core validation; all 84 actual Core source inputs stayed identical and final warning-as-error plugin compilation used a fresh 141-input seal. One new private offline metadata report covers four types, two lookup declarations, two pointer constructors and five direct Int32 proxies. One new PE analysis covers one count-helper known range with 48 instructions/7 direct edges/zero indirect calls, without proving full method/formula semantics. No native call/handle execution, category/count-mode producer, final-grade policy, mapping equivalence, capture diversion, inventory delta/save, guest isolation, host world adoption, dual-game normal return or cold configuration is verified. Full M3-M7 remains required.",
+  "Scope": "The default-off production loot observer adds three exact natural-call boundaries: ApplyFinalGrade additive and receiver fields, slot IsInInvenType original bool, and slot GetExchangeCount original integer. It never actively calls those business methods or GetGameSave/GetLootBox. An immutable CLR candidate retains two matching receiver-field samples without final-grade computation or policy fingerprints. Apply opens an unknown all-bag source scope so descendants cannot borrow a single-fish capture. Getter slots use same-call prefix/after pointer/class matching; finalizers only reuse CLR samples. Faults discard current grade candidates and synchronously revoke lineage. New grade reads have separate 16/sample and 65536/process budgets; existing frame/identity/four bag diagnostic reads are additional. All 269 Core/TCP tests actually ran, including two new real-lineage synthetic return fixtures, and warning-as-error plugin compilation passed on byte-identical 144 sealed inputs with 86 actual Core sources. Offline metadata verifies four types/three hooks/three direct instance Int32 fields/two save-root business declarations. Two new private PE reports contain 96 methods/6212 instructions and 14 methods/2513 instructions; the first hits method quota with three invalid methods, the second has two invalid methods. Automatic return passes a nonnull slot-bound count delegate whose exact target remains unresolved. UI callbacks pass null but upstream CellData conversion is unproved, so this is not a raw-capture DirectCount policy. No hook ABI/execution, collection/member/return binding, employee policy, full native formula/method semantics, real bag diversion, storage delta/save, guest isolation, host world adoption, dual-game normal return or cold configuration is verified. Full M3-M7 remains required.",
   "ProtocolVersion": 6,
   "MapChoiceTcpTransferVerified": true,
   "ProductionMapChoiceAdapterFixtureVerified": true,
@@ -336,7 +338,7 @@
   "IngameResourceGraphIsolated": false,
   "FullIngameCacheGraphVerified": false,
   "CoreTestsExecutedThisTurn": true,
-  "CoreTestRunRecordedUtc": "2026-10-04T16:16:29.152586+00:00",
+  "CoreTestRunRecordedUtc": "2026-10-04T16:35:54.875692+00:00",
   "NativeDictionaryComparerCompiled": true,
   "NativeDictionaryComparerExecuted": false,
   "NativeComparerEqualsAndHashVerified": false,
@@ -344,8 +346,8 @@
   "CurrentTurnVerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1",
-    "private offline Cecil verification of exact mapping declarations and direct proxies",
-    "development/scripts/Inspect-NativeCalls.ps1 -Depth 0 (exact count helper, private instruction output)"
+    "private offline Cecil verification of three natural return hooks and direct receiver fields",
+    "development/scripts/Inspect-NativeCalls.ps1 (two exact private return-policy groups)"
   ],
   "StartupTraceFixtureVerified": true,
   "StartupTraceFixtureTestsPassed": 6,
@@ -445,7 +447,7 @@
   "NativeObscuredDecoderCalled": false,
   "RawEncryptedSlotFieldsQueuedOrLogged": false,
   "ExistingLineageFixturesExpanded": 2,
-  "LootHookDeclarations": 19,
+  "LootHookDeclarations": 22,
   "NativeSetterArgumentAbiVerified": false,
   "NativeSetterCallbacksExecuted": false,
   "SlotLifetimeVerified": false,
@@ -455,7 +457,7 @@
   "EmployeeBatchPolicyImplemented": false,
   "NativeCaptureTerminalVerified": false,
   "ValidationInputsByteIdenticalBeforeAndAfter": true,
-  "ValidationInputCount": 141,
+  "ValidationInputCount": 144,
   "EmployeeSelectionCoordinatorFixtureTestsPassed": 10,
   "EmployeeSelectionCoordinatorNewTestNames": [
     "fish yield grade main and plus are ordered once after ledger entry",
@@ -519,17 +521,14 @@
   "NativeSaveConfirmed": false,
   "StorageReleaseBlockedDuringDispatchImplemented": true,
   "PreciseAddInvocationWindowImplemented": true,
-  "CoreTestStartedUtc": "2026-10-04T16:12:26.1092867+00:00",
-  "CoreTestFinishedUtc": "2026-10-04T16:12:30.3640365+00:00",
-  "PluginBuildStartedUtc": "2026-10-04T16:14:19.1860836+00:00",
-  "PluginBuildFinishedUtc": "2026-10-04T16:14:20.6435184+00:00",
-  "ValidationInputScope": "All final plugin build source/project/runner inputs sealed before final compilation and matched afterward; actual Core source input subset independently matched to its earlier actual test run.",
-  "CoreValidationInputCount": 84,
+  "CoreTestStartedUtc": "2026-10-04T16:31:44.3086740+00:00",
+  "CoreTestFinishedUtc": "2026-10-04T16:31:48.5035271+00:00",
+  "PluginBuildStartedUtc": "2026-10-04T16:31:45.9695509+00:00",
+  "PluginBuildFinishedUtc": "2026-10-04T16:31:47.3422925+00:00",
+  "ValidationInputScope": "All current source/project/runner inputs sealed before actual Core and plugin validation and matched afterward.",
+  "CoreValidationInputCount": 86,
   "CoreValidationInputsByteIdenticalSinceActualRun": true,
-  "NativeOnlySourceChangedAfterCoreTests": [
-    "development/src/DaveCoop/Networking/NativeEmployeeFishReturnMapping.cs"
-  ],
-  "CoreTestsRepeatedAfterNativeOnlyChange": false,
+  "NativeOnlySourceChangedAfterCoreTests": [],
   "EmployeeReturnMappingFixtureTestsPassed": 11,
   "EmployeeReturnMappingNewTestNames": [
     "fish return mapping preserves ordered inputs and explicit count modes",
@@ -552,11 +551,24 @@
   "NativeFullMethodCoverageVerified": false,
   "NativeFormulaCompleteSemanticsVerified": false,
   "CountFormulaSourceBound": false,
-  "NativeAnalysisCommandsExecutedThisTurn": 1,
-  "SkillFileSHA256": "EC70E10701A3B4E956153879948961BD797A7A1D2102819EFFAE42559F5D4D28",
-  "FinalEvidenceCheckedUtc": "2026-10-04T16:18:21.266456+00:00",
+  "NativeAnalysisCommandsExecutedThisTurn": 2,
+  "ReturnLineageFixtureTestsPassed": 2,
+  "ReturnLineageNewTestNames": [
+    "loot return bag scope masks fish and preserves original scalar results",
+    "loot return exception and historical replay cannot restore ownership"
+  ],
+  "TypedNaturalReturnHookSourceCompiled": true,
+  "NaturalReturnHookDeclarations": 3,
+  "TotalLootObservationHookDeclarations": 22,
+  "NativeReturnHooksExecuted": false,
+  "ReceiverCollectionBound": false,
+  "EmployeePolicyApplicable": false,
+  "ExactAutomaticDelegateTargetResolved": false,
+  "UiCellDataUpstreamConversionVerified": false,
+  "NativeFinalGradePolicyVerified": false,
+  "SkillFileSHA256": "E2FF0272428DB08C51DEA9B6C21BFD20BE4D2BEAFA994A8DDA8A2850F356CBE9",
+  "FinalEvidenceCheckedUtc": "2026-10-04T16:38:41.277484+00:00",
   "FinalGameProcessCount": 0,
-  "FinalGameProcessCheckUtc": "2026-10-04T16:17:22.0026546+00:00",
-  "FinalGameProcessCheckMethod": "Get-Process name filter",
-  "CimProcessEnumerationSucceeded": false
+  "FinalGameProcessCheckUtc": "2026-10-04T16:36:45.1890560+00:00",
+  "FinalGameProcessCheckMethod": "Get-Process name filter"
 }

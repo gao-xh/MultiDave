@@ -1,6 +1,6 @@
 # 玩家与摄像机发现
 
-当前插件源码0.1.33-dev、协议6；实际Core/TCP267/267与最终Build警告视为错误通过，新增11项返航映射夹具。[员工返航映射与数量缓存](EMPLOYEE_RETURN_MAPPING.md)固定原产品映射和一次兑换结果；typed查询/兑换已编译，独立17引用owner保留同ledger上下文，尚无GUI/network producer或真实品质/类别/入仓保存证明。证据见[构建摘要](../logs/employee-return-mapping-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕鱼/返航、客机隔离/房主世界、双端与冷配置仍待完成。
+当前插件源码0.1.34-dev、协议6；实际Core/TCP269/269与Build警告视为错误通过，新增2项返航来源夹具。[返航品质与数量自然观察](RETURN_GRADE_OBSERVATION.md)补3默认关闭入口，保留原additive、实例阈值、分类bool与兑换int，整袋范围不借单鱼来源；集合/员工政策和数量委托目标、真实捕鱼入仓保存仍未验。证据见[构建摘要](../logs/return-grade-observation-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、客机隔离/房主世界、真实双端正常返航与冷配置仍待完成。
 
 对应开发计划 M1。发布包仍为 0.1.0 加载原型；本页 M1 运行证据来自 0.1.1-dev。
 当前源码与后续阶段见 HANDOFF 和 MULTIPLAYER。
@@ -156,3 +156,5 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 0.1.32离线Cecil实际核对1程序集13精确声明/42direct代理，storage/save另5types7properties6direct代理。IngredientsStorage.Add实际六参顺序ingredientID,parentID,rank,grade,count,Place；只Main/Branch，拒Max/Unknown。IItemBase.ItemDataID是业务virtual，IngredientsEntity无ParentID/Rank；GetItems与GetItemV2资源等价未证。typed Add primitive已编译，转换/ABI/执行与delta/save未验。
 
 0.1.33实际私有Cecil确认4类型、GetItems/GetIngredients两声明、两IntPtr构造与五Int32 direct字段。IngredientsEntity TID继承自Ingredients，不是ItemsTID；Native保守要求继承TID==查询ItemDataID。实际PE数量辅助函数已知范围1方法48指令7direct edges/0indirect，内部再次GetItems→公式rawGrade→乘count；fullbody/公式/内部资源一致性不证明。typed映射/兑换已编译，无native执行或类别/品质/入仓证明。
+
+0.1.34实际Cecil4types/3naturalhooks/3instanceint proxies/2业务存档入口；SaveSystem.GetGameSave静态，SaveData.GetLootBox需要LootBoxType，无默认arg。Apply receiver仅供3k字段，集合来自host save；typedobserver不主动调用。新PE两组96method6212instr(3invalid/quota)和14method2513instr(2invalid)，UI输入CellData nulldelegate/automatic nonnull当前slot委托已知，但上游Convert与精确target未证，不替代原分类getter。

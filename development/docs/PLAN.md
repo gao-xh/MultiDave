@@ -1,6 +1,6 @@
 # MultiDave 开发计划
 
-当前插件源码0.1.33-dev、协议6；实际Core/TCP267/267与最终Build警告视为错误通过，新增11项返航映射夹具。[员工返航映射与数量缓存](EMPLOYEE_RETURN_MAPPING.md)固定原产品映射和一次兑换结果；typed查询/兑换已编译，独立17引用owner保留同ledger上下文，尚无GUI/network producer或真实品质/类别/入仓保存证明。证据见[构建摘要](../logs/employee-return-mapping-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、实际捕鱼/返航、客机隔离/房主世界、双端与冷配置仍待完成。
+当前插件源码0.1.34-dev、协议6；实际Core/TCP269/269与Build警告视为错误通过，新增2项返航来源夹具。[返航品质与数量自然观察](RETURN_GRADE_OBSERVATION.md)补3默认关闭入口，保留原additive、实例阈值、分类bool与兑换int，整袋范围不借单鱼来源；集合/员工政策和数量委托目标、真实捕鱼入仓保存仍未验。证据见[构建摘要](../logs/return-grade-observation-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；每人独立容量/负重、客机隔离/房主世界、真实双端正常返航与冷配置仍待完成。
 
 目标：Windows Steam 版双人潜水合作 MVP，先做局域网房主/客户端。
 房主负责游戏世界和结算。服务器方案暂缓。
@@ -228,3 +228,5 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 0.1.32已沿原ReturnItem固定员工独立转换计划，并实现同ledger Enter前后的一次typed入仓原语；详见[EMPLOYEE_RETURN_PLAN](EMPLOYEE_RETURN_PLAN.md)。下一步冻结真实资源映射与一次原品质兑换/FinalGrade政策，再接实际仓库桶增量与保存。可信员工actor/捕鱼分流、guest隔离/房主世界、双实例正常返航与冷配置继续完整M3—M7。
 
 0.1.33已从原员工捕获产品冻结有序返航映射与一次rawGrade数量兑换候选，新增独立17引用owner及同ledger上下文保留；详见[EMPLOYEE_RETURN_MAPPING](EMPLOYEE_RETURN_MAPPING.md)。下一步固定真实分类/count-mode来源和FinalGrade政策，再接真实捕鱼分流、仓库增量/保存；客机隔离、房主世界采用、员工actor、双实例正常返航和冷配置继续完整M3—M7。
+
+0.1.34新增[返航规则自然观察](RETURN_GRADE_OBSERVATION.md)，保原参数和分类/兑换返回供后续真实政策接入；Apply全袋scope遮singlefish。下一步必须解析自动delegate MethodInfo与UI CellData.Convert上游，绑定实际SaveData集合/ReturnId/Member后才接employee政策及既有plan。不能把UI null delegate当raw DirectCount，也不对temp员工袋调用host ApplyFinalGrade。完整M3—M7继续。

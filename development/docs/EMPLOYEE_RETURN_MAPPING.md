@@ -35,3 +35,5 @@ DirectCount 使用冻结的原 count，不调用数量辅助函数。ExchangeWho
 新增夹具运行实际选择、归一化、映射和账本，使用 synthetic 资源返回覆盖顺序、稀疏槽、模式复制、部分失败、前后守卫、同步确认、线程/重入、固定结果及候选计划边界。实际执行数、时间、输入 SHA256 和插件编译见 [构建摘要](../logs/employee-return-mapping-build-verification.json)。离线 API / PE 原报告及指令只留本机 .local；公开记录只有自写源码、文字、计数、时间和 hash。
 
 接下来需固定实际类别/数量模式来源及 FinalGrade 政策，再接真实员工 actor、捕鱼分流、仓库 bucket 增量和保存。客机隔离、房主世界采用、实际双实例正常返航及 GitHub 冷配置继续属于完整 M3—M7。本版未部署或启动；安装0.1.12、最近潜水0.1.11、默认发行包0.1.0的实机范围保持。
+
+0.1.34研究确认数量模式需更强来源：UI null只用已处理CellData.TotalCount，原capture是否已转换尚unknown；自动非nulldelegate的target未唯一解析。先看[自然规则观察](RETURN_GRADE_OBSERVATION.md)，.33 mapping保持候选/权限false，不据delegate presence补Exchange或把UI null补raw Direct。后续固定真实policy/绑定后沿既有不变原产品与一次缓存接plan。

@@ -37,3 +37,5 @@ Finalizer不读取原生槽。已有 After 时复用它，即使 After 是 Unava
 实际 Core、插件编译、离线声明核验及未验证项以[0.1.29摘要](../logs/loot-slot-mutation-build-verification.json)为准。两个既有 CLR 来源栈夹具扩展了17–19的嵌套、未知来源遮蔽、postfix保留作用域和严格finalizer顺序；它们不运行原生观察器或证明参数 ABI。0.1.28 的四组标量算法夹具继续保留。未部署/启动，安装0.1.12、最近潜水0.1.11、默认发行包0.1.0保持；完整双端、正常返航和冷配置继续按[PLAN](PLAN.md)推进。
 
 后续原生执行按[员工选择与提交桥](FISH_YIELD_BRIDGE.md)补齐多tier/主随机、一次追加、进度及终态；槽观察不提供整批暂停或可信成员绑定。
+
+0.1.34另增原槽IsInInvenType/GetExchangeCount自然getter，Before/After按同prefix pointer/class采样；Finalizer复用After（即使Unavailable），原bool/int独立，不主动调用getter。当前exactLootBoxSlot profile不覆盖UI派生CellData，不能冒读；样本仅同originalcall不建立bag/member归属。返航Apply原参数/字段与源遮断见[RETURN_GRADE_OBSERVATION](RETURN_GRADE_OBSERVATION.md)，旧19目标/.29摘要保持历史。

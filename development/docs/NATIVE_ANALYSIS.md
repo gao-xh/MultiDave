@@ -149,3 +149,5 @@ GuestStateIsolated、NativeExecutionImplemented等能力保持false。
 0.1.32无新PE执行，仅新私有Cecil原语/直接字段绑定核对，13声明42代理＋6storage/save代理。利用已知六参形成实际typed Add helper，同ledger进入后一次调用；没有原生运行/转换策略/入仓或存档证明。原报告/IL/依赖仅.local，构建与Core范围见[EMPLOYEE_RETURN_PLAN](EMPLOYEE_RETURN_PLAN.md)。
 
 0.1.33仅新增一份exact count helper Depth0私有PE分析，1方法48指令7direct edges/0indirect/1known range，48text/757字符/0省略，无quota/truncation/invalid/overrun；完整method与公式内部语义未证。另私有Cecil4types/2lookupdecls/2pointerctors/5directInt32及4classinit。原地址/IL/指令不发布，摘要见[EMPLOYEE_RETURN_MAPPING](EMPLOYEE_RETURN_MAPPING.md)。
+
+0.1.34新两组私有PE：3roots/96methods/6212instr/920edges/78ranges/24indirect/3invalid触方法quota，14roots/14methods/2513instr/475edges/22ranges/3indirect/2invalid。文本6209与2511无省略；invalid无正常text，不能把文本数称instr数或把noTextOmitted当fullbody。automatic caller countdelegate非null但targetunknown，UI null输入CellData可能已Convert；缺Apply caller不证明不存在。原报告/地址/文本.local，见[自然规则观察](RETURN_GRADE_OBSERVATION.md)。

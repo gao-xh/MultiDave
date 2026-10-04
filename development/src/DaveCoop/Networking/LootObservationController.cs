@@ -63,7 +63,12 @@ namespace DaveCoop.Networking
                         ResourceSampleStage = "Before", SupportedResourceClasses = new[] { "DR.Items", "IntegratedItem" },
                         SlotReadLimitPerSample = LootObservationCapture.MaxSlotReadsPerSample,
                         ProcessSlotReadLimit = LootObservationCapture.MaxProcessSlotReads,
+                        ReturnGradeReadLimitPerSample = LootObservationCapture.MaxReturnGradeReadsPerSample,
+                        ProcessReturnGradeReadLimit = LootObservationCapture.MaxProcessReturnGradeReads,
+                        ReturnGradeSampleStage = "Before", ReturnGradeFinalizerNativeRead = false,
+                        ReturnGradeCollectionBound = false, EmployeeReturnPolicyApplicable = false, CountDelegateTargetVerified = false,
                         BoundarySlotSampleStage = "Before", SetterSlotSampleStages = new[] { "Before", "After" },
+                        ReturnGetterSlotSampleStages = new[] { "Before", "After" },
                         SlotFinalizerNativeRead = false, SlotSampleIdentity = "RunId + CallId; original call only",
                         SupportedSlotClass = "LootBoxSlot", NoNativeDecodeCalls = true,
                         SlotLifetimeVerified = false, SlotInventoryIdentityVerified = false,
@@ -126,7 +131,7 @@ namespace DaveCoop.Networking
                 HookDropped = _hooks.Dropped, _hooks.UnmatchedAfter, _hooks.PendingCalls,
                 CopyDropped = _capture.Dropped, _capture.UnexpectedThreads, _capture.ReadErrors,
                 CopyPending = _capture.PendingCount, _capture.PendingContexts, _capture.Discarded,
-                _capture.FishOrdinalCount, _capture.ProcessKeyUtf16, _capture.ProcessResourceReads, _capture.ProcessSlotReads,
+                _capture.FishOrdinalCount, _capture.ProcessKeyUtf16, _capture.ProcessResourceReads, _capture.ProcessSlotReads, _capture.ProcessReturnGradeReads,
                 LineageHealthy = lineage.Healthy, lineage.IntegrityLost, lineage.Reason,
                 lineage.HighestCallId, lineage.LastSequence, lineage.RunEvents, lineage.PendingCount,
                 lineage.Unmatched, lineage.ReplayRejected, lineage.OriginalExceptions, lineage.WrongThreadCalls,
@@ -138,7 +143,8 @@ namespace DaveCoop.Networking
                 NativeHookAbiVerified = false, CaptureSuccess = false, StorageDeltaProven = false, NativeRewardsEnabled = false,
                 NoNativeDecodeCalls = true, SlotDataReadable = false, NativeFieldAbiVerified = false,
                 SlotLifetimeVerified = false, SlotInventoryIdentityVerified = false,
-                FinalGradeVerified = false, EffectiveWeightVerified = false, ResourceProductMappingVerified = false, CargoPermission = false
+                FinalGradeVerified = false, EffectiveWeightVerified = false, ResourceProductMappingVerified = false, CargoPermission = false,
+                ReturnGradeCollectionBound = false, EmployeeReturnPolicyApplicable = false, CountDelegateTargetVerified = false
             }));
         }
         private static void LifecycleLog(string marker, object value)

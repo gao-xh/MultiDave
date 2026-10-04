@@ -14,7 +14,8 @@ namespace DaveCoop.Networking
         LootBoxAddImpl = 9, LootBoxCheckOverloaded = 10, LootBoxRefreshOverweight = 11,
         SaveDataAddLooting = 12, FishBodySuccessInteract = 13, FishBodyCheckAvailable = 14,
         FishPlusItemRoll = 15, SaveDataAddLootBox = 16,
-        SlotSetTotalCount = 17, SlotSetGrade = 18, SlotSetFinalGrade = 19
+        SlotSetTotalCount = 17, SlotSetGrade = 18, SlotSetFinalGrade = 19,
+        BagApplyFinalGrade = 20, SlotIsInInvenType = 21, SlotGetExchangeCount = 22
     }
     internal enum LootObservationStage { Before = 1, After = 2, Finalizer = 3 }
 
@@ -24,6 +25,7 @@ namespace DaveCoop.Networking
         public int? ItemId { get; internal set; }
         public int? Count { get; internal set; }
         public int? BonusGrade { get; internal set; }
+        public int? FinalGradeAdditive { get; internal set; }
         public int? Tier { get; internal set; }
         public int? CollectionId { get; internal set; }
         public int? CollectionGrade { get; internal set; }
@@ -57,8 +59,9 @@ namespace DaveCoop.Networking
         public LootBox Bag { get; }
         public IngredientsStorage Storage { get; }
         public SaveData Save { get; }
-        // Old boundaries offer a slot only at prefix; the three setters also
-        // offer their original instance at postfix. No context retains it.
+        // Old boundaries offer a slot only at prefix; setters and the two
+        // return getters also offer their original instance at postfix.
+        // No context retains it.
         public LootBoxSlot Slot { get; }
         // Original by-value argument exists only in this synchronous prefix
         // view. Capture saves a decoded CLR candidate, never this raw struct.
@@ -91,7 +94,7 @@ namespace DaveCoop.Networking
     internal sealed class LootObservationHooks : IDisposable
     {
         private const string Owner = Plugin.Id + ".loot-observation";
-        public const int TargetCount = 19;
+        public const int TargetCount = 22;
         public const int MaxProcessEvents = 8192;
         public const int MaxPendingCalls = 128;
         private static LootObservationHooks _active;
@@ -192,6 +195,9 @@ namespace DaveCoop.Networking
             Add(targets, typeof(LootBoxSlot), "set_TotalCount", false, typeof(void), slotSetterArgs, nameof(SlotCountBefore), nameof(SlotCountAfter));
             Add(targets, typeof(LootBoxSlot), "set_Grade", false, typeof(void), slotSetterArgs, nameof(SlotGradeBefore), nameof(SlotGradeAfter));
             Add(targets, typeof(LootBoxSlot), "set_FinalGrade", false, typeof(void), slotSetterArgs, nameof(SlotFinalGradeBefore), nameof(SlotFinalGradeAfter));
+            Add(targets, typeof(LootBox), "ApplyFinalGrade", false, typeof(void), new[] { typeof(int) }, nameof(FinalGradeBefore), nameof(FinalGradeAfter));
+            Add(targets, typeof(LootBoxSlot), "get_IsInInvenType", false, typeof(bool), Type.EmptyTypes, nameof(SlotInvenBefore), nameof(SlotInvenAfter));
+            Add(targets, typeof(LootBoxSlot), "GetExchangeCount", false, typeof(int), Type.EmptyTypes, nameof(SlotExchangeBefore), nameof(SlotExchangeAfter));
             if (targets.Count != TargetCount) throw new InvalidOperationException("Loot target count mismatch.");
             return targets;
         }
@@ -280,6 +286,17 @@ namespace DaveCoop.Networking
         private static void SlotFinalGradeBefore(LootBoxSlot __instance, CodeStage.AntiCheat.ObscuredTypes.ObscuredInt __0, out long __state)
             => __state = Begin(LootObservationMethod.SlotSetFinalGrade, new LootObservationArguments(), slot: __instance, setterArgument: __0);
         private static void SlotFinalGradeAfter(LootBoxSlot __instance, long __state) => Postfix(__state, LootObservationMethod.SlotSetFinalGrade, slot: __instance);
+        private static void FinalGradeBefore(LootBox __instance, int __0, out long __state)
+            => __state = Begin(LootObservationMethod.BagApplyFinalGrade, new LootObservationArguments { FinalGradeAdditive = __0 }, bag: __instance);
+        private static void FinalGradeAfter(LootBox __instance, long __state) => Postfix(__state, LootObservationMethod.BagApplyFinalGrade, bag: __instance);
+        private static void SlotInvenBefore(LootBoxSlot __instance, out long __state)
+            => __state = Begin(LootObservationMethod.SlotIsInInvenType, new LootObservationArguments(), slot: __instance);
+        private static void SlotInvenAfter(LootBoxSlot __instance, bool __result, long __state)
+            => Postfix(__state, LootObservationMethod.SlotIsInInvenType, slot: __instance, originalReturn: __result);
+        private static void SlotExchangeBefore(LootBoxSlot __instance, out long __state)
+            => __state = Begin(LootObservationMethod.SlotGetExchangeCount, new LootObservationArguments(), slot: __instance);
+        private static void SlotExchangeAfter(LootBoxSlot __instance, int __result, long __state)
+            => Postfix(__state, LootObservationMethod.SlotGetExchangeCount, slot: __instance, originalIntReturn: __result);
         private static void CallFinally(long __state, Exception __exception)
             => Complete(__state, LootObservationStage.Finalizer, null, null, null, null, null, null, null, !ReferenceEquals(__exception, null));
 

@@ -790,3 +790,15 @@
 - 独立末审发现17owner只保native依赖、原13free后可能丢bridge/ledger/缓存，已补强managed Backend上下文及exactowner核对。Native-only修不影响实际Core84源输入；141全插件输入重新执行前seal并最终Build，编译警告视为错误通过，旧seal/log保留，不把修后输入称为Core再次执行。
 - 最终DLL SHA256 `651D26DB75C4B098178DFE7C94D5CE99BED507C8FA2D9793D6F2ABDDDAE43003`；新增EMPLOYEE_RETURN_MAPPING、真实摘要/currentCore/计划/接手/log/Skill同步。后续实际模式分类/FinalGrade政策、员工actor/捕鱼分流、仓库bucket增量/save、guest隔离/房主海洋、真实双端正常闭环和GitHub冷配置继续必需。
 - 两名独立源码/窗口复核及最终文档证据审查READY；正式Skill校验、protected copy与hash匹配，SHA256 `EC70E10701A3B4E956153879948961BD797A7A1D2102819EFFAE42559F5D4D28`。最终141插件输入及84实际Core输入核对无变化；binary/metadata/两个interop/安装DLL最终hash保持。新鲜Get-Process枚举game进程0；CIM因权限拒绝未作为0证据，不终止进程。Skill、日志、计划与公开摘要收尾通过，原始指令仍只.local。
+
+## 2026-10-04 — 0.1.34 原返航品质与数量自然边界
+
+- 前轮0de7ea7已公开推送并核remote，属于真实进展；本轮继续每人独立背包/容量/负重、房主长期进度及完整M3—M7，未部署/启动或读写存档。
+- 原ApplyFinalGrade接收器3k字段只供阈值，集合来自SaveSystem.GetGameSave→SaveData.GetLootBox，临时员工袋调用仍可能写host。ItemsUtils没有IsInInvenType等价声明；不以ItemType/IsIngredient或原caller absence补policy。
+- 现默认off LootObserver新增3exact natural hooks20–22，TargetCount22/旧code保持。原additive同步prefix+3instancefield双读immutable candidate，min>max保raw/Boundsfalse，不生成FinalGrade或PolicyFP；21bool22int保原返回，槽Before/After同prefixclass/ptr，FinalizerCLR。20整袋unknownscope遮singlefish，原exception/reentry/thread/budget/root错配撤证并清gradecandidate，无收益能力。
+- 新品质budget16/sample、65536/process不可toggle reset，正常品质samplerprefix12/after2，不含原Frame/instance及四bagweight诊断。typed业务/SaveRoot不主动调用，只原游戏自然方法，exactLootBoxSlot profile不支持CellData时明确Unavailable。
+- 实际新Cecil4types/3hooks/3instance int directfields/2savebusiness声明/输入hashsame。新两PE组96方法6212指令920edges78ranges24indirect，3invalid触方法quota；14方法2513指令475edges22ranges3indirect，2invalid。文本6209/2511无省略≠fullmethod，原地址/IL/文本只.local。
+- 已知automatic原slot nonnull委托→AddFromLootBox，但MethodInfo未唯一；UI fish/normal callback传null，只证明使用该CellData.TotalCount，上游Convert/OnPostProcessMapping未知，不能据此直接用原capture rawCount。最初Direct结论已按此输入范围纠正；所有实际模式/品质/集合/employee政策仍false。
+- 本轮实际Core/TCP269/269，2新lineage夹具验证unknown全袋遮源、independentbool/int、postfix仍scope/正常Final恢复、exception丢parent/queued历史不授权/旧Run和replay。编译警告视为错误通过，SHA256 `048382538EBF2348AB83711861121C4C0E40FCA903FB5AE261B1D10A92EEB950`；144执行前seal输入后same，86actualCore源。
+- 新RETURN_GRADE_OBSERVATION、真实构建/currentCore摘要、计划/接手/log/Skill同步；.33 mapping和.32 plan历史保持。下一步UI上游数量/automatic delegate MethodInfo、真实返航根/Exp/Return/Member绑定，接employee政策/实际捕鱼分流/仓库delta/save；guest/world/员工actor与双实例正常闭环/GitHub冷配置继续必需。
+- 两名独立源码/配对只读复核及最终文档审查READY，正式Skill校验/protected copy与hash匹配，SHA256 `E2FF0272428DB08C51DEA9B6C21BFD20BE4D2BEAFA994A8DDA8A2850F356CBE9`。144执行前后输入和86实际Core源相同，原binary/metadata/两个interop/安装DLL最终hash匹配；新鲜Get-Process game进程0、不终止进程。明确品质12/2额外不包含原weight读取，UI null不推raw模式；历史摘要保持，原指令不发布。

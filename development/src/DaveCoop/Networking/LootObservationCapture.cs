@@ -100,6 +100,13 @@ namespace DaveCoop.Networking
         public int? ItemId { get; internal set; }
         public int? Count { get; internal set; }
         public int? BonusGrade { get; internal set; }
+        public int? FinalGradeAdditive { get; internal set; }
+        public LootReturnGradeContextCandidate ReturnGradeContext { get; internal set; }
+        public string ReturnGradeContextSampleStage => ReturnGradeContext == null ? null : "Before";
+        public bool ReturnGradeContextReused { get; internal set; }
+        public bool ReturnGradeCollectionBound => false;
+        public bool EmployeeReturnPolicyApplicable => false;
+        public bool CountDelegateTargetVerified => false;
         public int? Tier { get; internal set; }
         public int? CollectionId { get; internal set; }
         public int? CollectionGrade { get; internal set; }
@@ -178,7 +185,7 @@ namespace DaveCoop.Networking
         public bool NativeRewards => false;
     }
 
-    internal sealed class LootObservationCapture
+    internal sealed partial class LootObservationCapture
     {
         public const int MaxQueued = 512;
         public const int MaxDrainPerUpdate = 16;
@@ -218,6 +225,8 @@ namespace DaveCoop.Networking
             public LootSlotObservation SlotBefore, SlotAfter;
             public LootObscuredIntCandidate SetterArgumentCandidate;
             public bool SetterArgumentFrozenAtPrefix;
+            public LootReturnGradeContextCandidate ReturnGradeContext;
+            public IntPtr ReturnGradeReceiverClass;
         }
         public Guid RunId => _lineage.RunId;
         public LootCallLineage Lineage => _lineage;
@@ -298,10 +307,15 @@ namespace DaveCoop.Networking
                             }
                         }
                         if (call.Method == LootObservationMethod.SaveDataAddLootBox) FreezeKey(call.Key, prefix);
-                        prefix.Token = _lineage.Begin(call.CallId, (int)call.Method, IsFishBoundary(call.Method), source, call.ManagedThreadId);
+                        // Final-grade processing spans a collection. It must
+                        // mask any enclosing single-fish capture attribution.
+                        prefix.Token = _lineage.Begin(call.CallId, (int)call.Method,
+                            IsFishBoundary(call.Method) || call.Method == LootObservationMethod.BagApplyFinalGrade, source, call.ManagedThreadId);
                         if (prefix.Token == null || !_lineage.Healthy) throw new InvalidOperationException("Loot prefix lineage rejected.");
                         if (call.Method == LootObservationMethod.LootBoxAddImpl)
                             prefix.Resource = FreezeResource(call.ItemResource);
+                        if (call.Method == LootObservationMethod.BagApplyFinalGrade)
+                            prefix.ReturnGradeContext = FreezeReturnGradeContext(call.Bag, call.Arguments.FinalGradeAdditive, out prefix.ReturnGradeReceiverClass);
                         if (IsSlotBoundary(call.Method))
                         {
                             prefix.SlotSampleId = call.CallId;
@@ -326,12 +340,14 @@ namespace DaveCoop.Networking
                         {
                             if (prefix.LocalInstancePointer != ReadInstancePointer(call))
                                 throw new InvalidOperationException("Loot original instance changed.");
-                            if (IsSlotSetter(call.Method))
+                            if (SamplesSlotAfter(call.Method))
                             {
                                 // This is the same original call, not a lookup
                                 // of a new slot or a claim about object lifetime.
                                 prefix.SlotAfter = FreezeSlot(call.Slot, "After", out _, out _, true, prefix.SlotPointer, prefix.SlotClass);
                             }
+                            if (call.Method == LootObservationMethod.BagApplyFinalGrade)
+                                CheckReturnGradeReceiver(call.Bag, prefix.LocalInstancePointer, prefix.ReturnGradeReceiverClass);
                             if (!_lineage.RecordPostfix(prefix.Token, call.OriginalReturn, call.OriginalIntReturn))
                                 throw new InvalidOperationException("Loot postfix lineage rejected.");
                         }
@@ -371,11 +387,14 @@ namespace DaveCoop.Networking
                     observed.Resource = call.Method == LootObservationMethod.LootBoxAddImpl
                         ? LootResourceObservation.Unavailable("Resource candidate discarded after callback evidence failure.") : null;
                     string failedSlotStage = observed.SlotDataSampleStage ??
-                        (call.Stage == LootObservationStage.After && IsSlotSetter(call.Method) ? "After" : "Before");
+                        (call.Stage == LootObservationStage.After && SamplesSlotAfter(call.Method) ? "After" : "Before");
                     observed.SlotCandidates = IsSlotBoundary(call.Method)
                         ? LootSlotObservation.Unavailable("Slot candidates discarded after callback evidence failure.", failedSlotStage) : null;
                     observed.SlotBefore = null; observed.SlotAfter = null;
                     observed.SetterArgumentCandidate = null; observed.SetterArgumentFrozenAtPrefix = false;
+                    observed.ReturnGradeContext = call.Method == LootObservationMethod.BagApplyFinalGrade
+                        ? LootReturnGradeContextCandidate.Unavailable(call.Arguments.FinalGradeAdditive, "Return grade context discarded after callback evidence failure.") : null;
+                    observed.ReturnGradeContextReused = false;
                     if (!Failed)
                     {
                         observed.ReadError = observed.MainThread ? "Loot scalar/direct-field freezing rejected." : "Unbound callback thread; native fields were not read.";
@@ -629,9 +648,11 @@ namespace DaveCoop.Networking
                 method == LootObservationMethod.FishDropWithPlus || method == LootObservationMethod.FishDropPlus ||
                 method == LootObservationMethod.FishBodySuccessInteract || method == LootObservationMethod.FishBodyCheckAvailable;
         private static bool IsSlotBoundary(LootObservationMethod method)
-            => method == LootObservationMethod.IngredientsAddFromLootBox || method == LootObservationMethod.SaveDataAddLootBox || IsSlotSetter(method);
+            => method == LootObservationMethod.IngredientsAddFromLootBox || method == LootObservationMethod.SaveDataAddLootBox || SamplesSlotAfter(method);
         private static bool IsSlotSetter(LootObservationMethod method)
             => method == LootObservationMethod.SlotSetTotalCount || method == LootObservationMethod.SlotSetGrade || method == LootObservationMethod.SlotSetFinalGrade;
+        private static bool SamplesSlotAfter(LootObservationMethod method)
+            => IsSlotSetter(method) || method == LootObservationMethod.SlotIsInInvenType || method == LootObservationMethod.SlotGetExchangeCount;
         private LootCallObservation CopyScalars(LootObservationCallback call)
         {
             LootObservationArguments args = call.Arguments;
@@ -642,7 +663,7 @@ namespace DaveCoop.Networking
                 MainThread = call.ManagedThreadId == _unityThreadId && Environment.CurrentManagedThreadId == _unityThreadId,
                 PrefixContextMatched = call.PrefixContextMatched, OriginalReturn = call.OriginalReturn,
                 OriginalIntReturn = call.OriginalIntReturn, OriginalException = call.OriginalException,
-                ItemId = args.ItemId, Count = args.Count, BonusGrade = args.BonusGrade, Tier = args.Tier,
+                ItemId = args.ItemId, Count = args.Count, BonusGrade = args.BonusGrade, FinalGradeAdditive = args.FinalGradeAdditive, Tier = args.Tier,
                 CollectionId = args.CollectionId, CollectionGrade = args.CollectionGrade, LiftType = args.LiftType,
                 RollFishTid = args.RollFishTid, BagType = args.BagType,
                 TargetWeight = args.TargetWeight.HasValue && Finite(args.TargetWeight.Value) ? args.TargetWeight : null,
@@ -651,7 +672,7 @@ namespace DaveCoop.Networking
                 ItemDataArgumentPresent = args.ItemDataArgumentPresent, ActorArgumentPresent = args.ActorArgumentPresent,
                 InstanceWrapperPresent = !ReferenceEquals(call.Fish, null) || !ReferenceEquals(call.Body, null) || !ReferenceEquals(call.Bag, null) ||
                     !ReferenceEquals(call.Storage, null) || !ReferenceEquals(call.Save, null) ||
-                    (IsSlotSetter(call.Method) && !ReferenceEquals(call.Slot, null)) || args.OtherInstanceWrapperPresent,
+                    (SamplesSlotAfter(call.Method) && !ReferenceEquals(call.Slot, null)) || args.OtherInstanceWrapperPresent,
                 SlotWrapperPresent = !ReferenceEquals(call.Slot, null),
                 SlotSampleId = IsSlotBoundary(call.Method) ? call.CallId : (long?)null,
                 SlotDataUnavailableReason = IsSlotBoundary(call.Method)
@@ -671,7 +692,9 @@ namespace DaveCoop.Networking
             observed.SlotCandidates = prefix.SlotAfter ?? prefix.SlotBefore;
             observed.SlotSnapshotReused = prefix.SlotSampleId.HasValue &&
                 (observed.Stage == nameof(LootObservationStage.Finalizer) ||
-                    (observed.Stage == nameof(LootObservationStage.After) && !IsSlotSetter(prefix.Method)));
+                    (observed.Stage == nameof(LootObservationStage.After) && !SamplesSlotAfter(prefix.Method)));
+            observed.ReturnGradeContext = prefix.ReturnGradeContext;
+            observed.ReturnGradeContextReused = prefix.ReturnGradeContext != null && observed.Stage != nameof(LootObservationStage.Before);
             observed.SetterArgumentCandidate = prefix.SetterArgumentCandidate;
             observed.SetterArgumentFrozenAtPrefix = prefix.SetterArgumentFrozenAtPrefix;
             // No IsFishCaptured/ReactiveProperty.Value getter is invoked. The
@@ -708,6 +731,9 @@ namespace DaveCoop.Networking
                 case LootObservationMethod.SlotSetTotalCount: return "LootBoxSlot.set_TotalCount";
                 case LootObservationMethod.SlotSetGrade: return "LootBoxSlot.set_Grade";
                 case LootObservationMethod.SlotSetFinalGrade: return "LootBoxSlot.set_FinalGrade";
+                case LootObservationMethod.BagApplyFinalGrade: return "LootBox.ApplyFinalGrade";
+                case LootObservationMethod.SlotIsInInvenType: return "LootBoxSlot.get_IsInInvenType";
+                case LootObservationMethod.SlotGetExchangeCount: return "LootBoxSlot.GetExchangeCount";
                 default: return "Unknown";
             }
         }
