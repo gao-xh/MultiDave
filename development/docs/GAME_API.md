@@ -1,6 +1,6 @@
 # 玩家与摄像机发现
 
-当前源码0.1.36-dev（协议6），实际Core/TCP271/271及插件编译通过。新增[房主地图候选读取接口](MAP_ADOPTION_ENTRY.md)，即时刷新并返回独立副本；原游戏加载流程尚未接入。见[验证摘要](../logs/map-candidate-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；客机隔离、房主世界、每人独立背包的真实分流、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.37-dev（协议6），本轮实际Core/TCP275/275及插件Build警告视为错误通过。新增默认关闭的[客机自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接Plugin启动、实际Guest房间与首次原初始化的五根事务，尚未运行游戏或原生验证；房主地图采用仍未实现。见[本轮验证记录](../logs/guest-initialization-build-verification.json)。安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；完整客机隔离、房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
 
 对应开发计划 M1。发布包仍为 0.1.0 加载原型；本页 M1 运行证据来自 0.1.1-dev。
 当前源码与后续阶段见 HANDOFF 和 MULTIPLAYER。
@@ -111,7 +111,7 @@ M2 先研究只复制显示组件/姿态的方式。直接克隆完整 `PlayerCh
 
 0.1.18新增实际typed原生影子桥、单次事务及已枚举输出围栏源码。四类Data原生JSON round trip、五根直接交换/回读/恢复和15个独立强handle已编译；7组新增事务夹具以合成backend验证partial/unknown补偿、fence/refs保留和一次清理，总167/167通过。
 
-当前生产进入与静止边界恒false，事务在围栏安装前拒绝；startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。全部GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority保持false，未部署或启动。
+0.1.18该历史阶段的生产进入与静止边界恒false，事务在围栏安装前拒绝；当时startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。0.1.37新Natural五根启动接线见GUEST_INITIALIZATION_BOOTSTRAP；旧ExistingCaches七根仍硬拒，GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority仍false，迄今未部署或启动新版。
 
 实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。
 

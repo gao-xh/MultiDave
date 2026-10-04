@@ -302,8 +302,16 @@ description: Configure or continue development of the MultiDave prototype for Wi
   新静态2globals/4slotfields及UI16methods1298instr不证明完整闭型mapping/virtual/category/formula/ABI或employee政策；原指令/地址/报告只.local，公开仅自写文字/count/time/hash。
   installed.12/dive.11/default.0保持，本轮未部署/启动、不催延后试玩；每人独立容量/负重、实际employee actor/原生武器、鱼产物分流/返航delta/save、guest隔离、房主地图采用、真实双端正常返航和GitHub冷配置继续完整M3—M7。
 
-- 当前源码0.1.36-dev/协议6，实际Core/TCP271/271（2新TCP消费者用例）及Build通过。继续地图与guest隔离先读development/docs/MAP_ADOPTION_ENTRY.md和map-candidate-build-verification.json。
+- 历史源码0.1.36-dev/协议6，实际Core/TCP271/271（2新TCP消费者用例）及Build通过。继续地图与guest隔离先读development/docs/MAP_ADOPTION_ENTRY.md和map-candidate-build-verification.json。
   TryCaptureRemoteChoices只同绑定Guest/liveRoom，即时读邮箱并前后核代次/修订/指纹，返回独立副本。true可含partial或Retired，不等于完整IGP、已采用或Ready；尚无自然加载调用方。
   路线需完整cache/roadmap/首尾/高度及schema，原cache写SaveData。IGP可skip原随机并返回唯一匹配本地info；选择未到需帧等待，不能returnnull假完成。先隔离，再接自然采用。
   LoadSavedData发起Init，InitAfterSaveSystem首次MoveNext才是具体早期候选；缺cache自然出生未支持。RestoreRoot需先证消费者退休，不能仅release前查quiet。manager factory早于完成operation时owner0不补绑定，实机顺序未证。
   本轮未部署/启动，installed.12/dive.11/default.0保持；每人独立袋、原生employee命中/产物分流与返航保存、guest隔离/房主世界、真实双端正常返航和GitHub冷配置继续完整M3—M7。
+
+- 当前源码0.1.37-dev/协议6，实际Core/TCP275/275及最终Build通过。继续guest初始化先读development/docs/GUEST_INITIALIZATION_BOOTSTRAP.md与guest-initialization-build-verification.json；.36候选接口证据保留历史。
+  Startup.ExperimentalGuestInitialization默认false，玩家默认安装流程不启用实验。开启是进程级existing-save Guest模式：自动连接已配置host，重启才能回个人模式；不支持初次无存档的CreateNewAndSave回退，File.Copy/Delete尝试即拒绝此次启动。
+  真实Awake/LoadSaved/LoadAll/factory早期只保opaque CLR wrappers与同安装线程事实，实际Unity Update确认后才在fixedreturned iterator首次MoveNext核native身份/state0/currentnull、paired原返回、same live Guest peer/Room及已列cold cache。仅此来源绑定五根Natural事务，先seal197声明再clone/install，再放原初始化；七根既有缓存入口仍硬拒。
+  Natural fence源端初始156、延后41并single-use seal；197只是expected声明数，非全部writer或已在游戏安装成功。bool __runOriginal有本机HarmonyX离线依据，不等于detour/typed ABI实测。原生异常只type不转Message/JSON；32日志、64非Move回调、3来源stronghandles另于桥最多21显式handle计数（当前冷路径15次）。
+  断线/失源保留临时根、fence与refs，实际quiescent边界仍false；RestoreRoot每次写前重核quiet，不能恢复后再查。不要以RootShadowInstalled、Room或这次接线签发GuestStateIsolated/World/Cargo许可，完整缓存/输出/深clone和地图采用仍未证明。
+  四新Core夹具只synthetic backend，不跑新nativehooks；本次275实际运行但全stdout/确切测试起止与测试前hash未留，86Core源hash是运行后采集。最终插件Build147输入执行前封存且后相同；不要把插件seal写成Core前后byte证明，不因仅文档/native-only变化重复跑Core。
+  未部署/启动或读写存档，installed.12/dive.11/default.0保持；每人独立容量/负重、真实employee actor与捕鱼分流、返航delta/save、房主路线/IGP和鱼、双端正常返航与GitHub冷配置继续完整M3—M7。

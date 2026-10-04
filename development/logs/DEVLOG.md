@@ -824,3 +824,17 @@
 - LoadSavedData发起SaveSystem.Init，不是postload；InitAfterSaveSystem首次MoveNext位于自然缓存/任务/奖励初始化前，但现七根桥缺cache不能自然出生，实际接线仍待做。RestoreRoot需先证消费者退休，不能等卸fence/free前才查quiet；当前硬拒进入/静止条件与全部Native/Guest/HostSelection权限false保持。
 - 新MAP_ADOPTION_ENTRY/currentcore/本轮实际摘要/12入口状态、HANDOFF/PLAN/WORLD/GUEST_ENTRY及Skill同步；旧.35鱼叉显示和返航数量证据保历史。非作者文档/证据末审READY；Skill官方validator与protected copy/hash匹配，SHA256 `26FD8A6E8F1AF6A69BD42D0B453B851ED04F6C2A1859A0B08BA09FF42421961C`。本轮安装.12/最近潜水.11/default.0不变，不把退出或旧画面记正常返航。
 - 下一步实际guest初始化隔离边界、完整route采用与IGP等待/替换，再接可信员工actor/生存/装备、房主命中/每人完整产物分流与返航仓库delta/save。真实双游戏正常闭环和GitHub冷配置继续为完成条件；当前目标保持active，未把候选API或离线研究称为可玩联机。
+
+## 2026-10-04 — 0.1.37 客机自然初始化source与五根启动接线
+
+- 0.1.36候选消费者、边界研究及271项验证保持历史；本轮继续完整M3—M7和每人独立袋/容量/重量/负重、房主长期进度目标，没有部署、启动游戏、运行native业务或读写存档。
+- Plugin新增默认false的Startup/ExperimentalGuestInitialization，先装自己的Natural输出围栏及5个exact自然source hook。早callback只留同installation thread opaque wrappers；实际Diagnostics.Update才确认native-read线程。Network首次Update自动按配置host/port加入Guest，握手固定实际peer/Room；配对Awake_Impl/LoadSavedData/LoadAllData/原InitAfter factory及returnediterator，首MoveNext需state0/currentnull/同GameBase、5非空根/4manager与已列冷缓存前后身份。
+- 输出围栏兼容旧Existing194；Natural197=156初阻+41deferred，clone前一次Seal全部目标，不移除persist hooks。新增Il2Cpp File.Delete(string)及Copy两overload，离线Cecil3/3核准；缺签名拒Natural安装，任何尝试BlockedFileOperations递增并锁存失败，不把skipvoid当Copy成功。exact白名单不宽泛放Load，CreateNewAndSave4处仍blocked；partial/未知保持owner/fence，不retry。writer全覆盖/共享地址/ABI仍未证。
+- 同一个source-owned fence与实际opaque lease进入NativeGuestShadowBridge+GuestShadowTransaction固定Natural5根；原Interaction baseline先于serializer，四Data typed roundtrip、新Interaction绑定detachedPlayer、根逐项一次写/回读。Natural不用旧Ingredients/Ingame clone补空，而是在临时5根确认后放行原初始化，让已列cache自然出生；旧Existing7进入仍硬false，不改原flags/路径/slot/cloud。fullSaveGraph/cache/资源/首次加载顺序及完整guest隔离仍false。
+- Core固定profile/rootorder且snapshot owned；补偿在开始及每个RestoreRoot前核actualquiet，再核binding/readback。生产Natural quiet恒false，因此失败/Disconnect不恢复个人根、不unpatch/free，保留source3+bridge最多15额外strong handles及managed owner，切role必须新进程。RootShadowInstalled只是5根标志，不授Guest/Native/World/Cargo/HostSelection权限；没有房主地图原生消费者或可玩员工分流。
+- 本轮实际Test-Core退出0，tail为275/275 tests passed.、工具walltime4.55秒，4新夹具为五根profile、profile不可变、非quiet失败不补偿、每root恢复前freshquiet；仅instrumented synthetic backend，不native。完整stdout及确切测试起止UTC未留，86Core输入在成功执行后采hash，不能称Core执行前seal/前后相同，也不是历史271复用。
+- 最终插件Build警告视为错误通过，UTC2026-10-04T17:54:04.5287763Z→17:54:05.9503523Z；147插件输入执行前封存且Build前后字节一致。DLL SHA256 `FB608E8763EBC4CCE0F7BF231ED43DD550110A1D438D7FBED12622132C4E71D0`，实际证据见[本轮摘要](guest-initialization-build-verification.json)与currentcore。
+- 新GUEST_INITIALIZATION_BOOTSTRAP和12当前入口headers、HANDOFF/PLAN/WORLD、GUEST_ENTRY_BOUNDARIES/OUTPUT_FENCE/COLD_PROFILE/SHADOW_BRIDGE/RUNTIME_CACHES及开发约定已按实际源码同步；旧.36的271/Build及边界研究保留历史。正式Skill已通过官方校验并同步，SHA256 `7904219EC063226D7CEC3CC69F6CDCCFB6D3D5C4EF6306FADC4C1C417BF24ED6`；原interop/Cecil报告及地址/IL只.local。安装.12、最近潜水.11、默认包.0保持；本文档子任务没有执行额外游戏进程或安装文件检查，不扩大实机证据。
+- 下一步验证真实冷启动来源/根/缓存/持久输出与未知保留，接完整房主route和IGP自然采用，再接可信员工actor/装备/生存/命中、每人完整产物与容量分流及返航仓库delta/save。真实双端正常闭环和GitHub冷配置仍待完成，不把source接线、275合成/TCP或Build当M4/完整隔离验收。
+
+- 两名非作者源码末审与公开证据/Skill/文档末审READY；已修确认实际Update前读取Pointer、首Move原生预检前重入、异线程配对、native Exception.Message及日志回调后放行等具体缺陷。最终仅文档调整，147插件构建输入仍相同，不重复运行Core或Build；原生初始化、fence安装及5根业务尚未执行。

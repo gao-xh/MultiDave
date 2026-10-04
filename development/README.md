@@ -1,6 +1,6 @@
 # 潜水员戴夫联机原型
 
-当前源码0.1.36-dev（协议6），实际Core/TCP271/271及插件编译通过。新增[房主地图候选读取接口](docs/MAP_ADOPTION_ENTRY.md)，即时刷新并返回独立副本；原游戏加载流程尚未接入。见[验证摘要](logs/map-candidate-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；客机隔离、房主世界、每人独立背包的真实分流、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.37-dev（协议6），本轮实际Core/TCP275/275及插件Build警告视为错误通过。新增默认关闭的[客机自然初始化接线](docs/GUEST_INITIALIZATION_BOOTSTRAP.md)，已接Plugin启动、实际Guest房间与首次原初始化的五根事务，尚未运行游戏或原生验证；房主地图采用仍未实现。见[本轮验证记录](logs/guest-initialization-build-verification.json)。安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；完整客机隔离、房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
 
 当前进度：M1 已通过潜水、场景切换与返航读取验证，M2 回放基础验收通过。
 0.1.22 历史源码为 0.1.22-dev、协议 5，插件 Build 警告视为错误通过；未部署或启动新版本。0.1.22 该轮 Core 输入未改，复用 0.1.21 实际通过的 176/176 结果，没有重跑测试。
@@ -102,7 +102,7 @@ Test-Core直接编译实际Core登记器、MapChoiceController与DTO，仅替代
 - [BepInEx 官方构建](https://builds.bepinex.dev/projects/bepinex_be)
 - [插件开发](https://docs.bepinex.dev/master/articles/dev_guide/plugin_tutorial/2_plugin_start.html)
 
-0.1.18的根桥与已枚举输出围栏仅源码准备，实际进入/静止边界恒false；没有GUI/Network调用，源事务拒绝后不安装围栏或捕获根。范围见[根桥](docs/GUEST_SHADOW_BRIDGE.md)与[当前摘要](logs/guest-shadow-build-verification.json)，不能据167项synthetic事务测试描述实际存档隔离完成。
+0.1.18历史根桥与已枚举围栏仅源码准备；默认ExistingCaches七根至今硬拒进入/静止，源事务拒绝后不安装围栏或捕获根。0.1.37另接默认关闭的Natural五根启动source，见[自然初始化](docs/GUEST_INITIALIZATION_BOOTSTRAP.md)；quiet与完整隔离仍未证，不能据历史167项或当前275项CLR/TCP测试描述实际存档隔离完成。[旧根桥摘要](logs/guest-shadow-build-verification.json)保持历史。
 
 0.1.19把typed交互准备接入根桥，原玩家缓存尚未同步或已知可变子引用仍共享则拒绝；完整baseline/graph和native ABI仍未证。见[交互缓存](docs/GUEST_INTERACTION_SHADOW.md)、[更早的进入时机](docs/GUEST_ENTRY_BOUNDARIES.md)、[其它运行缓存](docs/GUEST_RUNTIME_CACHES.md)及[当前摘要](logs/guest-interaction-build-verification.json)。
 

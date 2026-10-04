@@ -2,6 +2,22 @@
 
 本页给出可直接用于声明匹配的清单和返回策略。它来自本机生成互操作元数据、包装器 IL，以及此前原 GameAssembly 的静态调用报告；没有运行游戏、原生克隆、字段交换、保存或挂钩。它不是所有 writer 的覆盖证明，不授予 `GuestStateIsolated`、`WorldAuthority`、捕获或结算权限。影子根和旧引用边界另见 [GUEST_ISOLATION](GUEST_ISOLATION.md)。
 
+## 0.1.37 默认关闭的自然初始化 profile
+
+实际源码接线见[GUEST_INITIALIZATION_BOOTSTRAP](GUEST_INITIALIZATION_BOOTSTRAP.md)与[本轮摘要](../logs/guest-initialization-build-verification.json)：275/275实际Core/TCP及插件Build通过，未运行原生围栏或游戏。`GuestOutputFence` 默认构造仍是 `ExistingCaches`，194项全部初始阻断。`NaturalInitialization` 只用于本次实际Guest startup source，完整inventory197项，初始156阻断、41延后；配对原加载返回后、任何serializer/根交换前，`SealInitialization()` 一次安装延后目标，原有持久阻断不卸除。Phase计数区分完整声明、初始阻断、尚未安装的deferred、已读回自己的installed及已派发patch attempt，不把声明数量当运行验收。
+
+41条精确白名单为SaveSystem三个Load入口、四derived manager各CreateManagedData/OnLoadData、Player derived LoadData/SetLoadedData，以及四closed base各七个建根/Load方法；完整声明和数量见新启动页。四处 `CreateNewAndSave(bool)` 不放过，没有底层write覆盖证明时不支持靠它补缺档。
+
+只在Natural profile新增这三个精确public static void wrapper：
+
+- `Il2CppSystem.IO.File.Delete(string)`
+- `Il2CppSystem.IO.File.Copy(string,string)`
+- `Il2CppSystem.IO.File.Copy(string,string,bool)`
+
+离线Cecil实际核准3/3声明，未执行它们。任一声明缺失会使Natural安装拒绝；任一匹配调用仍跳过原方法，同时增加 `BlockedFileOperations` 并锁存健康失败。source首次进入及后续窗口要求该计数为0，不能把skip void当Copy/Delete成功。未知方法、错线程、partial install/seal或cleanup未知均保留已有持久阻断及owner，不自动unpatch或重复安装。
+
+以下194清单保留ExistingCaches合同；Natural是其基础上只增加这三项。197不是全部writer、唯一native地址或ABI证明，未证明其它File/Directory、接口实现、已经在途输出及Steam客户端同步。本source真实quiet仍false，Disconnect不Restore/unpatch/free，退出并以关闭开关的新进程启动才能切回个人角色。
+
 运行 [Inspect-GuestOutputApi.ps1](../scripts/Inspect-GuestOutputApi.ps1) 可重新生成忽略目录里的 `.local/analysis/guest-output-fence-api.json`：
 
 ~~~powershell
@@ -29,7 +45,7 @@
 - ``DR.Save.SaveLoadManagerBase<SavePhotoData>``
 - ``DR.Save.SaveLoadManagerBase<DR.Save.SaveUserOptions>``
 
-本轮准备的显式 manifest 排除 22 条 open-base 声明和 2 条 abstract interface，再纳四个闭包的 88 条，预计为 106+88=194 条准确声明。实际源码/构建应另行核对；194 不是全部 writer、唯一原生地址数或已经安装的挂钩数。基础表中的两个 out 方法会展开为 8 条，必须使用各 closed 类型的失败 prefix。
+原ExistingCaches显式manifest排除22条open-base声明和2条abstract interface，再纳四个闭包的88条，合同为106+88=194条。Natural另加三个File声明，仍不扩大这份基础表或放开writer。194不是全部writer、唯一原生地址数或已经安装的挂钩数。基础表中的两个out方法展开为8条，必须使用各closed类型的失败prefix。
 
 下表基础声明中的 `T` 按对应类型替换，`T&` 是真实 byref。Game/Photo 的 declared SaveData/DeleteSaveFile，Player 的 declared LoadData/SetLoadedData，以及各 derived OnLoadData/CreateManagedData/Reset 必须分别检查。Player/UserOption 没有声明自己的 SaveData，不可用 derived `DeclaredOnly` 查到不存在的方法后静默跳过。
 

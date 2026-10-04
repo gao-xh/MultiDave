@@ -1,6 +1,6 @@
 # 开发约定
 
-当前源码0.1.36-dev（协议6），实际Core/TCP271/271及插件编译通过。新增[房主地图候选读取接口](docs/MAP_ADOPTION_ENTRY.md)，即时刷新并返回独立副本；原游戏加载流程尚未接入。见[验证摘要](logs/map-candidate-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；客机隔离、房主世界、每人独立背包的真实分流、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.37-dev（协议6），本轮实际Core/TCP275/275及插件Build警告视为错误通过。新增默认关闭的[客机自然初始化接线](docs/GUEST_INITIALIZATION_BOOTSTRAP.md)，已接Plugin启动、实际Guest房间与首次原初始化的五根事务，尚未运行游戏或原生验证；房主地图采用仍未实现。见[本轮验证记录](logs/guest-initialization-build-verification.json)。安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；完整客机隔离、房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
 
 - M1 玩家发现与 M2 回放基础验收通过；0.1.22 历史源码为 0.1.22-dev、协议 5，插件 Build 警告视为错误通过，范围见 [comparer 摘要](logs/guest-comparer-build-verification.json)；0.1.22 该轮 Core 输入未改，复用 [0.1.21 实际 176/176 结果](logs/guest-ingame-cache-build-verification.json)，没有重跑测试。未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
 - 继续工作前阅读 `docs/HANDOFF.md`、`docs/PLAN.md` 和当前阶段的 `docs/GAME_API.md` / `docs/MULTIPLAYER.md` / `docs/WORLD_SYNC.md`；配置别人电脑时使用仓库根目录的配置 Skill。
@@ -47,7 +47,7 @@
 - 继续客机影子桥先读docs/GUEST_ISOLATION.md，Inspect-GuestStateApi.ps1只读wrapper/IL，报告只留.local。真实Serialize/Deserialize为clone候选，string ver不是JSON构造器，SetLoadedData/Load不是纯恢复。直接根交换不消除旧缓存/协程引用；全部输出、Interaction/Photo/UserOption隔离与恢复需另证，静态边或178签名候选不开放GuestStateIsolated。
 
 - 0.1.18历史根桥/事务/已枚举fence见docs/GUEST_SHADOW_BRIDGE.md与GUEST_OUTPUT_FENCE.md。NativeGuestShadowBridge使用四Data native Serialize/Deserialize、temp Interaction(false)、五根direct读写/readback与15独立IntPtr强handles；不调用SetLoadedData/Load/Sync，不复制原cached指针作shadow。
-- 进入/静止边界当前恒false，Core先检查再装fence，startup primitive也重查；没有Network/GUI接线。不得为了试玩直接改true、伪造caller flags或只用Room/loaded/writer0。全原生权限false；当前代码不运行clone/field mutation/fence安装，真实旧引用/深树/Interaction/writer覆盖待接。
+- 0.1.18历史进入/静止边界恒false，默认ExistingCaches七根至今硬拒；不得为了试玩直接改true、伪造caller flags或只用Room/loaded/writer0。0.1.37默认关闭的Natural五根source已实际接Plugin/Guest房间/固定首次初始化窗口，见docs/GUEST_INITIALIZATION_BOOTSTRAP.md；只是源码接通，未执行native。quiet/全部原生权限仍false，Disconnect不Restore/unpatch/free，真实旧引用/深树/Interaction/cache/writer覆盖待证。
 - GuestOutputTargetManifest冻结194精确声明（130declared除22open-base/2service-interface再加88closed），8typed out设null/false，Injected输入ref保持；Steam stream invalid=MaxValue、async=0，Toolbox Save/Delete失败2/1，不以default成功。只卸自己owner，unknown/其它线程/partial安装失健康仍阻断；194不是唯一原生地址或完整覆盖。
 - 0.1.18的167项含7组instrumented synthetic backend，用write前/后错误与未知恢复验证一次补偿/释放；不执行nativebackend/hooks。强managed backend在首次真实fence attempt时保留，precheck拒绝不占global slot。先原根/manager/readback＋真实静止边界确认再卸fence/free，未知不重试。JSON限额是UTF16代码单元，native返回后检查，不约束内部初始分配。
 
@@ -65,4 +65,4 @@
 
 - 历史0.1.22继续先读docs/GUEST_DICTIONARY_COMPARERS.md与GUEST_COMPARER_API.md；三key int/string/InGameSaveType(int32)只接受已核exact Generic/Object与该enum专用Enum的独立同class候选。source pointer/class/kind及aux审计必须保留，Ingredients同规则；null原可Capture但Prepare拒绝，不以Default/CreateComparer/getter、共享或清空补状态，custom/文化/hash-salt未知拒绝。
 - 新dictionary显式(capacity,comparer)先于Add；普通constructor抛时assignment未完成，PartialConstructorAllocationRetentionVerified=false，不声称所有未知allocation已Hold。七步/21explicit handles/4Data stamps不扩，ABI/fullisolation/entry/quiet/native/guest/world/bag全false，无GUI/Network自动入口。0.1.22 该轮 Core 输入未改，复用0.1.21实际176/176而未重跑；插件Build警告视为错误通过，记录见logs/guest-comparer-build-verification.json。
-- docs/GUEST_COLD_PROFILE.md只提出更直接首load path/slot/output研究，尚未采用。继续完整资源/actor/cache/output与真实边界、房主地图采用、每人独立袋/容量/负重下的捕获分流及逐产物返航、实际双端和GitHub冷配置，不缩减M3—M7。
+- docs/GUEST_COLD_PROFILE.md保留独立首load path/slot/output研究；0.1.37采用existing-save自然加载后、缓存初始化前的五根源码接线，不改目录/槽位/云设置，不证明首次读取隔离。继续完整资源/actor/cache/output与真实边界、房主地图采用、每人独立袋/容量/负重下的捕获分流及逐产物返航、实际双端和GitHub冷配置，不缩减M3—M7。

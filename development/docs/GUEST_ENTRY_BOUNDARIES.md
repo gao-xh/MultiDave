@@ -1,8 +1,10 @@
 # 客机影子根的进入与退出边界
 
+0.1.37新增默认关闭的[五根自然启动接线](GUEST_INITIALIZATION_BOOTSTRAP.md)：Plugin startup → 实际Unity Update/Guest握手 → 配对Awake_Impl、LoadSavedData、LoadAllData、原InitAfter factory及未推进的首MoveNext → Natural围栏156+41一次Seal197 → 五根事务 → 放行原缓存初始化。275/275实际Core/TCP与插件Build通过，未运行native或游戏。旧ExistingCaches七根仍硬拒，真实quiet与完整缓存/输出/Guest隔离及地图采用仍未证；断线不恢复个人根。以下保留早期边界研究及0.1.36证据，不把这些历史建议当本轮已运行记录。
+
 最早值得补充观察的是 `SceneLoader.GoToInGameEntry` 的 **prefix**。原 PE 的静态直接目标显示，这个入口自身包含 Player 数据更新、任务查询/失败处理及 Ingame 清理；只等到 `ChangeSceneAsync` 再安装影子根，不能覆盖它之前可能发生的进度操作。prefix 可在本次原方法主体开始前冻结身份观察，但不能据此证明既有缓存已隔离、旧协程已退休或所有加载都经过这个入口。
 
-本轮只读核对现有报告、原生静态调用边和已生成互操作程序集的 Cecil 元数据；没有新增或运行本页提出的只读 hooks，没有调用游戏、克隆、换根、启动游戏或读写存档。当前 [NativeGuestShadowBridge](../src/DaveCoop/Networking/NativeGuestShadowBridge.cs) 的进入及静止边界仍恒 false，不据这些签名开放权限。根桥合同见 [GUEST_SHADOW_BRIDGE](GUEST_SHADOW_BRIDGE.md)，固定加载来源观察的既有实现见 [MAP_ORIGINS](MAP_ORIGINS.md)。
+本页最初研究阶段只读核对报告、原生静态调用边和已生成互操作程序集的 Cecil 元数据，没有新增或运行所提出的只读hooks。迄今没有调用游戏、克隆、换根、启动游戏或读写存档。默认 [NativeGuestShadowBridge](../src/DaveCoop/Networking/NativeGuestShadowBridge.cs) 的ExistingCaches进入及静止边界仍硬拒；新Natural source来自具体自然hook接线而不是这些签名或caller flags。根桥合同见 [GUEST_SHADOW_BRIDGE](GUEST_SHADOW_BRIDGE.md)，固定加载来源观察的既有实现见 [MAP_ORIGINS](MAP_ORIGINS.md)。
 
 ## 加载前的确切声明
 
@@ -42,7 +44,7 @@ Il2CppSystem.Collections.IEnumerator GameBase.InitAfterSaveSystem();
 
 `DR.Save.SaveSystem/_InitSaveSystem_d__42` 和 `GameBase/_InitAfterSaveSystem_d__45` 各有 `bool MoveNext()`、`void System_IDisposable_Dispose()` 及直接 state/current/this 字段；InitSaveSystem iterator 还直接保存 `onDone : Il2CppSystem.Action`。factory 产生 iterator 不等于加载结束；MoveNext 返回 false 或 Dispose 只界定该 iterator 的一次自然结果，不能证明委托及其他 coroutine 完成。
 
-SaveSystem 的 `_IsInitialized_k__BackingField`、`_IsLoadFinished_k__BackingField`、`_IsGameLoaded_k__BackingField` 及四个 manager 字段都是直接 native 字段代理；公共同名状态/manager getter 会 RuntimeInvoke。可在上述自然回调中冻结三 bool、manager 与五根身份，比较本次加载前后根是否更换。flags 为 true 仍不能推出 Mission/Ingredients、Interaction、旧 saveable、pending load 或全部输出已安全。桥读取这些标志作为必要检查，保持更强进入条件为 false。
+SaveSystem 的 `_IsInitialized_k__BackingField`、`_IsLoadFinished_k__BackingField`、`_IsGameLoaded_k__BackingField` 及四个 manager 字段都是直接 native 字段代理；公共同名状态/manager getter 会 RuntimeInvoke。可在上述自然回调中冻结三 bool、manager 与五根身份，比较本次加载前后根是否更换。flags 为 true 仍不能推出 Mission/Ingredients、Interaction、旧 saveable、pending load 或全部输出已安全。ExistingCaches桥仍以三flags为必要检查并硬拒进入；新Natural profile按实际配对load返回、固定state0 iterator及已列冷缓存进入，不强行改flags或拿Room替代来源。
 
 ## 入海前已可能存在的缓存
 
@@ -93,4 +95,4 @@ entry 和 load/return 混入、身份变化、线程错误、读取错误、未�
 
 这些记录最多证明“此自然边界上观察到哪些身份和阶段”，仍不是 CanEnterBoundary/HasQuiescentBoundary 的 true 证据。完成具体 Interaction detached 绑定后，还须证明缓存/旧引用归属、所有在途写入与异步工作生命周期及完整输出围栏，才能讨论真实进入和退出。加载前采用、GuestStateIsolated、世界与捕获/返航权限继续关闭。
 
-0.1.36新原指令研究见[MAP_ADOPTION_ENTRY](MAP_ADOPTION_ENTRY.md)。LoadSavedData是发起Init而非完成；InitAfterSaveSystem首次MoveNext是具体早期候选，但缺失cache的自然出生和全消费者隔离仍未接。真实恢复时必须先证消费者退休再RestoreRoot，不能只在卸围栏/释放资源前查quiet；当前硬拒边界与全部权限false保持。
+0.1.36历史原指令研究见[MAP_ADOPTION_ENTRY](MAP_ADOPTION_ENTRY.md)。该轮确认LoadSavedData发起Init而非完成、首次InitAfterSaveSystem MoveNext是早期候选，但当时未接缺cache自然出生。0.1.37已将该候选接到五根启动source和原初始化放行；全消费者隔离仍未证。真实恢复必须先证消费者退休再RestoreRoot，不能只在卸围栏/释放资源前查quiet；新source未证quiet所以保持引用/围栏，全部权限false。

@@ -1,6 +1,6 @@
 # MultiDave 开发计划
 
-当前源码0.1.36-dev（协议6），实际Core/TCP271/271及插件编译通过。新增[房主地图候选读取接口](MAP_ADOPTION_ENTRY.md)，即时刷新并返回独立副本；原游戏加载流程尚未接入。见[验证摘要](../logs/map-candidate-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；客机隔离、房主世界、每人独立背包的真实分流、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.37-dev（协议6），本轮实际Core/TCP275/275及插件Build警告视为错误通过。新增默认关闭的[客机自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接Plugin启动、实际Guest房间与首次原初始化的五根事务，尚未运行游戏或原生验证；房主地图采用仍未实现。见[本轮验证记录](../logs/guest-initialization-build-verification.json)。安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；完整客机隔离、房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
 
 目标：Windows Steam 版双人潜水合作 MVP，先做局域网房主/客户端。
 房主负责游戏世界和结算。服务器方案暂缓。
@@ -169,7 +169,7 @@ F11 的 Check selected fish target 在 Guest/Local test 发送 ProbeTarget，房
 
 0.1.18新增实际typed原生影子桥、单次事务及已枚举输出围栏源码。四类Data原生JSON round trip、五根直接交换/回读/恢复和15个独立强handle已编译；7组新增事务夹具以合成backend验证partial/unknown补偿、fence/refs保留和一次清理，总167/167通过。
 
-当前生产进入与静止边界恒false，事务在围栏安装前拒绝；startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。全部GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority保持false，未部署或启动。
+0.1.18该历史阶段的生产进入与静止边界恒false，事务在围栏安装前拒绝；当时startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。0.1.37新Natural五根启动接线见GUEST_INITIALIZATION_BOOTSTRAP；旧ExistingCaches七根仍硬拒，GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority仍false，迄今未部署或启动新版。
 
 实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。
 
@@ -237,6 +237,14 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 
 新增离线解析确认自动原槽GetExchangeCount委托及UI鱼的转换/累计；下一步绑定真实返航政策，同时主线继续实际地图采用、客机进度隔离和房主可信员工actor/装备，再接独立袋分流、仓库增量和保存。详见HARPOON_VISUAL与RETURN_COUNT_POLICY。Build通过；86实际Core输入与0.1.34相同，复用269/269，不计新测试。本轮未部署或启动，不催延后试玩；真实双游戏正常返航与GitHub冷配置仍是完成条件。
 
-## 0.1.36 — 地图候选消费者与加载边界
+## 0.1.36 历史阶段 — 地图候选消费者与加载边界
 
 已实现并真实TCP验证当前Guest候选的即时读取、独立副本和撤销；原生加载消费者未接。离线研究确认路线缓存写进度、IGP原随机替换和自然初始化入口，同时记录schema缺项、manager早于operation完成以及恢复根前旧消费者退休的待解问题。详见MAP_ADOPTION_ENTRY。继续完整M3—M7：先guest隔离与房主路线/IGP，再可信员工actor/装备/生存与命中、各自袋分流、真实返航delta/save及双端和GitHub冷配置验收。
+
+## 0.1.37 — 实际客机初始化source与五根启动
+
+已将默认关闭的ExperimentalGuestInitialization从Plugin startup接到实际Unity Update、Guest握手、配对自然加载和固定未推进的InitAfter iterator。Natural围栏初阻156、41deferred一次Seal197，新增File.Copy/Delete尝试锁存失败；同fence/source进入既有事务固定五根，再放行原缓存消费者自然出生。旧七根ExistingCaches仍硬拒，没有任意Room热切换或caller flags权限，断线不恢复/卸围栏/释放引用。详见[GUEST_INITIALIZATION_BOOTSTRAP](GUEST_INITIALIZATION_BOOTSTRAP.md)。
+
+实际275/275及插件Build通过；四个新夹具仅synthetic backend，原生hook/克隆/五根/缓存未运行。测试完整stdout/确切UTC及preseal缺失，86Core hash为成功执行之后采集；147插件输入才有执行前seal和Build前后相同，见[本轮摘要](../logs/guest-initialization-build-verification.json)。未部署/启动，历史271和地图候选摘要保持。
+
+本轮没有完成M4或放开GuestStateIsolated：继续验证实际启动ABI/顺序/SaveGraph/cache/writer，再接房主完整route和本地IGP等待/采用；随后实现可信员工actor/装备/生存/命中、每人独立容量重量负重与完整产物分流、逐项返航delta/save。真实双端正常闭环和GitHub冷配置仍是完整M3—M7验收要求，不把进程固定Guest、候选TCP或合成backend当玩法通过。

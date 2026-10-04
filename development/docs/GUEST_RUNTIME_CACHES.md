@@ -1,8 +1,10 @@
 # 客机运行缓存的类型与恢复边界
 
-当前源码0.1.36-dev（协议6），实际Core/TCP271/271及插件编译通过。新增[房主地图候选读取接口](MAP_ADOPTION_ENTRY.md)，即时刷新并返回独立副本；原游戏加载流程尚未接入。见[验证摘要](../logs/map-candidate-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；客机隔离、房主世界、每人独立背包的真实分流、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.37-dev（协议6），本轮实际Core/TCP275/275及插件Build警告视为错误通过。新增默认关闭的[客机自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接Plugin启动、实际Guest房间与首次原初始化的五根事务，尚未运行游戏或原生验证；房主地图采用仍未实现。见[本轮验证记录](../logs/guest-initialization-build-verification.json)。安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；完整客机隔离、房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
 
-五个 manager 根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。本页初版0.1.19为离线研究；历史0.1.22继续准备有限typed缓存，插件Build警告视为错误通过，见[comparer摘要](../logs/guest-comparer-build-verification.json)。0.1.22 该轮 Core 输入未改，复用[0.1.21实际176/176结果及该版构建](../logs/guest-ingame-cache-build-verification.json)，没有重跑测试。没有安装、切换、清空或恢复任何游戏缓存，没有调用 Init、Load、Build、克隆或存档。已有桥的真实进入和静止边界仍关闭，`GuestStateIsolated`、`RuntimeCachesIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority` 均不能因此开放。
+五个manager根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。本页初版0.1.19为离线研究；历史0.1.22继续准备有限typed缓存，插件Build警告视为错误通过，见[comparer摘要](../logs/guest-comparer-build-verification.json)。0.1.22该轮Core输入未改，复用[0.1.21实际176/176及构建](../logs/guest-ingame-cache-build-verification.json)，没有重跑测试。迄今没有运行游戏、安装/清空/恢复游戏缓存或执行Init/Load/Build/克隆/存档。默认ExistingCaches七根桥仍硬拒真实进入/静止；0.1.37的[新Natural五根启动source](GUEST_INITIALIZATION_BOOTSTRAP.md)已接原初始化放行，真实静止仍false，全部权限仍不开放。
+
+Natural profile在已列冷缓存尚未使用、固定原iterator首state0及实际Guest绑定中先安装五个save根，再放行原Init，让缓存自然读取临时根；它不调用旧Ingredients/Ingame helper构造空替代，不处理已加载/已使用的cache。有限直接字段前后检查不能证明完整cache尾部、资源、其它actor或delegate无旧引用。完整缓存隔离和所有持久writer仍待实机，`GuestStateIsolated`、`RuntimeCachesIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority`均false。
 
 [Inspect-GuestRuntimeCacheApi.ps1](../scripts/Inspect-GuestRuntimeCacheApi.ps1) 用 Cecil 读取已生成的游戏、Il2Cppmscorlib 和 Interop.Runtime 元数据与包装器 IL。运行命令：
 

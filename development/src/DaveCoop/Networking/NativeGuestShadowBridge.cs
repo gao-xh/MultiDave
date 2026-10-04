@@ -8,8 +8,9 @@ using Il2CppInterop.Runtime.InteropTypes;
 
 namespace DaveCoop.Networking
 {
-    // Actual native root primitives, deliberately not connected to a game or
-    // network entry point. Native boundary/cache/output coverage remains unverified.
+    // Existing-cache primitives remain disabled. The natural-initialization
+    // profile can be entered only by its bound, actual initialization hook
+    // lease. Neither profile certifies complete cache/output isolation.
     internal sealed class NativeGuestShadowBridge : IGuestShadowBackend
     {
         public const int MaxOwnedHandles = 21;
@@ -18,6 +19,7 @@ namespace DaveCoop.Networking
         private const int MaxVersionCharacters = 256;
         private static NativeGuestShadowBridge _processLease;
         private readonly GuestOutputFence _fence;
+        private readonly NativeGuestInitializationLease _initializationSource;
         private readonly List<OwnedReference> _references = new List<OwnedReference>(MaxOwnedHandles);
         private readonly bool[] _installAttempted = new bool[7], _restoreAttempted = new bool[7];
         private Managers _managers;
@@ -27,7 +29,7 @@ namespace DaveCoop.Networking
         private NativeGuestIngredientCache _ingredientCache;
         private NativeGuestIngameCache _ingameCache;
         private DataStamp[] _originalStamps;
-        private bool _claimAttempted, _claimed, _captureAttempted, _captured, _prepareAttempted, _prepared;
+        private bool _claimAttempted, _claimed, _captureAttempted, _captured, _captureComplete, _prepareAttempted, _prepared;
         private bool _fenceAttempted, _removeAttempted, _releaseAttempted, _released, _busy;
         private int _ownedHandleCount;
         private long _jsonCharacters, _exceptions, _unexpectedThreads;
@@ -74,6 +76,7 @@ namespace DaveCoop.Networking
         public Guid HostBindingId { get; }
         public Guid LeaseId { get; }
         public int UnityThreadId { get; }
+        public GuestShadowProfile Profile { get; }
         public string LastReason => Volatile.Read(ref _lastReason);
         public int OwnedNativeHandleCount => Volatile.Read(ref _ownedHandleCount);
         public long SerializedCharacters => Interlocked.Read(ref _jsonCharacters);
@@ -102,7 +105,25 @@ namespace DaveCoop.Networking
             if (hostBindingId == Guid.Empty) throw new ArgumentException("A local host binding is required.", nameof(hostBindingId));
             if (leaseId == Guid.Empty) throw new ArgumentException("A single-use local lease is required.", nameof(leaseId));
             UnityThreadId = unityThreadId; HostBindingId = hostBindingId; LeaseId = leaseId;
+            Profile = GuestShadowProfile.ExistingCaches;
             _fence = new GuestOutputFence(unityThreadId, leaseId);
+        }
+
+        public NativeGuestShadowBridge(NativeGuestInitializationLease source, GuestOutputFence fence)
+        {
+            if (ReferenceEquals(source, null)) throw new ArgumentNullException(nameof(source));
+            if (ReferenceEquals(fence, null)) throw new ArgumentNullException(nameof(fence));
+            if (source.UnityThreadId < 1 || Environment.CurrentManagedThreadId != source.UnityThreadId)
+                throw new ArgumentException("Construct the bridge on the source's confirmed Unity thread.", nameof(source));
+            if (source.HostBindingId == Guid.Empty || source.LeaseId == Guid.Empty ||
+                !ReferenceEquals(source.Fence, fence) || fence.LeaseId != source.LeaseId)
+                throw new ArgumentException("The bridge requires its actual source-owned output fence and fixed lease.", nameof(source));
+            UnityThreadId = source.UnityThreadId; HostBindingId = source.HostBindingId; LeaseId = source.LeaseId;
+            Profile = GuestShadowProfile.NaturalInitialization;
+            _initializationSource = source; _fence = fence;
+            if (!source.TryBindBridge(this))
+                throw new InvalidOperationException("The actual initialization source is already bound to another bridge.");
+            _lastReason = "Natural initialization requires its current hook window; complete isolation remains unverified.";
         }
 
         public bool TryClaimLease()
@@ -120,14 +141,23 @@ namespace DaveCoop.Networking
         public bool BindingIsCurrent()
         {
             if (!LeaseCurrent()) return false;
-            if (!_captured) return true;
-            try { return ReferencesValid() && ManagersCurrent(); }
+            try
+            {
+                if (!SourceBindingCurrent()) return false;
+                if (!_captured) return true;
+                return ReferencesValid() && ManagersCurrent() && SourceBindingCurrent();
+            }
             catch (Exception) { return ExceptionFailure("Native manager identity could not be confirmed."); }
         }
 
         public bool CanEnterBoundary()
         {
             if (!LeaseCurrent()) return false;
+            if (Profile == GuestShadowProfile.NaturalInitialization)
+            {
+                try { return _initializationSource.IsCurrentWindow(this) || Reject("The bound natural initialization hook window is not current."); }
+                catch (Exception) { return ExceptionFailure("Natural initialization entry binding is unknown."); }
+            }
             // A Room, loaded flag or zero known writers is not an original
             // game pre-generation boundary. No automatic native entry.
             return Reject("No verified original native pre-generation boundary; transaction entry remains disabled.");
@@ -142,7 +172,15 @@ namespace DaveCoop.Networking
             // Own the managed backend before the first possible patch. Failed
             // native writes must not strand handles without restore metadata.
             _fenceAttempted = true;
-            try { return _fence.Install() && _fence.Active && _fence.Healthy || Reject("Owned output fence could not be installed and confirmed."); }
+            try
+            {
+                // The cold source has already installed and sealed its own
+                // fence. Do not patch again or contend for the fence owner.
+                if (Profile == GuestShadowProfile.NaturalInitialization)
+                    return CanEnterBoundary() && _fence.Active && _fence.Healthy && _fence.PendingCalls == 0 &&
+                        CanEnterBoundary() || Reject("Source-owned output fence is not confirmed in the current initialization window.");
+                return _fence.Install() && _fence.Active && _fence.Healthy || Reject("Owned output fence could not be installed and confirmed.");
+            }
             catch (Exception) { return ExceptionFailure("Output fence installation failed; cleanup outcome must be inspected."); }
         }
 
@@ -169,7 +207,11 @@ namespace DaveCoop.Networking
                 _captureAttempted = true;
                 var system = Singleton<SaveSystem>._instance;
                 RequireLive(system);
-                if (!system._IsInitialized_k__BackingField || !system._IsLoadFinished_k__BackingField || !system._IsGameLoaded_k__BackingField)
+                // Cold load completion/identity comes from the actual paired
+                // source hook. Do not rewrite flags or demand hot-state flags
+                // that the original initialization iterator has not set yet.
+                if (Profile == GuestShadowProfile.ExistingCaches &&
+                    (!system._IsInitialized_k__BackingField || !system._IsLoadFinished_k__BackingField || !system._IsGameLoaded_k__BackingField))
                     return Reject("SaveSystem loading flags do not permit original root capture.");
                 _managers = new Managers
                 {
@@ -200,17 +242,23 @@ namespace DaveCoop.Networking
                 // native serializer can run callbacks or mutate a child.
                 _interactionBaseline = NativeGuestInteractionShadow.CaptureOriginal(
                     _original.Player, _original.Interaction, RequireCloneWindow);
-                _ingredientCache = NativeGuestIngredientCache.CaptureOriginal(
-                    RequireIngredientCaptureWindow, value => { Keep(value); });
-                _ingameCache = NativeGuestIngameCache.CaptureOriginal(
-                    RequireIngameCaptureWindow, value => { Keep(value); });
+                if (Profile == GuestShadowProfile.ExistingCaches)
+                {
+                    _ingredientCache = NativeGuestIngredientCache.CaptureOriginal(
+                        RequireIngredientCaptureWindow, value => { Keep(value); });
+                    _ingameCache = NativeGuestIngameCache.CaptureOriginal(
+                        RequireIngameCaptureWindow, value => { Keep(value); });
+                }
                 // Recheck all known originals after the last capture and before
                 // the first serializer can allocate or invoke native callbacks.
                 if (!_interactionBaseline.ConfirmOriginalKnownGraph(RequireOriginalReadWindow) ||
-                    !_ingredientCache.ConfirmOriginalKnownGraph(RequireOriginalReadWindow) ||
-                    !_ingameCache.ConfirmOriginalKnownGraph(RequireOriginalReadWindow))
+                    (Profile == GuestShadowProfile.ExistingCaches &&
+                    (!_ingredientCache.ConfirmOriginalKnownGraph(RequireOriginalReadWindow) ||
+                    !_ingameCache.ConfirmOriginalKnownGraph(RequireOriginalReadWindow))))
                     return Reject("Original known graphs changed during capture.");
-                return CanEnterBoundary() && ReferencesValid() && ManagersCurrent() && OriginalScalarsUnchanged() && AllRoots(GuestShadowRootReadback.Original) && FenceReady();
+                _captureComplete = CanEnterBoundary() && ReferencesValid() && ManagersCurrent() && OriginalScalarsUnchanged() &&
+                    AllRoots(GuestShadowRootReadback.Original) && FenceReady() && CanEnterBoundary();
+                return _captureComplete;
             }
             catch (Exception) { return ExceptionFailure("Original root capture failed; owned references and fence remain retained."); }
             finally { _busy = false; }
@@ -221,7 +269,8 @@ namespace DaveCoop.Networking
             if (!BeginNativeWork(requireEntryBoundary: true)) return false;
             try
             {
-                if (_prepareAttempted || !_captured) return Reject("Detached root preparation requires a captured, unused lease.");
+                if (_prepareAttempted || !_captured || !_captureComplete)
+                    return Reject("Detached root preparation requires a completely checked original capture and an unused lease.");
                 _prepareAttempted = true;
                 if (!ReferencesValid() || !ManagersCurrent() || !OriginalScalarsUnchanged() || !AllRoots(GuestShadowRootReadback.Original))
                     return Reject("Original manager/root identity changed before native cloning.");
@@ -241,17 +290,22 @@ namespace DaveCoop.Networking
                 RequireCloneWindow();
                 if (!_interactionShadow.ValidateKnownBinding(RequireCloneWindow))
                     return Reject("Detached interaction binding could not be confirmed.");
-                if (_ingredientCache == null || !_ingredientCache.Prepare(RequireCloneWindow) ||
-                    !_ingredientCache.ValidateKnownBinding(RequireCloneWindow))
-                    return Reject("Detached ingredient cache could not be prepared and confirmed.");
-                if (_ingameCache == null || !_ingameCache.Prepare(RequireCloneWindow))
-                    return Reject("Detached ingame cache could not be prepared.");
+                if (Profile == GuestShadowProfile.ExistingCaches)
+                {
+                    if (_ingredientCache == null || !_ingredientCache.Prepare(RequireCloneWindow) ||
+                        !_ingredientCache.ValidateKnownBinding(RequireCloneWindow))
+                        return Reject("Detached ingredient cache could not be prepared and confirmed.");
+                    if (_ingameCache == null || !_ingameCache.Prepare(RequireCloneWindow))
+                        return Reject("Detached ingame cache could not be prepared.");
+                }
                 // Later native preparations can invalidate earlier baselines.
                 // Sequential known-graph checks do not prove quiescence.
                 if (!_interactionShadow.ValidateKnownBinding(RequireCloneWindow) ||
-                    !_ingredientCache.ValidateKnownBinding(RequireCloneWindow) ||
-                    !_ingameCache.ValidateKnownBinding(RequireCloneWindow))
+                    (Profile == GuestShadowProfile.ExistingCaches &&
+                    (!_ingredientCache.ValidateKnownBinding(RequireCloneWindow) ||
+                    !_ingameCache.ValidateKnownBinding(RequireCloneWindow))))
                     return Reject("Prepared known graphs changed during preparation.");
+                RequireCloneWindow();
                 _prepared = true;
                 return true;
             }
@@ -261,6 +315,7 @@ namespace DaveCoop.Networking
 
         public bool InstallRoot(GuestShadowRoot root)
         {
+            if (!SupportsRoot(root)) return Reject("The initialization profile does not own this cache root.");
             if (!BeginNativeWork(requireEntryBoundary: true)) return false;
             try
             {
@@ -286,9 +341,11 @@ namespace DaveCoop.Networking
                 if (!CanEnterBoundary() || !FenceReady()) return false;
                 if (_interactionShadow == null || !_interactionShadow.ValidateKnownBinding(RequireInteractionInstallationWindow))
                     return Reject("Prepared interaction binding changed before root installation.");
-                if (_ingredientCache == null || !_ingredientCache.ValidateKnownBinding(RequireInteractionInstallationWindow))
+                if (Profile == GuestShadowProfile.ExistingCaches &&
+                    (_ingredientCache == null || !_ingredientCache.ValidateKnownBinding(RequireInteractionInstallationWindow)))
                     return Reject("Prepared ingredient cache changed before root installation.");
-                if (_ingameCache == null || !_ingameCache.ValidateKnownBinding(RequireInteractionInstallationWindow))
+                if (Profile == GuestShadowProfile.ExistingCaches &&
+                    (_ingameCache == null || !_ingameCache.ValidateKnownBinding(RequireInteractionInstallationWindow)))
                     return Reject("Prepared ingame cache changed before root installation.");
                 if (!CanEnterBoundary() || !FenceReady()) return false;
                 _installAttempted[index] = true;
@@ -301,6 +358,7 @@ namespace DaveCoop.Networking
 
         public GuestShadowRootReadback ReadRoot(GuestShadowRoot root)
         {
+            if (!SupportsRoot(root)) return GuestShadowRootReadback.Unknown;
             if (!LeaseCurrent() || !_captured) return GuestShadowRootReadback.Unknown;
             try { return ReferencesValid() ? ReadRootCore(root) : GuestShadowRootReadback.Unknown; }
             catch (Exception)
@@ -312,18 +370,21 @@ namespace DaveCoop.Networking
 
         public bool ValidateRoots()
         {
+            if (!ActiveValidationWindow()) return false;
             if (!BeginNativeWork()) return false;
             try { return _prepared && ReferencesValid() && ManagersCurrent() && OriginalScalarsUnchanged() &&
                     AllRoots(GuestShadowRootReadback.Detached) && FenceReady() && _interactionShadow != null &&
-                    _interactionShadow.ValidateKnownReferences(RequireInteractionBindingWindow) && _ingredientCache != null &&
+                    _interactionShadow.ValidateKnownReferences(RequireInteractionBindingWindow) &&
+                    (Profile == GuestShadowProfile.NaturalInitialization || (_ingredientCache != null &&
                     _ingredientCache.ValidateKnownReferences(RequireInteractionBindingWindow) && _ingameCache != null &&
-                    _ingameCache.ValidateKnownReferences(RequireInteractionBindingWindow); }
+                    _ingameCache.ValidateKnownReferences(RequireInteractionBindingWindow))) && ActiveValidationWindow(); }
             catch (Exception) { return ExceptionFailure("Installed root validation failed; fence and references remain retained."); }
             finally { _busy = false; }
         }
 
         public bool RestoreRoot(GuestShadowRoot root)
         {
+            if (!SupportsRoot(root)) return Reject("The initialization profile does not own this cache root.");
             if (!BeginNativeWork()) return false;
             try
             {
@@ -332,6 +393,10 @@ namespace DaveCoop.Networking
                 if (!ReferencesValid() || !ManagersCurrent()) return Reject("Changed managers will not be overwritten during restore.");
                 GuestShadowRootReadback current = ReadRootCore(root);
                 if (current == GuestShadowRootReadback.Original) return true;
+                // Root readback alone cannot retire native consumers. In the
+                // current cold source this is false, including after its first
+                // original MoveNext; unknown cleanup keeps fence/references.
+                if (!HasQuiescentBoundary()) return false;
                 if (root == GuestShadowRoot.IngredientsCache)
                 {
                     if (current != GuestShadowRootReadback.Detached && current != GuestShadowRootReadback.OwnedMixed)
@@ -349,6 +414,8 @@ namespace DaveCoop.Networking
                         ReadRootCore(root) == GuestShadowRootReadback.Original;
                 }
                 if (current != GuestShadowRootReadback.Detached) return Reject("Foreign or unknown root will not be overwritten during restore.");
+                if (!HasQuiescentBoundary() || !FenceReady() || !ManagersCurrent() ||
+                    ReadRootCore(root) != GuestShadowRootReadback.Detached || !HasQuiescentBoundary()) return false;
                 _restoreAttempted[index] = true;
                 WriteRoot(root, _original);
                 return ReadRootCore(root) == GuestShadowRootReadback.Original && FenceReady();
@@ -362,15 +429,21 @@ namespace DaveCoop.Networking
             if (!LeaseCurrent() || !_captured) return false;
             try { return ReferencesValid() && ManagersCurrent() && OriginalScalarsUnchanged() &&
                     AllRoots(GuestShadowRootReadback.Original) && _interactionBaseline != null &&
-                    _interactionBaseline.ConfirmOriginalKnownGraph(RequireOriginalReadWindow) && _ingredientCache != null &&
+                    _interactionBaseline.ConfirmOriginalKnownGraph(RequireOriginalReadWindow) &&
+                    (Profile == GuestShadowProfile.NaturalInitialization || (_ingredientCache != null &&
                     _ingredientCache.ConfirmOriginalKnownGraph(RequireOriginalReadWindow) && _ingameCache != null &&
-                    _ingameCache.ConfirmOriginalKnownGraph(RequireOriginalReadWindow); }
+                    _ingameCache.ConfirmOriginalKnownGraph(RequireOriginalReadWindow))); }
             catch (Exception) { return ExceptionFailure("Original roots/managers could not be confirmed."); }
         }
 
         public bool HasQuiescentBoundary()
         {
             if (!LeaseCurrent()) return false;
+            if (Profile == GuestShadowProfile.NaturalInitialization)
+            {
+                try { return _initializationSource.HasQuiescentBoundary(this) || Reject("The natural initialization source has no verified consumer quiescence; ownership is retained."); }
+                catch (Exception) { return ExceptionFailure("Natural initialization consumer quiescence is unknown."); }
+            }
             return Reject("Original native quiescence is not verified; restored roots do not permit fence/reference release.");
         }
 
@@ -402,7 +475,7 @@ namespace DaveCoop.Networking
                 _references.Clear(); _original = null; _detached = null; _managers = null; _originalStamps = null;
                 _interactionShadow = null; _interactionBaseline = null;
                 _ingredientCache = null; _ingameCache = null;
-                _captured = false; _prepared = false; _released = true;
+                _captured = false; _captureComplete = false; _prepared = false; _released = true;
                 Interlocked.CompareExchange(ref _processLease, null, this);
                 return true;
             }
@@ -435,7 +508,8 @@ namespace DaveCoop.Networking
             if (!CanEnterBoundary() || !FenceReady() || !ReferencesValid() || !ManagersCurrent() || !OriginalScalarsUnchanged() ||
                 !AllSaveRoots(GuestShadowRootReadback.Original) || (_ingredientCache != null &&
                 _ingredientCache.ReadCurrent(RequireIngredientReadWindow) != GuestShadowRootReadback.Original) ||
-                (_ingameCache != null && _ingameCache.ReadCurrent(RequireIngameReadWindow) != GuestShadowRootReadback.Original))
+                (_ingameCache != null && _ingameCache.ReadCurrent(RequireIngameReadWindow) != GuestShadowRootReadback.Original) ||
+                !FenceReady() || !CanEnterBoundary())
                 throw new InvalidOperationException("Native clone window lost its manager/root/fence binding.");
         }
 
@@ -487,22 +561,23 @@ namespace DaveCoop.Networking
 
         private void RequireIngameRestoreWindow()
         {
-            if (!LeaseCurrent() || !ReferencesValid() || !ManagersCurrent())
+            if (!LeaseCurrent() || !HasQuiescentBoundary() || !ReferencesValid() || !ManagersCurrent() || !HasQuiescentBoundary())
                 throw new InvalidOperationException("Ingame compensation lost its lease/manager/reference binding.");
         }
 
         private void RequireIngredientRestoreWindow()
         {
-            // Known compensation does not wait for a healthy entry boundary
-            // or clear a failed fence/baseline. Those failures retain ownership.
-            if (!LeaseCurrent() || !ReferencesValid() || !ManagersCurrent())
+            // Compensation does not reuse the entry window. It requires an
+            // independent consumer boundary before every possible field write.
+            if (!LeaseCurrent() || !HasQuiescentBoundary() || !ReferencesValid() || !ManagersCurrent() || !HasQuiescentBoundary())
                 throw new InvalidOperationException("Ingredient compensation lost its lease/manager/reference binding.");
         }
 
         private void RequireInteractionInstallationWindow()
         {
             if (!CanEnterBoundary()) throw new InvalidOperationException("Interaction installation lost its original entry boundary.");
-            RequireInteractionBindingWindow();
+            RequireInteractionReferenceWindow();
+            if (!CanEnterBoundary()) throw new InvalidOperationException("Interaction installation entry changed during readback.");
         }
 
         private void RequireOriginalReadWindow()
@@ -518,10 +593,18 @@ namespace DaveCoop.Networking
 
         private void RequireInteractionBindingWindow()
         {
-            // Roots can be mixed during installation or wholly detached during
-            // active validation. This guard must not demand all-original roots
-            // or the pre-generation entry phase after world execution begins.
+            // Active validation does not demand the pre-generation entry phase
+            // after the source's original initialization iterator has begun.
             // Actual permission remains false independently of this read check.
+            if (!ActiveValidationWindow())
+                throw new InvalidOperationException("Interaction validation lost its active source lifetime.");
+            RequireInteractionReferenceWindow();
+            if (!ActiveValidationWindow())
+                throw new InvalidOperationException("Interaction validation source changed during readback.");
+        }
+
+        private void RequireInteractionReferenceWindow()
+        {
             if (!LeaseCurrent() || !FenceReady() || !ReferencesValid() || !ManagersCurrent() || !OriginalScalarsUnchanged())
                 throw new InvalidOperationException("Interaction validation lost its manager/reference/fence binding.");
         }
@@ -595,7 +678,7 @@ namespace DaveCoop.Networking
 
         private GuestShadowRootReadback ReadRootCore(GuestShadowRoot root)
         {
-            RootIndex(root);
+            if (!SupportsRoot(root)) return GuestShadowRootReadback.Unknown;
             if (!ManagersCurrent()) return GuestShadowRootReadback.Foreign;
             if (root == GuestShadowRoot.IngredientsCache)
                 return _ingredientCache == null ? GuestShadowRootReadback.Unknown : _ingredientCache.ReadCurrent(RequireIngredientReadWindow);
@@ -650,8 +733,9 @@ namespace DaveCoop.Networking
 
         private bool AllRoots(GuestShadowRootReadback expected)
         {
-            return AllSaveRoots(expected) && ReadRootCore(GuestShadowRoot.IngredientsCache) == expected &&
-                ReadRootCore(GuestShadowRoot.IngameCache) == expected;
+            return AllSaveRoots(expected) && (Profile == GuestShadowProfile.NaturalInitialization ||
+                (ReadRootCore(GuestShadowRoot.IngredientsCache) == expected &&
+                ReadRootCore(GuestShadowRoot.IngameCache) == expected));
         }
 
         private bool AllSaveRoots(GuestShadowRootReadback expected)
@@ -674,10 +758,34 @@ namespace DaveCoop.Networking
 
         private bool FenceReady() => LeaseCurrent() && _fenceAttempted && _fence.Active && _fence.Healthy && _fence.PendingCalls == 0;
 
+        private bool SourceBindingCurrent()
+        {
+            if (Profile == GuestShadowProfile.ExistingCaches) return true;
+            return _initializationSource.IsCurrentWindow(this) || _initializationSource.AllowsActiveValidation(this) ||
+                Reject("The natural initialization source lifetime is no longer current.");
+        }
+
+        private bool ActiveValidationWindow()
+        {
+            if (!LeaseCurrent()) return false;
+            if (Profile == GuestShadowProfile.ExistingCaches) return true;
+            try { return _initializationSource.AllowsActiveValidation(this) || Reject("The natural initialization source does not permit active root validation."); }
+            catch (Exception) { return ExceptionFailure("Natural initialization active validation binding is unknown."); }
+        }
+
+        private bool SupportsRoot(GuestShadowRoot root)
+        {
+            int value = (int)root;
+            return value >= 1 && value <= 7 && (Profile == GuestShadowProfile.ExistingCaches || value <= 5);
+        }
+
         private bool LeaseCurrent()
         {
             NativeGuestShadowBridge owner = Volatile.Read(ref _processLease);
             return MainThread() && _claimed && !_released &&
+                (Profile == GuestShadowProfile.ExistingCaches || (!ReferenceEquals(_initializationSource, null) &&
+                _initializationSource.UnityThreadId == UnityThreadId && _initializationSource.HostBindingId == HostBindingId &&
+                _initializationSource.LeaseId == LeaseId && ReferenceEquals(_initializationSource.Fence, _fence))) &&
                 (ReferenceEquals(owner, this) || (!_fenceAttempted && ReferenceEquals(owner, null))) ||
                 Reject("Native shadow lease/thread binding is not current.");
         }

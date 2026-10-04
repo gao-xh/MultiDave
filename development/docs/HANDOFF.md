@@ -1,6 +1,6 @@
 # MultiDave 接手记录
 
-当前源码0.1.36-dev（协议6），实际Core/TCP271/271及插件编译通过。新增[房主地图候选读取接口](MAP_ADOPTION_ENTRY.md)，即时刷新并返回独立副本；原游戏加载流程尚未接入。见[验证摘要](../logs/map-candidate-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；客机隔离、房主世界、每人独立背包的真实分流、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.37-dev（协议6），本轮实际Core/TCP275/275及插件Build警告视为错误通过。新增默认关闭的[客机自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接Plugin启动、实际Guest房间与首次原初始化的五根事务，尚未运行游戏或原生验证；房主地图采用仍未实现。见[本轮验证记录](../logs/guest-initialization-build-verification.json)。安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；完整客机隔离、房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
 
 ## 已完成
 
@@ -273,7 +273,7 @@ M1 源码与计划已推送至 `codex/player-discovery` 分支。自动审批首
 
 0.1.18新增实际typed原生影子桥、单次事务及已枚举输出围栏源码。四类Data原生JSON round trip、五根直接交换/回读/恢复和15个独立强handle已编译；7组新增事务夹具以合成backend验证partial/unknown补偿、fence/refs保留和一次清理，总167/167通过。
 
-当前生产进入与静止边界恒false，事务在围栏安装前拒绝；startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。全部GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority保持false，未部署或启动。
+0.1.18该历史阶段的生产进入与静止边界恒false，事务在围栏安装前拒绝；当时startup primitive自身再查边界，未接Network/GUI，未运行克隆、根交换、阻断或恢复。194条精确声明不是所有writer、独立native地址或ABI证明；Interaction未Sync、完整子树/旧缓存/协程隔离仍待完成。0.1.37新Natural五根启动接线见GUEST_INITIALIZATION_BOOTSTRAP；旧ExistingCaches七根仍硬拒，GuestStateIsolated/NativePermission/WorldAuthority/CargoAuthority仍false，迄今未部署或启动新版。
 
 实现与下一步见[原生根桥](GUEST_SHADOW_BRIDGE.md)、[输出围栏](GUEST_OUTPUT_FENCE.md)及[0.1.18构建摘要](../logs/guest-shadow-build-verification.json)。下一步必须实现可信原生进入/静止边界与缓存/Interaction切换，再进行受控实机验证；个人袋分流、真实地图采用及双游戏闭环仍按原计划推进。
 
@@ -353,6 +353,14 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 
 自动delegate静态target已唯一解析为GetExchangeCount；UI鱼TotalCount已转换且可能累计。数量使用槽rawGrade，入仓另取FinalGrade；不能重复兑换UI数或用rawCount替代所有路径。完整UI闭型mapping/类别、员工政策及真实返航绑定仍待核。安装.12/潜水.11/default.0保持；本轮Build通过，Core269为旧实际结果复用，未运行游戏。
 
-## 0.1.36 接手增量
+## 0.1.36 历史接手增量
 
 先读[地图采用入口](MAP_ADOPTION_ENTRY.md)和[实际摘要](../logs/map-candidate-build-verification.json)。TryCaptureRemoteChoices 已有2新实际TCP用例，fresh绑定/owned copy/partial/retire/clear/close保持候选语义；还没有自然加载调用方。下一步接真实隔离初始化窗口及完整路线采用，IGP按控制器等待后替换原随机。注意 manager Start 工厂早于精确operation完成时冻结owner0的风险，以及恢复原根前必须先退休消费者。实际271/271与Build通过，本轮未部署/启动；.35鱼叉显示和数量研究保留历史。
+
+## 0.1.37 接手增量
+
+先读[客机初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)与[实际摘要](../logs/guest-initialization-build-verification.json)。默认关闭 `Startup/ExperimentalGuestInitialization`；开启的新进程自动加入配置房主，仅固定初始Guest/Room。早期只保存同installation thread的opaque wrappers，实际Diagnostics.Update登记后才读native。配对Awake_Impl/LoadSavedData/LoadAllData/原InitAfter factory和同iterator首state0/currentnull，确认已列冷缓存与五根后，一次Seal围栏156+41=197，再以实际source lease进入Natural五根事务并放行原缓存初始化。
+
+新增3exact File.Copy/Delete初始阻断，任一尝试计数并锁存失败；不能把skip void当加载迁移成功。旧ExistingCaches七根仍硬拒，不用Room或flags开放热Join。quiet仍false，失败/Disconnect不Restore/unpatch/free；切回个人角色需退出并以关开关的新进程启动。源已接到原游戏自然初始化，只是源码进展；首次加载顺序、typed ABI、完整SaveGraph/cache/writer覆盖和Guest隔离仍未验证，地图原生消费者未接，M4未完成。
+
+本轮实际275/275含4新synthetic事务夹具；exit0/tail275和4.55秒保留，完整stdout及确切测试UTC未留。86Core输入仅postrun hash，不声称执行前封存或前后字节相同。最终插件Build警告视为错误通过，147份插件输入有执行前seal及Build前后相同，DLL SHA256 `FB608E8763EBC4CCE0F7BF231ED43DD550110A1D438D7FBED12622132C4E71D0`。未部署/启动；安装.12/潜水.11/default.0保持。下一步验证真实首加载/五根/缓存输出，接完整房主路线与IGP采用、可信员工actor及每人独立袋分流/负重和正常返航；双端与GitHub冷配置仍为完成条件。

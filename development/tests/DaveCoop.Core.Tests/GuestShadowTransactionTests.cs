@@ -118,8 +118,8 @@ internal static class GuestShadowTransactionTests
     internal static void QuiescenceAndFenceFailureKeepStrongReferences()
     {
         var backend = new Backend { Quiescent = false }; var transaction = new GuestShadowTransaction(backend); Accepted(transaction.Install());
-        Assert(transaction.RestoreAndRelease().Reason == GuestShadowReason.QuiescenceUnavailable && backend.AllOriginal &&
-            transaction.Snapshot.Stage == GuestShadowStage.RestoredFenced && transaction.Snapshot.OriginalsRestored &&
+        Assert(transaction.RestoreAndRelease().Reason == GuestShadowReason.QuiescenceUnavailable && !backend.AllOriginal && backend.Restored.Count == 0 &&
+            transaction.Snapshot.Stage == GuestShadowStage.ShadowInstalled && !transaction.Snapshot.OriginalsRestored &&
             transaction.Snapshot.FenceRetained && transaction.Snapshot.ReferencesRetained && !backend.Calls.Contains("remove"),
             "root restoration or known writer count was promoted to complete native quiescence");
         int writes = backend.MutatingCalls;
@@ -137,7 +137,7 @@ internal static class GuestShadowTransactionTests
 
         var dirty = new Backend { OriginalManagersMatch = false }; var dirtyTransaction = new GuestShadowTransaction(dirty); Accepted(dirtyTransaction.Install());
         Assert(!dirtyTransaction.RestoreAndRelease().Accepted && dirty.AllOriginal && !dirtyTransaction.Snapshot.OriginalsRestored &&
-            !dirty.Calls.Contains("quiescent") && !dirty.Calls.Contains("remove"), "root pointers alone bypassed manager/cache confirmation");
+            dirty.Calls.Contains("quiescent") && !dirty.Calls.Contains("remove"), "root pointers alone bypassed manager/cache confirmation");
     }
 
     internal static void ThreadLeaseAndReentrantCallsCannotReuseSource()
@@ -356,6 +356,103 @@ internal static class GuestShadowTransactionTests
             "captured absent seventh table was treated as detached or replaced with guessed empty state");
     }
 
+    internal static void NaturalInitializationUsesOnlyFiveSaveRoots()
+    {
+        var backend = new Backend { MutableProfile = GuestShadowProfile.NaturalInitialization };
+        backend.Original[5] = null; backend.Current[5] = null;
+        backend.IngameInstanceCurrent = false;
+        backend.Unreadable.Add(GuestShadowRoot.IngredientsCache); backend.Unreadable.Add(GuestShadowRoot.IngameCache);
+        var transaction = new GuestShadowTransaction(backend); Accepted(transaction.Install());
+        GuestShadowSnapshot view = transaction.Snapshot;
+        Assert(view.Profile == GuestShadowProfile.NaturalInitialization && view.RootOrder.SequenceEqual(Roots().Take(5)) &&
+            view.Roots.Length == 5 && view.Roots.All(root => root == GuestShadowRootReadback.Detached) &&
+            backend.ReadRoots.All(root => (int)root <= 5) && !backend.Calls.Any(call => call.Contains("Cache")),
+            "natural initialization fabricated installed cache roots or required cache readback");
+        Assert(!view.GuestStateIsolated && !view.NativePermission && !view.WorldAuthority && !view.CargoAuthority,
+            "five save roots or synthetic entry boundary granted full isolation");
+        view.RootOrder[0] = GuestShadowRoot.IngameCache; view.Roots[0] = GuestShadowRootReadback.Foreign;
+        Assert(transaction.Snapshot.RootOrder[0] == GuestShadowRoot.GameData && transaction.Snapshot.Roots[0] == GuestShadowRootReadback.Detached,
+            "profile snapshot exposed mutable transaction order or root evidence");
+        Accepted(transaction.ValidateActive()); Accepted(transaction.RestoreAndRelease());
+        Assert(backend.Restored.SequenceEqual(Roots().Take(5).Reverse()) && backend.ReadRoots.All(root => (int)root <= 5) &&
+            backend.RestoreCounts.Skip(5).All(count => count == 0) && transaction.Snapshot.Stage == GuestShadowStage.Released,
+            "natural cleanup dispatched absent cache restoration or changed save-root dependency order");
+    }
+
+    internal static void InitializationProfileCannotChangeDuringItsLease()
+    {
+        var invalid = new Backend { MutableProfile = (GuestShadowProfile)99 }; bool rejected = false;
+        try { _ = new GuestShadowTransaction(invalid); } catch (ArgumentException) { rejected = true; }
+        Assert(rejected && invalid.Calls.Count == 0, "undefined profile entered backend business");
+        var before = new Backend { MutableProfile = GuestShadowProfile.NaturalInitialization };
+        var pending = new GuestShadowTransaction(before); before.MutableProfile = GuestShadowProfile.ExistingCaches;
+        Assert(pending.Install().Reason == GuestShadowReason.BindingChanged && before.Calls.Count == 0 &&
+            pending.Snapshot.Profile == GuestShadowProfile.NaturalInitialization && pending.Snapshot.Roots.Length == 5,
+            "changed profile silently altered the frozen root order or claimed a lease");
+        var nested = new Backend { MutableProfile = GuestShadowProfile.NaturalInitialization };
+        var inPrepare = new GuestShadowTransaction(nested);
+        nested.AfterStep = stage => { if (stage == "prepare") nested.MutableProfile = GuestShadowProfile.ExistingCaches; };
+        Assert(inPrepare.Install().Reason == GuestShadowReason.BindingChanged && !nested.Calls.Any(call => call.StartsWith("install-", StringComparison.Ordinal)) &&
+            nested.Restored.Count == 0 && inPrepare.Snapshot.FenceRetained && inPrepare.Snapshot.ReferencesRetained,
+            "preparation callback changed profile and dispatched roots or guessed cleanup");
+        var active = new Backend { MutableProfile = GuestShadowProfile.NaturalInitialization };
+        var installed = new GuestShadowTransaction(active); Accepted(installed.Install());
+        int calls = active.MutatingCalls; active.MutableProfile = GuestShadowProfile.ExistingCaches;
+        Assert(installed.ValidateActive().Reason == GuestShadowReason.BindingChanged && !installed.RestoreAndRelease().Accepted &&
+            active.MutatingCalls == calls && active.Restored.Count == 0 && installed.Snapshot.RootOrder.Length == 5 &&
+            installed.Snapshot.FenceRetained && installed.Snapshot.ReferencesRetained,
+            "active profile replacement restored original data or switched to a seven-root transaction");
+    }
+
+    internal static void NonQuiescentFailuresNeverRestoreLiveShadowRoots()
+    {
+        var active = new Backend { MutableProfile = GuestShadowProfile.NaturalInitialization };
+        var transaction = new GuestShadowTransaction(active); Accepted(transaction.Install()); active.Quiescent = false;
+        Assert(transaction.RestoreAndRelease().Reason == GuestShadowReason.QuiescenceUnavailable && active.Restored.Count == 0 &&
+            transaction.Snapshot.RootShadowInstalled && transaction.Snapshot.Stage == GuestShadowStage.ShadowInstalled,
+            "unavailable boundary reverted installed roots before original confirmation");
+        active.FailStage = "validate";
+        Assert(!transaction.ValidateActive().Accepted && active.Restored.Count == 0 &&
+            Enumerable.Range(0, 5).All(i => ReferenceEquals(active.Current[i], active.Detached[i])) &&
+            transaction.Snapshot.FenceRetained && transaction.Snapshot.ReferencesRetained && !transaction.Snapshot.OriginalsRestored,
+            "failed active validation automatically exposed original roots to live consumers");
+        active.Quiescent = true; Accepted(transaction.RestoreAndRelease());
+        Assert(active.RestoreCounts.Take(5).All(count => count == 1) && transaction.Snapshot.Fault != null,
+            "later verified boundary failed to resolve the retained lease or erased fault history");
+
+        var partial = new Backend { MutableProfile = GuestShadowProfile.NaturalInitialization, Quiescent = false, FailStage = "install-PlayerData" };
+        var entered = new GuestShadowTransaction(partial);
+        Assert(!entered.Install().Accepted && partial.Restored.Count == 0 && ReferenceEquals(partial.Current[1], partial.Detached[1]) &&
+            entered.Snapshot.Roots[1] == GuestShadowRootReadback.Unknown && entered.Snapshot.FenceRetained && entered.Snapshot.ReferencesRetained,
+            "entered installation failure guessed original readback or restored fields in an unsafe window");
+        int attempted = partial.MutatingCalls;
+        Assert(entered.Install().Reason == GuestShadowReason.Duplicate && entered.RestoreAndRelease().Reason == GuestShadowReason.QuiescenceUnavailable &&
+            partial.MutatingCalls == attempted && partial.Restored.Count == 0, "waiting for consumers reran install or compensation");
+        partial.Quiescent = true; Accepted(entered.RestoreAndRelease());
+        Assert(partial.RestoreCounts[0] == 1 && partial.RestoreCounts[1] == 1 && partial.RestoreCounts.Skip(2).All(count => count == 0),
+            "safe cleanup guessed writes for roots that had never been installed");
+    }
+
+    internal static void QuiescenceIsFreshBeforeEveryRestoreWrite()
+    {
+        var backend = new Backend(); var transaction = new GuestShadowTransaction(backend); Accepted(transaction.Install());
+        backend.AfterStep = stage => { if (stage == "restore-IngameCache") backend.Quiescent = false; };
+        Assert(!transaction.RestoreAndRelease().Accepted && backend.RestoreCounts[6] == 1 && backend.RestoreCounts.Take(6).All(count => count == 0) &&
+            transaction.Snapshot.FenceRetained && transaction.Snapshot.ReferencesRetained && !transaction.Snapshot.OriginalsRestored,
+            "one verified restoration boundary authorized later writes after consumers resumed");
+        backend.AfterStep = null; backend.Quiescent = true; Accepted(transaction.RestoreAndRelease());
+        Assert(backend.RestoreCounts.All(count => count == 1), "renewed boundary repeated an already confirmed seventh-root restore");
+
+        var changed = new Backend { MutableProfile = GuestShadowProfile.NaturalInitialization };
+        var changing = new GuestShadowTransaction(changed); Accepted(changing.Install()); object foreign = new object(); int checks = 0;
+        changed.AfterStep = stage => { if (stage == "quiescent" && ++checks == 2) changed.Current[4] = foreign; };
+        Assert(!changing.RestoreAndRelease().Accepted && ReferenceEquals(changed.Current[4], foreign) && changed.RestoreCounts[4] == 0 &&
+            changed.RestoreCounts.Take(4).All(count => count == 1) && !changed.Calls.Contains("remove"),
+            "boundary callback replaced a root but the earlier readback still authorized its overwrite");
+        changed.AfterStep = null; changed.Current[4] = changed.Original[4]; Accepted(changing.RestoreAndRelease());
+        Assert(changed.RestoreCounts[4] == 0, "late exact original evidence guessed a restoration for the foreign field");
+    }
+
     private static GuestShadowRoot[] Roots() => new[] { GuestShadowRoot.GameData, GuestShadowRoot.PlayerData,
         GuestShadowRoot.PlayerInteraction, GuestShadowRoot.PhotoData, GuestShadowRoot.UserOption, GuestShadowRoot.IngredientsCache, GuestShadowRoot.IngameCache };
     private static void Accepted(GuestShadowResult result) => Assert(result.Accepted, result.Reason + ": " + result.Message);
@@ -370,6 +467,8 @@ internal static class GuestShadowTransactionTests
         public Guid HostBindingId => OverrideHostBinding == Guid.Empty ? _binding : OverrideHostBinding;
         public Guid LeaseId => _lease;
         public int UnityThreadId { get; } = Environment.CurrentManagedThreadId;
+        public GuestShadowProfile MutableProfile = GuestShadowProfile.ExistingCaches;
+        public GuestShadowProfile Profile => MutableProfile;
         public readonly object[] Original = Enumerable.Range(0, Roots().Length).Select(_ => new object()).ToArray();
         public readonly object[] Detached = Enumerable.Range(0, Roots().Length).Select(_ => new object()).ToArray();
         public readonly object OwnedMixedState = new object();
@@ -382,6 +481,7 @@ internal static class GuestShadowTransactionTests
         public readonly object[] Current;
         public readonly List<string> Calls = new List<string>();
         public readonly List<GuestShadowRoot> Restored = new List<GuestShadowRoot>();
+        public readonly List<GuestShadowRoot> ReadRoots = new List<GuestShadowRoot>();
         public readonly int[] RestoreCounts = new int[Roots().Length];
         public readonly HashSet<GuestShadowRoot> BlockRestore = new HashSet<GuestShadowRoot>();
         public readonly HashSet<GuestShadowRoot> Unreadable = new HashSet<GuestShadowRoot>();
@@ -393,7 +493,7 @@ internal static class GuestShadowTransactionTests
         public int Reads;
         public int MutatingCalls => Calls.Count(call => call != "quiescent" && call != "validate");
         public bool AllOriginal => Enumerable.Range(0, 5).All(i => ReferenceEquals(Current[i], Original[i])) &&
-            ReadCachePair() == GuestShadowRootReadback.Original && IngameInstanceCurrent && ReferenceEquals(Current[6], Original[6]);
+            (Profile == GuestShadowProfile.NaturalInitialization || ReadCachePair() == GuestShadowRootReadback.Original && IngameInstanceCurrent && ReferenceEquals(Current[6], Original[6]));
         public Backend() { Current = (object[])Original.Clone(); }
         public bool TryClaimLease() { Calls.Add("claim"); if (_claimed) return false; _claimed = true; return true; }
         public bool BindingIsCurrent() { Reads++; return BindingCurrent; }
@@ -411,6 +511,7 @@ internal static class GuestShadowTransactionTests
         }
         public bool InstallRoot(GuestShadowRoot root)
         {
+            Assert(Profile != GuestShadowProfile.NaturalInitialization || (int)root <= 5, "natural install touched a not-yet-initialized cache");
             Assert(_fenced && FenceHealthy && _prepared, "write entered before detached preparation");
             if (root == GuestShadowRoot.IngredientsCache)
             {
@@ -422,6 +523,8 @@ internal static class GuestShadowTransactionTests
         }
         public GuestShadowRootReadback ReadRoot(GuestShadowRoot root)
         {
+            Assert(Profile != GuestShadowProfile.NaturalInitialization || (int)root <= 5, "natural readback touched a not-yet-initialized cache");
+            ReadRoots.Add(root);
             Reads++; if (!_captured || Unreadable.Contains(root)) return GuestShadowRootReadback.Unknown;
             if (root == GuestShadowRoot.IngredientsCache) return ReadCachePair();
             if (root == GuestShadowRoot.IngameCache && !IngameInstanceCurrent) return GuestShadowRootReadback.Foreign;
@@ -442,9 +545,10 @@ internal static class GuestShadowTransactionTests
             return GuestShadowRootReadback.Foreign;
         }
         public bool ValidateRoots() => Step("validate") && Enumerable.Range(0, 5).All(i => ReferenceEquals(Current[i], Detached[i])) &&
-            ReadCachePair() == GuestShadowRootReadback.Detached && IngameInstanceCurrent && ReferenceEquals(Current[6], Detached[6]);
+            (Profile == GuestShadowProfile.NaturalInitialization || ReadCachePair() == GuestShadowRootReadback.Detached && IngameInstanceCurrent && ReferenceEquals(Current[6], Detached[6]));
         public bool RestoreRoot(GuestShadowRoot root)
         {
+            Assert(Quiescent && (Profile != GuestShadowProfile.NaturalInitialization || (int)root <= 5), "restoration entered without a current boundary or dispatched an unborn cache");
             int index = (int)root - 1; RestoreCounts[index]++; Restored.Add(root);
             if (root == GuestShadowRoot.IngredientsCache)
             {
@@ -461,7 +565,7 @@ internal static class GuestShadowTransactionTests
             Current[index] = Original[index]; return Step("restore-" + root);
         }
         public bool ConfirmOriginalManagersAndRoots() { Reads++; return _captured && BindingCurrent && OriginalManagersMatch && AllOriginal; }
-        public bool HasQuiescentBoundary() { Calls.Add("quiescent"); return Quiescent; }
+        public bool HasQuiescentBoundary() { Calls.Add("quiescent"); AfterStep?.Invoke("quiescent"); return Quiescent; }
         public bool RemoveOutputFence() { Assert(AllOriginal && Quiescent, "fence removed before restoration/quiescence"); _fenced = false; return Step("remove"); }
         public bool ReleaseReferences() { Assert(!_fenced && AllOriginal && Quiescent, "references released before safe fence removal"); return Step("release"); }
         private bool Step(string stage)

@@ -3,6 +3,7 @@ using System;
 namespace DaveCoop.Core.Guest
 {
     public enum GuestShadowRoot { GameData = 1, PlayerData = 2, PlayerInteraction = 3, PhotoData = 4, UserOption = 5, IngredientsCache = 6, IngameCache = 7 }
+    public enum GuestShadowProfile { ExistingCaches = 1, NaturalInitialization = 2 }
     // OwnedMixed applies only to the composite IngredientsCache step: every
     // field is proven original or detached, but the pair is incomplete. The
     // backend must inspect/restore individual fields; never rewrite a pair blind.
@@ -24,6 +25,7 @@ namespace DaveCoop.Core.Guest
         Guid HostBindingId { get; }
         Guid LeaseId { get; }
         int UnityThreadId { get; }
+        GuestShadowProfile Profile { get; }
         bool TryClaimLease();
         bool BindingIsCurrent();
         bool CanEnterBoundary();
@@ -54,6 +56,8 @@ namespace DaveCoop.Core.Guest
     {
         public Guid HostBindingId { get; internal set; }
         public Guid LeaseId { get; internal set; }
+        public GuestShadowProfile Profile { get; internal set; }
+        public GuestShadowRoot[] RootOrder { get; internal set; }
         public GuestShadowStage Stage { get; internal set; }
         public bool RootShadowInstalled { get; internal set; }
         // Retained is a cleanup obligation, not a claim that hooks are healthy.
@@ -74,13 +78,17 @@ namespace DaveCoop.Core.Guest
     // their outcome. Strong references stay owned until verified final cleanup.
     public sealed class GuestShadowTransaction
     {
-        private static readonly GuestShadowRoot[] Order = { GuestShadowRoot.GameData, GuestShadowRoot.PlayerData,
+        private static readonly GuestShadowRoot[] ExistingOrder = { GuestShadowRoot.GameData, GuestShadowRoot.PlayerData,
             GuestShadowRoot.PlayerInteraction, GuestShadowRoot.PhotoData, GuestShadowRoot.UserOption, GuestShadowRoot.IngredientsCache, GuestShadowRoot.IngameCache };
+        private static readonly GuestShadowRoot[] NaturalOrder = { GuestShadowRoot.GameData, GuestShadowRoot.PlayerData,
+            GuestShadowRoot.PlayerInteraction, GuestShadowRoot.PhotoData, GuestShadowRoot.UserOption };
         private readonly IGuestShadowBackend _backend;
         private readonly Guid _hostBinding, _lease;
         private readonly int _thread;
-        private readonly bool[] _restoreDispatched = new bool[Order.Length];
-        private readonly GuestShadowRootReadback[] _roots = new GuestShadowRootReadback[Order.Length];
+        private readonly GuestShadowProfile _profile;
+        private readonly GuestShadowRoot[] _order;
+        private readonly bool[] _restoreDispatched;
+        private readonly GuestShadowRootReadback[] _roots;
         private bool _claimed, _installAttempted, _captureAttempted, _fenceAttempted, _fenceRetained;
         private bool _fenceIntegrityLost, _referencesRetained, _originalsRestored, _installed;
         private bool _removeAttempted, _releaseAttempted, _busy;
@@ -94,11 +102,17 @@ namespace DaveCoop.Core.Guest
             _hostBinding = backend.HostBindingId; _lease = backend.LeaseId; _thread = backend.UnityThreadId;
             if (_hostBinding == Guid.Empty || _lease == Guid.Empty || _thread < 1)
                 throw new ArgumentException("Shadow backend requires its own nonempty source lease and Unity thread.", nameof(backend));
+            _profile = backend.Profile;
+            if (_profile != GuestShadowProfile.ExistingCaches && _profile != GuestShadowProfile.NaturalInitialization)
+                throw new ArgumentException("Shadow backend requires a supported, fixed initialization profile.", nameof(backend));
+            _order = (GuestShadowRoot[])(_profile == GuestShadowProfile.ExistingCaches ? ExistingOrder : NaturalOrder).Clone();
+            _restoreDispatched = new bool[_order.Length]; _roots = new GuestShadowRootReadback[_order.Length];
         }
 
         public GuestShadowSnapshot Snapshot => new GuestShadowSnapshot
         {
             HostBindingId = _hostBinding, LeaseId = _lease, Stage = _stage, RootShadowInstalled = _installed,
+            Profile = _profile, RootOrder = (GuestShadowRoot[])_order.Clone(),
             FenceRetained = _fenceRetained, FenceIntegrityLost = _fenceIntegrityLost,
             ReferencesRetained = _referencesRetained, OriginalsRestored = _originalsRestored,
             Fault = _fault, Roots = (GuestShadowRootReadback[])_roots.Clone()
@@ -136,7 +150,7 @@ namespace DaveCoop.Core.Guest
                 if (failure != null) return FailInstall(failure);
                 failure = Call(_backend.PrepareDetached, GuestShadowReason.PrepareFailed, "Prepare detached roots");
                 if (failure != null) return FailInstall(failure);
-                for (int i = 0; i < Order.Length; i++)
+                for (int i = 0; i < _order.Length; i++)
                 {
                     failure = Binding(); if (failure != null) return FailInstall(failure);
                     failure = Fence(); if (failure != null) return FailInstall(failure);
@@ -147,7 +161,8 @@ namespace DaveCoop.Core.Guest
                     if (_roots[i] != GuestShadowRootReadback.Original)
                         return FailInstall(Latch(GuestShadowReason.ForeignRoot, "An installation root is no longer original."));
                     int index = i;
-                    failure = Call(() => _backend.InstallRoot(Order[index]), GuestShadowReason.InstallFailed, "Install " + Order[i]);
+                    _roots[i] = GuestShadowRootReadback.Unknown;
+                    failure = Call(() => _backend.InstallRoot(_order[index]), GuestShadowReason.InstallFailed, "Install " + _order[i]);
                     if (failure != null) return FailInstall(failure);
                     failure = Read(i);
                     if (failure != null) return FailInstall(failure);
@@ -176,7 +191,7 @@ namespace DaveCoop.Core.Guest
                 GuestShadowResult failure = Binding() ?? Fence();
                 if (failure == null)
                 {
-                    for (int i = 0; i < Order.Length && failure == null; i++)
+                    for (int i = 0; i < _order.Length && failure == null; i++)
                     {
                         failure = Read(i);
                         if (failure == null && _roots[i] != GuestShadowRootReadback.Detached)
@@ -235,6 +250,7 @@ namespace DaveCoop.Core.Guest
         {
             if (Environment.CurrentManagedThreadId != _thread) return Latch(GuestShadowReason.WrongThread, "Shadow transaction changed Unity thread.");
             if (_busy) return Latch(GuestShadowReason.Reentrant, "Shadow transaction was reentered.");
+            GuestShadowResult profile = ProfileBinding(); if (profile != null) return profile;
             _busy = true; return null;
         }
 
@@ -243,8 +259,9 @@ namespace DaveCoop.Core.Guest
             try
             {
                 long before = _faultSerial;
-                if (_backend.HostBindingId != _hostBinding || _backend.LeaseId != _lease || _backend.UnityThreadId != _thread || !_backend.BindingIsCurrent())
+                if (_backend.Profile != _profile || _backend.HostBindingId != _hostBinding || _backend.LeaseId != _lease || _backend.UnityThreadId != _thread || !_backend.BindingIsCurrent())
                     return Latch(GuestShadowReason.BindingChanged, "Bound backend source or manager identity changed.");
+                GuestShadowResult profile = ProfileBinding(); if (profile != null) return profile;
                 if (_faultSerial != before) return Result(GuestShadowReason.Faulted, "Binding callback invalidated the transaction.");
                 return null;
             }
@@ -256,11 +273,13 @@ namespace DaveCoop.Core.Guest
             try
             {
                 long before = _faultSerial;
+                GuestShadowResult profile = ProfileBinding(); if (profile != null) return profile;
                 if (!_backend.FenceIsHealthy() || !_backend.FenceIsActive())
                 {
                     _fenceIntegrityLost = true;
                     return Latch(GuestShadowReason.FenceUnavailable, "Output fence lost health or active coverage.");
                 }
+                profile = ProfileBinding(); if (profile != null) return profile;
                 if (_faultSerial != before) return Result(GuestShadowReason.Faulted, "Fence callback invalidated the transaction.");
                 return null;
             }
@@ -277,26 +296,44 @@ namespace DaveCoop.Core.Guest
 
         private GuestShadowResult Compensate()
         {
-            _installed = false; _originalsRestored = false; _stage = GuestShadowStage.Restoring;
             GuestShadowResult binding = Binding();
             if (binding != null) { _stage = GuestShadowStage.Failed; return binding; }
+            // Persistent-output blocking cannot make live consumers stop using
+            // shadow roots. No restoration may begin in an unavailable native
+            // boundary, including automatic compensation after validation fails.
+            GuestShadowResult quiet = Call(_backend.HasQuiescentBoundary, GuestShadowReason.QuiescenceUnavailable,
+                "Confirm boundary before root restoration", false);
+            if (quiet != null) return quiet;
+            binding = Binding(); if (binding != null) return binding;
+            _installed = false; _originalsRestored = false; _stage = GuestShadowStage.Restoring;
             GuestShadowResult firstFailure = null;
             // Restore dependencies in reverse order. Inspect all roots even if
             // a previous root is foreign, unknown, or its write throws.
-            for (int i = Order.Length - 1; i >= 0; i--)
+            for (int i = _order.Length - 1; i >= 0; i--)
             {
                 GuestShadowResult failure = Read(i);
                 if (failure == null && (_roots[i] == GuestShadowRootReadback.Detached ||
-                    Order[i] == GuestShadowRoot.IngredientsCache && _roots[i] == GuestShadowRootReadback.OwnedMixed))
+                    _order[i] == GuestShadowRoot.IngredientsCache && _roots[i] == GuestShadowRootReadback.OwnedMixed))
                 {
                     if (_restoreDispatched[i]) failure = Latch(GuestShadowReason.RestoreFailed, "A restore is unresolved and will not be dispatched again.");
                     else
                     {
                         failure = Binding();
-                        if (failure == null)
+                        failure ??= Call(_backend.HasQuiescentBoundary, GuestShadowReason.QuiescenceUnavailable,
+                            "Confirm boundary before restoring " + _order[i], false);
+                        failure ??= Binding();
+                        // The boundary callback may have replaced this exact
+                        // field. Inspect it again before setting the write latch.
+                        failure ??= Read(i);
+                        if (failure == null && _roots[i] != GuestShadowRootReadback.Original &&
+                            _roots[i] != GuestShadowRootReadback.Detached &&
+                            !(_order[i] == GuestShadowRoot.IngredientsCache && _roots[i] == GuestShadowRootReadback.OwnedMixed))
+                            failure = Latch(GuestShadowReason.ForeignRoot, "Root changed during the restoration boundary check.");
+                        if (failure == null && _roots[i] != GuestShadowRootReadback.Original)
                         {
                             _restoreDispatched[i] = true; int index = i;
-                            GuestShadowResult write = Call(() => _backend.RestoreRoot(Order[index]), GuestShadowReason.RestoreFailed, "Restore " + Order[i]);
+                            _roots[i] = GuestShadowRootReadback.Unknown;
+                            GuestShadowResult write = Call(() => _backend.RestoreRoot(_order[index]), GuestShadowReason.RestoreFailed, "Restore " + _order[i]);
                             GuestShadowResult read = Read(i);
                             // A false/throw may have restored the field. Exact
                             // readback resolves it, but the failure stays latched.
@@ -319,7 +356,7 @@ namespace DaveCoop.Core.Guest
         private GuestShadowResult ConfirmAllOriginal()
         {
             GuestShadowResult failure = Binding(); if (failure != null) return failure;
-            for (int i = 0; i < Order.Length; i++)
+            for (int i = 0; i < _order.Length; i++)
             {
                 failure = Read(i); if (failure != null) return failure;
                 if (_roots[i] != GuestShadowRootReadback.Original)
@@ -333,15 +370,17 @@ namespace DaveCoop.Core.Guest
             try
             {
                 long before = _faultSerial;
-                GuestShadowRootReadback value = _backend.ReadRoot(Order[index]);
+                GuestShadowResult profile = ProfileBinding(); if (profile != null) return profile;
+                GuestShadowRootReadback value = _backend.ReadRoot(_order[index]);
+                profile = ProfileBinding(); if (profile != null) return profile;
                 if (value != GuestShadowRootReadback.Original && value != GuestShadowRootReadback.Detached && value != GuestShadowRootReadback.Foreign &&
-                    !(Order[index] == GuestShadowRoot.IngredientsCache && value == GuestShadowRootReadback.OwnedMixed))
+                    !(_order[index] == GuestShadowRoot.IngredientsCache && value == GuestShadowRootReadback.OwnedMixed))
                 { _roots[index] = GuestShadowRootReadback.Unknown; return Latch(GuestShadowReason.ReadbackUnknown, "Root readback is unknown."); }
                 _roots[index] = value;
                 return _faultSerial == before ? null : Result(GuestShadowReason.Faulted, "Readback callback invalidated the transaction.");
             }
             catch (Exception error)
-            { _roots[index] = GuestShadowRootReadback.Unknown; return ExceptionResult(GuestShadowReason.ReadbackUnknown, "Read " + Order[index], error); }
+            { _roots[index] = GuestShadowRootReadback.Unknown; return ExceptionResult(GuestShadowReason.ReadbackUnknown, "Read " + _order[index], error); }
         }
 
         private GuestShadowResult Call(Func<bool> action, GuestShadowReason reason, string stage, bool latchFalse = true)
@@ -349,12 +388,20 @@ namespace DaveCoop.Core.Guest
             try
             {
                 long before = _faultSerial;
+                GuestShadowResult profile = ProfileBinding(); if (profile != null) return profile;
                 bool accepted = action();
+                profile = ProfileBinding(); if (profile != null) return profile;
                 if (_faultSerial != before) return Result(GuestShadowReason.Faulted, "Backend callback invalidated the transaction.");
                 if (accepted) return null;
                 return latchFalse ? Latch(reason, stage + " was rejected.") : Result(reason, stage + " is unavailable; fence and references remain retained.");
             }
             catch (Exception error) { return ExceptionResult(reason, stage, error); }
+        }
+
+        private GuestShadowResult ProfileBinding()
+        {
+            try { return _backend.Profile == _profile ? null : Latch(GuestShadowReason.BindingChanged, "Backend initialization profile changed during its lease."); }
+            catch (Exception error) { return ExceptionResult(GuestShadowReason.BindingChanged, "Confirm initialization profile", error); }
         }
 
         private GuestShadowResult ExceptionResult(GuestShadowReason reason, string stage, Exception error) =>

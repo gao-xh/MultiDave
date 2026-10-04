@@ -14,6 +14,18 @@ namespace DaveCoop.Networking
     internal static class GuestOutputTargetManifest
     {
         public const int ExpectedTargetCount = 194;
+        public const int ExpectedInitializationTargetCount = 41;
+        public const int ExpectedNaturalFileTargetCount = 3;
+        public const int ExpectedNaturalTargetCount = ExpectedTargetCount + ExpectedNaturalFileTargetCount;
+        // These three exact declarations are required before permitting the
+        // natural load. Missing any of them refuses that profile's installation.
+        // ExistingCaches retains its original 194-target inventory.
+        private static readonly string[] NaturalFileDeclarations =
+        {
+            "Il2Cppmscorlib\tIl2CppSystem.IO.File\tDelete\ttrue\tSystem.Void\tSystem.String",
+            "Il2Cppmscorlib\tIl2CppSystem.IO.File\tCopy\ttrue\tSystem.Void\tSystem.String\tSystem.String",
+            "Il2Cppmscorlib\tIl2CppSystem.IO.File\tCopy\ttrue\tSystem.Void\tSystem.String\tSystem.String\tSystem.Boolean",
+        };
         private static readonly string[] Declarations =
         {
             "Assembly-CSharp\tGDKSaveLoadModule\tSaveData\tfalse\tSystem.Void\tSystem.String\tIl2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray`1<System.Byte>",
@@ -211,12 +223,74 @@ namespace DaveCoop.Networking
             "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SavePhotoData>\tOnLoadData\tfalse\tSystem.Void",
             "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SaveUserOptions>\tOnLoadData\tfalse\tSystem.Void",
         };
-        public static List<GuestOutputTarget> Resolve()
+        // This is a subset of the unchanged full inventory, matched by the
+        // whole assembly/owner/return/parameter declaration. It permits one
+        // natural load to build memory roots; it does not permit a write or
+        // prove that the original implementation has no other output path.
+        private static readonly HashSet<string> InitializationDeclarations = new HashSet<string>(StringComparer.Ordinal)
         {
+            "Assembly-CSharp\tDR.Save.SaveSystem\tLoadGame\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveSystem\tLoadGameOnInit\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveSystem\tLoadAllData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveSystemGameDataManager\tCreateManagedData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveSystemGameDataManager\tOnLoadData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveSystemPhotoDataManager\tCreateManagedData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveSystemPhotoDataManager\tOnLoadData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveSystemPlayerDataManager\tCreateManagedData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveSystemPlayerDataManager\tLoadData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveSystemPlayerDataManager\tOnLoadData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveSystemPlayerDataManager\tSetLoadedData\tfalse\tSystem.Void\tDR.Save.SavePlayerData",
+            "Assembly-CSharp\tDR.Save.SaveSystemUserOptionManager\tCreateManagedData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveSystemUserOptionManager\tOnLoadData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SaveData>\tTryLoadFromSlot\tfalse\tSystem.Boolean\tSystem.Int32\tDR.Save.SaveSlotType\tSaveData&",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SavePlayerData>\tTryLoadFromSlot\tfalse\tSystem.Boolean\tSystem.Int32\tDR.Save.SaveSlotType\tDR.Save.SavePlayerData&",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SavePhotoData>\tTryLoadFromSlot\tfalse\tSystem.Boolean\tSystem.Int32\tDR.Save.SaveSlotType\tSavePhotoData&",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SaveUserOptions>\tTryLoadFromSlot\tfalse\tSystem.Boolean\tSystem.Int32\tDR.Save.SaveSlotType\tDR.Save.SaveUserOptions&",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SaveData>\tTryLoadFromJson\tfalse\tSystem.Boolean\tSystem.String\tSaveData&",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SavePlayerData>\tTryLoadFromJson\tfalse\tSystem.Boolean\tSystem.String\tDR.Save.SavePlayerData&",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SavePhotoData>\tTryLoadFromJson\tfalse\tSystem.Boolean\tSystem.String\tSavePhotoData&",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SaveUserOptions>\tTryLoadFromJson\tfalse\tSystem.Boolean\tSystem.String\tDR.Save.SaveUserOptions&",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SaveData>\tSetLoadedData\tfalse\tSystem.Void\tSaveData",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SavePlayerData>\tSetLoadedData\tfalse\tSystem.Void\tDR.Save.SavePlayerData",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SavePhotoData>\tSetLoadedData\tfalse\tSystem.Void\tSavePhotoData",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SaveUserOptions>\tSetLoadedData\tfalse\tSystem.Void\tDR.Save.SaveUserOptions",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SaveData>\tLoadData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SavePlayerData>\tLoadData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SavePhotoData>\tLoadData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SaveUserOptions>\tLoadData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SaveData>\tCreateNew\tfalse\tSystem.Void\tSystem.Boolean",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SavePlayerData>\tCreateNew\tfalse\tSystem.Void\tSystem.Boolean",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SavePhotoData>\tCreateNew\tfalse\tSystem.Void\tSystem.Boolean",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SaveUserOptions>\tCreateNew\tfalse\tSystem.Void\tSystem.Boolean",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SaveData>\tCreateManagedData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SavePlayerData>\tCreateManagedData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SavePhotoData>\tCreateManagedData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SaveUserOptions>\tCreateManagedData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SaveData>\tOnLoadData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SavePlayerData>\tOnLoadData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<SavePhotoData>\tOnLoadData\tfalse\tSystem.Void",
+            "Assembly-CSharp\tDR.Save.SaveLoadManagerBase`1<DR.Save.SaveUserOptions>\tOnLoadData\tfalse\tSystem.Void",
+        };
+
+        public static List<GuestOutputTarget> Resolve() => Resolve(GuestOutputFenceProfile.ExistingCaches);
+
+        public static List<GuestOutputTarget> Resolve(GuestOutputFenceProfile profile)
+        {
+            if (profile != GuestOutputFenceProfile.ExistingCaches && profile != GuestOutputFenceProfile.NaturalInitialization)
+                throw new ArgumentException("Invalid guest output profile.", nameof(profile));
+            if (InitializationDeclarations.Count != ExpectedInitializationTargetCount ||
+                InitializationDeclarations.Any(declaration => !Declarations.Contains(declaration, StringComparer.Ordinal)))
+                throw new InvalidOperationException("Guest initialization declaration inventory is incomplete.");
+            var fileDeclarations = new HashSet<string>(NaturalFileDeclarations, StringComparer.Ordinal);
+            if (fileDeclarations.Count != ExpectedNaturalFileTargetCount ||
+                fileDeclarations.Any(declaration => Declarations.Contains(declaration, StringComparer.Ordinal) || InitializationDeclarations.Contains(declaration)))
+                throw new InvalidOperationException("Guest startup file declaration inventory is incomplete.");
+            bool natural = profile == GuestOutputFenceProfile.NaturalInitialization;
+            IEnumerable<string> declarations = natural ? Declarations.Concat(NaturalFileDeclarations) : Declarations;
             var assemblies = new Dictionary<string, Assembly>(StringComparer.Ordinal);
             var result = new List<GuestOutputTarget>();
             var seen = new HashSet<MethodInfo>();
-            foreach (string declaration in Declarations)
+            foreach (string declaration in declarations)
             {
                 string[] parts = declaration.Split('\t');
                 if (!assemblies.TryGetValue(parts[0], out Assembly assembly))
@@ -234,9 +308,16 @@ namespace DaveCoop.Networking
                 int outIndex = selected.Name == "TryLoadFromJson" ? 1 : selected.Name == "TryLoadFromSlot" ? 2 : -1;
                 if (outIndex >= 0 && (selected.ReturnType != typeof(bool) || !selected.GetParameters()[outIndex].ParameterType.IsByRef))
                     throw new InvalidOperationException("Guest load output mismatch.");
-                result.Add(new GuestOutputTarget(selected, FailureResult(selected), outIndex));
+                result.Add(new GuestOutputTarget(selected, FailureResult(selected), outIndex, InitializationDeclarations.Contains(declaration),
+                    natural && fileDeclarations.Contains(declaration)));
             }
-            if (result.Count != ExpectedTargetCount) throw new InvalidOperationException("Guest output target inventory is incomplete.");
+            if (result.Count != (natural ? ExpectedNaturalTargetCount : ExpectedTargetCount))
+                throw new InvalidOperationException("Guest output target inventory is incomplete.");
+            if (result.Count(target => target.IsFileOperation) != (natural ? ExpectedNaturalFileTargetCount : 0) ||
+                result.Any(target => target.IsFileOperation && (target.Method.ReturnType != typeof(void) || target.AllowNaturalInitialization)))
+                throw new InvalidOperationException("Guest startup file target inventory is incomplete.");
+            if (result.Count(target => target.AllowNaturalInitialization) != ExpectedInitializationTargetCount)
+                throw new InvalidOperationException("Guest initialization target inventory is incomplete.");
             return result;
         }
         private static Type ClosedBase(string name)

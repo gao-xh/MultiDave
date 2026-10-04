@@ -17,7 +17,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.36-dev";
+        public const string Version = "0.1.37-dev";
 
         public override void Load()
         {
@@ -25,9 +25,13 @@ namespace DaveCoop
             // callback had not already run before BepInEx loaded this plugin.
             int startupLoadThread = Environment.CurrentManagedThreadId;
             double startupLoadAt = (double)System.Diagnostics.Stopwatch.GetTimestamp() / System.Diagnostics.Stopwatch.Frequency;
+            ConfigEntry<bool> temporaryGuest = Config.Bind("Startup", "ExperimentalGuestInitialization", false,
+                "Experimental existing-save guest startup. Automatically joins the configured host, holds initialization until the handshake, and retains temporary progress until process exit. Restart to return to personal progress. Not verified for gameplay or complete save isolation.");
+            if (temporaryGuest.Value)
+                NativeGuestInitializationController.Start(Log, startupLoadThread);
             ConfigEntry<bool> observeSaveStartup = Config.Bind("Startup", "ObserveSaveStartup", false,
                 "Observe natural save startup calls with bounded private hash-only diagnostics. Requires process restart; no save/path/cloud changes or guest isolation.");
-            if (observeSaveStartup.Value)
+            if (observeSaveStartup.Value && !temporaryGuest.Value)
                 Diagnostics.SaveStartup = SaveStartupCapture.Start(Log, startupLoadThread, startupLoadAt);
 
             Diagnostics.Logger = Log;
@@ -97,6 +101,7 @@ namespace DaveCoop
             // This actual Update is the first native-read thread candidate;
             // Plugin.Load's managed thread must never stand in for it.
             SaveStartup?.Update();
+            NativeGuestInitializationController.Current?.ConfirmUnityUpdate();
             if (!_firstFrameLogged)
             {
                 _firstFrameLogged = true;
@@ -139,8 +144,10 @@ namespace DaveCoop
             if (ShowOverlay == null || !ShowOverlay.Value)
                 return;
 
-            GUI.Box(new Rect(12, 12, 640, 145),
-                $"DaveCoop Prototype {Plugin.Version}\nPlugin loaded | Scene: {_scene}\n{PlayerProbe.Status}\n{RemotePreview.Status}\n{NetworkDriver.Status}\nF7: world probe | F8: panel | F9: snapshot | F10: replay | F11: room");
+            var startupGuest = NativeGuestInitializationController.Current;
+            GUI.Box(new Rect(12, 12, 640, startupGuest == null ? 145 : 190),
+                $"DaveCoop Prototype {Plugin.Version}\nPlugin loaded | Scene: {_scene}\n{PlayerProbe.Status}\n{RemotePreview.Status}\n{NetworkDriver.Status}\nF7: world probe | F8: panel | F9: snapshot | F10: replay | F11: room" +
+                (startupGuest == null ? "" : "\nGuest startup: " + startupGuest.Status));
         }
     }
 }

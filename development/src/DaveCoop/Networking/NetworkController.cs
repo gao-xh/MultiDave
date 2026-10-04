@@ -99,7 +99,11 @@ namespace DaveCoop.Networking
                     _mapSelection = new MapSelectionCapture(Environment.CurrentManagedThreadId);
                     _lootObserver = new LootObservationController(Environment.CurrentManagedThreadId, ResolveHealthyFish);
                     _mapOrigins = new MapOriginController(Environment.CurrentManagedThreadId);
-                    NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_READY: F11 opens LAN movement test panel; no automatic connection.");
+                    NetworkDriver.Logger.LogInfo(NativeGuestInitializationController.Current == null
+                        ? "DAVECOOP_NETWORK_READY: F11 opens LAN movement test panel; no automatic connection."
+                        : "DAVECOOP_NETWORK_READY: Guest startup mode is automatically joining the configured host.");
+                    if (NativeGuestInitializationController.Current != null)
+                        Start("guest");
                 }
                 if (Input.GetKeyDown(KeyCode.F11)) NetworkDriver.ShowPanel.Value = !NetworkDriver.ShowPanel.Value;
                 if (NetworkDriver.ShowPanel.Value && !_panelActive)
@@ -656,6 +660,9 @@ namespace DaveCoop.Networking
         private void Start(string mode)
         {
             if (_pending != null || _peers != null) return;
+            var startupGuest = NativeGuestInitializationController.Current;
+            if (startupGuest != null && (mode != "guest" || startupGuest.Failed))
+            { _message = "This temporary-progress process can only join its initial guest room. Restart to change mode."; return; }
             try
             {
                 if (!int.TryParse(_portText, NumberStyles.None, CultureInfo.InvariantCulture, out int port) || port < 1 || port > 65535)
@@ -703,6 +710,9 @@ namespace DaveCoop.Networking
             _fishActions.BindRoom(_peers.Main);
             _cargoInventory.BindRoom(_peers.Main); _nextCargoObservation = 0;
             _mapChoices.BindRoom(_peers.Main, _mapSelectionHooks.ProcessAccepted, _mapOrigins.RunId, _mapOrigins.ActiveOwnerLife);
+            var startupGuest = NativeGuestInitializationController.Current;
+            if (startupGuest != null && !startupGuest.BindPeer(_peers.Main))
+                throw new InvalidOperationException("Guest startup room binding was rejected.");
             RemotePreview.NetworkActive = true;
             _nextOwnerCheck = 0; _nextCapture = 0; _lastError = null;
             NetworkDriver.Logger.LogInfo("DAVECOOP_NETWORK_CONNECTED: " + (_peers.Loopback == null ? _peers.Main.Snapshot.Role.ToString() : "local TCP diagnostic; one game process"));
@@ -730,6 +740,7 @@ namespace DaveCoop.Networking
 
         private void Disconnect()
         {
+            NativeGuestInitializationController.Current?.NetworkDisconnected();
             if (NetworkDriver.ObserveMapOrigins != null) NetworkDriver.ObserveMapOrigins.Value = false;
             _mapOrigins?.Stop();
             if (NetworkDriver.ObserveLootCalls != null) NetworkDriver.ObserveLootCalls.Value = false;

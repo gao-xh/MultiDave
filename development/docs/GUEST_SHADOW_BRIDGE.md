@@ -1,10 +1,10 @@
 # 客机原生根影子桥
 
-当前源码0.1.36-dev（协议6），实际Core/TCP271/271及插件编译通过。新增[房主地图候选读取接口](MAP_ADOPTION_ENTRY.md)，即时刷新并返回独立副本；原游戏加载流程尚未接入。见[验证摘要](../logs/map-candidate-build-verification.json)。未部署/启动，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；客机隔离、房主世界、每人独立背包的真实分流、员工命中、双端正常返航和冷配置仍待完成。
+当前源码0.1.37-dev（协议6），本轮实际Core/TCP275/275及插件Build警告视为错误通过。新增默认关闭的[客机自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接Plugin启动、实际Guest房间与首次原初始化的五根事务，尚未运行游戏或原生验证；房主地图采用仍未实现。见[本轮验证记录](../logs/guest-initialization-build-verification.json)。安装0.1.12、最近潜水0.1.11、默认包0.1.0保持；完整客机隔离、房主世界、每人独立袋分流/容量/负重、员工命中、双端正常返航和冷配置仍待完成。
 
-0.1.18-dev 新增 [NativeGuestShadowBridge](../src/DaveCoop/Networking/NativeGuestShadowBridge.cs) 和纯 CLR 的 [GuestShadowTransaction](../src/DaveCoop/Core/Guest/GuestShadowTransaction.cs)。桥包含实际的原生序列化、强引用、直接根交换、回读及恢复代码；当前没有接入 Network、GUI 或游戏生命周期，未调用这些原生操作。接口研究及其静态证据见 [GUEST_ISOLATION](GUEST_ISOLATION.md)，已枚举输出的围栏范围见 [GUEST_OUTPUT_FENCE](GUEST_OUTPUT_FENCE.md)。
+0.1.18-dev 新增 [NativeGuestShadowBridge](../src/DaveCoop/Networking/NativeGuestShadowBridge.cs) 和纯 CLR 的 [GuestShadowTransaction](../src/DaveCoop/Core/Guest/GuestShadowTransaction.cs)。桥包含实际的原生序列化、强引用、直接根交换、回读及恢复代码；该历史阶段没有接入 Network、GUI 或游戏生命周期。0.1.37新增默认关闭的[自然初始化接线](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接实际Guest房间与固定原iterator，仍未在游戏中执行这些原生操作。接口研究及其静态证据见 [GUEST_ISOLATION](GUEST_ISOLATION.md)，已枚举输出的围栏范围见 [GUEST_OUTPUT_FENCE](GUEST_OUTPUT_FENCE.md)。
 
-当前生产桥的 `CanEnterBoundary()` 和 `HasQuiescentBoundary()` 始终返回 false。事务在安装围栏之前先核对实际进入边界，因此普通 `Install()` 会拒绝进入，保持零 patch、零原根捕获、零显式 GC handle。桥的安装围栏、捕获、准备和安装根入口自身也重新检查进入边界，不能通过直接调用这些 primitive 绕过事务。房间、加载标记或已知 writer 计数为零均不代替真实原生边界。
+默认 `ExistingCaches` 七根生产桥的 `CanEnterBoundary()` 和 `HasQuiescentBoundary()` 仍硬拒。事务在安装围栏之前先核对进入边界，因此旧普通构造路径保持零 patch、零原根捕获、零显式 GC handle。新 `NaturalInitialization` 只能由实际启动source创建的opaque lease进入固定首次MoveNext窗口，复用此前已安装并Seal的197项围栏，再安装五个save根；它不要求尚未完成初始化的三加载flags，不调用旧两个cache clone补空表。两个profile的真实静止仍未证明，新source的 `HasQuiescentBoundary()` 仍false。房间、加载标记或writer0均不是完整隔离或quiet证明，primitive自身继续核实际进入来源。
 
 `GuestStateIsolated`、`NativePermission`、`WorldAuthority`、`CargoAuthority`、`NativeCloneAbiVerified`、`DeepCloneVerified`、`RuntimeCachesIsolated` 和 `InteractionSynchronized` 全部固定为 false。本页描述可审查的源码合同，不表示客机存档隔离、地图采用或个人袋结算已完成。
 
@@ -40,7 +40,7 @@ bridge 从 `Singleton<SaveSystem>._instance` 及 SaveSystem 的四个直接 mana
 
 ## 回读、补偿与保留
 
-每个根的安装和恢复写入均 single-use：在派发 native 字段写之前记录 attempt，随后回读 `Original`、`Detached`、`Foreign` 或 `Unknown`。事务逐根逆序补偿：已是 Original 不重复写；只有本租约确切 Detached 才恢复原引用；Foreign、Unknown 或 manager 改变时不盲目覆盖。false/异常不能推断写入未发生，后续只能回读已派发的写入，不能重派发。
+每个根的安装和恢复写入均 single-use：在派发 native 字段写之前记录 attempt，随后回读 `Original`、`Detached`、`Foreign` 或 `Unknown`。事务只有真实quiet成立才逐根逆序补偿，并在每次RestoreRoot前重新核quiet、binding和该根readback；已是 Original 不重复写，只有本租约确切 Detached 才能恢复原引用。Foreign、Unknown 或 manager 改变时不盲目覆盖。false/异常不能推断写入未发生，后续只能回读已派发的写入，不能重派发。Natural source没有quiet，因此失败和Disconnect不恢复、不unpatch、不free；切角色必须新进程。
 
 bridge 捕获四个 manager 的 `IsNewData` backing field，以及四个原 Data 的 Version、BuildVersion、lastUpdateLocalTime、IsUpdated 和 corrupted 直接标量。准备、安装、校验和最终原根确认会检查这些值未变；变化时拒绝，不把 dirty flag 强行清回旧值。已知 Detached 仍可尝试恢复原指针，随后变化的标量会阻止“原进度已恢复”确认。这些有限检查不能证明整个原子树或缓存从未被旧引用修改。
 

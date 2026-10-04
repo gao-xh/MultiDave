@@ -1,6 +1,6 @@
 # 从首次加载创建员工临时档案：候选入口
 
-这是离线研究与待实现方案。当前插件没有冷档启动模式，不更改存档路径、槽位、云设置或首次加载；`ColdProfileImplemented`、`InitialPathBindingVerified`、`FirstLoadOrderVerified`、`GuestStateIsolated`、世界与背包权限均为 false。
+本页保留独立临时路径/冷档的离线研究方案。0.1.37新增默认关闭的[existing-save自然初始化模式](GUEST_INITIALIZATION_BOOTSTRAP.md)，已接实际首次iterator、Guest房间、围栏和五根事务，仍未运行native。它让原游戏先自然加载，再在缓存初始化前换五根，不更改存档路径、槽位或云设置，不是从首次读取就加载独立新冷档。本页的 `ColdProfileImplemented`、`InitialPathBindingVerified`、`FirstLoadOrderVerified`、`GuestStateIsolated`、世界与背包权限仍为false。
 
 0.1.23 增加默认关闭的[自然启动观察源码](SAVE_STARTUP_OBSERVATION.md)，用实际 prefix/postfix/finalizer 记录加载与路径来源候选，尚未部署或执行。[新的精确研究](GUEST_STARTUP_API.md)表明当前框架从场景切换回调加载插件；这不能排除安装前已读个人档，也不能把 Plugin.Load 线程当已确认 Unity 线程。Demo 路径还直接使用 `persistentDataPath`，不能只改普通目录。观察器不重定向路径、不屏蔽云或生成临时档，完整冷档隔离仍未实现。
 
@@ -90,9 +90,9 @@ string DR.Save.SaveSystem.GetSaveFileName(DR.Save.SaveSlotType)
 | GDK/通用平台 | `GDKSaveLoadModule._saveSystemService` 为直接字段代理；其 `InitializeSaveSystemService(): IEnumerator` 及 File/Move/Delete 经 `ISaveSystemService` 的实际实现未识别。在 Steam 上是否运行未证明。RelativePath 的 constructor/SetValue 为原生调用，不可认为自动重定向到临时根。 |
 | 额外路径持有者 | `DR.TCS.FileDataVer0/Ver1.SaveFilePath` 是可写直接字段代理；是否为当前存档、迁移或独立系统未知，不能忽略。Unity `Application.persistentDataPath` 为只读 RuntimeInvoke getter，没有声明级目录 setter。 |
 
-现有 [已枚举输出围栏](GUEST_OUTPUT_FENCE.md) 的 194 个目标只是 metadata 声明合同。它没有证明 writer 全覆盖、初始执行顺序、native ABI、共享泛型地址、所有接口实现、System.IO 所有调用、在途输出或 Steam 客户端同步。现有围栏也会拦上层 Load；冷档将来若要正常初始化，需新的具体策略允许已绑定临时路径的读取和已证明的临时输出，不能直接关掉旧围栏宣称安全。
+现有 [已枚举输出围栏](GUEST_OUTPUT_FENCE.md) 的默认ExistingCaches194目标及Natural197目标只是声明合同，没有证明writer全覆盖、初始执行顺序、native ABI、共享泛型地址、所有接口实现、System.IO所有调用、在途输出或Steam客户端同步。Natural初始阻断156项、只延后41精确内存建根/加载声明；原load返回后clone前一次Seal197。新增File.Copy/Delete三入口任一尝试撤健康，不能把skip void当成功。此策略不是临时目录或独立首次读取证明，也不能关掉旧persist fences来宣称安全。
 
-## 下一步最小可实现候选
+## 独立冷档路径方案的后续候选（未采用）
 
 先完成“启动前参数 → 不可变临时身份 → 最早路径/云/设置/成就边界”的只读来源记录，不接 Join 或改 true。唯一 profileId 绑定本进程，所有 Auto/Manual/Ending、backup、old、failed、demo 与四类数据的路径都需证明落在同一预期临时根；越界、来源未知或已经发生个人 Load 时拒绝进入。对真实 Unity 线程、manager 固定身份及每次原 factory/MoveNext 重新核对，不能从 `IsInitialized=false` 推断未加载。
 
