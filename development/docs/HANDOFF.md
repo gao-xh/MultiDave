@@ -1,6 +1,6 @@
 # MultiDave 接手记录
 
-当前源码0.1.45-dev（协议10），本轮实际Core/TCP358/358及插件Build警告视为错误通过，执行输入前后相同。新增[员工独立鱼叉](CREW_HARPOON.md)：逐输入边沿消费、房主真实身体发射、同场景CircleCast与原生普通鱼伤害一次派发，状态回读供客机独立显示；ExperimentalCrewHarpoon默认false。原TakeDamage bool仅观察，不代表HP变化、捕获或收益。见[实际记录](../logs/crew-harpoon-build-verification.json)。原生创建/碰撞/伤害/显示/ABI及远距离双游戏未执行，Guest完整隔离/World/Cargo权限仍false；员工incoming环境伤害/装备、两人独立袋/容量/重量/负重、完整产物分流和逐项返航保存仍待接通。未部署/启动，安装.12/最近潜水.11/默认包.0保持；完整M3—M7、真实双端闭环和GitHub冷配置仍必须完成。
+当前源码0.1.46-dev（协议11），本轮实际Core/TCP367/367及插件Build警告视为错误通过，执行输入前后相同。新增[员工独立个人袋与Harvest接线](CREW_CARGO.md)：ExperimentalCrewCargo默认false；自然潜水/原房主袋来源绑定真实Room员工，员工从0注册自己的Mod袋，已确认个人重量double驱动独立负重；AllowOverweight默认true、可选严格容量，完整批次在任何房主袋写入前分流。普通downed鱼Harvest已有一次选择/映射/进度及退场提交源码，容量拒绝保原批次不重选，续租尚未接通。见[实际记录](../logs/crew-cargo-build-verification.json)。原生hook/捕获/任务图鉴完整覆盖/ABI、返航FinalGrade/入仓保存、Guest完整隔离与远距离双游戏均未执行或验证；Native/World/Cargo权限仍false。未部署/启动，installed.12/dive.11/default.0保持历史；完整M3—M7、每人独立袋/容量/重量/负重、正常返航、真实双端/GitHub冷配置仍须完成。
 
 ## 已完成
 
@@ -44,7 +44,7 @@ M2 用户在 `A03_01_02` 确认可见且正常模仿动作，37 条回放状态�
 0.1.3-dev 已部署，新进程确认 F11 网络组件、加载、Update 和主菜单标记；连接及潜水显示待验证。
 启动证据见 `../logs/network-bootstrap-verification.json`。
 0.1.4-dev 引入默认关闭的 F7 世界只读探针及房主鱼状态诊断通道，0.1.5-dev 加入一条鱼的 Sprite/Spine 显示验证入口。
-当前源码协议版本为 10，拒绝旧协议 9 及更早版本；CrewActorState另有鱼叉编号、活动、位置、方向四字段，只供显示，不授权命中或收益。WorldSlice 保持每块最多 16 个实体，保留 FishActionRequest/FishActionResult、MapRouteSlice/MapIgpChoice/MapChoiceRetire 与 CargoInventorySlice。历史协议7补齐路线原生输入并要求 wire 字段实际存在；协议8保留路线schema2并要求Hello/Welcome显式鱼观察请求。
+当前源码协议版本为 11，拒绝旧协议 10 及更早版本；CrewActorState另有鱼叉编号、活动、位置、方向四字段，只供显示，不授权命中或收益。WorldSlice 保持每块最多 16 个实体，保留 FishActionRequest/FishActionResult、MapRouteSlice/MapIgpChoice/MapChoiceRetire 与 CargoInventorySlice。历史协议7补齐路线原生输入并要求 wire 字段实际存在；协议8保留路线schema2并要求Hello/Welcome显式鱼观察请求。
 F11 的 Transmit read-only fish observations / Preview one received fish 均默认关闭。
 0.1.11-dev 另增默认关闭的 Display received fish roster / Observe host harpoon and fish interactions；
 本机显示及房主交互观察仍依赖 Transmit read-only fish observations。
@@ -400,3 +400,7 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 ## 0.1.45-dev 员工独立鱼叉
 
 逐输入边沿→房主实际身体→同场景扫掠→fresh普通鱼/lifecycle→一次原生伤害，客机状态仅显示。见[接线](CREW_HARPOON.md)；实际358/358及Build通过，无native/双游戏/部署。下一步接真实捕获/完整产物前置分流、每人袋/容量/重量/负重与逐项返航保存，随后完整双端和冷配置验收，M3—M7不缩减。
+
+## 0.1.46-dev 员工个人袋与Harvest生产接线
+
+见[CREW_CARGO](CREW_CARGO.md)及[本轮实际摘要](../logs/crew-cargo-build-verification.json)。默认ExperimentalCrewCargo=false；AllowOverweight默认true，strict可选。真实自然潜水与原Host袋两样本绑定当前Room，HostNative自己的weight/capacity与employee从0新建Mod袋分开；同实际员工actor/member/Room的ownconfirmedWeight double驱动Mod负重。普通downed Harvest已有真实Interact→opaqueCommand→同ledgerlease→一次grade/main/plus→capture规范化→allExchange once→个人容量→有限进度/终态→employee确认源码。它是有限Mod规则，14fence/字段读back不能证明全部native、worker别名/async、mission/achievement或原pickup等价。容量拒绝保持原批/未知不重选，续租尚未接；当前oneRetainedExpedition阻旧袋新Room复用，多潜水生命周期与正常返航未完。实际367/367 CLR/TCP及Build通过仅验证自写控制/账本/传输，未执行native/Game/双端。capture Grade不可冒FinalGrade，count映射不可冒storage delta/save；Guest全隔离、ABI、远距离玩法与通用Native/World/Cargo权限仍false。远处鱼兴趣仍来自ReceivedFrame观察坐标而非房主员工body；真实body未接allocator/LOD/visibility双区域，Roster只当前Host loaded scene活动鱼、客机camera自行裁剪，不支持两人同时不同层，默认关闭实验只部分分支且双机未测。installed.12/dive.11/default.0保持历史、未部署。完整M3—M7、每人独立袋/容量/重量/负重、完整产物前置分流、可信装备/生存、逐项返航入仓保存、真实双端/GitHub冷配置与测试发行继续active。

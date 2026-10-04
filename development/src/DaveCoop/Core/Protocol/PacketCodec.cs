@@ -276,14 +276,27 @@ namespace DaveCoop.Core.Protocol
             "moveX", "moveY", "aimX", "aimY", "buttons" };
         private static readonly string[] CrewStateFields = { "playerId", "sceneEpoch", "sceneKey", "actorRevision", "stateRevision",
             "lastInputSequence", "position", "velocity", "hp", "maxHP", "oxygen", "maxOxygen", "alive", "active", "loadoutRevision",
-            "capacityKg", "hasConfirmedCargoWeight", "harpoonShotId", "harpoonActive", "harpoonPosition", "harpoonDirection" };
+            "capacityKg", "hasConfirmedCargoWeight", "bagRevision", "harpoonShotId", "harpoonActive", "harpoonPosition", "harpoonDirection" };
         private static void RequireCrewWireFields(ReadOnlySpan<byte> bytes, PacketKind kind)
         {
             using JsonDocument document = JsonDocument.Parse(bytes.ToArray());
             string payloadName = kind == PacketKind.CrewInput ? "crewInput" : "crewActorState";
             RequireExactWireFields(document.RootElement, new[] { "kind", "sequence", "roomId", payloadName });
             JsonElement payload = RequiredWireProperty(document.RootElement, payloadName);
-            RequireExactWireFields(payload, kind == PacketKind.CrewInput ? CrewInputFields : CrewStateFields);
+            string[] fields = kind == PacketKind.CrewInput ? CrewInputFields : CrewStateFields;
+            if (kind == PacketKind.CrewActorState)
+            {
+                JsonElement confirmed = RequiredWireProperty(payload, "hasConfirmedCargoWeight");
+                if (confirmed.ValueKind != JsonValueKind.True && confirmed.ValueKind != JsonValueKind.False)
+                    throw new ProtocolException("Invalid employee bag confirmation field.");
+                if (confirmed.GetBoolean())
+                {
+                    var extended = new List<string>(CrewStateFields);
+                    extended.AddRange(new[] { "bagWeightKg", "bagExpeditionId", "bagMemberId" });
+                    fields = extended.ToArray();
+                }
+            }
+            RequireExactWireFields(payload, fields);
             if (kind == PacketKind.CrewActorState)
             {
                 RequireExactWireFields(RequiredWireProperty(payload, "position"), new[] { "x", "y", "z" });

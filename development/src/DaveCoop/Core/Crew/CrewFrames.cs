@@ -42,8 +42,11 @@ namespace DaveCoop.Core.Crew
         public bool Active { get; set; }
         public long LoadoutRevision { get; set; }
         public float CapacityKg { get; set; }
-        public float? BagWeightKg { get; set; }
+        public double? BagWeightKg { get; set; }
         public bool HasConfirmedCargoWeight { get; set; }
+        public string BagExpeditionId { get; set; }
+        public string BagMemberId { get; set; }
+        public long BagRevision { get; set; }
         // Read back from the host's own projectile. Inactive retains the shot
         // fence; this display state does not report damage, capture or rewards.
         public long HarpoonShotId { get; set; }
@@ -96,10 +99,19 @@ namespace DaveCoop.Core.Crew
                 !InRange(frame.HP, frame.MaxHP) || !InRange(frame.Oxygen, frame.MaxOxygen) ||
                 frame.Alive != (frame.HP > 0) || (!frame.Alive && frame.Active))
                 throw new ProtocolException("Invalid crew actor state or survival values.");
-            // There is no production ledger-to-actor weight binding yet. Do not
-            // turn a guessed initial/old bag sample into a live capacity result.
-            if (frame.HasConfirmedCargoWeight || frame.BagWeightKg.HasValue)
-                throw new ProtocolException("Crew actor cargo weight is not connected.");
+            // Only a host-owned employee ledger reading supplies this identity
+            // and confirmed weight. A wire value does not authorize native loot.
+            if (frame.HasConfirmedCargoWeight)
+            {
+                if (!Guid.TryParse(frame.BagExpeditionId, out Guid expedition) || expedition == Guid.Empty ||
+                    !Guid.TryParse(frame.BagMemberId, out Guid member) || member == Guid.Empty ||
+                    frame.BagExpeditionId != expedition.ToString("N") || frame.BagMemberId != member.ToString("N") ||
+                    frame.BagRevision < 1 || !frame.BagWeightKg.HasValue || !double.IsFinite(frame.BagWeightKg.Value) ||
+                    frame.BagWeightKg.Value < 0 || frame.BagWeightKg.Value > Cargo.CargoValues.MaxWeight)
+                    throw new ProtocolException("Invalid confirmed employee bag reading.");
+            }
+            else if (frame.BagWeightKg.HasValue || frame.BagExpeditionId != null || frame.BagMemberId != null || frame.BagRevision != 0)
+                throw new ProtocolException("Unknown employee bag cannot carry a weight or identity.");
             if (frame.HarpoonShotId < 0 || !PositionValid(frame.HarpoonPosition) || !VelocityValid(frame.HarpoonDirection) ||
                 (frame.HarpoonShotId == 0 && (frame.HarpoonActive || frame.HarpoonPosition != Vector3.Zero || frame.HarpoonDirection != Vector2.Zero)) ||
                 (frame.HarpoonActive && (!frame.Alive || !frame.Active)))
@@ -143,6 +155,7 @@ namespace DaveCoop.Core.Crew
             Oxygen = frame.Oxygen, MaxOxygen = frame.MaxOxygen, Alive = frame.Alive, Active = frame.Active,
             LoadoutRevision = frame.LoadoutRevision, CapacityKg = frame.CapacityKg,
             BagWeightKg = frame.BagWeightKg, HasConfirmedCargoWeight = frame.HasConfirmedCargoWeight,
+            BagExpeditionId = frame.BagExpeditionId, BagMemberId = frame.BagMemberId, BagRevision = frame.BagRevision,
             HarpoonShotId = frame.HarpoonShotId, HarpoonActive = frame.HarpoonActive,
             HarpoonPosition = frame.HarpoonPosition, HarpoonDirection = frame.HarpoonDirection
         };

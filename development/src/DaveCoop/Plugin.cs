@@ -17,7 +17,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.45-dev";
+        public const string Version = "0.1.46-dev";
 
         public override void Load()
         {
@@ -77,9 +77,13 @@ namespace DaveCoop
             NetworkDriver.ExperimentalHostFishAreas = Config.Bind("Network", "ExperimentalHostFishAreas", false,
                 "Experimental same-scene host fish spawning and activity around both members. Read at first network Update; restart to change. Requires real Host/Join frames; native behavior and distant gameplay remain unverified.");
             NetworkDriver.ExperimentalCrewActor = Config.Bind("Network", "ExperimentalCrewActor", false,
-                "Experimental host-owned employee physics/input/state. Fixed at first network Update; both peers must opt in. Guest requires ExperimentalGuestInitialization. Native collision, camera correction and independent survival remain unverified. Harpoon has a separate default-off switch; capture/cargo are not connected.");
+                "Experimental host-owned employee physics/input/state. Fixed at first network Update; both peers must opt in. Guest requires ExperimentalGuestInitialization. Native collision, camera correction and independent survival remain unverified. Harpoon and personal cargo each have a separate default-off switch.");
             NetworkDriver.ExperimentalCrewHarpoon = Config.Bind("Network", "ExperimentalCrewHarpoon", false,
                 "Experimental host-owned employee Mod harpoon; fixed at first network Update. Requires CrewActor on both peers and actual host fish observation/lifecycle sources. Native projectile collision and damage ABI remain unverified; no capture or cargo receipt.");
+            NetworkDriver.ExperimentalCrewCargo = Config.Bind("Network", "ExperimentalCrewCargo", false,
+                "Experimental personal employee bag and ordinary downed-fish Harvest. Host observes a natural dive and original bag first; Space is consumed as a pickup edge. Native capture, progression, return and save remain unverified. Fixed at first network Update.");
+            NetworkDriver.CrewAllowOverweight = Config.Bind("Crew", "AllowOverweight", true,
+                "Host-approved personal capacity policy. False rejects the entire batch beyond employee capacity; true permits personal overload with a Mod speed factor down to 0.25. Host bag capacity is never borrowed.");
             NetworkDriver.HarpoonSpeed = Config.Bind("CrewHarpoon", "Speed", 12f, "Host-approved Mod projectile speed, fixed on startup.");
             NetworkDriver.HarpoonRange = Config.Bind("CrewHarpoon", "Range", 8f, "Host-approved Mod maximum projectile travel distance.");
             NetworkDriver.HarpoonCooldown = Config.Bind("CrewHarpoon", "CooldownSeconds", 0.5f, "Host-approved Mod delay between fire edges; blocked fire is consumed.");
@@ -91,7 +95,7 @@ namespace DaveCoop
             NetworkDriver.CrewMaxOxygen = Config.Bind("Crew", "MaxOxygen", 100f, "Host-approved employee Mod maximum oxygen.");
             NetworkDriver.CrewOxygenPerSecond = Config.Bind("Crew", "OxygenPerSecond", 1f, "Employee Mod oxygen drain per simulated second, 0..1000.");
             NetworkDriver.CrewBoostOxygenPerSecond = Config.Bind("Crew", "BoostOxygenPerSecond", 2f, "Additional employee Mod oxygen drain while boosting, 0..1000.");
-            NetworkDriver.CrewCapacityKg = Config.Bind("Crew", "CapacityKg", 20f, "Employee approved Mod capacity; this actor prototype has no confirmed bag weight or capacity enforcement yet.");
+            NetworkDriver.CrewCapacityKg = Config.Bind("Crew", "CapacityKg", 20f, "Employee approved Mod capacity, fixed on startup. ExperimentalCrewCargo binds this personal ledger capacity independently of the host's native bag.");
             AddComponent<Diagnostics>();
             AddComponent<PlayerProbe>();
             AddComponent<RemotePreview>();

@@ -1,5 +1,7 @@
 # 员工捕获的实际提交入口
 
+当前捕获生产入口：0.1.46-dev/协议11已由CrewActorController真实Interact receipt/body/currentRoom→NativeHostCargoSource→CrewCargoBinding同ledger→NativeEmployeeCaptureCommitBridge一次grade/main/plus/normalize/allExchange→个人容量→有限progress/terminal→employee确认源码接通，详情[CREW_CARGO](CREW_CARGO.md)。本页下方保留此前离线研究/无生产者时的历史缺口，不能用它否定本轮已有调用点，也不能把本轮编译/CLR/TCP当原生收益/正常返航验收；容量续租/FinalGrade/storage/save仍待接。
+
 本页基于已验证的 0.1.42-dev 源码及既有离线报告，为下一轮实际捕获桥列出调用点。
 这里只增加实现说明，没有执行原生方法、启动游戏或新增测试结果。
 323 项 CLR/TCP 测试及插件构建不能证明员工命中、捕获、个人入袋或返航已可玩。

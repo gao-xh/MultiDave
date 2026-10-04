@@ -336,6 +336,14 @@ internal static class Program
             ("host fish visibility large coordinates round bounds outward", FishVisibilityInterestMathTests.LargeCoordinatesRoundBoundsOutwardInsteadOfShrinking),
             ("host fish visibility different planes and invalid samples keep original", FishVisibilityInterestMathTests.DifferentPlanesMalformedSamplesAndNonfiniteGeometryKeepOriginal),
             ("crew controls use host body readback and normalized movement", CrewControlTests.BoundInputNormalizesMovementAndUsesOnlyHostBodyReadback),
+            ("crew cargo binds actual expedition room and employee member", CrewCargoBindingTests.ProductionRoomAndMemberBindingRejectsUnpinnedOrForeignLedger),
+            ("crew cargo only confirmed personal weight controls load", CrewCargoBindingTests.ConfirmedPersonalCargoAloneControlsMovementFactor),
+            ("crew cargo source unknown cannot become confirmed load", CrewCargoBindingTests.SourceOnlyUnknownCannotBecomeWeightOrCaptureProof),
+            ("crew cargo scene replacement retains bag and actor tombstones", CrewCargoBindingTests.PauseAndSceneReplacementKeepCargoAndActorTombstones),
+            ("crew cargo disconnect retains items and closes old authority", CrewCargoBindingTests.DisconnectRetainsConfirmedAndUnknownCargoWithoutRebinding),
+            ("crew cargo returning and aborted phases are not live load", CrewCargoBindingTests.ReturningAndAbortedSnapshotsAreNotLiveLoad),
+            ("crew cargo foreign scene actor and profile cannot borrow bag", CrewCargoBindingTests.FreshActorSessionAndProfileIdentityCannotBorrowPersonalBag),
+            ("crew cargo thread and immutable readings preserve owner", CrewCargoBindingTests.CreatorThreadAndOwnedReadingsCannotMutateBinding),
             ("crew harpoon ordered edges freeze aim and host origin", CrewHarpoonControlTests.OrderedFireEdgesUseFrozenAimAndHostBodyOrigin),
             ("crew harpoon held buttons and recall consume one shot", CrewHarpoonControlTests.HoldingAndRecallEdgesConsumeAtMostOneFlyingShot),
             ("crew harpoon cooldown rejection never becomes delayed fire", CrewHarpoonControlTests.CooldownAndActiveRejectionsCannotBecomeDelayedShots),
@@ -356,6 +364,7 @@ internal static class Program
             ("crew scene replacement inherits survival without refill", CrewControlTests.SceneReplacementInheritsSurvivalWithoutRefillingOrReviving),
             ("crew codec requires unique opt-in and complete schema", CrewTransportTests.CodecRequiresUniqueOptInAndCompleteInputStateSchema),
             ("crew session freezes opt-in and connection-owned receipts", CrewTransportTests.SessionFreezesOptInAndConnectionOwnedReceipts),
+            ("crew personal bag schema preserves room identity through unknown and pause", CrewTransportTests.PersonalBagSchemaAndRoomFencesKeepIdentityAcrossUnknownAndPause),
             ("crew harpoon state schema and room fences reject reopened shots", CrewTransportTests.HarpoonStateSchemaAndRoomFencesCannotReopenAConsumedShot),
             ("crew roles opt-in and actor binding reject forged input", CrewTransportTests.RolesBothOptInsAndActorBindingsRejectForgedInputs),
             ("crew input FIFOs preserve edges and reject overflow", CrewTransportTests.InputFifosPreserveEdgesAndFailAtTheirBound),
@@ -364,7 +373,7 @@ internal static class Program
             ("crew controls lead and input state lanes remain fair", CrewTransportTests.ControlsLeadAndInputStateLanesRemainFair),
             ("TCP crew identity input edges and state round trip", () => CrewTransportTests.TcpCrewIdentityInputEdgesAndStateRoundTrip().GetAwaiter().GetResult()),
             ("TCP crew take then pause cancels old work and resumes", () => CrewTransportTests.TcpTakeThenPauseCancelsOldWorkAndResumesSameRoom().GetAwaiter().GetResult()),
-            ("TCP crew protocols eight and nine rejected and one-sided opt-in disabled", () => CrewTransportTests.TcpProtocolEightRejectedAndOneSidedOptInCannotSendCrew().GetAwaiter().GetResult()),
+            ("TCP crew protocols eight nine and ten rejected and one-sided opt-in disabled", () => CrewTransportTests.TcpProtocolEightRejectedAndOneSidedOptInCannotSendCrew().GetAwaiter().GetResult()),
             ("TCP crew receive overflow closes without dropping input edges", () => CrewTransportTests.TcpReceiveQueueOverflowClosesWithoutDroppingInputEdges().GetAwaiter().GetResult())
         };
         int failures = 0;

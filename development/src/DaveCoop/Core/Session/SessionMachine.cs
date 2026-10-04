@@ -106,6 +106,9 @@ namespace DaveCoop.Core.Session
         private long _currentLocalCrewActor, _currentRemoteCrewActor;
         private long _highestLocalHarpoon, _highestRemoteHarpoon;
         private CrewActorState _lastLocalCrewState, _lastRemoteCrewState;
+        private CrewActorState _lastLocalCrewBag, _lastRemoteCrewBag;
+        private readonly Dictionary<string, CrewActorState> _localCrewBagFences = new Dictionary<string, CrewActorState>(StringComparer.Ordinal);
+        private readonly Dictionary<string, CrewActorState> _remoteCrewBagFences = new Dictionary<string, CrewActorState>(StringComparer.Ordinal);
 
         public SessionMachine(SessionRole role, HandshakeResult identity, double now, SessionOptions options = null)
         {
@@ -402,12 +405,15 @@ namespace DaveCoop.Core.Session
             }
             if (copy.HarpoonShotId < _highestLocalHarpoon) throw new ProtocolException("Host harpoon shot fence regressed.");
             ValidateHarpoonContinuation(copy, _lastLocalCrewState, _highestLocalHarpoon);
+            ValidateCrewBagContinuation(copy, _lastLocalCrewBag, _localCrewBagFences);
             if (copy.ActorRevision > _highestLocalCrewActor)
             {
                 _incomingCrewInputs.Clear(); _highestLocalCrewActor = copy.ActorRevision;
             }
             _currentLocalCrewActor = copy.ActorRevision; _lastLocalCrewState = copy;
             _highestLocalHarpoon = copy.HarpoonShotId;
+            if (copy.HasConfirmedCargoWeight)
+            { _lastLocalCrewBag = CrewFrames.Copy(copy); _localCrewBagFences[copy.BagExpeditionId] = _lastLocalCrewBag; }
             _outgoingCrewState = new WirePacket { Kind = PacketKind.CrewActorState, RoomId = _identity.RoomId, CrewActorState = CrewFrames.Copy(copy) };
             return true;
         }
@@ -478,10 +484,13 @@ namespace DaveCoop.Core.Session
             }
             if (copy.HarpoonShotId < _highestRemoteHarpoon) throw new ProtocolException("Received harpoon shot fence regressed.");
             ValidateHarpoonContinuation(copy, _lastRemoteCrewState, _highestRemoteHarpoon);
+            ValidateCrewBagContinuation(copy, _lastRemoteCrewBag, _remoteCrewBagFences);
             if (copy.ActorRevision > _highestRemoteCrewActor)
             { _outgoingCrewInputs.Clear(); _highestRemoteCrewActor = copy.ActorRevision; }
             _currentRemoteCrewActor = copy.ActorRevision; _lastRemoteCrewState = copy;
             _highestRemoteHarpoon = copy.HarpoonShotId;
+            if (copy.HasConfirmedCargoWeight)
+            { _lastRemoteCrewBag = CrewFrames.Copy(copy); _remoteCrewBagFences[copy.BagExpeditionId] = _lastRemoteCrewBag; }
             _incomingCrewState = new ReceivedCrewActorState { RoomId = _identity.RoomId, BoundPlayerId = _identity.RemotePlayerId,
                 PacketSequence = packet.Sequence, ReceivedAt = now, Frame = CrewFrames.Copy(copy) };
         }
@@ -492,7 +501,28 @@ namespace DaveCoop.Core.Session
             a.Oxygen == b.Oxygen && a.MaxOxygen == b.MaxOxygen && a.Alive == b.Alive && a.Active == b.Active &&
             a.LoadoutRevision == b.LoadoutRevision && a.CapacityKg == b.CapacityKg && a.BagWeightKg == b.BagWeightKg &&
             a.HasConfirmedCargoWeight == b.HasConfirmedCargoWeight && a.HarpoonShotId == b.HarpoonShotId &&
+            a.BagExpeditionId == b.BagExpeditionId && a.BagMemberId == b.BagMemberId && a.BagRevision == b.BagRevision &&
             a.HarpoonActive == b.HarpoonActive && a.HarpoonPosition == b.HarpoonPosition && a.HarpoonDirection == b.HarpoonDirection;
+
+        private static void ValidateCrewBagContinuation(CrewActorState next, CrewActorState lastKnown,
+            Dictionary<string, CrewActorState> fences)
+        {
+            if (!next.HasConfirmedCargoWeight) return;
+            if (lastKnown != null && next.ActorRevision == lastKnown.ActorRevision &&
+                (next.BagExpeditionId != lastKnown.BagExpeditionId || next.BagMemberId != lastKnown.BagMemberId))
+                throw new ProtocolException("Employee bag identity changed within one actor.");
+            if (fences.TryGetValue(next.BagExpeditionId, out CrewActorState previous))
+            {
+                if (next.BagMemberId != previous.BagMemberId || next.CapacityKg != previous.CapacityKg ||
+                    next.BagRevision < previous.BagRevision ||
+                    (next.BagRevision == previous.BagRevision && next.BagWeightKg != previous.BagWeightKg))
+                    throw new ProtocolException("Employee bag identity, capacity or revision conflicted.");
+            }
+            else if (fences.Count >= CargoInventoryFrames.MaxExpeditions)
+                throw new ProtocolException("Employee bag history exceeded its room limit.");
+            // These fences survive pause, scene replacement and unknown load.
+            // They concern transport continuity, never native capture authority.
+        }
 
         private static void ValidateHarpoonContinuation(CrewActorState next, CrewActorState previous, long highest)
         {

@@ -1,4 +1,5 @@
 using System;
+using DaveCoop.Core.Cargo;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -117,7 +118,9 @@ namespace DaveCoop.Networking
                         harpoonEnabled,
                         harpoonEnabled ? new HostHarpoonProfile(NetworkDriver.HarpoonSpeed.Value, NetworkDriver.HarpoonRange.Value,
                             NetworkDriver.HarpoonCooldown.Value, NetworkDriver.HarpoonRadius.Value, NetworkDriver.HarpoonDamage.Value) : new HostHarpoonProfile(),
-                        _fish, _fishLifecycle);
+                        _fish, _fishLifecycle, crewEnabled && NetworkDriver.ExperimentalCrewCargo.Value,
+                        NetworkDriver.CrewAllowOverweight.Value ? CargoCapacityPolicy.AllowPersonalOverweight : CargoCapacityPolicy.RejectOverCapacity,
+                        _cargoInventory);
                     if (NetworkDriver.ExperimentalHostFishAreas.Value && NativeGuestInitializationController.Current == null)
                     {
                         _hostFishInterest = new HostFishInterestSource(() => _peers?.Main,
@@ -247,8 +250,11 @@ namespace DaveCoop.Networking
                         CrewHarpoonStatus = _crewActor.HarpoonStatus, CrewHarpoonsFired = _crewActor.HarpoonsFired,
                         CrewHarpoonCollisions = _crewActor.HarpoonCollisions, CrewHarpoonDamageDispatches = _crewActor.HarpoonDamageDispatches,
                         CrewNativeRuntimeVerified = false, CrewEmployeeDamagePipelineImplemented = true,
-                        CrewEmployeeHarpoonImplemented = true, CrewDamageDeltaProven = false, CrewCaptureConnected = false,
-                        CrewBagWeightConfirmed = false,
+                        CrewEmployeeHarpoonImplemented = true, CrewDamageDeltaProven = false, CrewCaptureRuntimeVerified = false,
+                        CrewCargoEnabled = _crewActor.CargoEnabled, CrewCargoFailed = _crewActor.CargoFailed,
+                        CrewCargoStatus = _crewActor.CargoStatus, CrewCargoSourceStatus = _crewActor.CargoSourceStatus,
+                        CrewPersonalBagBound = _crewActor.HasPersonalCargoBinding, CrewCaptureStatus = _crewActor.CaptureStatus,
+                        CrewCaptureAttempts = _crewActor.CaptureAttempts, CrewCapturesConfirmed = _crewActor.CapturesConfirmed,
                         HostFishAreasEnabled = _hostFishInterest != null,
                         HostFishAreasFailed = _hostFishAreasFailed,
                         HostFishInterestStatus = _hostFishInterest?.Status,

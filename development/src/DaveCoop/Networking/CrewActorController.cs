@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using BepInEx.Logging;
+using DaveCoop.Core.Cargo;
 using DaveCoop.Core.Crew;
 using DaveCoop.Core.Session;
 using DaveCoop.Core.World;
@@ -25,6 +27,18 @@ namespace DaveCoop.Networking
         private readonly FishStateCapture _fish;
         private readonly FishLifecycleHooks _lifecycle;
         private readonly bool _harpoonEnabled;
+        private readonly bool _cargoEnabled;
+        private readonly CargoCapacityPolicy _capacityPolicy;
+        private readonly CargoInventoryController _inventory;
+        private readonly NativeHostCargoSource _cargoSource;
+        private CrewCargoBinding _cargoBinding;
+        private NativeHostCargoSnapshot _cargoNative;
+        private readonly List<CrewCargoBinding> _retainedCargo = new List<CrewCargoBinding>();
+        private readonly Queue<NativeEmployeeCaptureCommand> _captureQueue = new Queue<NativeEmployeeCaptureCommand>();
+        private NativeEmployeeCaptureCommand _captureCommand;
+        private bool _interactHeld, _captureAwaitRelease = true, _cargoFailed;
+        private long _captureInputFloor, _capturePacketFloor;
+        private double _nextCargoRead;
         private SessionPeer _bound;
         private string _room, _member;
         private long _nextActor, _nextInput, _guestActor, _guestState, _guestPacket, _guestInputActor;
@@ -62,14 +76,31 @@ namespace DaveCoop.Networking
         public string CorrectionStatus => _correction?.Status;
         public float? HP => _control?.HP ?? _receivedState?.Frame.HP;
         public float? Oxygen => _control?.Oxygen ?? _receivedState?.Frame.Oxygen;
+        public string CargoStatus { get; private set; } = "Disabled";
+        public string CaptureStatus { get; private set; } = "Disabled";
+        public bool CargoEnabled => _cargoEnabled;
+        public string CargoSourceStatus => _cargoSource?.Status;
+        public bool CargoFailed => _cargoFailed || (_cargoSource != null && !_cargoSource.Healthy);
+        public long CaptureAttempts { get; private set; }
+        public long CapturesConfirmed { get; private set; }
+        public bool HasPersonalCargoBinding => _cargoBinding != null && !_cargoBinding.Disconnected;
 
         public CrewActorController(LocalAvatarCapture local, Func<SessionPeer> currentPeer, Func<bool> localTest,
             int thread, ManualLogSource logger, bool enabled, HostCrewProfile profile,
-            bool harpoonEnabled, HostHarpoonProfile harpoonProfile, FishStateCapture fish, FishLifecycleHooks lifecycle)
+            bool harpoonEnabled, HostHarpoonProfile harpoonProfile, FishStateCapture fish, FishLifecycleHooks lifecycle,
+            bool cargoEnabled, CargoCapacityPolicy capacityPolicy, CargoInventoryController inventory)
         {
             _local = local; _currentPeer = currentPeer; _localTest = localTest; _thread = thread;
             _logger = logger; Enabled = enabled; _profile = profile;
             _harpoonEnabled = enabled && harpoonEnabled; _harpoonProfile = harpoonProfile; _fish = fish; _lifecycle = lifecycle;
+            _cargoEnabled = enabled && cargoEnabled; _capacityPolicy = capacityPolicy; _inventory = inventory;
+            CargoStatus = CaptureStatus = _cargoEnabled ? "WaitingForNaturalHostDive" : "Disabled";
+            if (_cargoEnabled && NativeGuestInitializationController.Current == null)
+            {
+                _cargoSource = new NativeHostCargoSource(local, thread, CargoSourceOwnerCurrent, logger);
+                try { _cargoSource.Install(); }
+                catch (Exception error) { _cargoFailed = true; CargoStatus = "SourceInstallUnknown:" + error.GetType().Name; }
+            }
             HarpoonStatus = _harpoonEnabled ? "WaitingForHostActor" : "Disabled";
             Status = enabled ? "WaitingForCrewPeer" : "Disabled";
         }
@@ -96,7 +127,7 @@ namespace DaveCoop.Networking
         {
             Disconnect(); _bound = peer; _room = state.RoomId;
             // Host-minted actor member token bound to the real player-2 peer.
-            // This is not a CargoLedger member registration or bag receipt.
+            // Registration only follows an actual natural host dive source.
             _member = Guid.NewGuid().ToString("N");
             _correction = new GuestCrewActorCorrection(_local, _currentPeer, _thread);
         }
@@ -137,6 +168,7 @@ namespace DaveCoop.Networking
                 _hostStateEstablished = true; StatesSent++; _nextSend = peer.Now + 1d / 30;
                 _logger.LogInfo("DAVECOOP_CREW_ACTOR_CREATED: host-owned employee physics; native gameplay remains unverified.");
             }
+            UpdateCargo(peer, state);
             if (!_hostStateEstablished)
             {
                 if (!Current(peer, state) || !peer.PublishCrewActorState(CaptureHostState())) return;
@@ -146,6 +178,7 @@ namespace DaveCoop.Networking
             if (!running)
             {
                 _control.Neutralize("UnityTimePaused");
+                NeutralizeCapture();
                 _harpoon?.Neutralize("UnityTimePaused"); RetireProjectile("UnityTimePaused");
                 if (!_paused) _body.TryMove(NVector2.Zero, 0.02f);
                 _paused = true; Status = "UnityTimePaused";
@@ -159,6 +192,7 @@ namespace DaveCoop.Networking
                     // Consume every accepted input separately; never dispatch
                     // the movement model's OR-merged diagnostic button bits.
                     _harpoon?.TryAccept(input, peer.Snapshot, peer.Now);
+                    AcceptCaptureInput(peer, input);
                 }
         }
 
@@ -245,7 +279,9 @@ namespace DaveCoop.Networking
                 CrewMovementPlan plan = _control.Step(state, peer.Now, delta, position, velocity, _body.Active);
                 if (plan.CanMove && HostCurrent(peer, state))
                 {
-                    if (!_body.TryMove(plan.RequestedVelocity, delta))
+                    NVector2 requested = plan.RequestedVelocity;
+                    if (TryReadCargoLoad(peer, state, out CrewCargoLoad load)) requested *= load.MovementFactor;
+                    if (!_body.TryMove(requested, delta))
                         throw new InvalidOperationException("Employee move unsupported or unknown: " + _body.Status);
                     if ((plan.PressedButtons & CrewButtons.Fire) != 0) FireEdgesObserved++;
                 }
@@ -254,6 +290,7 @@ namespace DaveCoop.Networking
                     throw new InvalidOperationException("Employee source changed during physics step.");
                 _control.ObserveBody(position, velocity, _body.Active);
                 StepHarpoon(peer, state, position, delta);
+                StepCapture(peer, state);
                 if (peer.Now >= _nextSend && peer.PublishCrewActorState(CaptureHostState()))
                 { StatesSent++; _nextSend = peer.Now + 1d / 30; }
                 Status = _control.Status;
@@ -269,7 +306,133 @@ namespace DaveCoop.Networking
             frame.HarpoonActive = frame.Active && frame.Alive && (_projectile?.Active ?? false);
             frame.HarpoonPosition = frame.HarpoonShotId > 0 ? _harpoonPosition : NVector3.Zero;
             frame.HarpoonDirection = frame.HarpoonShotId > 0 ? _harpoonDirection : NVector2.Zero;
+            SessionPeer peer = _currentPeer();
+            if (TryReadCargoLoad(peer, peer?.Snapshot, out CrewCargoLoad load))
+            {
+                frame.BagExpeditionId = load.ExpeditionId; frame.BagMemberId = load.MemberId;
+                frame.BagRevision = load.BagRevision; frame.BagWeightKg = load.ConfirmedWeightKg;
+                frame.HasConfirmedCargoWeight = true;
+            }
             return frame;
+        }
+
+        private bool CargoSourceOwnerCurrent()
+        {
+            SessionPeer peer = _currentPeer(); SessionSnapshot state = peer?.Snapshot;
+            return _cargoEnabled && !_cargoFailed && !_localTest() && NativeGuestInitializationController.Current == null &&
+                Environment.CurrentManagedThreadId == _thread && Current(peer, state) && state.Role == SessionRole.Host &&
+                state.Phase == SessionPhase.Ready && _control != null && _body != null && _control.Active && _body.Active &&
+                _control.SceneEpoch == state.SceneEpoch && _control.SceneKey == state.SceneKey;
+        }
+
+        private void UpdateCargo(SessionPeer peer, SessionSnapshot state)
+        {
+            if (!_cargoEnabled || _cargoSource == null || _cargoFailed || !HostCurrent(peer, state)) return;
+            if (_cargoBinding != null) _cargoBinding.BindActor(_control, peer.Snapshot);
+            if (peer.Now < _nextCargoRead) return;
+            _nextCargoRead = peer.Now + 0.25;
+            if (!_cargoSource.TryReadActiveDive(out NativeHostCargoSnapshot source))
+            { CargoStatus = _cargoSource.Status; return; }
+            if (!HostCurrent(peer, state) || !_body.IsCurrent(_control.ActorRevision, state.SceneEpoch, state.SceneKey)) return;
+            if (_cargoBinding == null)
+            {
+                if (_retainedCargo.Count >= CargoInventoryFrames.MaxExpeditions || _inventory.HostLedgerRetained)
+                { CargoStatus = "PreviousExpeditionRetained"; return; }
+                var ledger = new ExpeditionCargoLedger(Guid.NewGuid().ToString("N"), new[]
+                {
+                    new CargoMemberSetup { MemberId = Guid.NewGuid().ToString("N"), BagMode = CargoBagMode.HostNative,
+                        Capacity = source.HostCapacity, InitialWeight = source.HostWeight },
+                    new CargoMemberSetup { MemberId = _member, BagMode = CargoBagMode.EmployeeVirtual,
+                        Capacity = _profile.CapacityKg, InitialWeight = 0 }
+                }, _room);
+                var binding = new CrewCargoBinding(ledger, _room, _member);
+                _retainedCargo.Add(binding); // Retain even if publication/attachment fails.
+                if (!_inventory.AttachHostLedgerEvidence(ledger, peer) || !binding.BindActor(_control, peer.Snapshot))
+                { binding.Disconnect("AttachmentUnavailable"); _cargoFailed = true; CargoStatus = "AttachmentUnavailable"; return; }
+                _cargoBinding = binding;
+            }
+            if (_cargoNative != null && (source.RootIdentity != _cargoNative.RootIdentity || source.Generation != _cargoNative.Generation))
+            { _cargoBinding.UnbindActor("DiveSourceChanged"); CargoStatus = "DiveSourceChangedLedgerRetained"; return; }
+            _cargoNative = source;
+            CargoLedgerSnapshot bag = _cargoBinding.Ledger.Snapshot;
+            CargoMemberSnapshot host = null;
+            foreach (CargoMemberSnapshot member in bag.Members) if (member.BagMode == CargoBagMode.HostNative) host = member;
+            if (host == null) throw new InvalidOperationException("Host cargo member disappeared.");
+            CargoResult observed = _cargoBinding.Ledger.ObserveHostBagWeight(host.MemberId, new CargoCaptureFacts
+            {
+                ExpeditionId = bag.ExpeditionId, MemberId = host.MemberId, BoundPlayerId = 1, BagRevision = host.BagRevision,
+                SampledAt = peer.Now, HostAuthority = true, HostBagWeightVerified = true, NativeCurrentWeight = source.HostWeight
+            }, peer.Now);
+            CargoStatus = observed.Accepted || observed.Reason == CargoReason.Duplicate ? "PersonalEmployeeBagBound" : observed.Reason.ToString();
+        }
+
+        private bool TryReadCargoLoad(SessionPeer peer, SessionSnapshot state, out CrewCargoLoad load)
+        {
+            load = null;
+            if (_cargoBinding == null || _cargoNative == null || _cargoSource == null || !HostCurrent(peer, state) ||
+                !CargoSourceOwnerCurrent() || !_cargoSource.IsSameActiveDive(_cargoNative) ||
+                !_body.IsCurrent(_control.ActorRevision, state.SceneEpoch, state.SceneKey) ||
+                !_cargoBinding.TryReadLoad(_control, peer.Snapshot, out CrewCargoLoad own)) return false;
+            if (!HostCurrent(peer, state)) return false;
+            load = own; return true;
+        }
+
+        private void AcceptCaptureInput(SessionPeer peer, ReceivedCrewInput input)
+        {
+            if (!_cargoEnabled || input.Frame.InputSequence <= _captureInputFloor || input.PacketSequence <= _capturePacketFloor) return;
+            _captureInputFloor = input.Frame.InputSequence; _capturePacketFloor = input.PacketSequence;
+            bool held = (input.Frame.Buttons & CrewButtons.Interact) != 0;
+            bool rising = held && !_interactHeld; _interactHeld = held;
+            if (!held) _captureAwaitRelease = false;
+            if (!rising || _captureAwaitRelease || _cargoBinding == null || _cargoFailed) return;
+            if (_captureQueue.Count >= 32) { CaptureStatus = "CaptureQueueFullEdgeConsumed"; return; }
+            if (!TryReadCargoLoad(peer, peer.Snapshot, out _)) { CaptureStatus = "PersonalBagUnavailableEdgeConsumed"; return; }
+            _captureQueue.Enqueue(new NativeEmployeeCaptureCommand(this, peer, _control, _body, _cargoBinding, input, _capacityPolicy, _cargoNative));
+            CaptureStatus = "InteractEdgeQueued";
+        }
+
+        internal bool IsCaptureCommandCurrent(NativeEmployeeCaptureCommand command)
+        {
+            if (command == null || !ReferenceEquals(command, _captureCommand) || _cargoFailed || !_busy ||
+                _paused || Environment.CurrentManagedThreadId != _thread ||
+                !ReferenceEquals(command.Binding, _cargoBinding) || !ReferenceEquals(command.Control, _control) ||
+                !ReferenceEquals(command.Body, _body) || !ReferenceEquals(command.Peer, _bound) ||
+                _cargoNative == null || command.HostDiveRootIdentity != _cargoNative.RootIdentity || command.HostDiveGeneration != _cargoNative.Generation ||
+                command.InputSequence > _captureInputFloor || command.PacketSequence > _capturePacketFloor ||
+                command.Now < command.ReceivedAt ||
+                (!command.AdmissionEntered && command.Now - command.ReceivedAt > HostCrewControl.InputStaleSeconds)) return false;
+            float scale = Time.timeScale;
+            if (!float.IsFinite(scale) || scale <= 0) return false;
+            SessionSnapshot state = command.Peer.Snapshot;
+            return HostCurrent(command.Peer, state) && command.RoomId == _room && command.MemberId == _member &&
+                command.ActorRevision == _control.ActorRevision && command.SceneEpoch == state.SceneEpoch && command.SceneKey == state.SceneKey &&
+                CargoSourceOwnerCurrent() && _cargoSource.IsSameActiveDive(_cargoNative) &&
+                _body.IsCurrent(_control.ActorRevision, state.SceneEpoch, state.SceneKey) &&
+                _cargoBinding.IsActorCurrent(_control, command.Peer.Snapshot) && HostCurrent(command.Peer, state);
+        }
+
+        internal bool TryReadCapturePosition(NativeEmployeeCaptureCommand command, out NVector3 position)
+        {
+            position = default;
+            return IsCaptureCommandCurrent(command) && _body.TryReadPosition(out position) && IsCaptureCommandCurrent(command);
+        }
+
+        private void StepCapture(SessionPeer peer, SessionSnapshot state)
+        {
+            if (!_cargoEnabled || _cargoFailed || _captureQueue.Count == 0 || !HostCurrent(peer, state)) return;
+            _captureCommand = _captureQueue.Dequeue(); // Consumed before native preparation/selection.
+            try
+            {
+                if (!_captureCommand.TryAdmit()) { CaptureStatus = "CaptureIntentExpired"; return; }
+                CaptureAttempts++;
+                if (!NativeEmployeeCaptureCommitBridge.TryPrepare(_captureCommand, _cargoSource, _fish, _lifecycle, _thread,
+                    out NativeEmployeeCaptureCommitBridge capture))
+                { CaptureStatus = capture?.Status ?? "UnsupportedCaptureTarget"; return; }
+                capture.TryCaptureOnce(); CaptureStatus = capture.Status;
+                if (capture.CaptureConfirmed) CapturesConfirmed++;
+                if (capture.Failed) { _cargoFailed = true; CargoStatus = "CaptureNativeUnknownLedgerRetained"; }
+            }
+            finally { _captureCommand = null; }
         }
 
         private bool HarpoonCurrent(SessionPeer peer, SessionSnapshot state, HostEmployeeHarpoonProjectile projectile) =>
@@ -418,6 +581,8 @@ namespace DaveCoop.Networking
         private static bool Down(KeyCode a, KeyCode b) => Input.GetKey(a) || Input.GetKey(b);
         private void RetireBody(string reason)
         {
+            NeutralizeCapture();
+            _cargoBinding?.UnbindActor(reason);
             RetireGuestHarpoon();
             if (_harpoon != null)
             {
@@ -430,11 +595,15 @@ namespace DaveCoop.Networking
             if (_body != null && (_body.Failed || !_body.CleanupVerified)) _failed = true;
             _body = null; _control = null; _hostStateEstablished = false; Status = reason;
         }
+        private void NeutralizeCapture()
+        { _captureQueue.Clear(); _captureCommand = null; _interactHeld = false; _captureAwaitRelease = true; }
         public void InvalidateLocalSource()
         { RetireBody("LocalSourceChanged"); _receivedState = null; }
         public void Disconnect()
         {
-            RetireBody("Disconnected"); _bound = null; _room = null; _member = null;
+            RetireBody("Disconnected"); _cargoBinding?.Disconnect(); _cargoBinding = null; _cargoNative = null;
+            _bound = null; _room = null; _member = null; _nextCargoRead = 0;
+            _captureInputFloor = _capturePacketFloor = 0;
             RetireGuestHarpoon();
             _harpoonInputFloor = _harpoonPacketFloor = _harpoonShotFloor = 0;
             _harpoonPosition = NVector3.Zero; _harpoonDirection = NVector2.Zero;
@@ -448,6 +617,6 @@ namespace DaveCoop.Networking
             _failed = true; RetireBody("Failed"); _receivedState = null;
             try { _logger.LogWarning("DAVECOOP_CREW_ACTOR_UNAVAILABLE: " + error.GetType().Name + ": " + error.Message); } catch { }
         }
-        public void Dispose() => Disconnect();
+        public void Dispose() { Disconnect(); _cargoSource?.Dispose(); }
     }
 }

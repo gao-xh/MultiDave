@@ -7,7 +7,8 @@ namespace DaveCoop.Networking
 {
     // Main-thread, read-only projection of an externally owned expedition.
     // Attaching CLR evidence cannot authorize fishing, bag diversion or storage.
-    // No game adapter currently creates/attaches an authoritative expedition.
+    // CrewActorController attaches only after a natural original host dive/bag.
+    // Projection is still separate from native capture and storage evidence.
     internal sealed class CargoInventoryController
     {
         private SessionPeer _main, _authorityPeer;

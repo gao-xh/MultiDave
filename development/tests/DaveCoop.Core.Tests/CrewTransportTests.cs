@@ -19,7 +19,7 @@ internal static class CrewTransportTests
     internal static void CodecRequiresUniqueOptInAndCompleteInputStateSchema()
     {
         string room = Guid.NewGuid().ToString("N");
-        Assert(new PeerIdentity().ProtocolVersion == 10 && (int)PacketKind.CrewInput == 90 && (int)PacketKind.CrewActorState == 91,
+        Assert(new PeerIdentity().ProtocolVersion == 11 && (int)PacketKind.CrewInput == 90 && (int)PacketKind.CrewActorState == 91,
             "crew channel did not advance its exact protocol contract");
         string hello = Json(new WirePacket { Kind = PacketKind.Hello, Sequence = 1, Hello = Identity("Guest", true) });
         Assert(Decode(hello).Hello.UsesCrewActor, "explicit opt-in was lost");
@@ -73,6 +73,58 @@ internal static class CrewTransportTests
         receipt.Frame.InputSequence = 999;
         Assert(pair.Host.Snapshot.CrewInputSequence == 1 && pair.Guest.Snapshot.CrewStateRevision == 1,
             "taking a mutable owned copy changed internal transport high-water marks");
+    }
+
+    internal static void PersonalBagSchemaAndRoomFencesKeepIdentityAcrossUnknownAndPause()
+    {
+        var pair = Pair.Active();
+        CrewActorState first = State(revision: 2);
+        first.HasConfirmedCargoWeight = true; first.BagWeightKg = 22.125;
+        first.BagExpeditionId = Guid.NewGuid().ToString("N"); first.BagMemberId = Guid.NewGuid().ToString("N"); first.BagRevision = 4;
+        string json = Json(StatePacket(pair.Room, first));
+        foreach (string field in new[] { "bagWeightKg", "bagExpeditionId", "bagMemberId", "bagRevision" })
+            Throws<ProtocolException>(() => Decode(Change(json, "\"" + field + "\":", "\"unexpected\":")));
+        Throws<ProtocolException>(() => Decode(Change(json, "\"bagRevision\":4", "\"bagRevision\":4,\"bagRevision\":4")));
+        Throws<ProtocolException>(() => Decode(Change(json, "\"hasConfirmedCargoWeight\":true", "\"hasConfirmedCargoWeight\":false")));
+        CrewActorState bad = CrewFrames.Copy(first); bad.BagWeightKg = double.NaN;
+        Throws<ProtocolException>(() => CrewFrames.Validate(bad));
+        bad = CrewFrames.Copy(first); bad.BagMemberId = Guid.Parse(first.BagMemberId).ToString("D");
+        Throws<ProtocolException>(() => CrewFrames.Validate(bad));
+        Assert(pair.Host.PublishCrewActorState(first, 0.1), "personal bag reading did not publish"); pair.Pump(0.1);
+        first.BagWeightKg = 999;
+        Assert(pair.Guest.TryTakeRemoteCrewActorState(out ReceivedCrewActorState reading) && reading.Frame.BagWeightKg == 22.125 &&
+            reading.Frame.BagRevision == 4 && reading.Frame.BagMemberId == first.BagMemberId, "personal reading borrowed mutable caller state");
+        foreach (int conflict in new[] { 0, 1, 2, 3 })
+        {
+            bad = CrewFrames.Copy(reading.Frame); bad.StateRevision = 3;
+            if (conflict == 0) bad.BagWeightKg = 23;
+            if (conflict == 1) bad.BagRevision = 3;
+            if (conflict == 2) bad.BagMemberId = Guid.NewGuid().ToString("N");
+            if (conflict == 3) bad.CapacityKg += 1;
+            Throws<ProtocolException>(() => pair.Host.PublishCrewActorState(bad, 0.15));
+            Throws<ProtocolException>(() => pair.Guest.Receive(StatePacket(pair.Room, bad), 0.15));
+        }
+        CrewActorState next = CrewFrames.Copy(reading.Frame); next.StateRevision = 3; next.BagRevision = 5; next.BagWeightKg = 12;
+        Assert(pair.Host.PublishCrewActorState(next, 0.2), "a newer confirmed bag revision did not publish"); pair.Pump(0.2);
+        Assert(!pair.Host.PublishCrewActorState(reading.Frame, 0.21), "stale bag revision replaced a newer state");
+        pair.Guest.Receive(StatePacket(pair.Room, reading.Frame), 0.21);
+        Assert(pair.Guest.TryTakeRemoteCrewActorState(out reading) && reading.Frame.BagRevision == 5 && reading.Frame.BagWeightKg == 12,
+            "legal old state closed the room or replaced the newer bag");
+        CrewActorState unknown = State(revision: 4);
+        Assert(pair.Host.PublishCrewActorState(unknown, 0.3), "unknown live load could not retract its current reading"); pair.Pump(0.3);
+        bad = CrewFrames.Copy(next); bad.StateRevision = 5; bad.BagRevision = 4;
+        Throws<ProtocolException>(() => pair.Host.PublishCrewActorState(bad, 0.4));
+        Throws<ProtocolException>(() => pair.Guest.Receive(StatePacket(pair.Room, bad), 0.4));
+        bad = CrewFrames.Copy(next); bad.StateRevision = 5; bad.BagExpeditionId = Guid.NewGuid().ToString("N");
+        Throws<ProtocolException>(() => pair.Host.PublishCrewActorState(bad, 0.4));
+        pair.Host.SetLocalScene(null, 0.5); pair.Pump(0.5); pair.Host.SetLocalScene(Scene(), 0.6); pair.Pump(0.6);
+        bad = CrewFrames.Copy(next); bad.ActorRevision = 2; bad.StateRevision = 1; bad.SceneEpoch = pair.Host.Snapshot.SceneEpoch; bad.BagRevision = 4;
+        Throws<ProtocolException>(() => pair.Host.PublishCrewActorState(bad, 0.7));
+        Throws<ProtocolException>(() => pair.Guest.Receive(StatePacket(pair.Room, bad), 0.7));
+        bad.BagRevision = 5;
+        Assert(pair.Host.PublishCrewActorState(bad, 0.8), "same expedition could not survive a new actor in a new scene"); pair.Pump(0.8);
+        Assert(pair.Guest.TryTakeRemoteCrewActorState(out reading) && reading.Frame.BagRevision == 5 && reading.Frame.ActorRevision == 2,
+            "scene replacement erased the personal bag fence");
     }
 
     internal static void HarpoonStateSchemaAndRoomFencesCannotReopenAConsumedShot()
@@ -261,6 +313,9 @@ internal static class CrewTransportTests
             guest.Snapshot.RemoteUsesCrewActor, "asynchronous handshake borrowed mutable opt-in values");
         await Ready(host, guest, cancellation.Token);
         CrewActorState source = State(epoch: host.Snapshot.SceneEpoch);
+        string expedition = Guid.NewGuid().ToString("N"), member = Guid.NewGuid().ToString("N");
+        source.HasConfirmedCargoWeight = true; source.BagWeightKg = 11.75;
+        source.BagExpeditionId = expedition; source.BagMemberId = member; source.BagRevision = 2;
         source.HarpoonShotId = 1; source.HarpoonActive = true; source.HarpoonDirection = Vector2.UnitY;
         source.HarpoonPosition = new Vector3(12, 15, 0);
         host.PublishCrewActorState(source); source.HP = 99; source.HarpoonPosition = Vector3.Zero;
@@ -268,7 +323,9 @@ internal static class CrewTransportTests
         await Until(() => guest.TryTakeRemoteCrewActorState(out state), cancellation.Token);
         Assert(state.Frame.HP == 30 && state.RoomId == listener.RoomId && state.BoundPlayerId == 1 && state.Frame.PlayerId == 2 &&
             state.PacketSequence > 1 && state.ReceivedAt >= 0 && state.Frame.HarpoonShotId == 1 && state.Frame.HarpoonActive &&
-            state.Frame.HarpoonPosition == new Vector3(12, 15, 0) && state.Frame.HarpoonDirection == Vector2.UnitY,
+            state.Frame.HarpoonPosition == new Vector3(12, 15, 0) && state.Frame.HarpoonDirection == Vector2.UnitY &&
+            state.Frame.HasConfirmedCargoWeight && state.Frame.BagWeightKg == 11.75 && state.Frame.BagRevision == 2 &&
+            state.Frame.BagExpeditionId == expedition && state.Frame.BagMemberId == member,
             "actual state TCP source or owned projectile position was lost");
         CrewButtons[] edges = { CrewButtons.Fire, CrewButtons.None, CrewButtons.Recall };
         for (int i = 0; i < edges.Length; i++)
@@ -288,6 +345,13 @@ internal static class CrewTransportTests
         Assert(state.Frame.LastInputSequence == 3 && state.Frame.HasConfirmedCargoWeight == false && state.Frame.BagWeightKg == null &&
             state.Frame.HarpoonShotId == 1 && !state.Frame.HarpoonActive && state.Frame.HarpoonPosition == new Vector3(12, 16, 0),
             "input acknowledgement fabricated a cargo receipt");
+        CrewActorState weight = CrewFrames.Copy(next); weight.StateRevision = 3;
+        weight.HasConfirmedCargoWeight = true; weight.BagWeightKg = 16.25; weight.BagRevision = 3;
+        weight.BagExpeditionId = expedition; weight.BagMemberId = member;
+        Assert(host.PublishCrewActorState(weight), "new personal weight did not enter actual TCP");
+        await Until(() => guest.TryTakeRemoteCrewActorState(out state), cancellation.Token);
+        Assert(state.Frame.BagWeightKg == 16.25 && state.Frame.BagRevision == 3 && state.Frame.BagMemberId == member,
+            "unknown state erased the personal bag transport fence or lost the later reading");
         await guest.StopAsync(); await host.Completion.WaitAsync(cancellation.Token);
     }
 
@@ -326,7 +390,7 @@ internal static class CrewTransportTests
     internal static async Task TcpProtocolEightRejectedAndOneSidedOptInCannotSendCrew()
     {
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(8));
-        foreach (int oldProtocol in new[] { 8, 9 })
+        foreach (int oldProtocol in new[] { 8, 9, 10 })
         using (var listener = new LanHost(IPAddress.Loopback, 0))
         {
             Task<SessionPeer> accepting = listener.AcceptOneAsync(Identity("Host", true), cancellation.Token);

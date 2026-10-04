@@ -23,6 +23,7 @@ namespace DaveCoop.Networking
         internal static ConfigEntry<bool> ExperimentalHostFishAreas;
         internal static ConfigEntry<bool> ExperimentalCrewActor;
         internal static ConfigEntry<bool> ExperimentalCrewHarpoon;
+        internal static ConfigEntry<bool> ExperimentalCrewCargo, CrewAllowOverweight;
         internal static ConfigEntry<float> CrewSpeed, CrewBoostMultiplier, CrewMaxHP, CrewMaxOxygen;
         internal static ConfigEntry<float> CrewOxygenPerSecond, CrewBoostOxygenPerSecond, CrewCapacityKg;
         internal static ConfigEntry<float> HarpoonSpeed, HarpoonRange, HarpoonCooldown, HarpoonRadius;

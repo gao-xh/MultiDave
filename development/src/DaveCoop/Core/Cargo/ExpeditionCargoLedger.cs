@@ -4,6 +4,33 @@ using System.Linq;
 
 namespace DaveCoop.Core.Cargo
 {
+    // A caller-serialized scalar view for current personal load. It has no
+    // products, inventory or native facts, and never aliases a mutable member.
+    internal readonly struct CargoMemberLoadReading
+    {
+        public string ExpeditionId { get; }
+        public string SourceRoomId { get; }
+        public CargoExpeditionPhase Phase { get; }
+        public string MemberId { get; }
+        public CargoBagMode BagMode { get; }
+        public double Capacity { get; }
+        public double Weight { get; }
+        public double ReservedWeight { get; }
+        public long BagRevision { get; }
+        public bool Connected { get; }
+        public long HighestRequestId { get; }
+        public int UnresolvedCaptureCount { get; }
+
+        internal CargoMemberLoadReading(string expedition, string room, CargoExpeditionPhase phase,
+            string member, CargoBagMode mode, double capacity, double weight, double reserved,
+            long revision, bool connected, long highestRequest, int unresolved)
+        {
+            ExpeditionId = expedition; SourceRoomId = room; Phase = phase; MemberId = member; BagMode = mode;
+            Capacity = capacity; Weight = weight; ReservedWeight = reserved; BagRevision = revision;
+            Connected = connected; HighestRequestId = highestRequest; UnresolvedCaptureCount = unresolved;
+        }
+    }
+
     // Host-owned, caller-serialized CLR evidence. Lifetime is one expedition,
     // not a socket/scene. No method calls native code or grants native permission.
     // Legacy Reserve requires an already verified complete yield plan. The
@@ -68,9 +95,12 @@ namespace DaveCoop.Core.Cargo
             TrySourceLease(lease, out Capture capture, out _) && capture.SelectionIsolationEntered &&
             capture.Stage == CargoCaptureStage.EnteredUnknown;
 
-        public ExpeditionCargoLedger(string expeditionId, CargoMemberSetup[] members)
+        public ExpeditionCargoLedger(string expeditionId, CargoMemberSetup[] members, string sourceRoomId = null)
         {
             _expedition = CargoValues.GuidKey(expeditionId);
+            // A production expedition binds its actual room before its first
+            // capture. Legacy callers may still bind on their first reserve.
+            _sourceRoom = sourceRoomId == null ? null : CargoValues.GuidKey(sourceRoomId);
             if (members == null || members.Length != CargoValues.MaxMembers) throw new ArgumentException("Cargo requires two members.");
             // Prepare and validate both members before mutating any collection.
             var owned = new List<CargoMemberSetup>(CargoValues.MaxMembers);
@@ -109,6 +139,24 @@ namespace DaveCoop.Core.Cargo
                 Plan = item.Plan, PlanFingerprint = item.Plan?.Fingerprint
             }).ToArray()
         };
+
+        // The canonical member identity is already fixed by CrewCargoBinding.
+        // Scan only the bounded capture metadata; no snapshot sorting, product
+        // copying or native bag inventory is needed at each source guard.
+        internal bool TryReadMemberLoad(string memberId, out CargoMemberLoadReading reading)
+        {
+            reading = default;
+            if (memberId == null || !_members.TryGetValue(memberId, out Member member)) return false;
+            int unresolved = 0;
+            foreach (Capture capture in _captures.Values)
+                if (CaptureMemberId(capture) == memberId &&
+                    (capture.Stage == CargoCaptureStage.Reserved || capture.Stage == CargoCaptureStage.EnteredUnknown))
+                    unresolved++;
+            reading = new CargoMemberLoadReading(_expedition, _sourceRoom, _phase, member.Setup.MemberId,
+                member.Setup.BagMode, member.Setup.Capacity, member.Weight, member.Reserved, member.Revision,
+                member.Connected, member.HighestRequest, unresolved);
+            return true;
+        }
 
         public CargoResult SetConnected(string memberId, bool connected)
         {

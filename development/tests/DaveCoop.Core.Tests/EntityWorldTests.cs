@@ -177,7 +177,7 @@ internal static class EntityWorldTests
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         using var listener = new LanHost(IPAddress.Loopback, 0);
         PeerIdentity current = Identity("Host"), legacy = Identity("Guest"); legacy.ProtocolVersion = 2;
-        Assert(current.ProtocolVersion == 10, "crew actor negotiation did not advance the protocol");
+        Assert(current.ProtocolVersion == 11, "crew cargo negotiation did not advance the protocol");
         Task<SessionPeer> accepting = listener.AcceptOneAsync(current, cancellation.Token);
         bool rejectedGuest = false, rejectedHost = false;
         try { using SessionPeer unexpected = await LanGuest.ConnectAsync("127.0.0.1", listener.Port, legacy, cancellation.Token); }
