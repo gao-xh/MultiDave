@@ -1,13 +1,13 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-04T08:40:11.2647482Z",
-  "PluginVersion": "0.1.15-dev",
+  "RecordedUtc": "2026-10-04T09:33:29.755924+00:00",
+  "PluginVersion": "0.1.16-dev",
   "VerificationCommands": [
     "development/scripts/Test-Core.ps1",
     "development/scripts/Build-Plugin.ps1"
   ],
-  "CoreTestsPassed": 142,
-  "CoreTestsTotal": 142,
+  "CoreTestsPassed": 148,
+  "CoreTestsTotal": 148,
   "TestNames": [
     "timeline boundaries and interpolation",
     "timeline capacity, ordering and reset",
@@ -139,6 +139,12 @@
     "fish action dispatch generation and lease",
     "fish action unknown native outcome never retries",
     "fish action not-started release and target ownership",
+    "map origin fixed iterator scopes and unknown parent masking",
+    "map origin bootstrap and late exact scene completion",
+    "map origin pointer version handle and entry replay fences",
+    "map origin pending birth unload destroy and new entry retirement",
+    "map origin repeated cache and failed operation retirement",
+    "map origin thread read loss scope and quota revocation",
     "fish action codec and single payload",
     "fish action session source ownership",
     "fish action authority and forged results",
@@ -153,7 +159,7 @@
     "TCP fish action protocol three rejection"
   ],
   "WarningAsErrorCompilationPassed": true,
-  "CompiledPluginSHA256": "1C03DC606FA3DFD218D5288C9780A4C0E226CF38E45CC078DA011AC1A51AD71D",
+  "CompiledPluginSHA256": "977D090A290F168110AA4D9DE618F84A56954FB94F58F14A49FEA54416507AD8",
   "CompilerVersion": "3.11.0-4.22464.11",
   "TestRuntime": "Microsoft.NETCore.App 6.0.11",
   "ActualTransport": "IPv4 loopback TCP endpoints in one console process",
@@ -162,12 +168,17 @@
   "TwoGameInstancesVerified": false,
   "SameGameWorldVerified": false,
   "CooperativeFishingVerified": false,
-  "Scope": "Pure CLR protocol/session/world/action and production map-choice adapter fixtures with real loopback TCP, plus caller-serialized in-memory per-member cargo evidence. Eight cargo fixtures use synthetic host-local facts and verified-yield plans; they exercise independent capacity/reservations, provenance/product fingerprints, source and request replay fences, room migration rejection, late receipts after disconnect, host native total weight, per-product return leases, partial success, unknown outcomes and bounded deep copies. No native execution, actual employee diversion, game expedition binding, guest save isolation, real storage/save transactions, normal return or two-game gameplay is verified.",
+  "Scope": "Pure CLR protocol/session/world/action and production map-choice adapter fixtures with real loopback TCP, plus caller-serialized in-memory per-member cargo evidence. Eight cargo fixtures use synthetic host-local facts and verified-yield plans; they exercise independent capacity/reservations, provenance/product fingerprints, source and request replay fences, room migration rejection, late receipts after disconnect, host native total weight, per-product return leases, partial success, unknown outcomes and bounded deep copies. No native execution, actual employee diversion, game expedition binding, guest save isolation, real storage/save transactions, normal return or two-game gameplay is verified. Six additional production MapOriginRegistry fixtures supply synthetic local scalar evidence for fixed iterator scopes, unknown-scope masking, exact bootstrap/late completion, pointer/version/handle fences, pending births and actual-unload tombstones, repeated caches, failed operations, thread/read/LIFO/quota revocation. They do not execute native hooks, native capture or the Unity controller, and do not verify actual callback ABI, native ownership, adoption or game cleanup.",
   "ProtocolVersion": 5,
   "MapChoiceTcpTransferVerified": true,
   "ProductionMapChoiceAdapterFixtureVerified": true,
   "NativeControllerOriginVerified": false,
   "HostSelectionApplied": false,
   "CargoLedgerFixtureVerified": true,
-  "NativeCargoGameplayVerified": false
+  "NativeCargoGameplayVerified": false,
+  "MapOriginRegistryFixtureVerified": true,
+  "MapOriginRegistryTestsPassed": 6,
+  "MapOriginNativeCallbacksVerified": false,
+  "NativeTypedReturnAbiVerified": false,
+  "NativeGenerationBound": false
 }

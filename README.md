@@ -53,7 +53,7 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 `distribution/` 是供自动安装使用的本项目插件包。
 本仓库不分发游戏、游戏接口程序集、存档或 BepInEx 运行库。
 
-`codex/player-discovery` 分支当前源码为 0.1.15-dev、协议 5；Build 警告视为错误通过，Test-Core 142/142 通过，本轮仅构建，未部署或启动。
+`codex/player-discovery` 分支当前源码为 0.1.16-dev、协议 5；Build 警告视为错误通过，Test-Core 148/148 通过，本轮仅构建，未部署或启动。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试；该进程已确认插件加载、Unity Update、网络入口及 4 条初始路线输入日志，仅主菜单启动通过。
 目标检查、潜水路线、场景切换与正常返航仍待实机，用户当前不方便试玩，手动验证已延后。最近完成潜水验证的是 0.1.11-dev，单游戏 TCP 鱼群显示与发射/挂钩/伤害只读观察已运行。
 用户确认偏移鱼群可见、捕获原鱼时对应副本也消失，关闭鱼群显示后恢复正常，操作和镜头正常。
@@ -90,6 +90,9 @@ callbackFloor 排除已经排队的旧观察，但尚无原生控制器/上下�
 0.1.15-dev开始实现每人独立背包的内存账本：容量/重量按人记账、捕获来源去重、未知结果保留，返航按产物分别确认。
 新增默认关闭的F11 Loot/返航只读观察，帮助核对原游戏链；账本未接原生员工分流、入仓或网络清单，独立背包玩法仍待接通。
 范围见[员工模式方案](development/docs/CREW_MODE.md)及[独立背包构建摘要](development/logs/cargo-ledger-build-verification.json)。
+0.1.16-dev另增默认关闭的加载来源观察：固定入海/协程身份，关联精确资源操作、实际Scene句柄及controller出生，防止旧调用归到新地图。
+这是来源证据准备，仍未采用房主地图或接通个人背包玩法；原生回调及画面未验证。
+实现与限额见[地图加载来源](development/docs/MAP_ORIGINS.md)，本轮编译/148项测试范围见[加载来源构建摘要](development/logs/map-origin-build-verification.json)。
 测试直接编译实际 MapChoiceController 与 MapSelectionCallObservation，仅替代 logger；4 项源适配用例用 synthetic DTO 和实际回环 TCP 验证候选，未运行 NativeHook。
 当前范围见 [地图选择传输构建摘要](development/logs/map-choice-transport-build-verification.json)；0.1.13 历史构建见 [地图选择调用摘要](development/logs/map-selection-call-build-verification.json)；已安装版本见 [0.1.12-dev 操作门禁摘要](development/logs/fish-action-gate-build-verification.json)，历史鱼群与交互证据见 [0.1.11-dev 摘要](development/logs/fish-world-interaction-build-verification.json)。
 同一海洋、鱼与互动的实现范围见 [WORLD_SYNC](development/docs/WORLD_SYNC.md)。

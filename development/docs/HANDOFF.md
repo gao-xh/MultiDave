@@ -6,7 +6,7 @@
 自定义插件加载、Unity Update 回调，以及 `DR_Start`、`DR_Logo`、`DR_Title` 场景读取。
 插件日志证据见 `../logs/bootstrap-verification.log`。
 
-开发在 `codex/player-discovery` 分支，当前源码为 `0.1.15-dev`、协议 5，Build 警告视为错误通过、Test-Core 142/142 通过；本轮未部署/启动。
+开发在 `codex/player-discovery` 分支，当前源码为 `0.1.16-dev`、协议 5，Build 警告视为错误通过、Test-Core 148/148 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 最近完成潜水验证的是 `0.1.11-dev`。
 
@@ -15,7 +15,14 @@
 复现及具体入口见[NATIVE_ANALYSIS](NATIVE_ANALYSIS.md)：换层/附加协程直接走Addressables五参入口，当前三参观察漏该路径；
 要固定工厂/MoveNext owner并显式继承子协程，再关联实际操作/Scene/controller寿命。
 鱼产物、容量与水下进度同归属分流；返航包含多类别入仓，保存/加载不只是简单根赋值。
-这是离线工具修改，插件仍0.1.15，未重新Build/Test-Core/部署/启动，历史142项和实机范围保持原记录；原生能力全部未接通。
+该离线工具轮保持历史0.1.15/142项记录，未部署/启动；原始报告及其证据不扩大。
+随后0.1.16已接默认关闭ObserveMapOrigins：29声明前后/finalizer、固定entry/factory/MoveNext owner、Addressables精确typedoperation成功结果→实际Scene句柄→首次controller寿命。
+主线程operation保留64/版本复核，队列64/消费16，进程8192/context256；无birth的真实unload也留tombstone，错误/丢失/线程/配额撤证。
+MapOriginController独立于TCP，RunId隔离重开后的编号；CALL/BOUND_CHOICE只记录本机标量证据，不接MapChoice generation或权限。
+6组纯CLR registry夹具通过，总计148/148；Build警告视为错误通过，新挂钩原生ABI/真实时序/关闭清理仍待实机。
+F11面板新增开关并按屏幕尺寸缩放，画面仍待验收；本轮未部署/启动游戏。
+NativeGenerationBound/HostSelectionApplied/WorldAuthority/CargoAuthority始终false，独立员工背包与正常返航桥未接通。
+详见[MAP_ORIGINS](MAP_ORIGINS.md)及[构建摘要](../logs/map-origin-build-verification.json)；框架同commit证据不当作本游戏typedreturn验收。
 新版单游戏 TCP 偏移鱼群可见和原鱼移除时副本同步消失已获用户确认，关闭显示后恢复正常，操作和镜头正常。
 发射/挂钩/伤害只读观察已运行；动画、完整捕获链、路线完整读取与正常返航仍待验收。
 最近单鱼稳定性实测来自 `0.1.9-dev`，M1 历史证据来自 `0.1.1-dev`。
@@ -201,7 +208,7 @@ Sprite 回放仅验证显示路径，网络消息必须解析资源键，不可�
 已经读到地图节点/IGP 选择、FishAllocator 生成、FishAISystem 的种类/HP/捕获状态、
 Damageable.TakeDamage 与鱼/物品 SuccessInteract 等签名；尚未执行这些写入入口。
 探针记录本机 ID 仅用于观察；网络数值实体已使用房主分配的 RoomId/epoch/EntityId。
-当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.15-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
+当前 0.1.12-dev 已确认主菜单启动；用户方便时正常退出后部署当前开发源码，核对 0.1.16-dev 新进程版本与加载，不以旧版启动证明新观察或传输适配运行。
 在入海前开启独立 Observe map selection calls，核对 MAP_SELECTION_HOOKS_READY、MAP_SELECTION_CALL、MAP_SELECTION_OBSERVER_STATE、MAP_SELECTION_HOOKS_STOPPED 的五处自然边界、线程、路线候选、空/截断/读取错误及自己的卸载。
 随后按目标检查范围在 F11 / Local test 开启 Transmit read-only fish observations 后进入潜水。
 开启单鱼预览取得选中身份，点 Check selected fish target，核对 FISH_ACTION_SENT / ADMISSION / DECISION / RECEIVED 的请求元数据、指纹及 DryRunValidated/op0。

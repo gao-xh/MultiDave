@@ -22,7 +22,7 @@
 真实 `A01_01_01` 潜水已确认管理器玩家引用、位置、朝向、移动输入、动画与摄像机跟随。
 继续进入 `Boss_000` 后，旧玩家不再出现在当前采样中，新实例与管理器和摄像机正确绑定，
 跨场景读取无探针错误。完整旧日志后来还确认返航、大厅与主菜单，1886 条快照无探针错误。
-默认发行包保持 0.1.0，当前源码为 0.1.15-dev、协议 5，Build 警告视为错误通过、Test-Core 142/142 通过；本轮未部署/启动。
+默认发行包保持 0.1.0，当前源码为 0.1.16-dev、协议 5，Build 警告视为错误通过、Test-Core 148/148 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试，加载/Update/网络入口及 4 条初始 RouteInputs 已确认，仅主菜单启动通过；新地图调用观察、Probe、潜水路线、场景切换与正常返航仍待实机。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后；后续自主开发保持各项实机验收边界。
 最近完成潜水验证的是 0.1.11-dev。
@@ -94,9 +94,12 @@ Local test 保留原鱼并显示副本，成对及同步移除不代表统一世
 0.1.14-dev 已接入候选传输与源适配：generation/revision 独立 epoch、可 WaitingForScene 发布，普通场景清理保留选择，显式 retire/关房清理；新代次首片撤销旧路线，整批原子拼装，再按连续 revision 更新 IGP。
 cache/restore 每次合法自然样本都创建新 generation，SceneLoader 同指纹去重。copy 错误、截断、丢失或已发布组再次空/unknown 主动撤销；未绑定及未知新组空 IGP 不缓存。
 callbackFloor 只排除已经排队的旧回调，没有原生 controller/context 代次证明；新 cache 后迟到且同 scene/address 的旧 IGP 仍可附当前候选。NativeGenerationBound=false，所有 Snapshot 为 ObservationOnly、HostSelectionApplied=false，传输不授予世界权限。
-下一步补本地 origin/代次与跨机地址证据，接入真正加载前房主路线/IGP 采用、客机临时进度/生成及 AI 隔离，再验证双端同地图和同实体；用户方便时再部署验证自然回调、目标检查、画面与正常返航。尚未执行原生选择采用，不能用 CLR TCP 替代实机。
+0.1.16-dev已接默认关闭的29声明加载来源观察：entry/factory/MoveNext固定owner、精确typedoperation成功Scene结果与controller出生、迟到结果/未知unload围栏。
+新增6组registry夹具（总计148项）验证标量关联和撤销，不运行NativeHooks；只写日志、不接网络地图generation，NativeGenerationBound/WorldAuthority仍false。
+本轮未部署/启动，实际回调嵌套、typedreturn/Scene值/__state、原生出生时序和卸自己的挂钩待验收，详见[MAP_ORIGINS](MAP_ORIGINS.md)与[构建摘要](../logs/map-origin-build-verification.json)。
+下一步验证本地 origin/代次与跨机地址证据，接入真正加载前房主路线/IGP 采用、客机临时进度/生成及 AI 隔离，再验证双端同地图和同实体；用户方便时再部署验证自然回调、目标检查、画面与正常返航。尚未执行原生选择采用，不能用 CLR TCP 替代实机。
 布局核对和签名发现不代表 M4 完成。
-134 项测试包含 4 项实际源适配夹具：Test-Core 与测试 csproj 编译实际 MapChoiceController/MapSelectionCallObservation，仅替代 logger，以 synthetic DTO 和实际回环 TCP 检查候选传输；不运行 NativeHook，也不证明原生采用。
+历史0.1.14的134 项测试包含 4 项实际源适配夹具：Test-Core 与测试 csproj 编译实际 MapChoiceController/MapSelectionCallObservation，仅替代 logger，以 synthetic DTO 和实际回环 TCP 检查候选传输；不运行 NativeHook，也不证明原生采用。
 
 ## M5 — 合作捕鱼、伤害与拾取
 

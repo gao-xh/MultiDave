@@ -1,0 +1,136 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-04T09:33:29.755924+00:00",
+  "PluginVersion": "0.1.16-dev",
+  "ProtocolVersion": 5,
+  "CompiledPluginSHA256": "977D090A290F168110AA4D9DE618F84A56954FB94F58F14A49FEA54416507AD8",
+  "WarningAsErrorCompilationPassed": true,
+  "CoreTestsPassed": 148,
+  "CoreTestsTotal": 148,
+  "MapOriginRegistryTestsPassed": 6,
+  "MapOriginRegistryTestNames": [
+    "map origin fixed iterator scopes and unknown parent masking",
+    "map origin bootstrap and late exact scene completion",
+    "map origin pointer version handle and entry replay fences",
+    "map origin pending birth unload destroy and new entry retirement",
+    "map origin repeated cache and failed operation retirement",
+    "map origin thread read loss scope and quota revocation"
+  ],
+  "ProductionMapOriginRegistryCompiledInFixtures": true,
+  "FixtureFactsSyntheticLocalScalars": true,
+  "NativeHookDeclarationCount": 29,
+  "ObserveMapOriginsDefaultEnabled": false,
+  "ObserverIndependentOfTcp": true,
+  "FixedEntryFactoryMoveNextScopesImplemented": true,
+  "UnknownScopesMaskParentImplemented": true,
+  "VersionFencedTypedOperationSceneAdapterImplemented": true,
+  "ControllerBirthAndPendingChoiceRegistryImplemented": true,
+  "UnknownUnloadHandleTombstonesImplemented": true,
+  "RepeatedCacheRetiresEvenIdenticalFingerprint": true,
+  "AcceptedRouteOnlyUpdatesContextOwner": true,
+  "ControllerExceptionRetirementImplemented": true,
+  "PendingInitIteratorControllerRetirementTokenImplemented": true,
+  "RunIdSeparatesRegistryLifetimes": true,
+  "OriginAdapterFeedsNetworkMapGeneration": false,
+  "NativeWrapperRetentionScope": "Up to 64 typed scene operation wrappers, only in native capture on the confirmed Unity thread; direct-field version/status/result checks. Queues and registry contain CLR values only.",
+  "Limits": {
+    "HookProcessEvents": 8192,
+    "HookPendingCalls": 256,
+    "ObservationQueue": 64,
+    "DrainPerUpdate": 16,
+    "RetainedNativeOperations": 64,
+    "Owners": 32,
+    "Iterators": 256,
+    "Operations": 128,
+    "DistinctSceneHandlesIncludingTombstones": 128,
+    "Controllers": 256,
+    "PendingAndReadyChoicesCombined": 128,
+    "ScopeDepth": 32,
+    "LoadKeyCharacters": 512,
+    "ContextOwnerMappings": 32,
+    "IteratorControllerMappings": 256
+  },
+  "InteropSignatureInspectionCommand": "development/scripts/Inspect-MapOriginApi.ps1",
+  "InteropSignatureInspectionCompleted": true,
+  "InteropMetadataModuleCount": 4,
+  "FrameworkIlAndSameCommitSourceReviewed": true,
+  "ReviewedIl2CppInteropVersion": "1.5.3",
+  "ReviewedIl2CppInteropCommit": "dbda1cb353b0f4253345dc45136d170b9e50a5a0",
+  "ReviewedHarmonyXVersion": "2.10.2",
+  "NativeTypedReturnAbiVerified": false,
+  "SceneValueArgumentAbiVerified": false,
+  "IteratorReturnAndStatePairingAbiVerified": false,
+  "NativeOriginHooksInstalled": false,
+  "NativeMapOriginCallbacksObserved": false,
+  "NativeDirectOperationReadVerified": false,
+  "NativeSceneControllerOriginVerified": false,
+  "NativeOwnHookCleanupVerified": false,
+  "NativeGenerationBound": false,
+  "HostSelectionApplied": false,
+  "CrossMachineAddressVerified": false,
+  "WorldAuthority": false,
+  "CargoAuthority": false,
+  "ObservationOnly": true,
+  "GuestPersistentSideEffectsIsolated": false,
+  "NativeEmployeeBagGameplayVerified": false,
+  "NativeNormalReturnVerified": false,
+  "CooperativeFishingVerified": false,
+  "TwoGameInstancesVerified": false,
+  "DeployedThisTurn": false,
+  "GameLaunchedThisTurn": false,
+  "InstalledPluginVersion": "0.1.12-dev",
+  "LatestCompletedDiveVersion": "0.1.11-dev",
+  "DefaultDistributionVersion": "0.1.0",
+  "F11AdaptivePanelVisualVerified": false,
+  "SourceSHA256": [
+    {
+      "Path": "development/src/DaveCoop/Core/World/MapOriginRegistry.cs",
+      "SHA256": "580535D6D577FB1BB1626776D666B14139605DB33A9D9C8F4456EDD52639A1C0"
+    },
+    {
+      "Path": "development/src/DaveCoop/Networking/MapOriginHooks.cs",
+      "SHA256": "CC692EEDE205813CCB35E05D1C3131B4CC82ADE39EE8A127EA8A9E2D6389852A"
+    },
+    {
+      "Path": "development/src/DaveCoop/Networking/MapOriginNativeCapture.cs",
+      "SHA256": "595FBB398EB2D457612A26886852441C54B7A20E60BE7B6701FCD69CB92191E5"
+    },
+    {
+      "Path": "development/src/DaveCoop/Networking/MapOriginController.cs",
+      "SHA256": "87FD4F777DD97E11E55914604110BFA0CC7677E6A7BE8ECAF1CBA38DC9D5B181"
+    },
+    {
+      "Path": "development/src/DaveCoop/Networking/NetworkController.cs",
+      "SHA256": "E98A5D71D3EBD594350C746B6D1045F1D0DD2C218E86ED08F0A182058EA36EFE"
+    },
+    {
+      "Path": "development/src/DaveCoop/Networking/NetworkDriver.cs",
+      "SHA256": "1D6B9C650325997061594EC3C3951B7467095A1642A137CB0DC910AE6C3DEAEB"
+    },
+    {
+      "Path": "development/src/DaveCoop/Plugin.cs",
+      "SHA256": "C381FF5CCF756AF9446DECA5D99702F4B9402AB245D9556753A782050FD9F552"
+    },
+    {
+      "Path": "development/src/DaveCoop/DaveCoop.csproj",
+      "SHA256": "773082B8FE333CA932E93EB5823A0D3E58DA5FC5D18BBC7A675B21D59A23B48A"
+    },
+    {
+      "Path": "development/tests/DaveCoop.Core.Tests/MapOriginRegistryTests.cs",
+      "SHA256": "26E5C662631515FE540025293E8AE6E6283463F32C0FD875E100B18AD656D2E8"
+    },
+    {
+      "Path": "development/tests/DaveCoop.Core.Tests/Program.cs",
+      "SHA256": "512C1A3069E8DED3CE68B446C8F7040D8F802414983FECF6CE861E27639D09F5"
+    },
+    {
+      "Path": "development/scripts/Build-Plugin.ps1",
+      "SHA256": "CE574BB0294BABF93B9D2B778466266F4A05319420BEB7A05FB19649696F1AC5"
+    },
+    {
+      "Path": "development/scripts/Inspect-MapOriginApi.ps1",
+      "SHA256": "2999FFDE86794ED10A33AE48213C5F9F1FC2D15451F0E4BB0FD415F08E6C8488"
+    }
+  ],
+  "Scope": "Readonly source implementation and six synthetic production registry fixtures. No native hook/capture/controller execution, actual typed return ABI, complete game loading coverage, native birth/order/unload behavior, guest adoption/isolation, personal cargo gameplay, normal return/save or two-game gameplay is proven."
+}

@@ -1,6 +1,6 @@
 # 第二角色与传输层
 
-当前源码 `0.1.15-dev`、协议 5，Build 警告视为错误通过、Test-Core 142/142 通过；本轮未部署/启动。
+当前源码 `0.1.16-dev`、协议 5，Build 警告视为错误通过、Test-Core 148/148 通过；本轮未部署/启动。
 当前安装及最近新鲜启动为 `0.1.12-dev`/109 项测试，加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 `0.1.11-dev`。
 用户当前不方便试玩，手动潜水 Probe/路线/返航验证已延后，主菜单启动通过不扩展为玩法验收。
@@ -185,7 +185,7 @@ DAVECOOP_LAYOUT_READY / WARNING。真实验证至少覆盖本机显示、双机�
 dotnet run --project development/tests/DaveCoop.Core.Tests/DaveCoop.Core.Tests.csproj
 ```
 
-本机当前已通过 142/142 项测试。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
+本机当前已通过 148/148 项测试。用例覆盖缓冲边界/容量/排序/清理、姿态插值、异常四元数、
 JSON 数字结构往返、错误数据拒绝、拆包/截断、TCP 双端握手及双向快照、
 版本不匹配、并发发送、重复序号、连接关闭和读取取消；另覆盖场景握手与不一致超时、
 旧 epoch 清理、客机重载、身份/权限错误、时钟偏移、深拷贝与队列上限、
@@ -208,7 +208,9 @@ JSON 数字结构往返、错误数据拒绝、拆包/截断、TCP 双端握手�
 三种本机 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，只证明实际网络流的请求/结果及场景失效行为，不执行原生攻击/捕获，也不等于真实游戏切换或两游戏验收。
 地图夹具覆盖 8 场景分片/原子拼装、复制所有权、独立代次与连续修订、同组更新、旧批次打断、32 包 FIFO、溢出/重复撤销、Room/方向/冲突拒绝、四路公平、场景保留/关房清理，以及真实 TCP 完整路线/选择/撤销和协议 4 拒绝。
 4 项源适配测试由 Test-Core 与测试 csproj 编译实际 MapChoiceController/MapSelectionCallObservation，仅替代 logger，用 synthetic DTO 与实际回环 TCP 执行候选路径。自然边界、callbackFloor、未绑定选择和失效撤销不构成原生 origin 证明；没有运行 NativeHook。
-这些测试使用同一进程中的两个真实回环 TCP 端点，没有运行两份游戏实例。
+0.1.16另增6组实际MapOriginRegistry的synthetic标量夹具，覆盖固定iterator/unknown遮父、bootstrap及迟完成、指针/版本/handle重放、无birth卸载及destroy/newentry撤销、重复cache与操作失败、线程/读取/lifo/限额撤证。
+这些夹具不运行MapOriginHooks/NativeCapture/Controller或游戏；详见[MAP_ORIGINS](MAP_ORIGINS.md)与[加载来源构建摘要](../logs/map-origin-build-verification.json)。
+TCP测试使用同一进程中的两个真实回环 TCP 端点，没有运行两份游戏实例。
 
 ## 尚需完成
 
@@ -218,5 +220,6 @@ JSON 数字结构往返、错误数据拒绝、拆包/截断、TCP 双端握手�
 
 M3 游戏适配实机验证与双游戏移动同步、M4 地图/实体、
 M5 捕鱼/伤害/拾取、M6 临时客机进度与返航结算、M7 两机器和首次冷安装均未完成。
+0.1.16的ObserveMapOrigins独立于TCP且默认关闭，F11可启用，只日志记录来源关系；RunId不能跨重开比较life。原生ABI、真实嵌套及Scene/controller时序和own卸载仍待验。
 M4 下一步是本地来源/代次与跨机地址确认后的实际选择采用和客机原生隔离；当前地图快照一直为 ObservationOnly=true/HostSelectionApplied=false。
 持续目标保留完整双人潜水闭环，不能以回放、TCP 测试或同名场景代替完成验收。

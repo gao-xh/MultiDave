@@ -1,6 +1,6 @@
 # 开发约定
 
-- M1 玩家发现与 M2 回放基础验收通过；当前源码为 0.1.15-dev、协议 5，Build 警告视为错误通过、Test-Core 142/142 通过，范围见 [独立背包构建摘要](logs/cargo-ledger-build-verification.json)；本轮未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
+- M1 玩家发现与 M2 回放基础验收通过；当前源码为 0.1.16-dev、协议 5，Build 警告视为错误通过、Test-Core 148/148 通过，范围见 [加载来源构建摘要](logs/map-origin-build-verification.json)；本轮未部署/启动，默认发行包仍为 0.1.0。当前安装及最近新鲜启动仍为 0.1.12-dev/109 项测试，仅主菜单加载/Update/网络入口和 4 条初始 RouteInputs 通过。新观察回调、Probe、潜水路线、场景切换与正常返航仍待实机。最近完成潜水验证的是 0.1.11-dev，用户确认偏移鱼群可见、捕获原鱼时副本同步消失、关闭显示后恢复正常，操作和镜头正常；动画、完整捕获链、地图及正常返航/双游戏验收仍待完成。历史证据保留，0.1.9-dev 用户确认锁定身份后不再突然消失。完成情况以 `logs/DEVLOG.md` 和真实运行证据为准。
 - 继续工作前阅读 `docs/HANDOFF.md`、`docs/PLAN.md` 和当前阶段的 `docs/GAME_API.md` / `docs/MULTIPLAYER.md` / `docs/WORLD_SYNC.md`；配置别人电脑时使用仓库根目录的配置 Skill。
 - 用户确定首版房主＋员工且每人独立背包，继续捕获/库存/结算开发先读 `docs/CREW_MODE.md`。房主自己的原生LootBox，员工由房主Mod持有的独立会话袋，各自容量/重量/负重；产物与前置容量检查都需正确分流，不能先入房主袋再复制。房主唯一长期进度；返航房主袋原链不重复Add、员工未入仓物料需新桥逐项确认一次。员工断线不清潜水账本，未知原生结果不重试/补奖；隔离客机全部自动持久写。同层带队、独立员工生存/装备/投射物及上述袋/结算仍待实现。
 - 0.1.11-dev 含房主目标反向查询、冻结的本地指针/代次 CLR 快照、完整收到的活动观察鱼群显示，以及 8 个原生交互入口的只读前后成对观察。鱼清单仅玩家当前场景，每鱼最多 16 帧；缺显示或离镜头不释放数字身份，原生 AI/碰撞/收益保持原样。
@@ -17,12 +17,19 @@
 - 新 generation 首片撤旧路线，完整路线才原子提交，再接连续 revision 的 IGP；同组按新修订更新。普通场景/帧清理保留 preload 候选，显式 Retire 清理本代次、保留高水位，Close 清所有 map/source/mailbox。队列满主动控制撤销后返回 false；合法旧/已退休选择取消不关房，未来/当前冲突或伪造 fail closed。
 - MapChoiceController 的 cache/restore 同指纹也创建新 generation，SceneLoader 同指纹去重；copy 错误/截断/丢失主动撤销，未绑定 IGP 丢弃且不缓存；已发布组再次空/unknown 撤销候选，未知新组空仍 Unbound。callbackFloor 仅排除已排队旧观察，DTO 无原生 context/controller 代次证明；新 cache 后迟到且同 scene/address 的旧 IGP 仍可附当前候选。日志 NativeGenerationBound=false，Snapshot 一律 ObservationOnly=true/HostSelectionApplied=false；补本地 origin/代次及跨机地址证据后才可采用。
 - Test-Core 与测试 csproj 编译实际 MapChoiceController/MapSelectionCallObservation，仅替代 logger；4 项源适配夹具用 synthetic DTO 与实际回环 TCP，不运行 NativeHook、不调用游戏入口，不算原生或双游戏验收。
+- 0.1.16-dev新增默认关闭ObserveMapOrigins与29声明的自己的前后/finalizer挂钩，详见docs/MAP_ORIGINS.md。
+  entry/factory/每MoveNext固定owner；精确Addressables五参typed原返回关联operation指针/版本、成功Scene句柄及controller出生。
+  主线程保留operation wrapper最多64并读直接字段，CLR队列64/消费16；8192进程事件/context256及Core有界tombstone，不把当前singleton或名称当owner。
+  新entry/重复cache/Context清理/unload/destroy撤销，真实未知unload也留围栏；异常/丢失/线程/配额撤证，失败重启。
+  RunId隔离重开后的life编号；仅日志不接地图候选或权限，ScalarOriginChainMatched也不证明原生ABI/完整来源/跨机地址。
+  NativeGenerationBound/HostSelectionApplied/WorldAuthority/CargoAuthority均false；148项含6组synthetic registry夹具，未运行NativeHooks。
+  当前源码编译通过，新版未部署/启动，最新实机范围仍0.1.12启动/0.1.11潜水。核对实际嵌套/typedreturn/Scene值/__state/owncleanup后才接采用。
 - 下一步实现实际加载前房主选择采用、客机临时进度/生成与 AI 隔离，再接房主原生捕鱼及返航收益账本；不要把 CLR TCP、布局指纹或单游戏显示当 M4/M5/M6 或双游戏完成。
 - 原GameAssembly离线研究用`scripts/Inspect-NativeCalls.ps1`，先读`docs/NATIVE_ANALYSIS.md`；报告/机器码/游戏和依赖DLL只留.local。
   按精确metadata方法指针及version1 chained unwind三元组分析，静态边/别名/完整已知片段不证明运行顺序、数据流或能力。
   已发现coLoadAdditiveScene/CoLoadSceneAsync直接走Addressables五参入口，现SceneLoader三参观察不全；固定iterator owner和子协程继承后再接operation/Scene/controller寿命。
   鱼产物还触及水下进度、容量与多类返航库存，guest加载/SetLoadedData有副作用；不据单Add/最终Save开员工权限。
-  本轮仅工具/文档，插件版本/142项和实机证据不变，摘要见`logs/native-call-analysis-verification.json`。
+  该离线工具轮仅工具/文档，历史0.1.15插件/142项证据不变，摘要见`logs/native-call-analysis-verification.json`。
 - 加载后的路线/IGP 清单要求每个选中场景至少一组、查找结果与原注册列表一致，并在两个不同 Unity 帧稳定。跨机地址未验证，尚未在加载前采用房主选择；M4 接管、M5 裁定及 M6 收益未实现。构建范围见 `logs/fish-world-interaction-build-verification.json`。
 - 0.1.11-dev 的 A03_01_02 本机 TCP 已记录 49 条 Ready 概要、53 条 FishWorld 状态，观察/绑定/可显示/可见最大 16、网格顶点 662，未知资源/缺 Visual/显示错误为零。8 个交互挂钩健康，42 条事件组成 21 对 CallId，覆盖 HarpoonFire、FishHookedByProjectile、FishDamage 和 SpecialDamage，两个原 bool 为 true；Win/Pickup 未见。回调/解析/未配对/查询错误为零，地图读取失败 Selected route incomplete。Local test 的成对鱼是原鱼加偏移诊断副本，同步消失不等于捕获副本。自己的挂钩卸载与 Disconnect 有标记；用户确认主动退出且未返航，正常返航保存未验证。
 - 每次改动记录日期、目的、修改文件、执行的验证、结果、遗留问题与下一步。

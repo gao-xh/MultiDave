@@ -538,3 +538,29 @@
   独立PE复核Loot/GuestSave共93个报告片段，parent三元组/最终root正确，BadChainClaims=0、实际最长链3层；没有原生运行验收。
 - 新增NATIVE_ANALYSIS与精简验证JSON，更新AGENTS/README/PLAN/HANDOFF/GAME_API/CREW_MODE/WORLD_SYNC及配置Skill。
   原报告、地址明细、解析日志与检查输出留.local。下一步按已定位入口接实际origin/guest隔离、个人分流与逐产物返航桥，手动与真实双游戏验证继续等待用户方便。
+
+## 2026-10-04 — 0.1.16 加载来源适配器与迟到回调撤销
+
+- 继续遵守用户确定的每人独立背包、容量和负重；个人Cargo账本保持原范围，未接实际员工捕获/返航桥。
+  本轮源码升0.1.16-dev、协议仍5；未部署或启动游戏，当前安装0.1.12、最近潜水0.1.11及默认发行包0.1.0均保持原证据范围。
+- 新增MapOriginRegistry/Hooks/NativeCapture/Controller及Inspect-MapOriginApi.ps1，默认关闭Network.ObserveMapOrigins。
+  原游戏29声明自己的前后/finalizer观察，精确匹配参数/返回/static，不跳过原方法，不改变输入、返回或游戏/存档。
+  自然GoToInGameEntry固定owner，通用CoChange和子factory固定原iterator，每MoveNext恢复同scope，未知/退休scope遮父。
+- Addressables精确五参typed原handle绑定操作指针/版本及string key；主线程保留wrapper最多64，直接version/status/result前后核对后取真实Scene.m_Handle。
+  manager须有确切operation→scene归属，否则iterator固定unbound；controller出生及选择可pending，等待同handle的原操作结果，不从singleton或同名场景补来源。
+  排队观测/Core仍只有CLR值；没有completion delegate、原计算getter或延迟队列native解引用。
+- 8192进程事件/context256、观测queue64/每Update16，Core有界owner/iterator/operation/Scene/controller/choice/scopes及退休围栏。
+  新entry、重复同指纹cache、Context清理、unload/destroy及操作失败撤销；无controller出生的实际卸载也留tombstone，晚完成不得复活。
+  线程/读取/配对/丢失/限额失败撤所有证据，CopyCallback同步阻断缺失nestedprefix后的借父scope，Update先健康核对后消费。
+- 原方法异常按固定controller/owner撤证；pending Init iterator另固定iteratorLife→ControllerLife，owner0也能撤其已观察选择。
+  旧route postfix只有Accepted才登记Context owner，不能抹新entry映射；只卸自己owner并记录清理是否验证，失败锁存要求重启。
+- Controller独立TCP；每次新registry使用RunId隔离life编号，日志新增MAP_ORIGIN_HOOKS_READY/CALL/BOUND_CHOICE/OBSERVER_STATE/OBSERVER_WARNING/HOOKS_STOPPED。
+  ScalarOriginChainMatched仅本机CLR关系匹配，NativeGenerationBound/TypedReturnABI/HostSelectionApplied/WorldAuthority/CargoAuthority仍false。
+  此源不接旧MapChoice generation，不授原生执行/员工或Cargo权限，M4/M5/M6和双游戏仍未完成。
+- 同版本框架本机IL/官方source核对typed返回buffer和void finalizer路径；不把框架支持、wrapper签名或安装注册当本游戏原生ABI/完整路径验收。
+  SDK5 Roslyn3.11/net6引用编译警告视为错误通过，最终自写插件SHA256：
+  `977D090A290F168110AA4D9DE618F84A56954FB94F58F14A49FEA54416507AD8`。
+- Test-Core 148/148通过，新增6组synthetic MapOriginRegistry夹具覆盖fixedscope/unknown遮父、bootstrap/迟结果、重放围栏、pendingbirth与未知unload、重复cache/失败操作及线程/读取/lifo/限额撤证。
+  夹具不运行NativeHooks/Capture/Controller或游戏；原始Build/Test与元数据/框架研究只留.local，公开摘要见map-origin-build-verification.json。
+- F11增加载来源开关，面板按屏幕尺寸缩放并恢复GUI状态，实际画面待验收；更新README/AGENTS/PLAN/HANDOFF/GAME_API/MULTIPLAYER/WORLD_SYNC/CREW_MODE/NATIVE_ANALYSIS及MAP_ORIGINS、配置Skill。
+  下一步用户方便后验证fresh入海实际嵌套、typedreturn/Scene值/__state、操作与出生时序和关闭自身挂钩；同时继续准备guest全部持久副作用隔离及房主采用、个人分流与逐产物返航。

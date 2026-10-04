@@ -5,7 +5,8 @@
 不加载或调用游戏程序集、不启动游戏、不挂钩、不部署，也不读取存档。
 这是补充接口签名研究的开发工具，不是玩家安装步骤。
 
-当前插件源码仍为0.1.15-dev、协议5；本次没有修改插件或重新编译插件。
+离线工具轮的记录对应0.1.15-dev、协议5；该轮没有修改或重新编译插件。
+当前0.1.16已按本轮定位的入口接只读来源adapter，范围见[MAP_ORIGINS](MAP_ORIGINS.md)；这不扩大下面静态报告的证据。
 此前142项核心测试和插件构建证据保持原范围；离线分析不增加实机验收。
 最新安装及主菜单启动仍为0.1.12，最近完成潜水记录仍为0.1.11。
 
@@ -108,6 +109,7 @@ metadata版本依据：[LibCpp2IL metadata实现](https://github.com/SamboyCodin
 4. 验证实际产物转换、个人容量路由和正常返航链后，将Cargo账本接到真实Expedition。
    房主原袋沿原链，员工袋未入仓产物按类别逐项桥接；未知结果保持未决。
 
-本次尚无这些原生适配器；NativeGenerationBound、HostSelectionApplied、
+后续0.1.16已实现第1、2项的默认关闭来源观察adapter，具体出生时序与真实typed返回仍待验收；不证明完整加载覆盖。
+第3、4项采用、guest隔离及个人分流/返航桥尚未接通；NativeGenerationBound、HostSelectionApplied、
 GuestStateIsolated、NativeExecutionImplemented等能力保持false。
 用户方便后的自然调用与双游戏验证仍按PLAN执行。

@@ -85,7 +85,11 @@ F8 显示或隐藏面板。该探针没有网络功能。
 新增原GameAssembly离线调用分析工具：`scripts/Inspect-NativeCalls.ps1`。
 精确选择器、unwind代码片段、复现命令和实际产物/加载/保存目标见[NATIVE_ANALYSIS](NATIVE_ANALYSIS.md)。
 它不执行游戏、挂钩或读存档；静态direct target及共享别名不证明运行顺序或原生能力。
-新研究没有修改0.1.15插件或扩大既有142项测试/实机范围。
+该离线工具轮没有修改历史0.1.15插件或扩大其142项/实机范围。
+随后0.1.16新增`scripts/Inspect-MapOriginApi.ps1`，可复现精确入口/参数/nestediterator/字段代理与runtimeinvoke区分，仅写.local元数据报告。
+默认关闭的29处MapOrigin挂钩已按这些签名编译；固定entry与iterator、操作指针/版本和实际Scene句柄，再记录controller出生。
+仅主线程保留有限operation wrapper并读取直接字段，排队/registry仍纯CLR；框架同commit核对不证明本游戏typedreturn/Scene值ABI。
+6组synthetic registry测试通过（总148），未部署/启动或执行挂钩，全部权限保持false；范围见[MAP_ORIGINS](MAP_ORIGINS.md)。
 
 M2 先研究只复制显示组件/姿态的方式。直接克隆完整 `PlayerCharacter` GameObject
 可能运行 Awake、注册输入和其他监听；在明确这些行为之前，不尝试完整角色克隆。

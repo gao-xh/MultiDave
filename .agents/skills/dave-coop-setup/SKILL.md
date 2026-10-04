@@ -153,7 +153,20 @@ description: Configure or continue development of the MultiDave prototype for Wi
   已定位coLoadAdditiveScene/CoLoadSceneAsync.MoveNext直接走Addressables五参LoadSceneAsync，现三参SceneLoader观察漏该路径。
   按工厂/MoveNext固定owner、显式子协程继承后再接操作版本/真实Scene句柄/controller寿命，不用当前singleton倒推旧调用。
   鱼产物/容量/水下进度共同分流，返航按类别逐项；guest加载/SetLoadedData有持久及同步副作用，不能当纯恢复。
-  本轮仅工具与文档，插件仍0.1.15，142项历史证据/0.1.12安装/0.1.11潜水不扩大；摘要见native-call-analysis-verification.json。
+  该离线工具轮仅工具与文档，历史插件0.1.15/142项及0.1.12安装/0.1.11潜水证据不扩大；摘要见native-call-analysis-verification.json。
+- 源码0.1.16-dev增加默认关闭Network.ObserveMapOrigins，继续此功能先读development/docs/MAP_ORIGINS.md。
+  原生入口签名/直接字段分类可用development/scripts/Inspect-MapOriginApi.ps1复现，只输出.local报告。
+  29声明自己的前后/finalizer观察：GoToInGameEntry创建固定owner，factory返回iterator固定归属，每MoveNext恢复/清scope，未知scope遮父。
+  精确Addressables五参typed原返回，主线程保留operation wrapper最多64，直接version/status/result双核对后关联实际Scene句柄与controller出生。
+  manager无ownedscene保持unbound，controller选择可pending等同handle确切完成；不在Drain解引用旧wrapper或用singleton补出生。
+  新entry/重复cache/Context清理/真实unload/destroy撤证；未知unload无birth也留tombstone，异常退休固定controller/owner。
+  原生queue64/drain16/context256/每进程8192事件及Core有界围栏，线程/读取/丢失/配额失败锁存，重启再观察。
+  原方法/参数/返回不改；只卸自己owner，核对MAP_ORIGIN_HOOKS_READY/CALL/BOUND_CHOICE/OBSERVER_STATE/OBSERVER_WARNING/HOOKS_STOPPED。
+  日志RunId隔离重开后的life编号，ScalarOriginChainMatched仅CLR登记关联，不是完整原生来源或权限；当前不接网络mapgeneration。
+  NativeTypedReturnAbiVerified/NativeGenerationBound/HostSelectionApplied/WorldAuthority/CargoAuthority始终false；框架同commit支持不算本游戏ABI通过。
+  本轮Build和148项测试通过，新增6组synthetic registry夹具；未部署/启动或执行nativecallbacks。
+  当前安装保持0.1.12、最近潜水0.1.11，用户试玩延后时不催测；正常保存退出后再部署验证typedreturn/Scene值/__state/加载嵌套/birth/owncleanup及画面。
+  此原型不自动进入默认发行包；完整采用、guest持久/AI隔离、个人背包分流与正常返航仍待接通。
 - 网络线程只处理纯 CLR 数据；Unity 对象和资源键解析放在主线程。
   真实双实例、同一地图及捕鱼/结算验收按 PLAN 的阶段条件执行。
 

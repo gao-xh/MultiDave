@@ -5,7 +5,7 @@
 0.1.7-dev 用户确认鱼可见但镜头内突然消失，日志记录角色部件销毁导致自动断开。
 0.1.8-dev 没有旧异常，但用户确认标签换鱼及继续消失。0.1.9-dev 锁定身份并部署，用户确认不再突然消失。
 这些证据不证明两个游戏拥有同一地图、同一条鱼或共同捕获结果。
-当前源码为 0.1.15-dev、协议 5，Build 警告视为错误通过，Test-Core 142/142 通过；本轮未部署/启动。
+当前源码为 0.1.16-dev、协议 5，Build 警告视为错误通过，Test-Core 148/148 通过；本轮未部署/启动。
 默认发行包保持 0.1.0，源码能力不自动进入玩家安装包。
 当前安装及最近新鲜启动为 0.1.12-dev/109 项测试；加载/Update/网络入口与 4 条初始 RouteInputs 已确认，仅主菜单启动通过。
 Probe、潜水路线、场景切换与正常返航仍待实机；最近完成潜水验证的是 0.1.11-dev。
@@ -213,7 +213,7 @@ Core/World 的 HostEntityRegistry 将本机对象 token 映射为房主分配的
 尚未开始的批次可替换。出站动作 FIFO、玩家移动、世界切片和地图 FIFO 四路公平轮转，控制/心跳与撤销优先；入站世界只保留最新完整快照。
 禁止客机发布世界、禁止旧本地快照被改标为新 epoch，场景暂停/重载/关闭时清理缓存。
 
-当前核心总计 142/142 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
+当前核心总计 148/148 通过：实体测试覆盖身份/池复用/容量、畸形数据、原子拼装与复制所有权、
 修订更替/空清单、权限/epoch、容量/公平性、真实 TCP 数值清单/HP 更新/移除及旧协议拒绝。
 测试为 CLR 夹具；没有在两份游戏中调用捕鱼或物品 API。
 
@@ -380,7 +380,7 @@ F11 的 Check selected fish target 在 Guest 或 Local test 的 Ready/已选单�
 host 主线程重新 TryResolveNativeFish，并复核冻结身份和捕获/死亡状态，通过只返回 DryRunValidated、OperationId=0。
 状态读取前后复核 lifecycle 健康与代次，变化则撤销该次身份；同 epoch 开关观察保持世界 revision 单调。
 `FISH_ACTION_SENT` / ADMISSION / DECISION / RECEIVED 显示请求/结果及 NativeEffectsEnabled=false；未解析的目标明确拒绝。
-这个按钮只验证请求往返与有效目标，不发射鱼叉、不扣血或捕获。当前 142 项核心测试及三种 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，不证明两个游戏或 M5 成功。
+这个按钮只验证请求往返与有效目标，不发射鱼叉、不扣血或捕获。当前 148 项核心测试及三种 TCP 操作夹具（往返、旧协议拒绝、take 后场景切换恢复）通过，不证明两个游戏或 M5 成功。
 0.1.12-dev 的新版 Probe 与真实游戏场景切换仍未执行验收；主菜单启动和初始 RouteInputs 不能代替这些行为。
 
 可复现元数据研究：`scripts/Inspect-FishInteractionApi.ps1`。确认鱼自身覆写 HookedByProjectile(ProjectileInfo) 和 WinFromProjectileinFight，
@@ -401,7 +401,9 @@ QTE 胜利、捕获、入袋、图鉴与返航入仓须分别验证，不能由�
 Addressables五参LoadSceneAsync，绕过当前SceneLoader三参观察；不能声称现有观察覆盖全部请求。
 需要工厂/每次MoveNext的固定owner及显式子协程继承，关联typed操作指针/版本→实际Scene句柄→controller寿命。
 cacheSelectedScenePath与IGP.Init还含持久缓存/实例保存目标，地图采用须共同隔离客机状态。
-详见[NATIVE_ANALYSIS](NATIVE_ANALYSIS.md)。本次未接adapter，原生代次、客机采用与世界权限仍false。
+详见[NATIVE_ANALYSIS](NATIVE_ANALYSIS.md)。0.1.16已接默认关闭的加载来源只读adapter，具体fixed scope、typedoperation→Scene/controller、限额与撤证见[MAP_ORIGINS](MAP_ORIGINS.md)。
+本轮6组synthetic registry夹具通过，未部署/启动或运行原生挂钩；完整来源与原生ABI/加载时序仍待验证。
+此adapter尚不接网络MapChoice generation，不修改原选择，原生代次、客机采用与世界权限仍false。
 
 1. 只读探针验证真实对象和加载顺序。
 2. 两份游戏使用不同本地存档/入海条件，仍按房主选择得到相同布局。
