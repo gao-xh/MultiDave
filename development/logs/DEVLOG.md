@@ -874,3 +874,18 @@
 - 配置Skill draft与protected目标SHA256一致，官方quick_validate两处通过：`FB069B5D79E2F9993AF37897F82C98B1DDB8C1EAAD09098CB4C80C81BAF938A2`。旧.38/.37摘要与HEAD归一换行内容一致，153最终编译输入仍同，文档收尾不再重跑Core或Build。已将自然返航清理后普通无所属加载可能被已安装来源拒绝的已知限制写入新文档；完整返航仍需接线和实机验证。
 
 - 非作者源码审查、公开文档/证据/Skill审查及发布边界审查均READY；修正7项新Registry夹具与整套既有TCP的范围措辞。待公开32份文件仅自写源码、测试、项目、文档/Skill与数量/时间/hash摘要，不含游戏二进制、原metadata/IL/地址或机器日志；最终编译输入未改。
+
+## 2026-10-04 — 0.1.40 原加载调用出生来源与自然退休
+
+- 上轮.39已公开1304c57，本轮继续完整M3—M7；未部署/启动、执行native或读写存档，安装.12/潜水.11/default.0保持。
+- actual fixedMove加载prefix mint单次call，原typed返回__runOriginal=true才冻结ptr/version/key，finalizer LIFO收尾；birth冻结真实ancestor在途call+已有operation，重复不扩，later op不可借。Host与Guest实际prefix/postfix已接该producer，原IGP birth移至mask前，Host工厂birth后pair mask。
+- 专用pendingManager仅同actualscene子birth且已冻结同call的真实iterator范围可继承call候选；generic/未知孙0仍遮断，owner0不新增load/operation/world权限。异常/skip/unload/失源/thread/quota撤证，MaxLoadCalls128process tombstones不淘汰。
+- 精确Context自然退休设置本producer marker，旧owner inactive且healthy、correctthread、无inflight和无fixedscope才保原普通factory/Addressables/unknownMove；自产unknown masks可保到finalizer退出，已知old initial/scene/controller iterator即使新entry也拒。根/强引用/fence保持、failed不解，完整正常返航/保存仍未验。
+- 最终实际Core编译与测试UTC `2026-10-04T19:56:30.1284050Z`→`2026-10-04T19:56:36.1458718Z`，301/301（9新Registry+原292全执行，原套含真实TCP）；stdout完整PASS顺序与Program吻合。Core实际89源码、插件107源码，联合154输入含项目/脚本/两私有验证器执行前封存并留自写bytes、后同hash；所选工具/显式refs另封存，不称完整OS/SDK closure。
+- Build警告视为错误UTC `2026-10-04T19:56:37.8682782Z`→`2026-10-04T19:56:40.3847680Z`通过，插件SHA `C6E358DC9A13F5E8EB79F01CD6E2C58CA1B7F58F620B270B31B923BA6B587668`，测试DLLSHA `F919608BC5B23D96ABCFDE9E702824E164B3986AD5AC4F3BFF38A7BF3987194F`。新摘要scene-load-lifecycle-build-verification.json/currentcore；旧.39/.38/.37不回填。
+- 新离线Cecil3程序集/9types/133相关声明/缺类型0；两PE10roots/23methods/2012decoded=text、partial/unavailable/invalid/quota0、7indirectcalls/1branch/3alias-truncatededges，仍有共享别名/泛型/Unity icall未知，不证明完整body或实际同步出生。原metadata/PE指令/地址/report只.local，公开自写说明/count/UTC/hash。
+- 新doc/12headers/HANDOFF/PLAN/WORLD/旧IGP后续路由/Skill draft同步。完整Guest生成/AI/持久隔离、可信员工actor/equip/生存/命中、每人完整产物与前置容量/重量/负重分流、员工逐项返航warehouse delta/save、真实双端闭环/GitHub冷配置及测试发行仍待完成；far-region/free-crosslayer仍未实现，goal保持active。
+
+- Skill草稿及protected目标官方校验通过并同SHA256 `2DFDE65B10512F6C841E062BCCFDEDA4A966BE180DEB70E6490450D5DB2E4A1D`；最终154份编译输入保持，旧.39/.38/.37摘要与HEAD归一换行内容一致，未重复运行Core/Build。非作者源码、文档/证据/Skill与发布边界末审完成后只提交自写文件；原生加载、正常返航及完整双端验收仍未执行。
+
+- 三项末审最终READY，公开28份自写文本：源码/测试/项目、文档与Skill、相对路径/count/hash/UTC摘要。修正Host原执行标志字段为CaptureImplemented，未把源码已实现写成原生已执行；153→154联合输入来自新增实际fixture源码，Core89/Plugin107及94/112验证输入均与实际编译清单匹配。原metadata/IL/PE指令/地址/报告与机器日志不提交。

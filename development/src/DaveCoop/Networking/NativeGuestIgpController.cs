@@ -81,8 +81,10 @@ namespace DaveCoop.Networking
             Enter();
             try
             {
-                Sources.EnterUnknownScope(out long unknownScope); call.UnknownScope = unknownScope;
                 NativeGuestControllerBirth birth = Sources.RegisterControllerBirth(native);
+                // Capture this original factory's birth in its actual caller
+                // window, then mask the original body and any nested factories.
+                Sources.EnterUnknownScope(out long unknownScope); call.UnknownScope = unknownScope;
                 if (birth == null) return;
                 if (_controllers.Count >= MaxControllers || _controllers.ContainsKey(birth.ControllerPointer))
                     throw Block("A scene generation controller has repeated or exhausted its fixed lifetime.");

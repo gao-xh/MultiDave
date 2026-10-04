@@ -188,7 +188,7 @@ namespace DaveCoop.Networking
             {
                 long pointer = Pointer(iterator);
                 Entry entry = Unique(pointer, false);
-                if (entry == null) { _scenes.EnterUnknownScope(out call.SceneScope); return true; }
+                if (entry == null) { _scenes.EnterUnknownScope(out call.SceneScope, iterator); return true; }
                 call.Entry = entry;
                 // StartCoroutine may synchronously invoke its first MoveNext
                 // before the original GoToInGameEntry body returns.

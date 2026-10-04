@@ -39,6 +39,7 @@ namespace DaveCoop.Networking
         public IGPSetInfo Selection { get; internal set; }
         public Scene? SceneValue { get; internal set; }
         public bool? OriginalMoveNext { get; internal set; }
+        public bool? OriginalLoadExecuted { get; internal set; }
         public string OriginalException { get; internal set; }
     }
 
@@ -187,7 +188,8 @@ namespace DaveCoop.Networking
             => __state = Begin(__originalMethod, null, new object[] { __0, __1, __2, __3, __4 });
         private static void GeneralAfter(Il2CppObjectBase __instance, long __state) => After(__state, instance: __instance);
         private static void FactoryAfter(Il2CppSystem.Collections.IEnumerator __result, long __state) => After(__state, iterator: __result);
-        private static void AddressablesAfter(SceneLoadHandle __result, long __state) => After(__state, handle: __result);
+        private static void AddressablesAfter(SceneLoadHandle __result, bool __runOriginal, long __state)
+            => After(__state, handle: __result, loadExecuted: __runOriginal);
         private static void ChoiceAfter(IGPSetInfo __result, long __state) => After(__state, selection: __result);
         private static void MoveAfter(bool __result, long __state) => After(__state, move: __result);
         private static void CallFinally(Exception __exception, long __state)
@@ -217,7 +219,8 @@ namespace DaveCoop.Networking
             catch { active.CallbackFailed(); return 0; }
         }
         private static void After(long id, Il2CppSystem.Collections.IEnumerator iterator = null,
-            SceneLoadHandle handle = null, IGPSetInfo selection = null, bool? move = null, Il2CppObjectBase instance = null)
+            SceneLoadHandle handle = null, IGPSetInfo selection = null, bool? move = null, Il2CppObjectBase instance = null,
+            bool? loadExecuted = null)
         {
             MapOriginHooks active = Volatile.Read(ref _active);
             if (active == null || id == 0) return;
@@ -231,7 +234,7 @@ namespace DaveCoop.Networking
                     if (!NextSequence(out long sequence)) { Interlocked.Increment(ref _dropped); return; }
                     active._copy(new MapOriginCallback { ProcessSequence = sequence, CallId = id, ManagedThreadId = call.Thread,
                         Method = call.Method, Stage = MapOriginStage.After, Instance = instance, Iterator = iterator, Handle = handle,
-                        Selection = selection, OriginalMoveNext = move });
+                        Selection = selection, OriginalMoveNext = move, OriginalLoadExecuted = loadExecuted });
                 }
             }
             catch { active.CallbackFailed(); }

@@ -1,6 +1,6 @@
 # 客机运行缓存的类型与恢复边界
 
-当前源码0.1.39-dev（协议7），本轮实际Core/TCP292/292及插件Build警告视为错误通过，执行前后封存输入一致。新增默认关闭的[房主IGP选择采用](GUEST_IGP_ADOPTION.md)：实际加载operation/Scene/controller出生与固定原Init协程绑定，选择未到保原状态等待，唯一匹配本地info并让原游戏继续生成。见[本轮验证记录](../logs/guest-igp-adoption-build-verification.json)。未部署/启动或执行native，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。完整初始场景/IGP资源时序、生成与AI/持久状态隔离、每人独立袋分流/容量/负重、员工命中及双端正常返航/冷配置仍待完成。
+当前源码0.1.40-dev（协议7），本轮实际Core/TCP301/301及插件Build警告视为错误通过，封存输入执行前后相同。新增[原加载调用与自然退休](GUEST_SCENE_LOAD_LIFECYCLE.md)：出生冻结真实在途调用，配对typed返回与actualScene才绑定；精确自然退休后普通加载保原，旧固定协程仍拒。见[本轮验证记录](../logs/scene-load-lifecycle-build-verification.json)。未部署/启动或执行native，安装.12/最近潜水.11/默认包.0保持。完整生成/AI/持久隔离、每人独立袋分流/容量/负重、员工命中、远距离活跃区域、双端正常返航保存与GitHub冷配置仍待完成。
 
 五个manager根交换之后，旧运行缓存仍可能持有原条目、数组、任务和回调。本页初版0.1.19为离线研究；历史0.1.22继续准备有限typed缓存，插件Build警告视为错误通过，见[comparer摘要](../logs/guest-comparer-build-verification.json)。0.1.22该轮Core输入未改，复用[0.1.21实际176/176及构建](../logs/guest-ingame-cache-build-verification.json)，没有重跑测试。迄今没有运行游戏、安装/清空/恢复游戏缓存或执行Init/Load/Build/克隆/存档。默认ExistingCaches七根桥仍硬拒真实进入/静止；0.1.37的[新Natural五根启动source](GUEST_INITIALIZATION_BOOTSTRAP.md)已接原初始化放行，真实静止仍false，全部权限仍不开放。
 

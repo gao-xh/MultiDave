@@ -69,7 +69,7 @@ namespace DaveCoop.Networking
         private MapChoiceSnapshot _choice;
         private long _ownerLife, _loaderPointer, _contextPointer, _roadmapPointer;
         private IntPtr _loaderUnityPointer;
-        private bool _busy, _reading, _failed;
+        private bool _busy, _reading, _failed, _entryRetired;
         private int _reads;
         private long _totalReads;
         private Harmony _harmony;
@@ -101,7 +101,7 @@ namespace DaveCoop.Networking
         { public DR.GameScene Native; public long Pointer; public int Id, Type; public string Name; public bool Additive, Diving; }
         private sealed class Move { public long Scope; public Iterator Iterator; public bool Approved; }
         private sealed class Load
-        { public long Scope, OwnerLife; public object Entry; public string Key; public LoadSceneMode Mode; public bool Activate; public int Priority; public SceneReleaseMode ReleaseMode; }
+        { public long Scope, OwnerLife, CallLife; public object Entry; public string Key; public LoadSceneMode Mode; public bool Activate, Returned; public int Priority; public SceneReleaseMode ReleaseMode; }
         private sealed class Operation
         {
             public AsyncOperationBase<SceneInstance> Native;
@@ -120,7 +120,7 @@ namespace DaveCoop.Networking
         {
             get
             {
-                if (Failed || _registry == null || !_registry.Healthy || _entry == null || _route == null ||
+                if (Failed || _entryRetired || _registry == null || !_registry.Healthy || _entry == null || _route == null ||
                     UnityThreadId <= 0 || Environment.CurrentManagedThreadId != UnityThreadId) return false;
                 if (_busy || _reading) { SourceFailure("Guest scene availability check reentered."); return false; }
                 _reading = true;
@@ -181,7 +181,7 @@ namespace DaveCoop.Networking
         internal void BeginEntry(object identity, SceneLoader loader)
         {
             if (_busy || _reading || _scopes.Count != 0) throw Revoke("A new entry overlapped a live native scene scope.");
-            _entry = identity; _loader = loader; _route = null; _choice = null; _context = null; _roads.Clear(); _sceneRecords.Clear();
+            _entry = identity; _loader = loader; _route = null; _choice = null; _context = null; _entryRetired = false; _roads.Clear(); _sceneRecords.Clear();
             Execute(() =>
             {
                 if (_registry == null) _registry = new MapOriginRegistry(UnityThreadId);
@@ -250,7 +250,14 @@ namespace DaveCoop.Networking
         {
             if (!ReferenceEquals(identity, _entry) || _registry == null) return;
             if (Environment.CurrentManagedThreadId != UnityThreadId) { SourceFailure("Guest entry retirement changed threads."); return; }
-            _registry.RetireOwner(_ownerLife);
+            if (Failed || !_registry.Healthy) throw Revoke("A failed entry cannot become an ordinary retired boundary.");
+            MapOriginStatus status = _registry.RetireOwner(_ownerLife);
+            // Only this exact natural retirement opens ordinary unowned flow.
+            // A previously retired owner from another cause is not sufficient.
+            if ((status != MapOriginStatus.Accepted && !(status == MapOriginStatus.Duplicate && _entryRetired)) ||
+                _registry.ActiveOwnerLife != 0 || !_registry.Healthy || Failed)
+                throw Revoke("Guest entry did not retire its exact active owner.");
+            _entryRetired = true;
             foreach (NativeGuestControllerBirth token in _controllers.Values) token.Retired = true;
         }
 
@@ -351,11 +358,23 @@ namespace DaveCoop.Networking
             scope = captured; return true;
         }
         public void ExitControllerMove(NativeGuestControllerBirth token, long scope) => ExitUnknownScope(scope);
-        public void EnterUnknownScope(out long scope)
+        public void EnterUnknownScope(out long scope, Il2CppObjectBase native = null)
         {
             scope = 0; if (_registry == null || _entry == null) return;
             if (Failed) throw Revoke("A failed guest source cannot enter another native callback.");
-            long captured = 0; Execute(() => { PushUnknown(out captured); return true; }, installed: _route != null); scope = captured;
+            if (PassRetiredOrdinaryCall()) { if (!ReferenceEquals(native, null)) RejectRetainedIterator(native); return; }
+            long captured = 0;
+            Execute(() =>
+            {
+                if (!ReferenceEquals(native, null))
+                {
+                    long pointer = Read(() => Pointer(native));
+                    if (pointer == 0 || _iterators.ContainsKey(pointer) || _registry.TryGetIteratorLife(pointer, out long ignored))
+                        throw Revoke("A retained guest iterator cannot become an unknown scope.");
+                }
+                PushUnknown(out captured); return true;
+            }, installed: _route != null);
+            scope = captured;
         }
         public void ExitUnknownScope(long scope)
         {
@@ -425,6 +444,7 @@ namespace DaveCoop.Networking
             if (Failed) throw Revoke("A failed guest source cannot resume a scene factory.");
             if (_registry == null || _entry == null) return null;
             if (Environment.CurrentManagedThreadId != UnityThreadId) throw Revoke("Scene factory changed threads.");
+            if (PassRetiredOrdinaryCall()) return null;
             if (_route != null && !Available)
                 throw Revoke("Installed scene factory source is no longer current.");
             return Execute(() =>
@@ -535,14 +555,16 @@ namespace DaveCoop.Networking
             if (Failed) throw Revoke("A failed guest source cannot resume a loading iterator.");
             if (_registry == null) return null;
             if (Environment.CurrentManagedThreadId != UnityThreadId) throw Revoke("Scene iterator changed threads.");
+            if (PassRetiredOrdinaryCall()) { RejectRetainedIterator(native); return null; }
             if (_route != null && !Available)
                 throw Revoke("Installed loading iterator source is no longer current.");
             return Execute(() =>
             {
                 long pointer = Read(() => Pointer(native));
                 var call = new Move();
-                if (!_iterators.TryGetValue(pointer, out Iterator item) || !ReferenceEquals(item.Entry, _entry))
+                if (!_iterators.TryGetValue(pointer, out Iterator item))
                 { PushUnknown(out call.Scope); return call; }
+                if (!ReferenceEquals(item.Entry, _entry)) throw Revoke("A retained scene iterator belongs to an older entry.");
                 ValidateIterator(item);
                 Poll(); RequireStatus(_registry.EnterMoveNext(pointer, item.Life, out call.Scope));
                 Push(call.Scope, item.Key, item, true); call.Iterator = item; call.Approved = true; return call;
@@ -604,6 +626,7 @@ namespace DaveCoop.Networking
         {
             if (Failed) throw Revoke("A failed guest source cannot resume a scene operation factory.");
             if (_registry != null && Environment.CurrentManagedThreadId != UnityThreadId) throw Revoke("Scene operation factory changed threads.");
+            if (PassRetiredOrdinaryCall()) return null;
             if (!Available)
             { if (Failed || _route != null) throw Revoke("Installed scene operation source is no longer current."); return null; }
             return Execute(() =>
@@ -624,6 +647,8 @@ namespace DaveCoop.Networking
                 if (_loadingCalls.Count >= MaxOperations) throw Revoke("In-flight scene call quota exceeded.");
                 var call = new Load { Entry = _entry, Scope = frame.Token, OwnerLife = _ownerLife, Key = value,
                     Mode = mode, Activate = activate, Priority = priority, ReleaseMode = releaseMode };
+                RequireStatus(_registry.BeginLoadCall(call.Scope, value, out long callLife));
+                call.CallLife = callLife;
                 _loadingCalls.Add(call); return call;
             });
         }
@@ -637,13 +662,13 @@ namespace DaveCoop.Networking
                 var operation = Read(() => handle.m_InternalOp); int version = Read(() => handle.m_Version);
                 long pointer = Read(() => Pointer(operation));
                 if (pointer == 0 || version < 0) throw Revoke("Original typed Addressables operation is absent.");
-                RequireStatus(_registry.RegisterOperation(call.Scope, pointer, version, call.Key, out long life));
+                RequireStatus(_registry.RegisterOperationFromLoadCall(call.CallLife, pointer, version, call.Key, out long life));
                 if (!_operations.ContainsKey(life))
                 {
                     if (_operations.Count >= MaxOperations) throw Revoke("Scene operation retention quota exceeded.");
                     Keep(operation); _operations.Add(life, new Operation { Entry = _entry, Native = operation, Pointer = pointer, Version = version, Life = life, OwnerLife = _ownerLife, Key = call.Key });
                 }
-                Poll(); return true;
+                call.Returned = true; Poll(); return true;
             });
         }
         private void Poll()
@@ -672,6 +697,44 @@ namespace DaveCoop.Networking
                 Read(() => operation.Native.m_Status) != AsyncOperationStatus.Succeeded || Read(() => Pointer(operation.Native)) != operation.Pointer)
                 throw Revoke("Original scene result changed during copying.");
             return true;
+        }
+        private bool PassRetiredOrdinaryCall()
+        {
+            if (!_entryRetired) return false;
+            if (_busy || _reading) throw Revoke("Retired scene flow reentered an identity read.");
+            CheckRetiredOrdinaryWindow();
+            return true;
+        }
+        private void CheckRetiredOrdinaryWindow()
+        {
+            // Pure CLR checks: do not revisit the deliberately retired native
+            // roots, infer retirement from an expired peer, or allocate an owner.
+            if (!_entryRetired || Failed || _entry == null || _registry == null || !_registry.Healthy ||
+                _registry.ActiveOwnerLife != 0 || _loadingCalls.Count != 0 ||
+                _scopes.Any(scope => scope.Iterator != null || scope.Move || scope.Key != null) ||
+                UnityThreadId <= 0 || Environment.CurrentManagedThreadId != UnityThreadId)
+                throw Revoke("Ordinary scene flow has no completed natural retirement boundary.");
+        }
+        private void RejectRetainedIterator(Il2CppObjectBase native)
+        {
+            if (_busy || _reading) throw Revoke("Retired iterator identity read reentered.");
+            _busy = true;
+            try
+            {
+                CheckRetiredOrdinaryWindow();
+                long pointer;
+                _reading = true;
+                try { _totalReads++; pointer = Pointer(native); }
+                finally { _reading = false; }
+                CheckRetiredOrdinaryWindow();
+                // Core also contains dedicated controller and initial iterator
+                // tombstones. A reused wrapper cannot make those ordinary.
+                if (pointer == 0 || _iterators.ContainsKey(pointer) || _registry.TryGetIteratorLife(pointer, out long ignored))
+                    throw Revoke("A retained guest iterator cannot resume after entry retirement.");
+                CheckRetiredOrdinaryWindow();
+            }
+            catch { SourceFailure("Retired iterator identity check failed."); throw; }
+            finally { _reading = false; _busy = false; }
         }
         private void PushUnknown(out long scope) { RequireStatus(_registry.EnterOwner(0, out scope), unbound: true); Push(scope, null); }
         private void Push(long scope, string key, Iterator iterator = null, bool move = false)
@@ -752,7 +815,20 @@ namespace DaveCoop.Networking
             => __state = _active?.BeginAddressables(__0, __1, __2, __3, __4);
         private static void AddressablesAfter(SceneHandle __result, bool __runOriginal, Load __state) => _active?.EndAddressables(__state, __result, __runOriginal);
         private static Exception AddressablesFinally(Exception __exception, Load __state)
-        { if (__state != null) { if (__exception != null) _active?.SourceFailure("Original scene operation factory threw."); _active?._loadingCalls.Remove(__state); } return __exception; }
+        {
+            if (__state != null && _active != null)
+            {
+                if (!_active._failed)
+                {
+                    MapOriginStatus status = _active._registry.EndLoadCall(__state.CallLife, __state.Returned && __exception == null);
+                    if (status != MapOriginStatus.Accepted && status != MapOriginStatus.Duplicate && status != MapOriginStatus.Retired)
+                        _active.SourceFailure("Original scene operation call lost its paired finalizer.");
+                }
+                if (__exception != null) _active.SourceFailure("Original scene operation factory threw.");
+                _active._loadingCalls.Remove(__state);
+            }
+            return __exception;
+        }
         private static void UnloadedBefore(Scene __0)
         {
             if (_active?._registry == null || _active._failed) return;

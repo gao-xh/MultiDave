@@ -1,6 +1,6 @@
 # MultiDave 开发计划
 
-当前源码0.1.39-dev（协议7），本轮实际Core/TCP292/292及插件Build警告视为错误通过，执行前后封存输入一致。新增默认关闭的[房主IGP选择采用](GUEST_IGP_ADOPTION.md)：实际加载operation/Scene/controller出生与固定原Init协程绑定，选择未到保原状态等待，唯一匹配本地info并让原游戏继续生成。见[本轮验证记录](../logs/guest-igp-adoption-build-verification.json)。未部署/启动或执行native，安装0.1.12、最近潜水0.1.11、默认包0.1.0保持。完整初始场景/IGP资源时序、生成与AI/持久状态隔离、每人独立袋分流/容量/负重、员工命中及双端正常返航/冷配置仍待完成。
+当前源码0.1.40-dev（协议7），本轮实际Core/TCP301/301及插件Build警告视为错误通过，封存输入执行前后相同。新增[原加载调用与自然退休](GUEST_SCENE_LOAD_LIFECYCLE.md)：出生冻结真实在途调用，配对typed返回与actualScene才绑定；精确自然退休后普通加载保原，旧固定协程仍拒。见[本轮验证记录](../logs/scene-load-lifecycle-build-verification.json)。未部署/启动或执行native，安装.12/最近潜水.11/默认包.0保持。完整生成/AI/持久隔离、每人独立袋分流/容量/负重、员工命中、远距离活跃区域、双端正常返航保存与GitHub冷配置仍待完成。
 
 目标：Windows Steam 版双人潜水合作 MVP，先做局域网房主/客户端。
 房主负责游戏世界和结算。服务器方案暂缓。
@@ -260,3 +260,7 @@ Build及本轮实际Core/TCP226/226通过，新增4组已初始化/非零key的C
 ## 0.1.39-dev 场景来源与原IGP消费者
 
 见[GUEST_IGP_ADOPTION](GUEST_IGP_ADOPTION.md)。Scene来源12声明，加既有Map9/IGP5共26注册，CoLoad工厂/Move重叠2声明。固定原iterator与Addressables原typed结果、实际op/version/Scene关联；controller出生冻结preexisting ops，专用controller iterator可精确latebind，generic owner0不可升级。Host自然producer也已接该专用factory/typedactor与pending映射。未知范围遮父、expired源不回普通flow，原Init0/1/2等待不变state/current，原随机入口只供唯一local info；未开始future layers不当当前等待。Addressables返回前出生而无eligible op、完整bootstrap/资源/跨机地址/生成AI仍未验。实际292/292 CLR/TCP及Build通过，153联合输入前封存且Core/Build后同hash，详见本轮摘要；未部署或启动游戏，所有通用游戏/世界/货袋权限false。继续完整M3—M7、每人独立袋与负重、原生员工命中、逐项返航保存、真实双端和GitHub冷配置。
+
+## 0.1.40 原加载调用与退休增量
+
+见[GUEST_SCENE_LOAD_LIFECYCLE](GUEST_SCENE_LOAD_LIFECYCLE.md)及新验证摘要。真实prefix登记固定Move加载调用，出生冻结同调用或已登记operation，配对原typed返回/实际成功Scene才绑定；专用pending manager仅为同场景子出生保留该call，未知0仍遮断且不授权加载。原IGP birth先于factory mask；Host typed返回核__runOriginal，异常/skip/finalizer失配撤证。精确自然退休后普通加载保原，仅自产unknown masks可留至配对退出，所有旧fixed tombstones拒恢复；refs/fence/临时根不释放。实际301/301与Build通过，native和正常返航未验证。下一步继续完整M3—M7、生成AI/持久隔离、员工actor/命中、每人完整产物/容量/负重与逐项返航、真实双端/GitHub冷配置，远区域与自由跨层仍待实现。

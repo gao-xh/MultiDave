@@ -75,10 +75,10 @@ namespace DaveCoop.Networking
         {
             public MapOriginMethod Method;
             public long ScopeToken, ParentScope, OwnerLife, IteratorLife, ControllerLife, ManagerLife, ContextPointer;
-            public long FactoryOwner, ControllerPointer;
+            public long FactoryOwner, ControllerPointer, LoadCallLife;
             public string ControllerAddress, SceneName, LoadKey;
             public int SceneHandle;
-            public bool OwnScope, Log;
+            public bool OwnScope, Log, LoadReturned;
         }
         private sealed class RetainedOperation
         {
@@ -100,7 +100,6 @@ namespace DaveCoop.Networking
             public long Life, Pointer, IteratorPointer;
             public IntPtr UnityPointer, IteratorClass;
             public int SceneHandle;
-            public long[] EligibleOperations;
         }
         public long Dropped => Interlocked.Read(ref _dropped);
         public long UnexpectedThreads => Interlocked.Read(ref _unexpectedThreads);
@@ -213,6 +212,10 @@ namespace DaveCoop.Networking
                     if (call.Method == MapOriginMethod.ManagerFactory)
                     {
                         CaptureManagerBirth(call, prefix, observation);
+                        MapOriginStatus factoryScope = _registry.EnterOwner(prefix.FactoryOwner, out long managerScope);
+                        if (factoryScope != MapOriginStatus.Accepted && factoryScope != MapOriginStatus.Unbound)
+                            throw new InvalidOperationException("Manager factory scope cannot be established.");
+                        Push(prefix, managerScope);
                         Fill(prefix, observation); Enqueue(observation); return;
                     }
                     Component component = call.Instance as Component ?? call.Instance?.TryCast<Component>();
@@ -240,6 +243,10 @@ namespace DaveCoop.Networking
                     }
                 }
                 observation.Status = prefix.FactoryOwner == 0 ? MapOriginStatus.Unbound.ToString() : "FactoryOwnerFrozen";
+                MapOriginStatus scopeStatus = _registry.EnterOwner(prefix.FactoryOwner, out long factoryToken);
+                if (scopeStatus != MapOriginStatus.Accepted && scopeStatus != MapOriginStatus.Unbound)
+                    throw new InvalidOperationException("Original factory scope cannot be established.");
+                Push(prefix, factoryToken);
             }
             else if (call.Method == MapOriginMethod.AddressablesLoad)
             {
@@ -248,6 +255,19 @@ namespace DaveCoop.Networking
                 prefix.LoadKey = nativeText == null ? null : Text((string)nativeText, MapOriginRegistry.MaxLoadKey);
                 observation.Status = prefix.ParentScope == 0 || prefix.OwnerLife == 0 ? "UnboundLoad" : "LoadCallScopeFrozen";
                 if (prefix.LoadKey == null) observation.UnavailableReason = "Addressable key is not an observed string; it is not converted with an original ToString method.";
+                if (prefix.LoadKey != null && prefix.ParentScope != 0 && prefix.OwnerLife != 0)
+                {
+                    MapOriginStatus status = _registry.BeginLoadCall(prefix.ParentScope, prefix.LoadKey, out long loadCall);
+                    if (status != MapOriginStatus.Accepted && status != MapOriginStatus.Unbound)
+                        throw new InvalidOperationException("Original scene load call cannot be registered.");
+                    prefix.LoadCallLife = loadCall;
+                }
+                if (prefix.LoadCallLife == 0)
+                {
+                    MapOriginStatus status = _registry.EnterOwner(0, out long mask);
+                    if (status != MapOriginStatus.Unbound) throw new InvalidOperationException("Unknown scene load cannot mask its caller.");
+                    Push(prefix, mask);
+                }
             }
             else if (call.Method == MapOriginMethod.RouteCached || call.Method == MapOriginMethod.RouteRestored)
             {
@@ -421,6 +441,12 @@ namespace DaveCoop.Networking
         {
             if (!_prefixes.TryGetValue(call.CallId, out Prefix prefix)) return;
             _prefixes.Remove(call.CallId);
+            if (prefix.LoadCallLife != 0)
+            {
+                MapOriginStatus status = _registry.EndLoadCall(prefix.LoadCallLife, prefix.LoadReturned && call.OriginalException == null);
+                if (status != MapOriginStatus.Accepted && status != MapOriginStatus.Retired)
+                    throw new InvalidOperationException("Original scene load call did not finalize its paired source.");
+            }
             if (prefix.OwnScope)
             {
                 if (_scopes.Count == 0 || _scopes.Peek() != prefix.ScopeToken) throw new InvalidOperationException("Native origin scope is not LIFO.");
@@ -442,16 +468,21 @@ namespace DaveCoop.Networking
 
         private void RegisterOperation(MapOriginCallback call, Prefix prefix, MapOriginNativeObservation observation)
         {
-            if (prefix.LoadKey == null || prefix.OwnerLife == 0 || prefix.ParentScope == 0)
+            if (prefix.LoadCallLife == 0)
             { observation.Status = "UnboundLoadHandle"; return; }
+            if (call.OriginalLoadExecuted != true)
+            { observation.Status = "OriginalSceneLoadSkipped"; return; }
             if (call.Handle == null) throw new InvalidOperationException("Original typed scene handle is missing.");
             var native = ReadManager(() => call.Handle.m_InternalOp);
             if (native == null) throw new InvalidOperationException("Original scene operation is missing.");
             long pointer = ReadManager(() => Pointer(native)); int version = ReadManager(() => call.Handle.m_Version);
             observation.OperationVersion = version;
-            observation.Status = _registry.RegisterOperation(prefix.ParentScope, pointer, version, prefix.LoadKey, out long life).ToString();
+            observation.Status = _registry.RegisterOperationFromLoadCall(prefix.LoadCallLife, pointer, version, prefix.LoadKey, out long life).ToString();
             observation.OperationLife = life;
             if (life == 0 || observation.Status == MapOriginStatus.Retired.ToString()) return;
+            if (observation.Status != MapOriginStatus.Accepted.ToString() && observation.Status != MapOriginStatus.Duplicate.ToString())
+                throw new InvalidOperationException("Original load call returned an invalid operation source.");
+            prefix.LoadReturned = true;
             if (!_operations.ContainsKey(life))
             {
                 if (_operations.Count >= MaxOperations) throw new InvalidOperationException("Retained native operation quota exceeded.");
@@ -473,12 +504,9 @@ namespace DaveCoop.Networking
             prefix.SceneHandle = scene.m_Handle;
             prefix.SceneName = Text(ReadManager(() => scene.name), MapSelections.MaxSceneName);
             _registry.TryGetSceneOwner(prefix.SceneHandle, out long owner);
-            // Completed-scene proof is already exact. Otherwise freeze only the
-            // operations retained BEFORE this birth; later loads cannot attach.
-            var operations = new List<long>();
-            if (owner == 0) foreach (RetainedOperation operation in _operations.Values) operations.Add(operation.Life);
-            long[] eligible = operations.ToArray();
-            MapOriginStatus status = _registry.RegisterManagerBirth(pointer, prefix.SceneHandle, eligible, out long life);
+            // The registry freezes preexisting operations and this birth's
+            // exact active original-load calls, before masking the factory body.
+            MapOriginStatus status = _registry.RegisterManagerBirth(pointer, prefix.SceneHandle, out long life);
             prefix.ManagerLife = life;
             _registry.TryGetManagerOwner(life, out owner);
             prefix.FactoryOwner = owner; prefix.OwnerLife = owner;
@@ -489,15 +517,15 @@ namespace DaveCoop.Networking
                 {
                     if (_managers.Count == MaxManagers) throw new InvalidOperationException("Retained manager quota exceeded.");
                     retained = new RetainedManager { Native = native, Life = life, Pointer = pointer,
-                        UnityPointer = unityPointer, SceneHandle = prefix.SceneHandle, EligibleOperations = eligible };
+                        UnityPointer = unityPointer, SceneHandle = prefix.SceneHandle };
                     _managers.Add(life, retained);
                 }
                 ValidateManager(retained, null);
             }
             observation.Status = status.ToString();
-            if (owner == 0) observation.UnavailableReason = eligible.Length == 0 ?
-                "Manager birth has no eligible preexisting operation; its iterator stays unbound." :
-                "Manager birth awaits an exact preexisting operation result matching its actual scene.";
+            if (owner == 0) observation.UnavailableReason = status == MapOriginStatus.Pending ?
+                "Manager birth awaits its frozen original load call or operation matching its actual scene." :
+                "Manager birth has no eligible original load source; its iterator stays unbound.";
         }
 
         private MapOriginStatus CaptureManagerIterator(MapOriginCallback call, Prefix prefix, out long iteratorLife)
@@ -610,7 +638,7 @@ namespace DaveCoop.Networking
                 { RetireOperation(operation, "OriginalOperationChangedDuringCopy"); continue; }
                 if (handle == 0) throw new InvalidOperationException("Successful native scene operation has a zero scene handle.");
                 foreach (RetainedManager manager in new List<RetainedManager>(_managers.Values))
-                    if (manager.SceneHandle == handle && Array.IndexOf(manager.EligibleOperations, operation.Life) >= 0)
+                    if (manager.SceneHandle == handle)
                         ValidateManager(manager, null);
                 var observation = NewPoll(operation); observation.SceneHandle = handle;
                 observation.Status = _registry.CompleteOperation(operation.Life, operation.Pointer, operation.Version, handle, out long sceneLife).ToString();

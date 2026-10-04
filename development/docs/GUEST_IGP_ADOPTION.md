@@ -70,3 +70,7 @@ WorldAuthority、CargoAuthority、原生字段/typed返回ABI、完整初始场�
 每人独立产物袋/前置容量/重量/负重和逐项返航入库保存，以及GitHub冷配置和测试发行。
 
 离线Cecil元数据实查5types/28properties，其中22direct、21selectedmethods，UTC2026-10-04T19:06:40.1855668Z→19:06:41.8273413Z；没有执行游戏代码或原生API。原metadata/wrapper IL/地址仅保留.local，公开记录只有自写来源说明、数量、UTC及hash。
+
+## 0.1.40 原加载调用与退休增量
+
+见[GUEST_SCENE_LOAD_LIFECYCLE](GUEST_SCENE_LOAD_LIFECYCLE.md)及新验证摘要。真实prefix登记固定Move加载调用，出生冻结同调用或已登记operation，配对原typed返回/实际成功Scene才绑定；专用pending manager仅为同场景子出生保留该call，未知0仍遮断且不授权加载。原IGP birth先于factory mask；Host typed返回核__runOriginal，异常/skip/finalizer失配撤证。精确自然退休后普通加载保原，仅自产unknown masks可留至配对退出，所有旧fixed tombstones拒恢复；refs/fence/临时根不释放。实际301/301与Build通过，native和正常返航未验证。下一步继续完整M3—M7、生成AI/持久隔离、员工actor/命中、每人完整产物/容量/负重与逐项返航、真实双端/GitHub冷配置，远区域与自由跨层仍待实现。
