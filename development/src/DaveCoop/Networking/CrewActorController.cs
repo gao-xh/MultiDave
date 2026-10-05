@@ -56,6 +56,9 @@ namespace DaveCoop.Networking
         private float? _previousHP, _previousOxygen;
         private double _nextSend, _nextInputSend;
         private bool _failed, _busy, _paused, _hostStateEstablished;
+        private bool _fishInterestBusy, _fishInterestExhausted;
+        private long _fishInterestRevision, _fishInterestFence;
+        private HostEmployeeFishInterestWindow _fishInterestWindow;
         private CrewButtons _lastPublishedButtons;
         public bool Enabled { get; }
         public bool Failed => _failed || (_correction?.Failed ?? false);
@@ -177,6 +180,7 @@ namespace DaveCoop.Networking
             bool running = float.IsFinite(Time.timeScale) && Time.timeScale > 0;
             if (!running)
             {
+                InvalidateFishInterest();
                 _control.Neutralize("UnityTimePaused");
                 NeutralizeCapture();
                 _harpoon?.Neutralize("UnityTimePaused"); RetireProjectile("UnityTimePaused");
@@ -277,6 +281,7 @@ namespace DaveCoop.Networking
                     throw new InvalidOperationException("Employee physical readback unavailable.");
                 float delta = Time.fixedDeltaTime;
                 CrewMovementPlan plan = _control.Step(state, peer.Now, delta, position, velocity, _body.Active);
+                if (!_control.Active) InvalidateFishInterest();
                 if (plan.CanMove && HostCurrent(peer, state))
                 {
                     NVector2 requested = plan.RequestedVelocity;
@@ -552,6 +557,118 @@ namespace DaveCoop.Networking
             return _body.TryReadPosition(out position) && HostCurrent(peer, state);
         }
 
+        // This is a same-thread observation of the actual host-owned body,
+        // not a received client pose, cached CrewActorState or action permit.
+        internal bool TryCaptureFishInterest(SessionPeer expectedPeer, out HostEmployeeFishInterestWindow window)
+        {
+            window = null;
+            if (!CanBeginFishInterest()) return false;
+            _fishInterestBusy = true;
+            _fishInterestWindow = null; // A new capture cannot keep an older token current.
+            try
+            {
+                SessionSnapshot state = expectedPeer?.Snapshot;
+                HostEmployeeActorBody body = _body;
+                HostCrewControl control = _control;
+                int sceneHandle = _local.SceneHandle;
+                long fence = _fishInterestFence;
+                if (_fishInterestRevision == long.MaxValue ||
+                    !FishInterestReady(expectedPeer, state, body, control, sceneHandle, fence)) return false;
+                double beforeTime = expectedPeer.Now;
+                if (!double.IsFinite(beforeTime) || beforeTime < 0 ||
+                    !body.IsCurrent(control.ActorRevision, state.SceneEpoch, state.SceneKey) ||
+                    !FishInterestReady(expectedPeer, state, body, control, sceneHandle, fence) ||
+                    !body.TryReadPosition(out NVector3 first) ||
+                    !FishInterestReady(expectedPeer, state, body, control, sceneHandle, fence) ||
+                    !body.TryReadPosition(out NVector3 second) || !SameFishPosition(first, second) ||
+                    !FishInterestReady(expectedPeer, state, body, control, sceneHandle, fence)) return false;
+                double sampledAt = expectedPeer.Now;
+                if (!double.IsFinite(sampledAt) || sampledAt < beforeTime) return false;
+                long revision = ++_fishInterestRevision; // Never reset on room or actor changes.
+                var sample = new HostFishBodySample(_room, _member, control.ActorRevision, revision,
+                    state.SceneEpoch, state.SceneKey, sampledAt, second);
+                var captured = new HostEmployeeFishInterestWindow(this, expectedPeer, body, control,
+                    fence, sample, sceneHandle);
+                if (!FishInterestReady(expectedPeer, state, body, control, sceneHandle, fence)) return false;
+                _fishInterestWindow = captured;
+                window = captured;
+                return true;
+            }
+            catch (Exception) { _fishInterestWindow = null; return false; }
+            finally { _fishInterestBusy = false; }
+        }
+
+        internal bool IsFishInterestCurrent(HostEmployeeFishInterestWindow window)
+        {
+            if (window == null || !ReferenceEquals(window.Owner, this) ||
+                !ReferenceEquals(window, _fishInterestWindow) || !CanBeginFishInterest()) return false;
+            _fishInterestBusy = true;
+            bool current = false;
+            try
+            {
+                SessionPeer peer = window.Peer;
+                SessionSnapshot state = peer?.Snapshot;
+                HostFishBodySample sample = window.Sample;
+                HostEmployeeActorBody body = window.Body;
+                HostCrewControl control = window.Control;
+                if (sample == null || sample.SampleRevision != _fishInterestRevision ||
+                    sample.RoomId != _room || sample.MemberId != _member ||
+                    sample.ActorRevision != control?.ActorRevision || sample.SceneEpoch != state?.SceneEpoch ||
+                    sample.SceneKey != state?.SceneKey ||
+                    !FishInterestReady(peer, state, body, control, window.SceneHandle, window.Fence)) return false;
+                double now = peer.Now;
+                if (!double.IsFinite(now) || now < sample.SampledAt ||
+                    !body.IsCurrent(sample.ActorRevision, sample.SceneEpoch, sample.SceneKey) ||
+                    !FishInterestReady(peer, state, body, control, window.SceneHandle, window.Fence) ||
+                    !body.TryReadPosition(out NVector3 position) || !SameFishPosition(position, sample.Position) ||
+                    !FishInterestReady(peer, state, body, control, window.SceneHandle, window.Fence) ||
+                    !ReferenceEquals(window, _fishInterestWindow)) return false;
+                current = true;
+                return true;
+            }
+            catch (Exception) { return false; }
+            finally
+            {
+                if (!current && ReferenceEquals(window, _fishInterestWindow)) _fishInterestWindow = null;
+                _fishInterestBusy = false;
+            }
+        }
+
+        private bool CanBeginFishInterest() => Enabled && !Failed && !_busy && !_fishInterestBusy && !_paused &&
+            !_fishInterestExhausted && Environment.CurrentManagedThreadId == _thread &&
+            _body != null && !_body.IsReading && _body.Active && !_body.Failed && _control != null &&
+            _control.Active && _control.Alive && !_localTest();
+
+        private bool FishInterestReady(SessionPeer peer, SessionSnapshot state, HostEmployeeActorBody body,
+            HostCrewControl control, int sceneHandle, long fence)
+        {
+            if (!FishInterestIdentityCurrent(peer, state, body, control, sceneHandle, fence)) return false;
+            float scale = Time.timeScale;
+            return float.IsFinite(scale) && scale > 0 &&
+                FishInterestIdentityCurrent(peer, state, body, control, sceneHandle, fence);
+        }
+
+        private bool FishInterestIdentityCurrent(SessionPeer peer, SessionSnapshot state, HostEmployeeActorBody body,
+            HostCrewControl control, int sceneHandle, long fence) => Enabled && !Failed && !_busy && !_paused &&
+            !_fishInterestExhausted && Environment.CurrentManagedThreadId == _thread && _fishInterestFence == fence &&
+            !_localTest() && HostCurrent(peer, state) && state.LocalPlayerId == 1 && state.RemotePlayerId == 2 &&
+            ReferenceEquals(body, _body) && ReferenceEquals(control, _control) && body != null && !body.IsReading &&
+            body.Active && !body.Failed && control != null && control.Active && control.Alive &&
+            control.RoomId == _room && control.MemberId == _member && control.SceneEpoch == state.SceneEpoch &&
+            control.SceneKey == state.SceneKey && control.ActorRevision == state.CrewActorRevision &&
+            sceneHandle != 0 && _local.SceneHandle == sceneHandle;
+
+        private static bool SameFishPosition(NVector3 a, NVector3 b) =>
+            float.IsFinite(a.X) && float.IsFinite(a.Y) && float.IsFinite(a.Z) &&
+            a.X == b.X && a.Y == b.Y && a.Z == b.Z;
+
+        private void InvalidateFishInterest()
+        {
+            _fishInterestWindow = null;
+            if (_fishInterestFence == long.MaxValue) _fishInterestExhausted = true;
+            else _fishInterestFence++;
+        }
+
         private bool GuestStateCurrent(SessionPeer peer, SessionSnapshot state)
         {
             if (!Current(peer, state) || state.Phase != SessionPhase.Ready || _receivedState == null) return false;
@@ -573,6 +690,9 @@ namespace DaveCoop.Networking
             peer.Snapshot.CrewActorRevision == _control.ActorRevision;
         private bool Begin()
         {
+            // A synchronous native read made by an interest observer cannot
+            // reenter movement and then poison the body's normal read guard.
+            if (_fishInterestBusy) return false;
             if (_correction?.Failed ?? false) { _failed = true; RetireGuestHarpoon(); Status = "GuestCorrectionFailed"; }
             if (!Enabled || Failed || Environment.CurrentManagedThreadId != _thread) return false;
             if (_busy) { Fault(new InvalidOperationException("Reentrant crew update.")); return false; }
@@ -581,6 +701,7 @@ namespace DaveCoop.Networking
         private static bool Down(KeyCode a, KeyCode b) => Input.GetKey(a) || Input.GetKey(b);
         private void RetireBody(string reason)
         {
+            InvalidateFishInterest();
             NeutralizeCapture();
             _cargoBinding?.UnbindActor(reason);
             RetireGuestHarpoon();

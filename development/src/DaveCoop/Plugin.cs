@@ -17,7 +17,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.47-dev";
+        public const string Version = "0.1.48-dev";
 
         public override void Load()
         {
@@ -75,7 +75,7 @@ namespace DaveCoop
             NetworkDriver.ObserveMapOrigins = Config.Bind("Network", "ObserveMapOrigins", false,
                 "Track natural loading coroutine ownership and exact resource-operation scene results on the Unity thread; bounded read-only diagnostics, no map adoption or game/save writes.");
             NetworkDriver.ExperimentalHostFishAreas = Config.Bind("Network", "ExperimentalHostFishAreas", false,
-                "Experimental same-scene host fish spawning and activity around both members. Read at first network Update; restart to change. Requires real Host/Join frames; native behavior and distant gameplay remain unverified.");
+                "Experimental same-scene fish spawning and activity around both members. With CrewActor, uses the host-controlled employee body's actual position and stops that region when the body is unavailable; otherwise uses read-only guest observations. Fixed at first network Update. Native behavior and distant gameplay remain unverified.");
             NetworkDriver.ExperimentalCrewActor = Config.Bind("Network", "ExperimentalCrewActor", false,
                 "Experimental host-owned employee physics/input/state. Fixed at first network Update; both peers must opt in. Guest requires ExperimentalGuestInitialization. Native collision, camera correction and independent survival remain unverified. Harpoon and personal cargo each have a separate default-off switch.");
             NetworkDriver.ExperimentalCrewHarpoon = Config.Bind("Network", "ExperimentalCrewHarpoon", false,

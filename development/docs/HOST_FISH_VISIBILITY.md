@@ -1,5 +1,7 @@
 # 员工附近的鱼避让
 
+当前0.1.48-dev与allocator/LOD共用[房主员工实际身体窗口](HOST_BODY_FISH_INTEREST.md)；合作模式不借客户端姿态或失源回退。以下保留0.1.43的有限正交镜头/原false补充范围，实际原生避让与双游戏效果仍未验证。
+
 0.1.43-dev、协议8扩展默认关闭的 `Network.ExperimentalHostFishAreas`。
 0.1.42已接普通生成器和中央LOD；本轮补的是部分自然鱼更新中
 `Renderer.isVisible` 对原避让请求的镜头限制。原生执行、全部鱼行为和双机远距离仍待验证。

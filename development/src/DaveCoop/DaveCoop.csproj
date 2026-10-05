@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>DaveCoop</AssemblyName>
-    <Version>0.1.47-dev</Version>
+    <Version>0.1.48-dev</Version>
     <LangVersion>9.0</LangVersion>
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

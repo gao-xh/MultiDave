@@ -1008,3 +1008,16 @@
 - 独立审查用Cecil读取实际自写DLL元数据与IL：NetworkDriver.Update offset0 get_Current、11 ConfirmUnityUpdate、22 NetworkController.Update；Diagnostics的Guest确认调用为0，常量及BepInPlugin属性均.47，读取前后DLL hash一致。未加载插件或调用native；此为编译接线证据，不证明实际Unity调度、临时根/场景隔离或双游戏移动。
 - 实际生成.47开发包，ZIP SHA256 `9BB473772498B9434557B4A164BC01082729470667E01F2EDA72D2DB25A9BFA6`；读取核两条文件、一个空目录条目、manifest/sidecar与DLL hash。同版Host/Guest配置只在artifacts生成，使用保留测试地址，未安装、未用测试地址尝试连接；.46历史包及此前脚本9/8项检查保留，未为版本变化重复。PLAYTEST_PACKAGE补双方分别手动开始自然新潜水/90秒等待、Ready及真实Guest场景/鱼隔离来源硬条件，握手不算移动通过。
 - 12份当前入口更新，.46个人袋/捕获历史范围保留；Skill新增.47启动与手动潜水步骤，备份规则保留。官方validator对草稿与受保护复制后均实际通过，同SHA256 `CB2627654C0965B9960D6248728D8867DB2FB97EA2C7F15E65536B4D6E57ABF8`，构建封存输入仍相同，没有因此重编译。未部署/启动游戏、改游戏cfg、恢复/写原档；只有一台电脑，真实双实例及完整Guest隔离/同一世界/捕获个人袋/返航保存仍未验收，完整goal保持active。
+
+## 2026-10-04 — 房主员工身体接入鱼区域（验证UTC为10-05）
+
+- 源码0.1.48-dev/协议11把合作员工的鱼区域位置从客机ReceivedFrame观察坐标改为房主实际Rigidbody2D身体读回；新增opaque身体窗口和不可变HostFishBodySample。固定当前peer/Room/member/actor/Scene及窗口代次，实际身体两次一致读后采样，使用前复核；暂停、忙碌、死亡/失活、退休、换层或断线时不增加员工区域。纯Core分离HostEmployeeBody与RemoteObservation，身体模式不接客机帧、不借网络packet/receipt时钟；sample/actor高水位跨Clear保留，最多1秒Host TTL。无新输入和静止坐标不作失源。普通非员工诊断仍走旧实际接收来源，协议与权限未放宽。
+- 普通allocator/LOD/可见性三处原来共用兴趣源，本轮改同一来源，无新原生hook或几何扩围。已有同层普通鱼/minDistance0/forcefalse/正交profile和其它不支持分支仍保持。Host名单只当前加载Scene活动鱼，Guest自己镜头裁显示；身体接入不是全部远区生成/AI/鱼型、跨层或双游戏通过。
+- 所有源作者READY后实际执行一次Core/TCP和Build，373/373通过，两脚本exit0、警告视为错误；185个源/项目/脚本及实际编译引用在执行前后hash相同，产物为本次调用新写。Core UTC 2026-10-05T00:20:16.147649+00:00 → 2026-10-05T00:20:22.110699+00:00；Build UTC 2026-10-05T00:20:23.505324+00:00 → 2026-10-05T00:20:26.253633+00:00；DLL SHA256 `D8054A2BAC3AFA0E7F834FA4DCE7DD8A32C25F03D0079F997437781298AC484E`。新增6组Core测试核模式/冲突帧/暂停SceneRoomactor/永久高水位member/Host时钟finite/静止拥有样本，不运行Unity exporter或原生鱼挂钩。私有run `development/.local/verification/host-body-interest/20261005T002015Z-3b20e2fd4bcb404299758d57cd25e5c5/run.json`；脱敏摘要见`logs/host-body-interest-build-verification.json`及当前`core-verification.json`，.47启动和.46个人袋历史记录未改。
+- 实际生成并读取.48开发ZIP，SHA256 `29E99BAAC9E0F5E1CDC00B8EB48B94919D98F9C94E028E6343655D9FA6D9AB27`，核两条文件、空目录、manifest/sidecar/DLL相同；Cecil包脚本读取本次编译属性版本，无插件加载。Host/Guest cfg仅在artifacts用保留测试地址生成并核.48/协议11和实验武器/袋关闭；未安装/连接测试地址。.47/.46历史包保留，默认发行.0及dependencies未改，无为版本变化重复历史拒绝夹具。
+- 新增HOST_BODY_FISH_INTEREST及旧区域页当前指引、更新当前入口/试玩包/Skill，备份与独立复核规则保持。官方validator对草稿与受保护复制后均实际通过，同SHA256 `6DDDC0EAEBC67C7336CD306E6608E4F0616E12062B34D06EEFDBC89C4FE79826`，记录保留.local；文档/Skill更新未改封存源码，无重复测试/编译。
+- 真实存档备份38文件和独立复核已通过，备份不当Guest完整隔离证明；本轮没有恢复/写原存档、改游戏cfg、部署插件、启动或执行native玩法。目前只有一台电脑，优先交付仍是真实双端移动闭环。完整Guest隔离、可信装备生存、捕获个人袋、正常返航入仓保存、远距离双游戏、GitHub冷配置及完整M3—M7未验收，goal保持active。
+
+- 只读源码末审未见阻断；独立Cecil读取本次DLL，13/13检查核opaque窗口、两处内部API、实际身体读取/Source调用与三adapter同Position getter。DLL前后hash相同，私有报告SHA256 `10289C443102E9D9ED80780BDED0878559E4E96A08E5BEF8508138880EDF8974`，核对UTC 2026-10-05T00:24:49.3622673+00:00 → 2026-10-05T00:24:49.8355036+00:00。此为实际编译调用存在，不证明分支执行/nativeABI/鱼行为或双端；未加载插件、执行游戏或重复Core/Build。
+
+- 首次公开推送被自动审批拒绝，原因是既有开发README仍含本机游戏路径。发布进程未执行；已将该行替换为玩家Steam库自动发现说明，重新核对公开白名单与脱敏后再发布，不扩大授权范围。源码封存与存档保护未受影响。

@@ -45,6 +45,9 @@ namespace DaveCoop.Networking
         public bool Alive => _rootPointer != IntPtr.Zero && !_observedDestroyed;
         public bool Active => _activated && !_failed && !_stopped;
         public bool Failed => _failed;
+        // Pure managed state: an interest query must decline a normal nested
+        // body read before Begin would latch it as a reentrant native call.
+        internal bool IsReading => _busy;
         public bool CleanupVerified => _stopVerified;
         public long Moves { get; private set; }
         public long Blocked { get; private set; }

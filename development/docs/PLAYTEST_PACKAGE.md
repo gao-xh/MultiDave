@@ -1,7 +1,7 @@
 # 开发试玩包
 
-当前可生成 `DaveCoop-0.1.47-dev.zip`（协议11），这是原生玩法尚未验证的开发包。
-它使用[已通过构建的 DLL](../logs/startup-sequence-build-verification.json)，不重新编译、不更换默认0.1.0发行包或`dependencies.json`。
+当前可生成 `DaveCoop-0.1.48-dev.zip`（协议11），这是原生玩法尚未验证的开发包。
+它使用[已通过构建的 DLL](../logs/host-body-interest-build-verification.json)，不重新编译、不更换默认0.1.0发行包或`dependencies.json`。
 
 在仓库根目录执行：
 
@@ -20,16 +20,16 @@ ZIP文件只有`manifest.json`及`BepInEx/plugins/DaveCoop/DaveCoop.dll`，本�
 
 当前实际生成包：
 
-- ZIP SHA256：`9BB473772498B9434557B4A164BC01082729470667E01F2EDA72D2DB25A9BFA6`
-- DLL SHA256：`8C59C3EE48CF0A84480584E1C1C425E0D6F25BC5C6FE5D460E568BDC03EE7E9F`
-- 已读取ZIP核对两条文件、空目录条目、manifest、sidecar、DLL哈希及编译版本；实际DLL确认Guest线程先于网络Update，Diagnostics不重复确认。Core测试不覆盖实际Unity启动顺序，实机仍待验证。
+- ZIP SHA256：`29E99BAAC9E0F5E1CDC00B8EB48B94919D98F9C94E028E6343655D9FA6D9AB27`
+- DLL SHA256：`D8054A2BAC3AFA0E7F834FA4DCE7DD8A32C25F03D0079F997437781298AC484E`
+- 已读取ZIP核对两条文件、空目录条目、manifest、sidecar、DLL哈希及编译版本；373项Core/TCP及Build通过；六组新测试验证身体来源与客机帧分离、过期和代次拒绝，不执行原生身体导出或鱼区域回调，实机仍待验证。
 
-0.1.46历史包保留；同一打包脚本的9项错误参数/失配拒绝来自该历史轮，默认发行文件未变。本轮没有因版本更新重复这些检查，也没有将其写成新版原生试玩通过。
+0.1.47及0.1.46历史包保留；同一打包脚本的9项错误参数/失配拒绝来自该历史轮，默认发行文件未变。本轮没有因版本更新重复这些检查，也没有将其写成新版原生试玩通过。
 
 将ZIP与sidecar放在一起，游戏保存退出并按[存档备份说明](SAVE_BACKUP.md)完成备份和`-VerifyBackup`复核后，才可用现有入口安装；双方应使用同一开发包：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\setup.ps1 -PackagePath .\development\artifacts\playtest\DaveCoop-0.1.47-dev.zip
+powershell -ExecutionPolicy Bypass -File .\setup.ps1 -PackagePath .\development\artifacts\playtest\DaveCoop-0.1.48-dev.zip
 ```
 
 安装命令会写插件目录，本轮没有执行安装、部署或启动，也没有改配置或存档。

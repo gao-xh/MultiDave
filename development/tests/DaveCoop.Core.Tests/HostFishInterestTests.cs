@@ -155,6 +155,171 @@ internal static class HostFishInterestTests
             "same epoch but changed scene retained or admitted the prior source");
     }
 
+    internal static void HostBodyWinsOverConflictingPoseWithoutForgingAReceipt()
+    {
+        string room = Guid.NewGuid().ToString("N"), member = Guid.NewGuid().ToString("N");
+        SessionSnapshot state = BodyState(room);
+        var body = BodyBuffer(room);
+        ReceivedFrame pose = Receipt(room, 100, 10, 90000000, new Vector3(2500, -30, 0));
+        Assert(!body.TryAccept(pose, state, 10) && body.HighestPacketSequence == 0,
+            "body mode consumed a remote pose before an actual body sample");
+        HostFishBodySample sample = BodySample(state, member, 1, 10, new Vector3(8, -2, 0));
+        HostFishInterest interest = null;
+        Assert(body.TryAcceptHostBody(sample, state, 10) && body.TryRead(state, 10, out interest) &&
+            interest.SourceKind == HostFishInterestKind.HostEmployeeBody && interest.Position == sample.Position &&
+            interest.MemberId == member && interest.ActorRevision == 7 && interest.HostSampleRevision == 1 &&
+            interest.HostSampledAt == 10 && interest.BoundPlayerId == 2 && interest.PacketSequence == 0 &&
+            interest.ReceivedAt == 0 && interest.RemoteSampleTime == 0,
+            "host readback was replaced by a client pose or disguised as packet/remote-clock evidence");
+        Assert(!body.TryAccept(pose, state, 10) && body.TryRead(state, 10, out HostFishInterest retained) &&
+            ReferenceEquals(interest, retained), "conflicting remote pose overwrote the valid body interest");
+        var legacy = new HostFishInterestBuffer(room);
+        Assert(!legacy.TryAcceptHostBody(sample, state, 10) && legacy.TryAccept(pose, state, 10) &&
+            legacy.TryRead(state, 10, out HostFishInterest observed) && observed.SourceKind == HostFishInterestKind.RemoteObservation &&
+            observed.Position == pose.Frame.Root.Position && observed.MemberId == null && observed.ActorRevision == 0 &&
+            observed.HostSampleRevision == 0 && observed.HostSampledAt == 0 && observed.PacketSequence == 100,
+            "legacy mode switched to body data or lost the original receipt identity");
+    }
+
+    internal static void BodyModeRequiresNegotiatedHostActorAndNeverFallsBack()
+    {
+        string room = Guid.NewGuid().ToString("N"), member = Guid.NewGuid().ToString("N");
+        var body = BodyBuffer(room);
+        long sequence = 0;
+        foreach (Action<SessionSnapshot> invalidate in new Action<SessionSnapshot>[]
+        {
+            s => s.LocalUsesCrewActor = false, s => s.RemoteUsesCrewActor = false,
+            s => s.Role = SessionRole.Guest, s => s.LocalPlayerId = 2,
+            s => s.RemotePlayerId = 1, s => s.CrewActorRevision = 0,
+            s => s.Phase = SessionPhase.Closed
+        })
+        {
+            SessionSnapshot state = BodyState(room);
+            Assert(body.TryAcceptHostBody(BodySample(state, member, ++sequence, 10, Vector3.Zero), state, 10),
+                "valid host body could not refresh between rejected sessions");
+            invalidate(state);
+            Assert(!body.TryRead(state, 10, out _) &&
+                !body.TryAcceptHostBody(BodySample(state, member, sequence + 1, 10, Vector3.One), state, 10) &&
+                !body.TryAccept(Receipt(room, sequence, 10, 10, Vector3.One), BodyState(room), 10) &&
+                !body.TryRead(BodyState(room), 10, out _),
+                "a missing host/crew/actor binding retained a view or fell back to a remote frame");
+        }
+        bool invalidKindRejected = false;
+        try { _ = new HostFishInterestBuffer(room, sourceKind: (HostFishInterestKind)2); }
+        catch (ArgumentOutOfRangeException) { invalidKindRejected = true; }
+        Assert(invalidKindRejected, "an unknown source mode was silently accepted");
+    }
+
+    internal static void BodyPauseSceneRoomAndActorLossRevokeTheCurrentView()
+    {
+        string room = Guid.NewGuid().ToString("N"), member = Guid.NewGuid().ToString("N");
+        SessionSnapshot state = BodyState(room);
+        var body = BodyBuffer(room);
+        HostFishBodySample first = BodySample(state, member, 1, 10, Vector3.Zero);
+        Assert(body.TryAcceptHostBody(first, state, 10), "initial body missing");
+        state.Phase = SessionPhase.WaitingForScene;
+        Assert(!body.TryRead(state, 10, out _), "pause retained the body interest");
+        state.Phase = SessionPhase.Ready;
+        Assert(!body.TryAcceptHostBody(first, state, 10) &&
+            body.TryAcceptHostBody(BodySample(state, member, 2, 10, Vector3.One), state, 10),
+            "pause reset the sample fence or blocked a genuinely new sample");
+        state.SceneEpoch++;
+        Assert(!body.TryRead(state, 10, out _) && !body.TryAcceptHostBody(first, state, 10),
+            "new epoch reused the old body's scene sample");
+        state.SceneKey = "deeper"; state.CrewActorRevision = 8;
+        Assert(body.TryAcceptHostBody(BodySample(state, member, 3, 10, Vector3.UnitY), state, 10), "new scene/actor rejected");
+        state.RoomId = Guid.NewGuid().ToString("N");
+        Assert(!body.TryRead(state, 10, out _), "same scene in a different room borrowed the old source");
+        state.RoomId = room;
+        Assert(body.TryAcceptHostBody(BodySample(state, member, 4, 10, Vector3.UnitZ), state, 10), "same-room fresh sample rejected");
+        state.CrewActorRevision = 0;
+        Assert(!body.TryRead(state, 10, out _), "missing actor retained a view");
+        state.CrewActorRevision = 9;
+        Assert(body.TryAcceptHostBody(BodySample(state, member, 5, 10, Vector3.Zero), state, 10), "replacement actor rejected");
+        state.CrewActorRevision = 10;
+        Assert(!body.TryRead(state, 10, out _), "current session's replacement actor reused the earlier actor interest");
+    }
+
+    internal static void BodyActorSampleAndMemberFencesSurviveClear()
+    {
+        string room = Guid.NewGuid().ToString("N"), member = Guid.NewGuid().ToString("N");
+        SessionSnapshot state = BodyState(room);
+        var body = BodyBuffer(room);
+        HostFishBodySample first = BodySample(state, member, 20, 10, Vector3.One);
+        Assert(body.TryAcceptHostBody(first, state, 10), "initial fenced body rejected");
+        body.Clear();
+        Assert(body.HighestActorRevision == 7 && body.HighestBodySampleRevision == 20 &&
+            !body.TryAcceptHostBody(first, state, 10), "clear erased either host replay fence");
+        state.CrewActorRevision = 8;
+        Assert(!body.TryAcceptHostBody(BodySample(state, member, 20, 10, Vector3.Zero), state, 10),
+            "a newer actor reset the globally monotonic body sample sequence");
+        state.CrewActorRevision = 6;
+        Assert(!body.TryAcceptHostBody(BodySample(state, member, 21, 10, Vector3.Zero), state, 10),
+            "a newer sample revived an older actor");
+        state.CrewActorRevision = 8;
+        Assert(body.TryAcceptHostBody(BodySample(state, member, 21, 10, Vector3.Zero), state, 10), "new actor/sample rejected");
+        body.Clear("SourceUnavailable");
+        Assert(!body.TryAcceptHostBody(BodySample(state, Guid.NewGuid().ToString("N"), 22, 10, Vector3.Zero), state, 10) &&
+            !body.TryAcceptHostBody(BodySample(state, "11111111-1111-1111-1111-111111111111", 22, 10, Vector3.Zero), state, 10) &&
+            body.HighestBodySampleRevision == 21 && body.TryAcceptHostBody(BodySample(state, member, 22, 10, Vector3.Zero), state, 10),
+            "clear allowed a foreign/noncanonical member or invalid admission consumed the sample revision");
+    }
+
+    internal static void BodyHostClockAndFinitePositionsBoundFreshness()
+    {
+        string room = Guid.NewGuid().ToString("N"), member = Guid.NewGuid().ToString("N");
+        SessionSnapshot state = BodyState(room);
+        var body = new HostFishInterestBuffer(room, 5, HostFishInterestKind.HostEmployeeBody);
+        Assert(body.StaleSeconds == 1 && body.TryAcceptHostBody(BodySample(state, member, 1, 10, Vector3.Zero), state, 10) &&
+            body.TryRead(state, 11, out _) && !body.TryRead(state, 11.001, out _) && body.HighestBodySampleRevision == 1,
+            "host-body TTL exceeded one second or expiry reset its sample fence");
+        HostFishBodySample future = BodySample(state, member, 2, 12, Vector3.One);
+        Assert(!body.TryAcceptHostBody(future, state, 11.9) && body.TryAcceptHostBody(future, state, 12),
+            "future host time passed or its pre-admission rejection consumed the sequence");
+        Assert(!body.TryAcceptHostBody(BodySample(state, member, 3, 11.99, Vector3.One), state, 12.5) &&
+            body.TryAcceptHostBody(BodySample(state, member, 3, 12.5, Vector3.One), state, 12.5),
+            "a newer sequence moved the host sample clock backward or valid retry failed");
+        foreach (Vector3 bad in new[] { new Vector3(float.NaN, 0, 0), new Vector3(0, float.PositiveInfinity, 0), new Vector3(0, 0, float.NegativeInfinity) })
+            Assert(!body.TryAcceptHostBody(BodySample(state, member, 4, 13, bad), state, 13), "nonfinite host body position admitted");
+        foreach (double bad in new[] { double.NaN, double.PositiveInfinity, -1 })
+            Assert(!body.TryAcceptHostBody(BodySample(state, member, 4, bad, Vector3.Zero), state, 13), "invalid host clock admitted");
+        Assert(body.HighestBodySampleRevision == 3 && body.TryAcceptHostBody(BodySample(state, member, 4, 13, Vector3.Zero), state, 13) &&
+            !body.TryRead(state, double.NaN, out _) && !body.TryRead(state, 13, out _),
+            "invalid samples consumed the sequence or an invalid read clock retained the active view");
+    }
+
+    internal static void BodyAtRestAndOwnedSamplesDoNotDependOnGuestInput()
+    {
+        string room = Guid.NewGuid().ToString("N"), member = Guid.NewGuid().ToString("N");
+        SessionSnapshot state = BodyState(room); state.CrewInputSequence = 0;
+        var body = BodyBuffer(room);
+        Vector3 original = Vector3.Zero;
+        HostFishBodySample sample = BodySample(state, member, 1, 0, original);
+        original = new Vector3(999, 999, 999);
+        HostFishInterest frozen = null;
+        Assert(body.TryAcceptHostBody(sample, state, 0) && body.TryRead(state, 0, out frozen) &&
+            frozen.Position == Vector3.Zero && sample.Position == Vector3.Zero && frozen.HostSampledAt == 0 &&
+            state.CrewInputSequence == 0 && original.X == 999, "body at rest was mistaken for a missing guest input/pose");
+        Vector3 returnedPosition = frozen.Position; returnedPosition.X = 25;
+        Assert(returnedPosition.X == 25 && sample.Position == Vector3.Zero && frozen.Position == Vector3.Zero,
+            "a returned vector mutated the owned sample");
+        state.RoomId = Guid.NewGuid().ToString("N"); state.SceneKey = "mutated"; state.CrewActorRevision = 99;
+        Assert(frozen.RoomId == room && frozen.SceneKey == "dive" && frozen.ActorRevision == 7 && frozen.MemberId == member &&
+            sample.RoomId == room && sample.SceneKey == "dive" && sample.ActorRevision == 7 &&
+            !body.TryRead(state, 0, out _), "later session mutation changed historical owned fields or kept them current");
+    }
+
+    private static HostFishInterestBuffer BodyBuffer(string room) => new HostFishInterestBuffer(room,
+        sourceKind: HostFishInterestKind.HostEmployeeBody);
+    private static SessionSnapshot BodyState(string room)
+    {
+        SessionSnapshot state = HostState(room, 1);
+        state.LocalUsesCrewActor = true; state.RemoteUsesCrewActor = true; state.CrewActorRevision = 7;
+        return state;
+    }
+    private static HostFishBodySample BodySample(SessionSnapshot state, string member, long sequence, double at, Vector3 position) =>
+        new HostFishBodySample(state.RoomId, member, state.CrewActorRevision, sequence, state.SceneEpoch, state.SceneKey, at, position);
+
     private static PeerIdentity Identity(string name) => new PeerIdentity
     { ModVersion = "host-interest-tests", SteamBuildId = "25315876", UnityVersion = "6000.0.52f1", Name = name };
     private static PlayerFrame Frame(double sample, Vector3 position) => new PlayerFrame

@@ -124,7 +124,7 @@ namespace DaveCoop.Networking
                     if (NetworkDriver.ExperimentalHostFishAreas.Value && NativeGuestInitializationController.Current == null)
                     {
                         _hostFishInterest = new HostFishInterestSource(() => _peers?.Main,
-                            () => _peers?.Loopback != null, _local, Environment.CurrentManagedThreadId);
+                            () => _peers?.Loopback != null, _local, Environment.CurrentManagedThreadId, _crewActor);
                         _hostFishInterest.ConfirmUnityUpdate();
                         _hostFishAllocatorArea = new NativeHostFishAllocatorArea(_hostFishInterest, NetworkDriver.Logger);
                         _hostFishLodArea = new NativeHostFishLodArea(_hostFishInterest, NetworkDriver.Logger);
@@ -193,7 +193,8 @@ namespace DaveCoop.Networking
                 }
                 if (_peers.Main.TryTakeRemoteFrame(out ReceivedFrame received))
                 {
-                    if (!_hostFishAreasFailed) _hostFishInterest?.Accept(_peers.Main, received);
+                    if (!_hostFishAreasFailed && _hostFishInterest?.SourceKind == HostFishInterestKind.RemoteObservation)
+                        _hostFishInterest.Accept(_peers.Main, received);
                     if (state.Phase == SessionPhase.Ready && received.Frame.SceneEpoch == state.SceneEpoch)
                         _display.Receive(received);
                 }
@@ -258,6 +259,11 @@ namespace DaveCoop.Networking
                         HostFishAreasEnabled = _hostFishInterest != null,
                         HostFishAreasFailed = _hostFishAreasFailed,
                         HostFishInterestStatus = _hostFishInterest?.Status,
+                        HostFishInterestSourceKind = _hostFishInterest?.SourceKind.ToString(),
+                        HostFishBodySamplesAccepted = _hostFishInterest?.AcceptedBodySamples ?? 0,
+                        HostFishBodySamplesRejected = _hostFishInterest?.RejectedBodySamples ?? 0,
+                        HostFishBodySampleRevision = _hostFishInterest?.HighestBodySampleRevision ?? 0,
+                        HostFishBodyActorRevision = _hostFishInterest?.HighestActorRevision ?? 0,
                         HostFishInterestAccepted = _hostFishInterest?.AcceptedReceipts ?? 0,
                         HostFishInterestRejected = _hostFishInterest?.RejectedReceipts ?? 0,
                         HostFishAllocatorAreaStatus = _hostFishAllocatorArea?.Status,

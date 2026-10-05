@@ -13,6 +13,7 @@ namespace DaveCoop.Networking
         internal long SourceRevision { get; }
         internal int ManagerId { get; }
         internal int PlayerId { get; }
+        internal HostEmployeeFishInterestWindow EmployeeBody { get; }
         public HostFishInterest Interest { get; }
         public InGameManager Manager { get; }
         public PlayerCharacter LocalPlayer { get; }
@@ -22,21 +23,25 @@ namespace DaveCoop.Networking
 
         internal HostFishInterestWindow(HostFishInterestSource owner, SessionPeer peer, long revision,
             HostFishInterest interest, InGameManager manager, int managerId, PlayerCharacter player,
-            int playerId, Transform transform, Vector3 localPosition, int sceneHandle)
+            int playerId, Transform transform, Vector3 localPosition, int sceneHandle,
+            HostEmployeeFishInterestWindow employeeBody)
         {
             Owner = owner; Peer = peer; SourceRevision = revision; Interest = interest;
             Manager = manager; ManagerId = managerId; LocalPlayer = player; PlayerId = playerId;
             LocalPlayerTransform = transform; LocalPosition = localPosition; SceneHandle = sceneHandle;
+            EmployeeBody = employeeBody;
         }
     }
 
-    // Only a received frame from the current real host peer can produce a
-    // bounded observation. No remote avatar, pose interpolation or action facts.
+    // Cooperative areas use the host-owned physical employee body. Legacy
+    // read-only diagnostics retain remote observations in a separate fixed mode.
+    // Neither mode produces attack, capture or cargo permission.
     internal sealed class HostFishInterestSource
     {
         private readonly Func<SessionPeer> _currentMain;
         private readonly Func<bool> _localTest;
         private readonly LocalAvatarCapture _local;
+        private readonly CrewActorController _crew;
         private readonly int _mainThreadId;
         private SessionPeer _boundPeer;
         private HostFishInterestBuffer _buffer;
@@ -51,14 +56,21 @@ namespace DaveCoop.Networking
         public long AcceptedReceipts { get; private set; }
         public long RejectedReceipts { get; private set; }
         public long ReadErrors { get; private set; }
+        public long AcceptedBodySamples { get; private set; }
+        public long RejectedBodySamples { get; private set; }
+        public HostFishInterestKind SourceKind => _crew?.Enabled == true
+            ? HostFishInterestKind.HostEmployeeBody : HostFishInterestKind.RemoteObservation;
         public long HighestPacketSequence => _buffer?.HighestPacketSequence ?? 0;
+        public long HighestBodySampleRevision => _buffer?.HighestBodySampleRevision ?? 0;
+        public long HighestActorRevision => _buffer?.HighestActorRevision ?? 0;
 
         public HostFishInterestSource(Func<SessionPeer> currentMain, Func<bool> localTest,
-            LocalAvatarCapture local, int mainThreadId)
+            LocalAvatarCapture local, int mainThreadId, CrewActorController crew)
         {
             _currentMain = currentMain ?? throw new ArgumentNullException(nameof(currentMain));
             _localTest = localTest ?? throw new ArgumentNullException(nameof(localTest));
             _local = local ?? throw new ArgumentNullException(nameof(local));
+            _crew = crew;
             if (mainThreadId < 1) throw new ArgumentOutOfRangeException(nameof(mainThreadId));
             _mainThreadId = mainThreadId;
         }
@@ -74,6 +86,10 @@ namespace DaveCoop.Networking
 
         public bool Accept(SessionPeer peer, ReceivedFrame receipt)
         {
+            // A guest display frame cannot refresh, replace or resurrect a
+            // cooperative body interest, including while that body is missing.
+            if (SourceKind == HostFishInterestKind.HostEmployeeBody)
+            { RejectedReceipts++; return false; }
             if (!Begin()) { RejectedReceipts++; return false; }
             try
             {
@@ -108,15 +124,26 @@ namespace DaveCoop.Networking
                 SessionPeer peer = _currentMain();
                 if (!TryBind(peer, out SessionSnapshot state)) return false;
                 long revision = _revision;
+                HostEmployeeFishInterestWindow employeeBody = null;
+                if (SourceKind == HostFishInterestKind.HostEmployeeBody)
+                {
+                    if (!_crew.TryCaptureFishInterest(peer, out employeeBody) || employeeBody == null ||
+                        !_buffer.TryAcceptHostBody(employeeBody.Sample, state, peer.Now))
+                    { RejectedBodySamples++; Clear("HostEmployeeBodyUnavailable"); return false; }
+                    AcceptedBodySamples++;
+                }
                 if (!_buffer.TryRead(state, peer.Now, out HostFishInterest interest))
                 { Status = _buffer.Status; _lastWindow = null; return false; }
                 if (!TryLocal(peer, state, revision, out LocalStamp before) ||
                     !TryLocal(peer, state, revision, out LocalStamp after) || !Same(before, after) ||
+                    (employeeBody != null && (employeeBody.SceneHandle != after.SceneHandle ||
+                        !_crew.IsFishInterestCurrent(employeeBody))) ||
                     !_buffer.TryRead(peer.Snapshot, peer.Now, out HostFishInterest current) ||
                     !ReferenceEquals(current, interest) || !PureCurrent(peer, state, revision))
                 { Clear("SourceChangedDuringCapture"); return false; }
                 window = new HostFishInterestWindow(this, peer, revision, interest, after.Manager,
-                    after.ManagerId, after.Player, after.PlayerId, after.Transform, after.Position, after.SceneHandle);
+                    after.ManagerId, after.Player, after.PlayerId, after.Transform, after.Position,
+                    after.SceneHandle, employeeBody);
                 _lastWindow = window; _lastStamp = after; Status = "Current"; return true;
             }
             catch (Exception) { Fault("SourceReadFailed"); return false; }
@@ -137,6 +164,7 @@ namespace DaveCoop.Networking
                     !ReferenceEquals(current.Manager, window.Manager) || current.ManagerId != window.ManagerId ||
                     !ReferenceEquals(current.Player, window.LocalPlayer) || current.PlayerId != window.PlayerId ||
                     current.SceneHandle != window.SceneHandle ||
+                    (window.EmployeeBody != null && !_crew.IsFishInterestCurrent(window.EmployeeBody)) ||
                     !Same(current, _lastStamp) || !PureCurrent(peer, state, window.SourceRevision) ||
                     !_buffer.TryRead(peer.Snapshot, peer.Now, out interest) || !ReferenceEquals(interest, window.Interest))
                 { Clear("InterestWindowExpired"); return false; }
@@ -175,7 +203,8 @@ namespace DaveCoop.Networking
             { Clear("HostSceneNotReady"); return false; }
             if (!ReferenceEquals(peer, _boundPeer))
             {
-                Clear("PeerChanged"); _boundPeer = peer; _buffer = new HostFishInterestBuffer(state.RoomId);
+                Clear("PeerChanged"); _boundPeer = peer;
+                _buffer = new HostFishInterestBuffer(state.RoomId, sourceKind: SourceKind);
             }
             return true;
         }
