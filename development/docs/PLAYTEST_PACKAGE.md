@@ -16,6 +16,8 @@ $taskPackage
 
 下载入口不要求游戏、SDK或Cecil。它将文件放到新的 `development/artifacts/` 子目录，根据检出仓库的通过构建摘要固定 ZIP/DLL 哈希、版本与协议，核对 GitHub tag/预发布、sidecar、ZIP成员及开发manifest；不加载DLL、不安装、改cfg或启动游戏。失败时保留失败下载，不能用于安装。旧检出缺少同版摘要或脚本时，先获取上述开发分支，不改默认版本规则。
 
+已从GitHub全新检出 `04fcfbd9ed9fc9a8dc0998ef7633d601758341a4`，实际WindowsPS5.1完成只读环境检查、匿名下载核验及两份角色配置生成，见[发行/下载记录](../logs/playtest-release-verification.json)。检查过程中没有安装、覆盖游戏cfg或启动；这不代表另一台电脑完整安装或双游戏已通过。
+
 玩家也可以从预发布页面下载 ZIP 和同名 `.zip.sha256` 到同一目录，按本页所列固定哈希核对，再传明确的 `-PackagePath`。网络下载本身不需要游戏退出；安装/改配置/试玩前仍必须完成新的存档备份和独立复核。
 
 ## 本机构建后的打包

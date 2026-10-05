@@ -1,6 +1,6 @@
 {
   "SchemaVersion": 1,
-  "RecordedUtc": "2026-10-05T00:42:05.079325+00:00",
+  "RecordedUtc": "2026-10-05T00:46:42.940931+00:00",
   "ParentCommit": "a802ea0f446f00dd972963380ca7125d97be81ce",
   "PluginVersion": "0.1.48-dev",
   "ProtocolVersion": 11,
@@ -139,7 +139,7 @@
     }
   },
   "SaveProtectionSectionUnchanged": true,
-  "GitHubColdPackagePreparationVerified": false,
+  "GitHubColdPackagePreparationVerified": true,
   "Limits": {
     "FullGitHubColdSetupVerified": false,
     "PluginDeployed": false,
@@ -151,5 +151,48 @@
     "FullGuestIsolationVerified": false,
     "TwoRealGameSessionsVerified": false,
     "NormalReturnAndSaveVerified": false
+  },
+  "GitHubColdPackagePreparation": {
+    "StartedUtc": "2026-10-05T00:45:41.439190+00:00",
+    "FinishedUtc": "2026-10-05T00:45:46.779968+00:00",
+    "CloneExitCode": 0,
+    "PreparationExitCode": 0,
+    "SourceCommit": "04fcfbd9ed9fc9a8dc0998ef7633d601758341a4",
+    "FreshCloneFromPublicRepository": true,
+    "Branch": "codex/player-discovery",
+    "Runtime": "WindowsPowerShell5.1",
+    "GitAutocrlf": false,
+    "SourceHelperBytesMatchValidatedScript": true,
+    "PackageAnonymousDownloadVerified": true,
+    "ZIPSHA256": "29E99BAAC9E0F5E1CDC00B8EB48B94919D98F9C94E028E6343655D9FA6D9AB27",
+    "PluginSHA256": "D8054A2BAC3AFA0E7F834FA4DCE7DD8A32C25F03D0079F997437781298AC484E",
+    "EnvironmentInspectOnly": true,
+    "InspectedGameProfileMatchesPackage": true,
+    "SteamBuildId": "25315876",
+    "UnityVersion": "6000.0.52f1",
+    "ConfigurationsGenerated": 2,
+    "ConfigurationUsedReservedTestAddress": true,
+    "ConfigurationSourceVersion": "0.1.48-dev",
+    "ConfigurationFileHashes": [
+      {
+        "Role": "Host",
+        "SHA256": "F063B4C78008B9D37A318B978018F22EEB0A86FF66391F92BCD7AC3547DB18D9"
+      },
+      {
+        "Role": "Guest",
+        "SHA256": "939452D456343A5CA78018A5C2EEEBDB2E123F34C1D38BD565008AE2EAC56D91"
+      }
+    ],
+    "InputsUnchanged": true,
+    "CheckoutTrackedWorktreeClean": true,
+    "PrivateRunReference": "development/.local/verification/playtest-release/cold-prepare-20261005T004541Z-8556bf03c1f14b278f9a58dde82026bd/run.json",
+    "PrivateRunSHA256": "D33DAD1D43D6058AD6B2307C5C9663C80A262FCD75B55D4792D923B3F80815B4",
+    "StdoutSHA256": "A4FD3EE6C4D66E857391C2792027ABE6C88E170671F72187F4A6CEB52A7CB586",
+    "StderrSHA256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+    "PluginInstalled": false,
+    "GameConfigurationChanged": false,
+    "GameLaunched": false,
+    "LiveSaveFilesModified": false,
+    "Scope": "Fresh checkout package preparation only; no complete install, startup or two-game playtest."
   }
 }

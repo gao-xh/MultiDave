@@ -8,7 +8,7 @@
 
 ## 当前优先交付
 
-开发交付已补[v0.1.48-dev 预发布](https://github.com/gao-xh/MultiDave/releases/tag/v0.1.48-dev)及明确tag下载入口，详见[PLAYTEST_PACKAGE](PLAYTEST_PACKAGE.md)和[实际发行/下载记录](../logs/playtest-release-verification.json)。WindowsPS5.1实际28项包准入夹具及公开地址匿名下载核验通过；这些只证明可取得同版包，未安装、改游戏cfg、启动或完成双游戏验收。当前插件源码仍.48，原373项Core/Build来源保留，没有重跑冒作玩法验证。
+开发交付已补[v0.1.48-dev 预发布](https://github.com/gao-xh/MultiDave/releases/tag/v0.1.48-dev)及明确tag下载入口，详见[PLAYTEST_PACKAGE](PLAYTEST_PACKAGE.md)和[实际发行/下载记录](../logs/playtest-release-verification.json)。WindowsPS5.1实际28项包准入夹具、公开地址匿名下载核验，以及GitHub全新检出后的只读环境检查/下载/两份cfg准备均通过；未安装、改游戏cfg、启动或完成双游戏验收。当前插件源码仍.48，原373项Core/Build来源保留，没有重跑冒作玩法验证。
 
 2026-10-04 用户要求先保护存档，且目前只有一台电脑。已在游戏退出状态复制38个文件：完整LocalLow目录18个文件（其中12份本地`.sav`）、两份Steam应用缓存共18个文件，以及2份BepInEx配置；逐文件源/副本核验及独立`-VerifyBackup`均通过。一个其它Steam账户没有该游戏应用缓存，`CoverageComplete=false`已保留；不包含Steam云服务器或不可见注册表。实际备份只在`.local/save-backups/`，原存档未修改。见[备份说明](SAVE_BACKUP.md)和[脱敏记录](../logs/save-backup-verification.json)。
 

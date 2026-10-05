@@ -8,7 +8,7 @@
 
 ## 下一次交付：双端移动实机闭环
 
-已补[v0.1.48-dev公开测试包](https://github.com/gao-xh/MultiDave/releases/tag/v0.1.48-dev)和显式tag/固定哈希下载流程，实际发行及匿名下载核验见[记录](../logs/playtest-release-verification.json)。从GitHub取得同版包不再依赖本机被忽略的artifacts；默认安装仍.0，未验开发包不作为latest。该进展不代替新电脑完整配置、Guest持久隔离或两个真实游戏的移动验收；接下来仍以实机首个启动/地图/布局/身体来源结果定位直接阻断，不按预发布可下载将M3—M7标完成。
+已补[v0.1.48-dev公开测试包](https://github.com/gao-xh/MultiDave/releases/tag/v0.1.48-dev)和显式tag/固定哈希下载流程，实际发行、匿名下载核验及GitHub全新检出包/配置准备见[记录](../logs/playtest-release-verification.json)。从GitHub取得同版包不再依赖本机被忽略的artifacts；默认安装仍.0，未验开发包不作为latest。该进展不代替新电脑完整安装/启动、Guest持久隔离或两个真实游戏的移动验收；接下来仍以实机首个启动/地图/布局/身体来源结果定位直接阻断，不按预发布可下载将M3—M7标完成。
 
 当前先执行用户要求的[存档保护](SAVE_BACKUP.md)：首次真实本地备份38个文件及独立复核已通过，后续每次安装、替换实验插件/配置或试玩仍须保存退出并重新备份；恢复须按Skill核对目标与覆盖授权。备份不代替Guest完整隔离，Steam云服务器和游戏语义有效性未证明。用户目前只有一台电脑，不能把回环TCP或两份cfg当成两个真实游戏的验收。[开发包和配置工具](PLAYTEST_PACKAGE.md)已准备，未安装或启动。
 
