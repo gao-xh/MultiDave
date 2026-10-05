@@ -32,3 +32,11 @@
 ## 后续日志格式
 
 每次追加：日期、目标、关键改动、验证命令及实际结果、遗留问题、下一步。
+
+## 2026-10-05 — 默认入口存档保护窄回补
+
+- 以默认 `main` 的 `ca9277b46e9209cf395ab72f58433b9da3919d25` 为基线，仅准备根 AGENTS/README/旧 Skill、备份脚本与说明、脱敏验证摘要及此日志追加。默认 0.1.0 发行包、dependencies、setup 和原型 C# 未变，不把开发分支历史或原生功能搬入默认入口。
+- 安装或启动前先保存退出，备份整个实际 Dave LocalLow、已发现的 Steam 应用缓存及可选配置；将返回的清单哈希写入备份目录之外的独立私有记录，读回后用 `-VerifyBackup -ExpectedManifestSHA256` 复核，再逐项核对 `Missing` / `CoverageComplete`。脚本新增返回清单哈希、固定哈希前置核对及严格数字/布尔验证；文件与清单同时改写不能冒作原备份，旧无固定哈希模式明确不证明创建时一致。
+- 引用本次脚本的实际验证，见 [save-protection-refresh-verification.json](save-protection-refresh-verification.json)：Windows PowerShell 5.1 定向 12/12 组检查通过，脚本 SHA256 `4CDBA13E1022AFCC2C93F82469E3E2F365B0A83D2152EC7249C51E90D92964CE` 前后相同；另有新 38 文件备份及带独立记录哈希的只读复核通过，旧备份保留。实际备份覆盖已发现来源，额外账户无应用缓存使 `CoverageComplete=false`；不宣称 Steam 云服务器完整。旧备份没有创建时固定哈希，不把本次观察到的哈希倒填成旧创建证据。
+- 以上测试和真实备份证据来自所附脚本的已有验证，本次默认分支文件准备仅做内容与格式审阅，没有再次运行备份、读取原档或执行安装/游戏。未恢复、改原档或游戏配置、部署插件、启动游戏、重跑 Core/Build；备份语义、完整客机隔离与双游戏玩法均未据此通过。
+- README/Skill 显式链接 [codex/player-discovery](https://github.com/gao-xh/MultiDave/tree/codex/player-discovery)，需要开发试玩包时读取该分支独立说明。默认 .0 与开发预发布分开，`-UseLatestRelease` 不自动选择开发包。下一步审阅这份窄回补；文件准备不等于远端已合并或新入口已实机运行。
