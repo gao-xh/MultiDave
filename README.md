@@ -10,8 +10,9 @@
 将以下内容发送给能够访问你本机文件和运行终端的 Codex：
 
 > 请配置 https://github.com/gao-xh/MultiDave 。先克隆仓库，读取 AGENTS.md
-> 和 .agents/skills/dave-coop-setup/SKILL.md，自动定位 Steam 游戏，运行
-> setup.ps1，启动到主菜单并检查真实加载日志。遇到版本不兼容或游戏正在运行时，
+> 和 .agents/skills/dave-coop-setup/SKILL.md，自动定位 Steam 游戏。正常保存退出后先备份，
+> 将返回的 ManifestSHA256 写入独立私有记录，带该哈希进行独立 VerifyBackup 复核并核对缺失项，
+> 再运行 setup.ps1，启动到主菜单并检查真实加载日志。遇到版本不兼容或游戏正在运行时，
 > 明确说明需要处理的步骤，不要强制关闭游戏。请记录配置结果。
 
 Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动验证和日志记录。
@@ -21,9 +22,28 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 # 仓库根目录：只检查环境。
 .\setup.ps1 -InspectOnly
 
-# 保存并退出游戏后，安装仓库附带的原型包并启动验证。
+# 保存并退出游戏后，备份实际玩家目录；不同用户/沙盒按备份说明显式传路径。
+$ErrorActionPreference = 'Stop'
+$saveBackup = .\development\scripts\Backup-Saves.ps1 | ConvertFrom-Json
+# 独立记录放在备份目录之外的私有 .local 中，不提交到 Git。
+$saveRecordDir = 'development/.local/logs'
+New-Item -ItemType Directory -Path $saveRecordDir -Force | Out-Null
+$saveRecordPath = Join-Path $saveRecordDir ('save-backup-' + [Guid]::NewGuid().ToString('N') + '.json')
+$saveBackup | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $saveRecordPath -Encoding UTF8
+$saveRecord = Get-Content -LiteralPath $saveRecordPath -Raw | ConvertFrom-Json
+.\development\scripts\Backup-Saves.ps1 -VerifyBackup $saveRecord.BackupPath -ExpectedManifestSHA256 $saveRecord.ManifestSHA256
+```
+
+只有备份与独立复核均成功，复核返回 `ManifestHashPinned=true`，并逐项核对 `Missing`、`CoverageComplete` 后，才继续：
+
+```powershell
+# 安装仓库附带的 0.1.0 原型包并启动验证。
 .\setup.ps1 -LaunchGame
 ```
+
+范围、哈希固定与恢复限制见[存档备份说明](development/docs/SAVE_BACKUP.md)。
+复核仅证明备份字节与所记录来源一致，不证明存档语义或 Steam 云服务器完整。
+备份、账户信息、manifest 与独立记录均私有，不提交仓库；备份不授权恢复覆盖。
 
 玩家安装不需要 .NET SDK。首次启动框架需要联网下载 Unity 依赖并生成接口，
 可能耗时数分钟。安装后左上角出现 `DaveCoop Prototype`，F8 切换面板。
@@ -43,6 +63,11 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 - [开发日志与现有证据](development/logs/DEVLOG.md)
 - [阶段记录与下一步](development/docs/HANDOFF.md)
 - [Codex 配置技能](.agents/skills/dave-coop-setup/SKILL.md)
+- [开发分支与开发试玩包](https://github.com/gao-xh/MultiDave/tree/codex/player-discovery)
+
+根链接默认仍安装 0.1.0 加载原型。需要开发试玩包时明确选择上述开发分支，
+读取该分支的 Skill 和 `development/docs/PLAYTEST_PACKAGE.md`；开发包与完整联机验收不同，
+不会通过默认安装或 `-UseLatestRelease` 自动切换到开发预发布。
 
 源代码和重复使用的配置工具位于 `development/`；
 `distribution/` 是供自动安装使用的本项目插件包。

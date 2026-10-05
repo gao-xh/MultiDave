@@ -9,6 +9,25 @@ description: Configure or continue development of the MultiDave prototype for Wi
 尚未支持双人联机。仓库根目录是此 SKILL.md 路径向上三级。
 先读根目录 AGENTS.md 和 development/logs/DEVLOG.md，避免重复已完成工作。
 
+## 存档保护
+
+配置 Mod、替换插件、修改实验配置或启动前，检查游戏进程；运行时让玩家正常保存退出，
+脚本不得终止游戏。游戏退出后执行 [Backup-Saves.ps1](../../../development/scripts/Backup-Saves.ps1)，
+按 [SAVE_BACKUP.md](../../../development/docs/SAVE_BACKUP.md)核对实际玩家目录和备份范围。
+配置或备份请求已包含创建可逆备份的授权，沿用会话授权，不重复询问。
+
+将成功返回的 `BackupPath` 和 `ManifestSHA256` 写入备份目录之外的独立私有记录。
+复核从该记录读取哈希，执行 `-VerifyBackup <备份目录> -ExpectedManifestSHA256 <记录哈希>`；
+不得在复核时重新从待检 manifest 计算哈希代替此前记录。只有备份成功、带固定哈希的独立复核成功，
+且逐项核对 `Missing` / `CoverageComplete` 后，才继续安装、改配置或启动。
+缺失或失败不可报告空备份成功；沙盒用户目录不等于真实玩家目录时使用已确认的
+`-UserProfilePath`、`-SteamRoot`、`-GamePath`。确证没有历史存档的首次安装可记录缺失并继续
+普通加载原型，实验功能保持关闭。
+
+备份只写入唯一新私有目录，原文件不覆盖；账户路径、manifest、独立哈希记录均不公开或提交 Git。
+`Verified` 仅证明已发现来源的文件一致性，不证明游戏存档语义、Steam 云服务器完整或客机隔离。
+当前脚本不自动恢复；备份请求不授权覆盖，恢复须先保存退出、另备当前状态并核对目标、云状态和明确覆盖授权。
+
 ## 用户只给 GitHub 链接并要求配置
 
 1. 将用户指定的仓库克隆到可写的新目录，读取其 README、AGENTS 和本 Skill。
@@ -17,7 +36,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
    找不到或找到多份时才询问游戏目录；不要沿用开发者本机 F 盘路径。
 3. 用户要求配置 Mod 已包含安装依赖和插件的授权。游戏正在运行时请其保存退出，
    继续准备文件；不要强制结束进程。网络及游戏目录写入使用环境提供的权限机制。
-4. 运行 `setup.ps1 -LaunchGame`。默认使用仓库 distribution 下经 SHA256
+4. 完成上述存档备份、独立哈希固定复核与缺失项核对后，运行 `setup.ps1 -LaunchGame`。默认使用仓库 distribution 下经 SHA256
    校验的自写插件包；BepInEx 从官方固定 URL 下载并校验。玩家无需 .NET SDK。
    只有明确需要最新 GitHub Release 时才用 `-UseLatestRelease`。
 5. 首次启动会生成互操作接口，可等待数分钟并继续给用户进度。
@@ -28,6 +47,11 @@ description: Configure or continue development of the MultiDave prototype for Wi
    不声称服务器、第二角色或完整联机已经完成。
 
 ## 继续开发
+
+开发版本在 [codex/player-discovery 分支](https://github.com/gao-xh/MultiDave/tree/codex/player-discovery)。
+本默认分支仍是 0.1.0 加载原型；需要开发包时明确选择开发分支，先读该分支 Skill 与
+`development/docs/PLAYTEST_PACKAGE.md`。`-UseLatestRelease` 只选择稳定发行，不能代替开发预发布入口；
+不要把开发构建或包准备成功当成双游戏玩法通过。
 
 读 `development/docs/HANDOFF.md`。源文件在 `development/src/DaveCoop/`。
 按需要修改后运行 `development/scripts/Build-Plugin.ps1`，退出游戏后运行
