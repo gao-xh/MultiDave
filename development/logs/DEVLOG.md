@@ -998,3 +998,13 @@
 - Skill加入安装/配置/替换插件/试玩前保存退出、备份及再次复核；恢复须先备当前、验证旧备份和目标、沿用明确覆盖授权，核对Steam云状态，保留恢复前备份。未实现自动恢复、不自动改云设置。官方validator对草稿及受保护复制后均实际通过，Skill同SHA256 `8260CB8C966C7AB4108329F5B8A204BD5EC743A6D4773B842D4DCCDAE6FDB3BF`，记录独立保留.local；历史.46构建摘要未改。
 - 同时准备当前已构建.46的开发ZIP：`Package-Plugin.ps1 -Development`核Cecil插件版本、实际通过/封存输入及DLL SHA，不重编译、不更换默认.0。实际包`artifacts/playtest/DaveCoop-0.1.46-dev.zip`SHA256 `82DCA622043E48138CB27891D5CB9D1D056D09B57CCCC8D94D7D822E6B87FD09`，解包确认仅DLL+manifest，9项错误参数/证据失配拒绝；默认distribution/dependencies未改。新增`New-PlaytestConfig.ps1`只在artifacts生成Host/Guest cfg，用保留测试地址验证8项生成/拒绝检查通过，实际地址仍需配置，未安装cfg。详见`docs/PLAYTEST_PACKAGE.md`。
 - 本轮无C#修改，因此未重复Core/Build，版本仍.46。无原存档写入、恢复、游戏cfg更改、插件部署、游戏启动或native玩法执行。双游戏移动闭环仍待实机，只有一台电脑/两个cfg不算通过；Guest自动Join/Unity线程初始化存在待核的顺序风险，未视为已复现或修复。完整M3—M7及每人独立袋/收益/返航保存目标仍active，先完成存档保护再推进。
+
+## 2026-10-04 — 客机启动顺序修复（验证UTC为10-05）
+
+- 上一goal轮完成真实存档备份及Skill/工具公开，属于实际进展。本轮继续聚焦双端移动：源码确认条件性首帧竞态，NetworkController可自动Start并在同帧FinishAttempt，早于Diagnostics确认Unity线程时BindPeer拒绝。旧问题未在实机复现，没有称为必现故障。
+- 源码0.1.47-dev/协议11将已有Guest ConfirmUnityUpdate移到实际NetworkDriver.Update入口，先确认再调用NetworkController.Update；Diagnostics只保留独立SaveStartup观察，避免每帧重复事务验证/鱼隔离扫描。未放宽安装线程/回调线程、房间、初始化来源或持久写保护条件。默认Guest开关继续关闭，原始存档和已安装插件未改。
+- 所有源作者停写后实际执行Core/TCP与Build：367/367通过，两脚本exit0、警告视为错误，184个源/项目/执行脚本及实际DLL引用前后hash相同，产物为本次调用新写。Core UTC `2026-10-05T00:01:11.447371+00:00` → `2026-10-05T00:01:19.257610+00:00`；Build UTC `2026-10-05T00:01:21.146754+00:00` → `2026-10-05T00:01:24.274985+00:00`；DLL SHA256 `8C59C3EE48CF0A84480584E1C1C425E0D6F25BC5C6FE5D460E568BDC03EE7E9F`。Core不编译本次两处Unity接线，不能据此声称运行顺序/ABI已验收。
+- 私有runner首次收尾误按UTF8读取本机csc的cp936输出，保留原始失败记录及两份实际exit0输出；只修collector解析已有字节和CRLF，不重跑测试或编译。核原seal/response/引用/产物hash后记录实际通过，私有run在`.local/verification/startup-sequence/20261005T000110Z-c68a9b1ada0f4d7ba282c488811d6898/`，公开证据为`logs/startup-sequence-build-verification.json`及当前`core-verification.json`；.46历史crew-cargo摘要保留。
+- 独立审查用Cecil读取实际自写DLL元数据与IL：NetworkDriver.Update offset0 get_Current、11 ConfirmUnityUpdate、22 NetworkController.Update；Diagnostics的Guest确认调用为0，常量及BepInPlugin属性均.47，读取前后DLL hash一致。未加载插件或调用native；此为编译接线证据，不证明实际Unity调度、临时根/场景隔离或双游戏移动。
+- 实际生成.47开发包，ZIP SHA256 `9BB473772498B9434557B4A164BC01082729470667E01F2EDA72D2DB25A9BFA6`；读取核两条文件、一个空目录条目、manifest/sidecar与DLL hash。同版Host/Guest配置只在artifacts生成，使用保留测试地址，未安装、未用测试地址尝试连接；.46历史包及此前脚本9/8项检查保留，未为版本变化重复。PLAYTEST_PACKAGE补双方分别手动开始自然新潜水/90秒等待、Ready及真实Guest场景/鱼隔离来源硬条件，握手不算移动通过。
+- 12份当前入口更新，.46个人袋/捕获历史范围保留；Skill新增.47启动与手动潜水步骤，备份规则保留。官方validator对草稿与受保护复制后均实际通过，同SHA256 `CB2627654C0965B9960D6248728D8867DB2FB97EA2C7F15E65536B4D6E57ABF8`，构建封存输入仍相同，没有因此重编译。未部署/启动游戏、改游戏cfg、恢复/写原档；只有一台电脑，真实双实例及完整Guest隔离/同一世界/捕获个人袋/返航保存仍未验收，完整goal保持active。

@@ -32,7 +32,14 @@ namespace DaveCoop.Networking
         private readonly NetworkController _controller;
 
         public NetworkDriver(IntPtr pointer) : base(pointer) { _controller = new NetworkController(); }
-        public void Update() { _controller.Update(); }
+        public void Update()
+        {
+            // This actual Unity callback confirms the startup thread before
+            // the controller can start or finish an asynchronous guest join.
+            // Do not depend on Diagnostics.Update running first this frame.
+            NativeGuestInitializationController.Current?.ConfirmUnityUpdate();
+            _controller.Update();
+        }
         public void FixedUpdate() { _controller.FixedUpdate(); }
         public void LateUpdate() { _controller.LateUpdate(); }
         public void OnGUI() { _controller.Draw(); }

@@ -1,6 +1,8 @@
 # MultiDave
 
-当前源码0.1.46-dev（协议11），本轮实际Core/TCP367/367及插件Build警告视为错误通过，执行输入前后相同。新增[员工独立个人袋与Harvest接线](development/docs/CREW_CARGO.md)：ExperimentalCrewCargo默认false；自然潜水/原房主袋来源绑定真实Room员工，员工从0注册自己的Mod袋，已确认个人重量double驱动独立负重；AllowOverweight默认true、可选严格容量，完整批次在任何房主袋写入前分流。普通downed鱼Harvest已有一次选择/映射/进度及退场提交源码，容量拒绝保原批次不重选，续租尚未接通。见[实际记录](development/logs/crew-cargo-build-verification.json)。原生hook/捕获/任务图鉴完整覆盖/ABI、返航FinalGrade/入仓保存、Guest完整隔离与远距离双游戏均未执行或验证；Native/World/Cargo权限仍false。未部署/启动，installed.12/dive.11/default.0保持历史；完整M3—M7、每人独立袋/容量/重量/负重、正常返航、真实双端/GitHub冷配置仍须完成。
+当前源码0.1.47-dev（协议11）。客机线程确认已移到真实NetworkDriver.Update入口，先于自动连接结果处理；不再依赖Diagnostics与网络组件的Update顺序。实际Core/TCP367/367和Build警告视为错误通过，已核编译DLL调用顺序；这些不证明原生初始化或双游戏玩法通过。见[本轮记录](development/logs/startup-sequence-build-verification.json)。游戏未启动、插件未部署、配置和原档未修改。存档备份已完成，后续试玩前仍须重新备份复核；目前只有一台电脑，双端移动、完整Guest隔离、捕获/个人袋及返航保存仍待实机。
+
+0.1.46历史源码及构建（协议11），本轮实际Core/TCP367/367及插件Build警告视为错误通过，执行输入前后相同。新增[员工独立个人袋与Harvest接线](development/docs/CREW_CARGO.md)：ExperimentalCrewCargo默认false；自然潜水/原房主袋来源绑定真实Room员工，员工从0注册自己的Mod袋，已确认个人重量double驱动独立负重；AllowOverweight默认true、可选严格容量，完整批次在任何房主袋写入前分流。普通downed鱼Harvest已有一次选择/映射/进度及退场提交源码，容量拒绝保原批次不重选，续租尚未接通。见[实际记录](development/logs/crew-cargo-build-verification.json)。原生hook/捕获/任务图鉴完整覆盖/ABI、返航FinalGrade/入仓保存、Guest完整隔离与远距离双游戏均未执行或验证；Native/World/Cargo权限仍false。未部署/启动，installed.12/dive.11/default.0保持历史；完整M3—M7、每人独立袋/容量/重量/负重、正常返航、真实双端/GitHub冷配置仍须完成。
 
 《潜水员戴夫》Windows Steam 版的联机 Mod 开发项目。
 

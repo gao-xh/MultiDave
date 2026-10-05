@@ -1,12 +1,14 @@
 # MultiDave 接手记录
 
-当前源码0.1.46-dev（协议11），本轮实际Core/TCP367/367及插件Build警告视为错误通过，执行输入前后相同。新增[员工独立个人袋与Harvest接线](CREW_CARGO.md)：ExperimentalCrewCargo默认false；自然潜水/原房主袋来源绑定真实Room员工，员工从0注册自己的Mod袋，已确认个人重量double驱动独立负重；AllowOverweight默认true、可选严格容量，完整批次在任何房主袋写入前分流。普通downed鱼Harvest已有一次选择/映射/进度及退场提交源码，容量拒绝保原批次不重选，续租尚未接通。见[实际记录](../logs/crew-cargo-build-verification.json)。原生hook/捕获/任务图鉴完整覆盖/ABI、返航FinalGrade/入仓保存、Guest完整隔离与远距离双游戏均未执行或验证；Native/World/Cargo权限仍false。未部署/启动，installed.12/dive.11/default.0保持历史；完整M3—M7、每人独立袋/容量/重量/负重、正常返航、真实双端/GitHub冷配置仍须完成。
+当前源码0.1.47-dev（协议11）。客机线程确认已移到真实NetworkDriver.Update入口，先于自动连接结果处理；不再依赖Diagnostics与网络组件的Update顺序。实际Core/TCP367/367和Build警告视为错误通过，已核编译DLL调用顺序；这些不证明原生初始化或双游戏玩法通过。见[本轮记录](../logs/startup-sequence-build-verification.json)。游戏未启动、插件未部署、配置和原档未修改。存档备份已完成，后续试玩前仍须重新备份复核；目前只有一台电脑，双端移动、完整Guest隔离、捕获/个人袋及返航保存仍待实机。
+
+0.1.46历史源码及构建（协议11），本轮实际Core/TCP367/367及插件Build警告视为错误通过，执行输入前后相同。新增[员工独立个人袋与Harvest接线](CREW_CARGO.md)：ExperimentalCrewCargo默认false；自然潜水/原房主袋来源绑定真实Room员工，员工从0注册自己的Mod袋，已确认个人重量double驱动独立负重；AllowOverweight默认true、可选严格容量，完整批次在任何房主袋写入前分流。普通downed鱼Harvest已有一次选择/映射/进度及退场提交源码，容量拒绝保原批次不重选，续租尚未接通。见[实际记录](../logs/crew-cargo-build-verification.json)。原生hook/捕获/任务图鉴完整覆盖/ABI、返航FinalGrade/入仓保存、Guest完整隔离与远距离双游戏均未执行或验证；Native/World/Cargo权限仍false。未部署/启动，installed.12/dive.11/default.0保持历史；完整M3—M7、每人独立袋/容量/重量/负重、正常返航、真实双端/GitHub冷配置仍须完成。
 
 ## 当前优先交付
 
 2026-10-04 用户要求先保护存档，且目前只有一台电脑。已在游戏退出状态复制38个文件：完整LocalLow目录18个文件（其中12份本地`.sav`）、两份Steam应用缓存共18个文件，以及2份BepInEx配置；逐文件源/副本核验及独立`-VerifyBackup`均通过。一个其它Steam账户没有该游戏应用缓存，`CoverageComplete=false`已保留；不包含Steam云服务器或不可见注册表。实际备份只在`.local/save-backups/`，原存档未修改。见[备份说明](SAVE_BACKUP.md)和[脱敏记录](../logs/save-backup-verification.json)。
 
-配置Skill已将保存退出、备份和再次校验作为安装/配置/试玩前的步骤。先完成此保护再继续双端验证；不安装Guest配置、不自动部署或启动。已生成同版[开发试玩包及角色配置工具](PLAYTEST_PACKAGE.md)，它们仅是准备工作。只有一台电脑且尚无两个真实游戏实例，双端移动未验收。只读发现的Guest自动连接/Unity线程初始化潜在顺序问题仍待具体验证和修复，不能把它视为已发生或已解决。
+配置Skill已将保存退出、备份和再次校验作为安装/配置/试玩前的步骤。先完成此保护再继续双端验证；不安装Guest配置、不自动部署或启动。已生成同版[开发试玩包及角色配置工具](PLAYTEST_PACKAGE.md)，它们仅是准备工作。只有一台电脑且尚无两个真实游戏实例，双端移动未验收。Guest自动连接/Unity线程确认的条件性顺序问题已在0.1.47源码修复并核实际编译IL；原问题未在实机中复现，修复后的实际Unity启动仍待验证。
 
 2026-10-04 用户反馈约20小时仍未交付可用双人版本。后续先完成[双端移动实机闭环](PLAN.md)：两份游戏连接、同潜水场景各自移动/互见/独立镜头与正常断开。当前0.1.46源码编译与367项CLR/TCP测试通过，最新实机加载证据仍为历史0.1.12，双端闭环尚无通过证据。
 

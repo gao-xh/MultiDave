@@ -1,7 +1,7 @@
 # 开发试玩包
 
-当前可生成 `DaveCoop-0.1.46-dev.zip`（协议11），这是原生玩法尚未验证的开发包。
-它使用[已通过构建的 DLL](../logs/crew-cargo-build-verification.json)，不重新编译、不更换默认0.1.0发行包或`dependencies.json`。
+当前可生成 `DaveCoop-0.1.47-dev.zip`（协议11），这是原生玩法尚未验证的开发包。
+它使用[已通过构建的 DLL](../logs/startup-sequence-build-verification.json)，不重新编译、不更换默认0.1.0发行包或`dependencies.json`。
 
 在仓库根目录执行：
 
@@ -15,19 +15,21 @@ powershell -ExecutionPolicy Bypass -File .\development\scripts\Package-Plugin.ps
 没有`-Development`时仍执行旧发行版本限制，不能将开发DLL误打成0.1.0。
 
 输出位于`development/artifacts/playtest/`，包括ZIP和同名`.zip.sha256`。
-ZIP只有`manifest.json`及`BepInEx/plugins/DaveCoop/DaveCoop.dll`；schema1兼容既有安装器，额外标记`development-native-unverified`。
+ZIP文件只有`manifest.json`及`BepInEx/plugins/DaveCoop/DaveCoop.dll`，本轮还含一个空目录条目`BepInEx/plugins/`；schema1兼容既有安装器，额外标记`development-native-unverified`。
 不包含游戏、interop/框架DLL、配置、存档、研究报告或机器日志。
 
 当前实际生成包：
 
-- ZIP SHA256：`82DCA622043E48138CB27891D5CB9D1D056D09B57CCCC8D94D7D822E6B87FD09`
-- DLL SHA256：`85FBFAEE4A9CF827C2FDCBC35C9D1AC47F77CF777211E4672B693C82827E3BCC`
-- 已实际解包核对两条文件、manifest、sidecar、DLL哈希及编译版本；9项错误参数/失配检查均拒绝，默认发行文件未变。
+- ZIP SHA256：`9BB473772498B9434557B4A164BC01082729470667E01F2EDA72D2DB25A9BFA6`
+- DLL SHA256：`8C59C3EE48CF0A84480584E1C1C425E0D6F25BC5C6FE5D460E568BDC03EE7E9F`
+- 已读取ZIP核对两条文件、空目录条目、manifest、sidecar、DLL哈希及编译版本；实际DLL确认Guest线程先于网络Update，Diagnostics不重复确认。Core测试不覆盖实际Unity启动顺序，实机仍待验证。
+
+0.1.46历史包保留；同一打包脚本的9项错误参数/失配拒绝来自该历史轮，默认发行文件未变。本轮没有因版本更新重复这些检查，也没有将其写成新版原生试玩通过。
 
 将ZIP与sidecar放在一起，游戏保存退出并按[存档备份说明](SAVE_BACKUP.md)完成备份和`-VerifyBackup`复核后，才可用现有入口安装；双方应使用同一开发包：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\setup.ps1 -PackagePath .\development\artifacts\playtest\DaveCoop-0.1.46-dev.zip
+powershell -ExecutionPolicy Bypass -File .\setup.ps1 -PackagePath .\development\artifacts\playtest\DaveCoop-0.1.47-dev.zip
 ```
 
 安装命令会写插件目录，本轮没有执行安装、部署或启动，也没有改配置或存档。
@@ -37,5 +39,7 @@ powershell -ExecutionPolicy Bypass -File .\setup.ps1 -PackagePath .\development\
 Guest配置开启实验Guest启动及角色功能；鱼叉、个人袋和其它诊断默认关闭。完整Guest持久写隔离尚未验收，备份不是隔离证明。不能因为生成成功而直接覆盖玩家配置。本机目前只有一台电脑，尚未执行双游戏测试，也未安装任一配置。
 
 试玩应先核对新进程版本与加载日志，再确认双端连接、同层独立移动/互见/各自镜头及正常断开；这些还不是已通过验收。
+
+真实两端测试时，先启动Host并选择F11 → Host room，再启动已配置的Guest，分别核对本次`DAVECOOP_NETWORK_CONNECTED`和Guest启动状态。两端都须手动开始自然新潜水：客机不会自动入海；房主先进入新潜水后，客机须在场景等待90秒超时前进入。分别核对`DAVECOOP_LAYOUT_READY`及Session Ready；移动还要求真实Guest场景与鱼隔离来源通过，握手和收到角色状态不足以证明可移动，失败时保留原因日志。Guest断开后须退出进程重新启动，才能回到个人进度。
 实验功能保持原有默认关闭设置；原生ABI、Guest完整隔离、远区实际玩法、捕获收益及正常返航入仓保存均未验证，
 每人独立袋/容量/重量/负重及完整M3—M7仍须完成。详细范围见[员工个人袋](CREW_CARGO.md)和[接手记录](HANDOFF.md)。

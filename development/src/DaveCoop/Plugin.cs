@@ -17,7 +17,7 @@ namespace DaveCoop
     {
         public const string Id = "local.davecoop.prototype";
         public const string Name = "DaveCoop Prototype";
-        public const string Version = "0.1.46-dev";
+        public const string Version = "0.1.47-dev";
 
         public override void Load()
         {
@@ -120,10 +120,10 @@ namespace DaveCoop
 
         public void Update()
         {
-            // This actual Update is the first native-read thread candidate;
-            // Plugin.Load's managed thread must never stand in for it.
+            // The read-only startup observer confirms its own actual Update.
+            // Experimental guest startup is confirmed by NetworkDriver.Update
+            // before it consumes an asynchronous join result.
             SaveStartup?.Update();
-            NativeGuestInitializationController.Current?.ConfirmUnityUpdate();
             if (!_firstFrameLogged)
             {
                 _firstFrameLogged = true;
