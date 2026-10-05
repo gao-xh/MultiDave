@@ -1,0 +1,205 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-05T00:58:33.921723+00:00",
+  "Script": "development/scripts/Backup-Saves.ps1",
+  "ScriptSHA256": "4CDBA13E1022AFCC2C93F82469E3E2F365B0A83D2152EC7249C51E90D92964CE",
+  "ActualLocalBackup": {
+    "CopyScriptSHA256": "F0B345EBA3972D70D6E4F415D711FFD71BA505BA1F0C023128D3728FB9BBECA3",
+    "CopyAndInitialVerificationRuntime": "7.6.5",
+    "StartedUtc": "2026-10-04T17:53:26.7284512-07:00",
+    "FinishedUtc": "2026-10-04T17:53:43.4602368-07:00",
+    "Verified": true,
+    "SourceFilesStable": true,
+    "GameClosedBeforeAndAfter": true,
+    "Files": 38,
+    "LocalLowSavFiles": 12,
+    "CoverageComplete": false,
+    "MissingKinds": [
+      "SteamAppCache"
+    ],
+    "IndependentVerificationPassed": true,
+    "SourceGroups": [
+      {
+        "Kind": "DaveLocalLow",
+        "Files": 18,
+        "Bytes": 2812535.0
+      },
+      {
+        "Kind": "SteamAppCache",
+        "Files": 8,
+        "Bytes": 193976.0
+      },
+      {
+        "Kind": "SteamAppCache",
+        "Files": 10,
+        "Bytes": 1604229.0
+      },
+      {
+        "Kind": "BepInExConfig",
+        "Files": 2,
+        "Bytes": 10306.0
+      }
+    ],
+    "OldBackupVerified": true,
+    "OldBackupManifestUnchanged": true,
+    "OldBackupManifestPinWasObservedDuringThisRecheck": true,
+    "OldCreationTimeManifestPinUsedByThisRecheck": false,
+    "ManifestPinSavedOutsideBackupBeforeVerification": true,
+    "FinalIndependentVerification": {
+      "StartedUtc": "2026-10-05T00:56:18.8539830+00:00",
+      "FinishedUtc": "2026-10-05T00:56:25.6773411+00:00",
+      "Passed": true,
+      "ScriptSHA256": "4CDBA13E1022AFCC2C93F82469E3E2F365B0A83D2152EC7249C51E90D92964CE",
+      "ScriptUnchanged": true,
+      "BackupVerified": true,
+      "ManifestHashPinned": true,
+      "ExpectedHashFromPriorPrivateRecord": true,
+      "Files": 38,
+      "CoverageComplete": false,
+      "MissingKinds": [
+        "SteamAppCache"
+      ],
+      "Mode": "VerifyBackupOnly",
+      "PowerShellVersion": "7.6.5"
+    },
+    "FinalRegexOnlyChangedExpectedHashParameterValidation": true,
+    "BackupFilesAndManifestRemainPrivate": true
+  },
+  "FixtureVerification": {
+    "StartedUtc": "2026-10-05T00:56:31.1219859Z",
+    "FinishedUtc": "2026-10-05T00:56:38.6772971Z",
+    "PowerShellVersion": "5.1.22621.6133",
+    "ScriptSHA256Before": "4CDBA13E1022AFCC2C93F82469E3E2F365B0A83D2152EC7249C51E90D92964CE",
+    "ScriptSHA256After": "4CDBA13E1022AFCC2C93F82469E3E2F365B0A83D2152EC7249C51E90D92964CE",
+    "CommonSHA256Before": "D0E8D6B576D3E23AFBCB13FD42B66A54098C2AFEF9DFED29E4D014F9035ED6BD",
+    "CommonSHA256After": "D0E8D6B576D3E23AFBCB13FD42B66A54098C2AFEF9DFED29E4D014F9035ED6BD",
+    "HarnessSHA256": "2C2DC4579AE64001F81A296EACE51904B91ADA7AA4181AECD67D09B504551787",
+    "ProductionInputsUnchanged": true,
+    "GroupsPassed": 12,
+    "GroupsTotal": 12,
+    "Results": [
+      {
+        "Name": "CopiesOwnProfileSteamAndConfigurationWithManifestHash",
+        "Passed": true,
+        "StartedUtc": "2026-10-05T00:56:31.3523285Z",
+        "FinishedUtc": "2026-10-05T00:56:34.3175591Z"
+      },
+      {
+        "Name": "SeparatePinnedVerificationMatchesReturnedManifest",
+        "Passed": true,
+        "StartedUtc": "2026-10-05T00:56:34.3175591Z",
+        "FinishedUtc": "2026-10-05T00:56:34.9313425Z"
+      },
+      {
+        "Name": "LegacyVerificationIsExplicitlyUnpinned",
+        "Passed": true,
+        "StartedUtc": "2026-10-05T00:56:34.9313425Z",
+        "FinishedUtc": "2026-10-05T00:56:35.5884649Z"
+      },
+      {
+        "Name": "WrongManifestHashRejects",
+        "Passed": true,
+        "StartedUtc": "2026-10-05T00:56:35.5899693Z",
+        "FinishedUtc": "2026-10-05T00:56:35.6619917Z"
+      },
+      {
+        "Name": "InvalidManifestHashShapesReject",
+        "Passed": true,
+        "StartedUtc": "2026-10-05T00:56:35.6619917Z",
+        "FinishedUtc": "2026-10-05T00:56:35.8004839Z"
+      },
+      {
+        "Name": "HashWithoutVerificationCannotCreateAnotherBackup",
+        "Passed": true,
+        "StartedUtc": "2026-10-05T00:56:35.8004839Z",
+        "FinishedUtc": "2026-10-05T00:56:35.8825793Z"
+      },
+      {
+        "Name": "ChangedFileAndManifestPassOnlyWithoutIndependentPin",
+        "Passed": true,
+        "StartedUtc": "2026-10-05T00:56:35.8825793Z",
+        "FinishedUtc": "2026-10-05T00:56:36.7841239Z"
+      },
+      {
+        "Name": "EverySuccessfulManifestFlagRequiresAnActualBoolean",
+        "Passed": true,
+        "StartedUtc": "2026-10-05T00:56:36.7841239Z",
+        "FinishedUtc": "2026-10-05T00:56:37.2697696Z"
+      },
+      {
+        "Name": "SchemaVersionRequiresAnActualInteger",
+        "Passed": true,
+        "StartedUtc": "2026-10-05T00:56:37.2707723Z",
+        "FinishedUtc": "2026-10-05T00:56:37.4319759Z"
+      },
+      {
+        "Name": "FileOnlyChangesStillReject",
+        "Passed": true,
+        "StartedUtc": "2026-10-05T00:56:37.4319759Z",
+        "FinishedUtc": "2026-10-05T00:56:37.6212270Z"
+      },
+      {
+        "Name": "PinIsCheckedBeforeMalformedManifestParsing",
+        "Passed": true,
+        "StartedUtc": "2026-10-05T00:56:37.6212270Z",
+        "FinishedUtc": "2026-10-05T00:56:37.7678821Z"
+      },
+      {
+        "Name": "SourcesAndBaselineBackupRemainUnchanged",
+        "Passed": true,
+        "StartedUtc": "2026-10-05T00:56:37.7678821Z",
+        "FinishedUtc": "2026-10-05T00:56:38.6718944Z"
+      }
+    ],
+    "OwnFixtureSourceFiles": 4,
+    "RealSaveFilesRead": false,
+    "RealSaveFilesModified": false,
+    "GameOrNativeExecuted": false,
+    "GameConfigurationChanged": false,
+    "Restored": false,
+    "CoreOrBuildExecuted": false
+  },
+  "SkillValidation": {
+    "Draft": {
+      "StartedUtc": "2026-10-05T00:54:22.123541+00:00",
+      "FinishedUtc": "2026-10-05T00:54:22.266337+00:00",
+      "Passed": true,
+      "ExitCode": 0,
+      "SkillSHA256": "CD5B13F18AFDFC03DE7AFE2EFD919A64C5B5F694F589A494B5FD1C4E70E1025B",
+      "ValidatorSHA256": "6068513D924ED3559E186DFCDEAD7439129828DCF402167FD925C06DFFBF2806",
+      "Stdout": "Skill is valid!\n",
+      "Stderr": ""
+    },
+    "Protected": {
+      "StartedUtc": "2026-10-05T00:54:37.415175+00:00",
+      "FinishedUtc": "2026-10-05T00:54:37.584526+00:00",
+      "Passed": true,
+      "ExitCode": 0,
+      "SkillSHA256": "CD5B13F18AFDFC03DE7AFE2EFD919A64C5B5F694F589A494B5FD1C4E70E1025B",
+      "ValidatorSHA256": "6068513D924ED3559E186DFCDEAD7439129828DCF402167FD925C06DFFBF2806",
+      "Stdout": "Skill is valid!\n",
+      "Stderr": ""
+    }
+  },
+  "DefaultEntryAudit": {
+    "Repository": "gao-xh/MultiDave",
+    "DefaultBranch": "main",
+    "AuditedCommit": "ca9277b46e9209cf395ab72f58433b9da3919d25",
+    "BackupWorkflowPresentAtAuditedCommit": false,
+    "Scope": "Prepare a minimal entry and backup backport; development native gameplay is separate."
+  },
+  "Limits": {
+    "SaveContentParsedOrDisplayed": false,
+    "LiveSaveFilesModified": false,
+    "Restored": false,
+    "GameConfigurationChanged": false,
+    "PluginDeployed": false,
+    "GameLaunched": false,
+    "NativeGameplayExecuted": false,
+    "SaveGameSemanticValidityVerified": false,
+    "SteamCloudServerBackedUp": false,
+    "CompleteGuestIsolationVerified": false,
+    "TwoRealGameSessionsVerified": false,
+    "CoreOrBuildRerun": false
+  }
+}

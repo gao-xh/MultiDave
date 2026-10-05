@@ -16,9 +16,9 @@ description: Configure or continue development of the MultiDave prototype for Wi
 
 默认定位当前用户LocalLow下的完整DAVE THE DIVER目录，以及Steam安装根的userdata各账户1868140目录。Codex沙盒的UserProfile可能不同于玩家目录；遇到缺失先核对实际玩家目录，使用已确认的`-UserProfilePath`、`-SteamRoot`与`-GamePath`，不能把沙盒空目录当成没有存档。明确没有历史存档的首次安装可以记录缺失并继续普通加载原型，实验客机模式仍保持关闭。
 
-备份复制到仓库忽略的`development/.local/save-backups/`唯一新目录。只有脚本成功、manifest记录Verified且`-VerifyBackup <备份目录>`再次通过，才能报告备份完成；记录具体目录、文件数、校验结果，并逐项核对`Missing`和`CoverageComplete`，不能仅凭Verified声称云存档已全部备份。失败/变化/未完成的目录保留但不算成功。存档、账户目录名、绝对源路径和备份manifest全部私有，不提交Git或发布到GitHub。
+备份复制到仓库忽略的`development/.local/save-backups/`唯一新目录。将脚本返回的BackupPath与ManifestSHA256保存到备份目录以外的独立私人记录（例如`development/.local/logs/`）；只有脚本成功、manifest记录Verified且从该记录取哈希执行`-VerifyBackup <备份目录> -ExpectedManifestSHA256 <记录值>`再次通过并返回ManifestHashPinned=true，才能报告新备份完成；记录具体目录、文件数、校验结果，并逐项核对`Missing`和`CoverageComplete`，不能仅凭Verified声称云存档已全部备份。失败/变化/未完成的目录保留但不算成功。存档、账户目录名、绝对源路径和备份manifest全部私有，不提交Git或发布到GitHub。
 
-恢复按用户明确的恢复请求或已有覆盖授权执行；授权不明确时才询问，备份请求本身不授权覆盖当前存档。先保存退出游戏并新备份当前状态，再验证选定旧备份，核对实际账户与目标目录。游戏和Steam均退出、云同步状态已由玩家核对后，按恢复说明逐文件恢复并比对哈希，保留恢复前备份；不删除原目录、不把云缓存当最新本地档、不自动决定云冲突或修改Steam云设置。当前备份脚本没有自动恢复开关。
+恢复按用户明确的恢复请求或已有覆盖授权执行；授权不明确时才询问，备份请求本身不授权覆盖当前存档。先保存退出游戏并新备份当前状态，再用独立记录的清单哈希验证选定旧备份，核对实际账户与目标目录；历史备份没有创建时哈希的，只能报告内部一致性通过，不能现取哈希声称创建以来未改动。游戏和Steam均退出、云同步状态已由玩家核对后，按恢复说明逐文件恢复并比对哈希，保留恢复前备份；不删除原目录、不把云缓存当最新本地档、不自动决定云冲突或修改Steam云设置。当前备份脚本没有自动恢复开关。
 
 文件一致性校验只证明备份与当时源文件一致，不证明源档游戏语义有效，也不覆盖Steam服务器、其它设备或不可见用户注册表。备份不能替代完整Guest隔离验收；当前实验功能默认关闭，用户延后试玩时不自动部署、改游戏cfg或启动游戏。
 
@@ -30,6 +30,7 @@ description: Configure or continue development of the MultiDave prototype for Wi
    找不到或找到多份时才询问游戏目录，不沿用开发者本机路径。
 3. 配置 Mod 包含安装依赖和插件的授权。游戏运行时请用户保存退出并继续准备文件；
    安装脚本会拒绝覆盖运行中的插件。网络及目录写入使用环境的权限机制。
+   保存退出后先按上方执行Backup-Saves、独立记录清单哈希及带该哈希的再次复核，核对Missing；通过后才进入安装步骤。
 4. 运行 `setup.ps1 -LaunchGame`。默认安装 distribution 下经 SHA256 校验的
    自写插件包；框架从官方固定 URL 下载并校验，玩家不需要 .NET SDK。
    `-UseLatestRelease`只选择最新稳定发行；明确开发预发布按下文指定tag下载。

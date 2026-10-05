@@ -4,7 +4,8 @@ param(
     [string[]]$SteamRoot,
     [string]$GamePath,
     [string]$BackupRoot,
-    [string]$VerifyBackup
+    [string]$VerifyBackup,
+    [string]$ExpectedManifestSHA256
 )
 . (Join-Path $PSScriptRoot 'Common.ps1')
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
@@ -56,8 +57,11 @@ function Read-BackupTree {
 
 function Assert-BackupContents {
     param([string]$Directory, [object]$Manifest)
-    if ($Manifest.SchemaVersion -ne 1 -or $Manifest.Verified -ne $true -or $Manifest.SourceFilesStable -ne $true -or
-        $Manifest.GameClosedBeforeAndAfter -ne $true -or @($Manifest.Files).Count -eq 0) {
+    if (($Manifest.SchemaVersion -isnot [int] -and $Manifest.SchemaVersion -isnot [long]) -or
+        $Manifest.SchemaVersion -ne 1 -or $Manifest.Verified -isnot [bool] -or $Manifest.Verified -ne $true -or
+        $Manifest.SourceFilesStable -isnot [bool] -or $Manifest.SourceFilesStable -ne $true -or
+        $Manifest.GameClosedBeforeAndAfter -isnot [bool] -or $Manifest.GameClosedBeforeAndAfter -ne $true -or
+        @($Manifest.Files).Count -eq 0) {
         throw 'The backup does not have a successful verification manifest.'
     }
     $expected = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
@@ -89,6 +93,12 @@ function Assert-BackupContents {
     }
 }
 
+if ($PSBoundParameters.ContainsKey('ExpectedManifestSHA256')) {
+    if (!$VerifyBackup -or $ExpectedManifestSHA256 -notmatch '\A[A-Fa-f0-9]{64}\z') {
+        throw '-ExpectedManifestSHA256 requires -VerifyBackup and a 64-digit SHA256 from a separate trusted record.'
+    }
+}
+
 if ($VerifyBackup) {
     if ($PSBoundParameters.ContainsKey('UserProfilePath') -or $PSBoundParameters.ContainsKey('SteamRoot') -or
         $PSBoundParameters.ContainsKey('GamePath') -or $PSBoundParameters.ContainsKey('BackupRoot')) {
@@ -99,10 +109,18 @@ if ($VerifyBackup) {
     $manifestPath = Join-Path $verifyRoot 'manifest.json'
     Assert-NoPathLinks $manifestPath
     if (!(Test-Path -LiteralPath $manifestPath -PathType Leaf)) { throw 'Backup manifest is missing.' }
+    $manifestHash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash
+    if ($ExpectedManifestSHA256 -and $manifestHash -ne $ExpectedManifestSHA256) {
+        throw 'Backup manifest SHA256 does not match the separately recorded value.'
+    }
     $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
     Assert-BackupContents $verifyRoot $manifest
+    if ((Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash -ne $manifestHash) {
+        throw 'The backup manifest changed during verification.'
+    }
     [pscustomobject]@{ BackupPath = $verifyRoot; Verified = $true; Files = @($manifest.Files).Count;
         CoverageComplete = $manifest.CoverageComplete; Missing = @($manifest.Missing);
+        ManifestSHA256 = $manifestHash; ManifestHashPinned = [bool]$ExpectedManifestSHA256;
         Verification = 'Recorded backup bytes only; current live saves are not compared.' } | ConvertTo-Json -Depth 6
     return
 }
@@ -249,7 +267,9 @@ try {
     Assert-DaveGameClosed
     $manifest.FinishedUtc = [DateTimeOffset]::UtcNow.ToString('o')
     $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding utf8
+    $manifestHash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash
     [pscustomobject]@{ BackupPath = $backupPath; Verified = $true; Files = $manifest.Files.Count;
+        ManifestSHA256 = $manifestHash;
         CoverageComplete = $manifest.CoverageComplete; Missing = $manifest.Missing } | ConvertTo-Json -Depth 6
 } catch {
     $manifest.Verified = $false

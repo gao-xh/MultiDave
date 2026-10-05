@@ -6,6 +6,8 @@
 
 0.1.46历史源码及构建（协议11），本轮实际Core/TCP367/367及插件Build警告视为错误通过，执行输入前后相同。新增[员工独立个人袋与Harvest接线](CREW_CARGO.md)：ExperimentalCrewCargo默认false；自然潜水/原房主袋来源绑定真实Room员工，员工从0注册自己的Mod袋，已确认个人重量double驱动独立负重；AllowOverweight默认true、可选严格容量，完整批次在任何房主袋写入前分流。普通downed鱼Harvest已有一次选择/映射/进度及退场提交源码，容量拒绝保原批次不重选，续租尚未接通。见[实际记录](../logs/crew-cargo-build-verification.json)。原生hook/捕获/任务图鉴完整覆盖/ABI、返航FinalGrade/入仓保存、Guest完整隔离与远距离双游戏均未执行或验证；Native/World/Cargo权限仍false。未部署/启动，installed.12/dive.11/default.0保持历史；完整M3—M7、每人独立袋/容量/重量/负重、正常返航、真实双端/GitHub冷配置仍须完成。
 
+存档保护已再完成38文件备份和独立清单哈希复核。后续安装、替换配置或试玩先按[SAVE_BACKUP](SAVE_BACKUP.md)记录哈希并带该值复核；只保存文件不能算保护完成。见[实际检查](../logs/save-protection-refresh-verification.json)。开发源码/默认包版本不变，完整Guest隔离仍须实机验证。
+
 ## 下一次交付：双端移动实机闭环
 
 已补[v0.1.48-dev公开测试包](https://github.com/gao-xh/MultiDave/releases/tag/v0.1.48-dev)和显式tag/固定哈希下载流程，实际发行、匿名下载核验及GitHub全新检出包/配置准备见[记录](../logs/playtest-release-verification.json)。从GitHub取得同版包不再依赖本机被忽略的artifacts；默认安装仍.0，未验开发包不作为latest。该进展不代替新电脑完整安装/启动、Guest持久隔离或两个真实游戏的移动验收；接下来仍以实机首个启动/地图/布局/身体来源结果定位直接阻断，不按预发布可下载将M3—M7标完成。

@@ -45,7 +45,7 @@ ZIP文件只有`manifest.json`及`BepInEx/plugins/DaveCoop/DaveCoop.dll`，本�
 
 0.1.47及0.1.46历史包保留；同一打包脚本的9项错误参数/失配拒绝来自该历史轮，默认发行文件未变。本轮没有因版本更新重复这些检查，也没有将其写成新版原生试玩通过。
 
-将ZIP与sidecar放在一起，游戏保存退出并按[存档备份说明](SAVE_BACKUP.md)完成备份和`-VerifyBackup`复核后，才可用现有入口安装；双方应使用同一开发包：
+将ZIP与sidecar放在一起，游戏保存退出并按[存档备份说明](SAVE_BACKUP.md)完成备份、独立记录清单哈希及`-VerifyBackup -ExpectedManifestSHA256`复核后，才可用现有入口安装；双方应使用同一开发包：
 
 ```powershell
 .\setup.ps1 -PackagePath $taskPackage.PackagePath

@@ -30,14 +30,22 @@ Codex 可以完成游戏定位、依赖下载与校验、插件安装、启动�
 .\setup.ps1 -InspectOnly
 
 # 保存并退出游戏后，先备份实际玩家目录；沙盒目录不同时按说明传入实际路径。
-.\development\scripts\Backup-Saves.ps1
-.\development\scripts\Backup-Saves.ps1 -VerifyBackup '上一步返回的 BackupPath'
-
-# 备份与复核通过后，安装仓库附带的原型包并启动验证。
-.\setup.ps1 -LaunchGame
+$saveBackup = .\development\scripts\Backup-Saves.ps1 | ConvertFrom-Json
+# 清单哈希保存到备份目录之外的私人记录，之后从该记录取值。
+$saveRecordDir = 'development/.local/logs'
+New-Item -ItemType Directory -Path $saveRecordDir -Force | Out-Null
+$saveRecordPath = Join-Path $saveRecordDir ('save-backup-' + [Guid]::NewGuid().ToString('N') + '.json')
+$saveBackup | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $saveRecordPath -Encoding utf8
+.\development\scripts\Backup-Saves.ps1 -VerifyBackup $saveBackup.BackupPath -ExpectedManifestSHA256 $saveBackup.ManifestSHA256
 ```
 
-备份范围、缺失项及恢复条件见[存档备份说明](development/docs/SAVE_BACKUP.md)。备份和账户信息只保留本机，不提交仓库。
+复核须返回`ManifestHashPinned=true`，并核对`Missing`及`CoverageComplete`。备份范围、缺失项及恢复条件见[存档备份说明](development/docs/SAVE_BACKUP.md)。备份和账户信息只保留本机，不提交仓库。
+
+备份和复核通过、缺失范围已核对后，再安装并启动加载验证：
+
+```powershell
+.\setup.ps1 -LaunchGame
+```
 
 玩家安装不需要 .NET SDK。首次启动框架需要联网下载 Unity 依赖并生成接口，
 可能耗时数分钟。安装后左上角出现 `DaveCoop Prototype`，F8 切换面板。

@@ -1032,3 +1032,11 @@
 - 本轮无原存档写入/恢复、游戏cfg修改、插件部署、启动或native玩法；没有新的存档备份必要动作，已有38文件备份仍私人保存。只有一台电脑，完整Guest隔离、真实双端移动/世界、捕鱼个人袋、返航入仓保存及完整GitHub冷配置仍未完成，goal保持active。
 
 - 公开工具后，从GitHub真实全新浅检出 `04fcfbd9ed9fc9a8dc0998ef7633d601758341a4`（core.autocrlf=false保留helper字节），actual WindowsPS5.1完成 setup InspectOnly、固定tag匿名下载核验和两份Host/Guest cfg生成；clone/prepare均exit0、前后输入相同、克隆tracked worktree clean，helper字节同28项夹具与实际下载。UTC 2026-10-05T00:45:41.439190+00:00 → 2026-10-05T00:45:46.779968+00:00，私有run `development/.local/verification/playtest-release/cold-prepare-20261005T004541Z-8556bf03c1f14b278f9a58dde82026bd/run.json`；public摘要仅清理后身份/哈希与范围。检查的是现有游戏版本及新cfg文件，未安装、覆盖现有cfg、启动/执行插件或写存档；测试地址只作生成检查。此为GitHub冷检出包准备通过，不是新电脑完整安装/启动或双端闭环，所有原生与完整冷配置限制仍false。
+
+## 2026-10-04 — 存档备份清单独立复核（验证UTC为10-05）
+
+- 按用户先保护原存档的要求，再建独立38文件备份：18 LocalLow（12份sav）、两组Steam应用缓存共18文件、2 cfg；源清单/字节前后稳定，旧备份保留且复核通过。仍有另一Steam账户无应用缓存，CoverageComplete=false；未改原档/游戏cfg、恢复、部署或启动游戏。
+- Backup-Saves成功新增ManifestSHA256；独立私人记录保存该值，VerifyBackup可带ExpectedManifestSHA256先核清单再核文件，前后清单变化拒绝。真实bool/int类型及严格64hex参数要求补全；不传hash的旧备份只证明内部一致性，不能声称创建以来未变。历史备份本次从观察值复核，未将它当创建时锚。
+- 实际新备份以初始F0B345EBA3972D70D6E4F415D711FFD71BA505BA1F0C023128D3728FB9BBECA3脚本复制/复核；随后只修ExpectedHash正则尾LF形状，最终4CDBA13E1022AFCC2C93F82469E3E2F365B0A83D2152EC7249C51E90D92964CE脚本带原独立记录再次只读复核38文件成功。WindowsPS5.1.22621.6133实际12/12定向夹具，UTC00:56:31.1219859Z→00:56:38.6772971Z，生产输入前后相同；共同改写file+manifest在无pin时仅内部一致性通过、带原pin必须拒绝，三成功flag/schema字符串拒绝。先前私有fixture失败保留，不算通过；游戏和原档不参与夹具。
+- Skill用skill-creator窄更新安装/试玩/恢复规则；草稿与保护复制后官方validator均通过，SHA CD5B13F18AFDFC03DE7AFE2EFD919A64C5B5F694F589A494B5FD1C4E70E1025B。README/PLAYTEST/备份说明/接手/计划同步。脱敏证据见logs/save-protection-refresh-verification.json，备份及清单/源账户路径留.local，不公开。C#未改、无重复Core/Build，原.48编译证明仍为历史实际结果。
+- 实时核对GitHub默认main仍在ca9277b46e9209cf395ab72f58433b9da3919d25且旧Skill/README直接安装、缺备份脚本；另准备只回补备份工具与入口的最小修复，保留默认.0，不合入未验收原生玩法。真实双游戏和M3—M7继续未验收。

@@ -6,6 +6,8 @@
 
 0.1.46历史源码及构建（协议11），本轮实际Core/TCP367/367及插件Build警告视为错误通过，执行输入前后相同。新增[员工独立个人袋与Harvest接线](CREW_CARGO.md)：ExperimentalCrewCargo默认false；自然潜水/原房主袋来源绑定真实Room员工，员工从0注册自己的Mod袋，已确认个人重量double驱动独立负重；AllowOverweight默认true、可选严格容量，完整批次在任何房主袋写入前分流。普通downed鱼Harvest已有一次选择/映射/进度及退场提交源码，容量拒绝保原批次不重选，续租尚未接通。见[实际记录](../logs/crew-cargo-build-verification.json)。原生hook/捕获/任务图鉴完整覆盖/ABI、返航FinalGrade/入仓保存、Guest完整隔离与远距离双游戏均未执行或验证；Native/World/Cargo权限仍false。未部署/启动，installed.12/dive.11/default.0保持历史；完整M3—M7、每人独立袋/容量/重量/负重、正常返航、真实双端/GitHub冷配置仍须完成。
 
+本次另备份38文件并复核，旧备份保留。Skill已加清单哈希的独立私人记录，安装前带该记录再次复核；最终脚本PS5.1定向12/12与实际新备份只读复核通过，见[本次存档保护记录](../logs/save-protection-refresh-verification.json)。备份不能证明原档语义或完整云端覆盖。GitHub默认main仍是旧入口，另准备最小存档保护回补。
+
 ## 当前优先交付
 
 开发交付已补[v0.1.48-dev 预发布](https://github.com/gao-xh/MultiDave/releases/tag/v0.1.48-dev)及明确tag下载入口，详见[PLAYTEST_PACKAGE](PLAYTEST_PACKAGE.md)和[实际发行/下载记录](../logs/playtest-release-verification.json)。WindowsPS5.1实际28项包准入夹具、公开地址匿名下载核验，以及GitHub全新检出后的只读环境检查/下载/两份cfg准备均通过；未安装、改游戏cfg、启动或完成双游戏验收。当前插件源码仍.48，原373项Core/Build来源保留，没有重跑冒作玩法验证。
