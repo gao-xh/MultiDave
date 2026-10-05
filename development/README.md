@@ -27,7 +27,7 @@
 - 检查时的 Steam Build ID：`25315876`
 - Unity：`6000.0.52f1`，Windows x64 IL2CPP
 - BepInEx：官方 `6.0.0-be.788+5b766a3`
-- 插件：`local.davecoop.prototype`，源码 `0.1.23-dev`，安装/最近启动 `0.1.12-dev`，最近潜水 `0.1.11-dev`，发布包 `0.1.0`
+- 插件：`local.davecoop.prototype`，源码 `0.1.48-dev`，安装/最近启动 `0.1.12-dev`，最近潜水 `0.1.11-dev`，默认包 `0.1.0`；开发预发布为 `v0.1.48-dev`。
 
 ## 编译与安装
 
@@ -53,7 +53,7 @@
 
 ## 运行验证
 
-当前已安装游戏显示 `DaveCoop Prototype 0.1.12-dev`；0.1.23-dev 尚未部署或启动，不能沿用旧进程日志验证新版本。
+当前已安装游戏显示 `DaveCoop Prototype 0.1.12-dev`；0.1.48-dev 尚未在本机部署或启动，不能沿用旧进程日志验证新版本。开发预发布与下载步骤见 [PLAYTEST_PACKAGE](docs/PLAYTEST_PACKAGE.md)。
 F7 世界探针已有真实潜水读取证据；生命周期回调在 0.1.6-dev 实际触发，池复用与卸载恢复仍待验证。
 按 F8 显示或隐藏面板，设置保存在
 `BepInEx/config/local.davecoop.prototype.cfg`。

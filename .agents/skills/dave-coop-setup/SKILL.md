@@ -32,11 +32,21 @@ description: Configure or continue development of the MultiDave prototype for Wi
    安装脚本会拒绝覆盖运行中的插件。网络及目录写入使用环境的权限机制。
 4. 运行 `setup.ps1 -LaunchGame`。默认安装 distribution 下经 SHA256 校验的
    自写插件包；框架从官方固定 URL 下载并校验，玩家不需要 .NET SDK。
-   明确要求最新 GitHub Release 时才使用 `-UseLatestRelease`。
+   `-UseLatestRelease`只选择最新稳定发行；明确开发预发布按下文指定tag下载。
 5. 首次启动会生成互操作接口，期间给用户进度。保持主菜单，运行
    `development/scripts/Check-Status.ps1`，验证当前进程日志的新鲜度与
    `DAVECOOP_BOOTSTRAP_OK`、`DAVECOOP_UPDATE_OK`、`DAVECOOP_SCENE`。
 6. 报告版本、实际加载证据、日志位置和支持范围。安装文件存在不能证明加载成功。
+
+## 明确要求开发预发布时
+
+默认配置仍安装0.1.0加载原型。用户要求双端开发测试包时检出`codex/player-discovery`分支，先读[PLAYTEST_PACKAGE.md](../../../development/docs/PLAYTEST_PACKAGE.md)；指定预发布为[v0.1.48-dev](https://github.com/gao-xh/MultiDave/releases/tag/v0.1.48-dev)，原生玩法与完整Guest隔离尚未验收。
+
+运行`development/scripts/Get-PlaytestPackage.ps1 -ReleaseTag v0.1.48-dev`取得同版ZIP与sidecar；它匿名下载到新的artifacts子目录，以仓库通过构建记录固定ZIP/DLL哈希、版本/协议及未验manifest，不要求SDK/游戏、不安装或启动。旧检出没有同版记录或脚本时先取开发分支；不通过`-UseLatestRelease`选择开发版，不把任意下载的sidecar当作已核包。下载可在游戏运行时准备。
+
+实际安装/配置前仍执行上方保存退出、备份和独立复核，使用返回的PackagePath传`setup.ps1 -PackagePath`。本地ZIP不保证全程离线，未缓存的框架/首次Unity依赖仍需网络。由玩家实际房主IPv4/端口生成Host/Guest配置，备份复核后把对应文件放到该端游戏`BepInEx/config/local.davecoop.prototype.cfg`。Host先F11→Host room，再启动已配置Guest；移动前关闭F11面板，双方分别手动自然新潜水。仅配置请求已有会话授权时继续必要操作；本开发会话不自动部署/启动，用户延后测试不催测。
+
+安装后的DLL哈希必须匹配同版包，新进程须记录明确0.1.48-dev的BOOTSTRAP及本次UPDATE；Check-Status只核通用标记和日志新鲜度，不单独证明匹配版本、Guest隔离、Ready或双端移动。日志的首个STARTUP/MAP/IGP/layout/source失败用于定位，不为了握手或显示通过放宽来源保护。测试发行可下载不等于完整M3—M7完成。
 
 ## 继续开发
 

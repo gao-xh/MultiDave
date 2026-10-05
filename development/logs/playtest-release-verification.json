@@ -1,0 +1,155 @@
+{
+  "SchemaVersion": 1,
+  "RecordedUtc": "2026-10-05T00:42:05.079325+00:00",
+  "ParentCommit": "a802ea0f446f00dd972963380ca7125d97be81ce",
+  "PluginVersion": "0.1.48-dev",
+  "ProtocolVersion": 11,
+  "Release": {
+    "Tag": "v0.1.48-dev",
+    "Url": "https://github.com/gao-xh/MultiDave/releases/tag/v0.1.48-dev",
+    "SourceCommit": "a802ea0f446f00dd972963380ca7125d97be81ce",
+    "Prerelease": true,
+    "MakeLatest": false,
+    "StartedUtc": "2026-10-05T00:34:32.888618+00:00",
+    "FinishedUtc": "2026-10-05T00:34:37.477397+00:00",
+    "AnonymousMetadataVerified": true,
+    "SourceTagVerified": true,
+    "Assets": [
+      {
+        "Name": "DaveCoop-0.1.48-dev.zip",
+        "SHA256": "29E99BAAC9E0F5E1CDC00B8EB48B94919D98F9C94E028E6343655D9FA6D9AB27",
+        "Size": 562783,
+        "GitHubDigest": "sha256:29e99baac9e0f5e1cdc00b8eb48b94919d98f9c94e028e6343655d9fa6d9ab27"
+      },
+      {
+        "Name": "DaveCoop-0.1.48-dev.zip.sha256",
+        "SHA256": "344FD7F91538A8FA2367AF5E2C8F0B5E4525B1B24F1705159480CD4296F04E87",
+        "Size": 91,
+        "GitHubDigest": "sha256:344fd7f91538a8fa2367af5e2c8f0b5e4525b1b24f1705159480cd4296f04e87"
+      }
+    ],
+    "NotesSHA256": "EE7D886E03C126176D1581D4DEAFEDE5482ED9D2A3BF7F3A205630CFD828D492",
+    "OwnPluginOnly": true,
+    "DefaultPackageUnchanged": true
+  },
+  "Downloader": {
+    "Script": "development/scripts/Get-PlaytestPackage.ps1",
+    "ScriptSHA256": "D55C2C9EAFE026AD3611D19364C77DE7B875AB3A59DEF6D3283EF5880364A442",
+    "OnlyPreparesFiles": true,
+    "NoGameOrSdkNeeded": true,
+    "FrozenSourceReviewNoBlockingIssues": true,
+    "WindowsPowerShell51Fixture": {
+      "Passed": 28,
+      "Total": 28,
+      "Runtime": "5.1.22621.6133",
+      "StartedUtc": "2026-10-05T00:35:39.4560229Z",
+      "FinishedUtc": "2026-10-05T00:35:43.5542750Z",
+      "TransportMocked": true,
+      "ActualPositivePackageBytes": true,
+      "InputsUnchanged": true,
+      "PrivateRunReference": "development/.local/tests/playtest-download/runs/20261005T003539443Z-30d3eaf349b34ed882597fba888d38e7/run.json",
+      "RunSHA256": "EBF8561B0012EA79872641977CBB1ABE1FC2D95534A5202FF2310C32E5AD32FA",
+      "CaseNames": [
+        "verified-actual-package",
+        "tag-format",
+        "proof-version",
+        "unpassed-proof",
+        "bad-proof-protocol",
+        "proof-native-scope",
+        "outside-output",
+        "existing-output",
+        "release-tag-mismatch",
+        "draft-release",
+        "stable-release",
+        "missing-sidecar",
+        "duplicate-assets",
+        "foreign-asset-url",
+        "oversized-declared-zip",
+        "wrong-sidecar-hash",
+        "wrong-sidecar-name",
+        "wrong-zip-bytes",
+        "manifest-native-abi-claim",
+        "manifest-unknown-authority",
+        "manifest-protocol-mismatch",
+        "manifest-stage-mismatch",
+        "wrong-dll-bytes",
+        "extra-zip-file",
+        "duplicate-zip-entry",
+        "zip-traversal",
+        "transport-failure",
+        "reparse-output"
+      ]
+    },
+    "PowerShell7Compatibility": {
+      "Passed": 1,
+      "Total": 1,
+      "Runtime": "7.6.5",
+      "StartedUtc": "2026-10-05T00:36:24.7370861Z",
+      "FinishedUtc": "2026-10-05T00:36:25.3012809Z",
+      "TransportMocked": true,
+      "PrivateRunReference": "development/.local/tests/playtest-download/runs/20261005T003624728Z-2e06b46a04914ed9a45aaec19e9ef41e/run.json"
+    },
+    "ActualAnonymousDownload": {
+      "Passed": true,
+      "ExitCode": 0,
+      "Runtime": "WindowsPowerShell5.1",
+      "StartedUtc": "2026-10-05T00:39:52.673110+00:00",
+      "FinishedUtc": "2026-10-05T00:39:54.647596+00:00",
+      "TransportMocked": false,
+      "ZIPSHA256": "29E99BAAC9E0F5E1CDC00B8EB48B94919D98F9C94E028E6343655D9FA6D9AB27",
+      "PluginSHA256": "D8054A2BAC3AFA0E7F834FA4DCE7DD8A32C25F03D0079F997437781298AC484E",
+      "ScriptInputsUnchanged": true,
+      "PrivateRunReference": "development/.local/verification/playtest-release/real-download-20261005T003952Z-79782d99914a48358cfc553d99d0412b/run.json",
+      "RunSHA256": "E4B8E2C8F90B1F5304F4A7DB09E4B798E5A6AF60773EE033241E5B63427BA6CA",
+      "StdoutSHA256": "674F6F2E93E0ED64A9DE91AC64F786C2B7E37A6D53328F8D2F6CC68D1C704506",
+      "StderrSHA256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "ChildWindowsBuiltinModulesImported": true,
+      "FirstChildModuleDiscoveryFailureRetained": true
+    }
+  },
+  "ExistingPluginBuild": {
+    "Reference": "development/logs/host-body-interest-build-verification.json",
+    "CoreTestsPassed": 373,
+    "CoreTestsTotal": 373,
+    "InputsStillIdentical": true,
+    "SourceFileCount": 185,
+    "PluginSourceChanged": false,
+    "CoreOrBuildRerun": false
+  },
+  "SkillValidation": {
+    "Draft": {
+      "StartedUtc": "2026-10-05T00:40:42.551052+00:00",
+      "FinishedUtc": "2026-10-05T00:40:42.718255+00:00",
+      "Passed": true,
+      "ExitCode": 0,
+      "SkillSHA256": "C1831E21C50414FAEDFCF15338068154ACD30D8ABD9B415C17EFE2BFCEC3ABFB",
+      "ValidatorSHA256": "6068513D924ED3559E186DFCDEAD7439129828DCF402167FD925C06DFFBF2806",
+      "Stdout": "Skill is valid!\n",
+      "Stderr": ""
+    },
+    "Protected": {
+      "StartedUtc": "2026-10-05T00:40:54.756845+00:00",
+      "FinishedUtc": "2026-10-05T00:40:54.907580+00:00",
+      "Passed": true,
+      "ExitCode": 0,
+      "SkillSHA256": "C1831E21C50414FAEDFCF15338068154ACD30D8ABD9B415C17EFE2BFCEC3ABFB",
+      "ValidatorSHA256": "6068513D924ED3559E186DFCDEAD7439129828DCF402167FD925C06DFFBF2806",
+      "Stdout": "Skill is valid!\n",
+      "Stderr": ""
+    }
+  },
+  "SaveProtectionSectionUnchanged": true,
+  "GitHubColdPackagePreparationVerified": false,
+  "Limits": {
+    "FullGitHubColdSetupVerified": false,
+    "PluginDeployed": false,
+    "GameLaunched": false,
+    "GameConfigurationChanged": false,
+    "LiveSaveFilesModified": false,
+    "NativeExecuted": false,
+    "NativeAbiVerified": false,
+    "FullGuestIsolationVerified": false,
+    "TwoRealGameSessionsVerified": false,
+    "NormalReturnAndSaveVerified": false
+  }
+}

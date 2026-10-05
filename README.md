@@ -11,6 +11,8 @@
 **默认安装包为 0.1.0 加载原型，只验证插件加载、场景读取和状态面板。
 开发分支正在实现联机功能，完整双人捕鱼与返航闭环尚未通过验收。**
 
+开发测试包已提供 [v0.1.48-dev 预发布](https://github.com/gao-xh/MultiDave/releases/tag/v0.1.48-dev)，双端原生玩法尚未验收。需要该测试包时明确要求检出 `codex/player-discovery` 分支，按[下载与角色配置说明](development/docs/PLAYTEST_PACKAGE.md)取得指定版本；仅给默认配置请求仍安装0.1.0加载原型。
+
 ## 把链接交给 Codex 配置
 
 将以下内容发送给能够访问你本机文件和运行终端的 Codex：
